@@ -1045,40 +1045,9 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
           <h3 className="font-bold text-lg" data-testid={`text-title-${task.id}`}>{task.title}</h3>
           <p className="text-muted-foreground text-sm" data-testid={`text-description-${task.id}`}>{task.description}</p>
           
-          {task.paylink && task.status === "open" && (
-            <div className="mt-4 space-y-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">⚡</span>
-                <p className="text-sm font-bold text-amber-600">BOLT11 Invoice ({task.sats} sats)</p>
-              </div>
-              <p className="text-xs text-muted-foreground">Kopiere diese Invoice und zahle sie mit deiner Lightning Wallet (Alby, Mutiny, Breez, etc.)</p>
-              <div className="bg-secondary p-3 rounded border border-border break-all font-mono text-xs text-muted-foreground cursor-pointer hover:bg-secondary/80 transition" onClick={() => handleCopy(task.paylink)}>
-                {task.paylink}
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  size="sm"
-                  onClick={() => handleCopy(task.paylink)}
-                  className="flex-1 bg-amber-600 hover:bg-amber-700 text-white"
-                  data-testid={`button-copy-paylink-${task.id}`}
-                >
-                  📋 Kopieren
-                </Button>
-                <a 
-                  href={`lightning:${task.paylink}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1"
-                >
-                  <Button 
-                    size="sm"
-                    className="w-full bg-amber-600 hover:bg-amber-700 text-white"
-                    data-testid={`link-paylink-${task.id}`}
-                  >
-                    ⚡ Öffnen
-                  </Button>
-                </a>
-              </div>
+          {task.status === "open" && variant === "parent" && (
+            <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+              <p className="text-xs text-muted-foreground">Warte bis ein Kind die Aufgabe annimmt oder genehmige sie um die Zahlung zu aktivieren</p>
             </div>
           )}
           

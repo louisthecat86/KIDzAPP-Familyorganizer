@@ -163,7 +163,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create a new task with NWC escrow
+  // Create a new task
   app.post("/api/tasks", async (req, res) => {
     try {
       const data = insertTaskSchema.parse(req.body);
@@ -175,37 +175,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Parent not found" });
       }
 
-      // LNBits wallet is REQUIRED - must be configured to create tasks
+      // LNBits wallet is REQUIRED
       if (!parent.lnbitsUrl || !parent.lnbitsAdminKey) {
         return res.status(400).json({ error: "LNBits wallet must be configured to create tasks" });
       }
 
-      // Create invoice for task funding (escrow)
-      const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
-      let paylink = "";
-      try {
-        paylink = await lnbits.createPaylink(data.sats, `Task: ${data.title}`);
-      } catch (error) {
-        console.error("Paylink creation error:", error);
-        return res.status(500).json({ error: "Failed to create payment link for escrow" });
-      }
-
-      // Create task with paylink
+      // Create task without paylink (paylink generated on approval)
       const task = await storage.createTask({
         ...data,
         escrowLocked: true,
-        paylink,
-      });
-
-      // Record transaction for escrow lock
-      await storage.createTransaction({
-        fromPeerId: createdBy,
-        toPeerId: createdBy,
-        sats: data.sats,
-        taskId: task.id,
-        type: "escrow_lock",
-        status: "pending",
-        paymentHash: paylink,
+        paylink: "", // Empty for now, will be generated later
       });
 
       res.json(task);
