@@ -549,22 +549,21 @@ function NavBar({ user, onLogout }: { user: User; onLogout: () => void }) {
 }
 
 function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, onApprove }: any) {
-  const [lnbitsUrl, setLnbitsUrl] = useState(user.lnbitsUrl || "");
-  const [lnbitsKey, setLnbitsKey] = useState("");
+  const [nwcConnectionString, setNwcConnectionString] = useState(user.nwcConnectionString || "");
   const { toast } = useToast();
 
   const setupWallet = async () => {
-    if (!lnbitsUrl || !lnbitsKey) return;
+    if (!nwcConnectionString) return;
     try {
       const res = await fetch("/api/wallet/setup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ peerId: user.id, lnbitsUrl, lnbitsAdminKey: lnbitsKey }),
+        body: JSON.stringify({ peerId: user.id, nwcConnectionString }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setUser({ ...user, lnbitsUrl: data.lnbitsUrl });
-      toast({ title: "Wallet verbunden!", description: "LNBits ist jetzt aktiv" });
+      setUser({ ...user, nwcConnectionString: data.nwcConnectionString });
+      toast({ title: "NWC verbunden!", description: "Nostr Wallet Connect ist jetzt aktiv" });
     } catch (error) {
       toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
     }
@@ -572,47 +571,39 @@ function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, 
 
   return (
     <div className="space-y-8">
-      {!user.lnbitsUrl && (
+      {!user.nwcConnectionString && (
         <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
           <Card className="border border-amber-500/50 shadow-[0_0_20px_rgba(217,119,6,0.15)] bg-amber-500/5">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-amber-600">
-                <Settings className="h-5 w-5" /> LNBits Wallet erforderlich
+                <Settings className="h-5 w-5" /> NWC Wallet erforderlich
               </CardTitle>
-              <CardDescription>Verbinde dein LNBits Wallet um Aufgaben zu erstellen</CardDescription>
+              <CardDescription>Verbinde dein Nostr Wallet Connect (NWC) um Aufgaben zu erstellen</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div className="space-y-2">
-                  <Label htmlFor="lnbits-url">LNBits Instanz URL</Label>
+                  <Label htmlFor="nwc-string">NWC Connection String</Label>
                   <Input 
-                    id="lnbits-url"
-                    placeholder="https://lnbits.example.com"
-                    value={lnbitsUrl}
-                    onChange={(e) => setLnbitsUrl(e.target.value)}
-                    className="bg-secondary border-border"
-                    data-testid="input-lnbits-url"
+                    id="nwc-string"
+                    placeholder="nostr+walletconnect://..."
+                    value={nwcConnectionString}
+                    onChange={(e) => setNwcConnectionString(e.target.value)}
+                    className="bg-secondary border-border font-mono text-xs"
+                    data-testid="input-nwc-string"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lnbits-key">Admin Key</Label>
-                  <Input 
-                    id="lnbits-key"
-                    placeholder="sk_..."
-                    value={lnbitsKey}
-                    onChange={(e) => setLnbitsKey(e.target.value)}
-                    className="bg-secondary border-border font-mono"
-                    data-testid="input-lnbits-key"
-                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Kopiere den NWC URI von deinem Wallet (z.B. Alby, Mutiny, etc.) und füge ihn hier ein
+                  </p>
                 </div>
               </div>
               <Button 
                 onClick={setupWallet}
-                disabled={!lnbitsUrl || !lnbitsKey}
+                disabled={!nwcConnectionString}
                 className="w-full bg-primary hover:bg-primary/90"
                 data-testid="button-setup-wallet"
               >
-                Wallet verbinden
+                NWC verbinden
               </Button>
             </CardContent>
           </Card>
