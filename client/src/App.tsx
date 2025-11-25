@@ -59,6 +59,16 @@ async function registerPeer(name: string, role: UserRole, connectionId: string):
   return res.json();
 }
 
+async function loginPeer(name: string, role: UserRole, connectionId: string): Promise<User> {
+  const res = await fetch("/api/peers/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, role, connectionId }),
+  });
+  if (!res.ok) throw new Error("Login failed. Peer not found.");
+  return res.json();
+}
+
 async function fetchTasks(connectionId: string): Promise<Task[]> {
   const res = await fetch(`/api/tasks/${connectionId}`);
   if (!res.ok) throw new Error("Failed to fetch tasks");
@@ -90,7 +100,7 @@ export default function App() {
   const [newTask, setNewTask] = useState({ title: "", description: "", sats: 50 });
   
   // Onboarding State
-  const [onboardingStep, setOnboardingStep] = useState<"role-selection" | "setup" | "completed">("role-selection");
+  const [onboardingStep, setOnboardingStep] = useState<"role-selection" | "login-or-register" | "setup" | "completed">("role-selection");
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   
   const { toast } = useToast();
@@ -137,7 +147,25 @@ export default function App() {
 
   const handleRoleSelect = (role: UserRole) => {
     setSelectedRole(role);
-    setOnboardingStep("setup");
+    setOnboardingStep("login-or-register");
+  };
+
+  const handleLogin = async (name: string, connectionId: string) => {
+    try {
+      const peer = await loginPeer(name, selectedRole!, connectionId);
+      const newUser: User = {
+        id: peer.id,
+        name: peer.name,
+        role: peer.role as UserRole,
+        connectionId: peer.connectionId,
+      };
+      setUser(newUser);
+      setOnboardingStep("completed");
+      localStorage.setItem("sats-user", JSON.stringify(newUser));
+      toast({ title: "Anmeldung erfolgreich", description: "Willkommen zurück!" });
+    } catch (error) {
+      toast({ title: "Anmeldung fehlgeschlagen", description: "Nutzer nicht gefunden. Bitte neu registrieren.", variant: "destructive" });
+    }
   };
 
   const completeSetup = async (name: string, connectionId: string) => {
@@ -210,8 +238,12 @@ export default function App() {
     return <RoleSelectionPage onSelect={handleRoleSelect} />;
   }
 
+  if (onboardingStep === "login-or-register" && selectedRole) {
+    return <LoginOrRegisterPage role={selectedRole} onLogin={handleLogin} onRegister={() => setOnboardingStep("setup")} onBack={() => setOnboardingStep("role-selection")} />;
+  }
+
   if (onboardingStep === "setup" && selectedRole) {
-    return <SetupPage role={selectedRole} onComplete={completeSetup} onBack={() => setOnboardingStep("role-selection")} />;
+    return <SetupPage role={selectedRole} onComplete={completeSetup} onBack={() => setOnboardingStep("login-or-register")} />;
   }
 
   if (!user) return null;
@@ -305,6 +337,80 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
             </div>
           </div>
         </div>
+      </Card>
+    </div>
+  );
+}
+
+function LoginOrRegisterPage({ role, onLogin, onRegister, onBack }: { role: UserRole, onLogin: (name: string, connectionId: string) => void, onRegister: () => void, onBack: () => void }) {
+  const [name, setName] = useState("");
+  const [connectionId, setConnectionId] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLoginClick = async () => {
+    if (!name || !connectionId) return;
+    setIsLoading(true);
+    await onLogin(name, connectionId);
+    setIsLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-lg border-border/50 bg-card/90 backdrop-blur-xl">
+        <CardHeader>
+          <Button variant="ghost" size="sm" onClick={onBack} className="w-fit mb-2 -ml-2 text-muted-foreground">
+            ← Zurück
+          </Button>
+          <CardTitle className="text-2xl">Willkommen zurück</CardTitle>
+          <CardDescription>
+            Melde dich an oder registriere dich als {role === "parent" ? "Elternteil" : "Kind"}
+          </CardDescription>
+        </CardHeader>
+        
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Dein Name</Label>
+              <Input 
+                placeholder={role === "parent" ? "z.B. Mama oder Papa" : "z.B. Luca"} 
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="bg-secondary border-border"
+                disabled={isLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Familien-ID</Label>
+              <Input 
+                placeholder="BTC-XXXXXX" 
+                value={connectionId}
+                onChange={(e) => setConnectionId(e.target.value.toUpperCase())}
+                className="bg-secondary border-border font-mono text-center uppercase tracking-widest"
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+
+          <Separator />
+
+          <div className="grid gap-3">
+            <Button 
+              className="w-full" 
+              onClick={handleLoginClick}
+              disabled={!name || !connectionId || isLoading}
+            >
+              {isLoading ? "Wird angemeldet..." : "Anmelden"}
+            </Button>
+            <Button 
+              variant="outline" 
+              className="w-full" 
+              onClick={onRegister}
+              disabled={isLoading}
+            >
+              Neu registrieren
+            </Button>
+          </div>
+        </CardContent>
       </Card>
     </div>
   );
