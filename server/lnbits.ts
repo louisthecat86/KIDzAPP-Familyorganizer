@@ -82,28 +82,32 @@ export class LNBitsClient {
   }
 
   async createPaylink(amount: number, memo: string): Promise<string> {
-    const response = await fetch(`${this.baseUrl}/api/v1/links`, {
+    // Use Invoice API instead of Paylink to generate BOLT11 invoices
+    const response = await fetch(`${this.baseUrl}/api/v1/invoices`, {
       method: "POST",
       headers: {
         "X-Api-Key": this.adminKey,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        amount: amount * 1000, // Convert sats to millisats
-        description: memo,
-        max_repay: amount * 1000,
+        amount: amount,
+        memo: memo,
+        out: false,
       }),
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to create paylink: ${response.statusText}`);
+      const errorText = await response.text();
+      throw new Error(`Failed to create invoice: ${errorText || response.statusText}`);
     }
 
     const data = await response.json();
-    return `${this.baseUrl}/lnurlp/${data.id}`;
+    // Return the BOLT11 payment request (this is the actual invoice)
+    return data.payment_request;
   }
 
   async createWithdrawLink(amount: number, memo: string, lnAddress: string): Promise<string> {
+    // Use Withdraw API to create a withdrawal link (LNURL)
     const response = await fetch(`${this.baseUrl}/api/v1/withdraw`, {
       method: "POST",
       headers: {
@@ -111,7 +115,7 @@ export class LNBitsClient {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        amount: amount * 1000, // Convert sats to millisats
+        amount: amount,
         memo: memo,
         webhook_url: lnAddress,
       }),
@@ -122,6 +126,7 @@ export class LNBitsClient {
     }
 
     const data = await response.json();
-    return data.lnurl;
+    // Return the LNURL or invoice
+    return data.lnurl || data.payment_request || data.id;
   }
 }
