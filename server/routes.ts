@@ -79,22 +79,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Link child to parent
+  // Link child to parent by connection ID
   app.post("/api/peers/link", async (req, res) => {
     try {
-      const { childId, parentName } = req.body;
+      const { childId, parentConnectionId } = req.body;
       
-      if (!childId || !parentName) {
-        return res.status(400).json({ error: "childId and parentName required" });
+      if (!childId || !parentConnectionId) {
+        return res.status(400).json({ error: "childId and parentConnectionId required" });
       }
 
-      const parent = await storage.getPeerByName(parentName);
+      const parent = await storage.getPeerByConnectionId(parentConnectionId, "parent");
       
-      if (!parent || parent.role !== "parent") {
-        return res.status(404).json({ error: "Parent not found" });
+      if (!parent) {
+        return res.status(404).json({ error: "Parent connection not found. Check the connection code." });
       }
 
-      const updatedChild = await storage.linkChildToParent(childId, parent.connectionId);
+      const updatedChild = await storage.linkChildToParent(childId, parentConnectionId);
       res.json(updatedChild);
     } catch (error) {
       console.error("Link error:", error);

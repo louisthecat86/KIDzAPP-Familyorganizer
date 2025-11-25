@@ -90,11 +90,11 @@ async function loginUser(name: string, role: UserRole, pin: string): Promise<Use
   return data;
 }
 
-async function linkChildToParent(childId: number, parentName: string): Promise<User> {
+async function linkChildToParent(childId: number, parentConnectionId: string): Promise<User> {
   const res = await fetch("/api/peers/link", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ childId, parentName }),
+    body: JSON.stringify({ childId, parentConnectionId }),
   });
   const data = await res.json();
   if (!res.ok) {
@@ -578,6 +578,26 @@ function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, 
 
   return (
     <div className="space-y-8">
+      <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+        <Card className="border border-primary/20 shadow-[0_0_20px_rgba(247,147,26,0.15)] bg-card/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-primary">
+              <LinkIcon className="h-5 w-5" /> Verbindungscode für Kinder
+            </CardTitle>
+            <CardDescription>Gebe diesen Code deinen Kindern, damit sie sich mit dir verbinden können</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-secondary border-2 border-primary/30 rounded-lg p-4 text-center">
+              <p className="text-xs text-muted-foreground mb-2 uppercase tracking-widest">Dein Code:</p>
+              <p className="text-3xl font-mono font-bold text-primary tracking-wider" data-testid="text-connection-code">
+                {user.connectionId}
+              </p>
+              <p className="text-xs text-muted-foreground mt-3">Kinder nutzen diesen Code zum Verbinden</p>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.section>
+
       {!user.lnbitsUrl && (
         <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
           <Card className="border border-amber-500/50 shadow-[0_0_20px_rgba(217,119,6,0.15)] bg-amber-500/5">
@@ -723,7 +743,7 @@ function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, 
 
 function ChildDashboard({ user, setUser, tasks, onAccept, onSubmit }: any) {
   const [showLink, setShowLink] = useState(false);
-  const [parentName, setParentName] = useState("");
+  const [parentConnectionId, setParentConnectionId] = useState("");
   const [isLinking, setIsLinking] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
@@ -735,14 +755,14 @@ function ChildDashboard({ user, setUser, tasks, onAccept, onSubmit }: any) {
   const availableTasks = tasks.filter((t: Task) => t.status === "open");
 
   const handleLink = async () => {
-    if (!parentName) return;
+    if (!parentConnectionId) return;
     setIsLinking(true);
     try {
-      const updated = await linkChildToParent(user.id, parentName);
+      const updated = await linkChildToParent(user.id, parentConnectionId);
       setUser(updated);
       toast({
-        title: "Verbunden!",
-        description: `Du bist jetzt mit ${parentName} verbunden`
+        title: "Verbunden! 🎉",
+        description: "Du bist jetzt mit deinen Eltern verbunden"
       });
       setShowLink(false);
     } catch (error) {
@@ -828,20 +848,21 @@ function ChildDashboard({ user, setUser, tasks, onAccept, onSubmit }: any) {
           <h3 className="font-bold mb-4">Mit Eltern verbinden</h3>
           <div className="space-y-3">
             <div>
-              <Label htmlFor="parent-name">Name deiner Eltern</Label>
+              <Label htmlFor="parent-code">Verbindungscode von Eltern</Label>
               <Input 
-                id="parent-name"
-                placeholder="z.B. Mama"
-                value={parentName}
-                onChange={(e) => setParentName(e.target.value)}
-                className="bg-secondary border-border"
-                data-testid="input-parent-name"
+                id="parent-code"
+                placeholder="z.B. BTC-XYZ123"
+                value={parentConnectionId}
+                onChange={(e) => setParentConnectionId(e.target.value.toUpperCase())}
+                className="bg-secondary border-border font-mono text-center"
+                data-testid="input-parent-code"
               />
+              <p className="text-xs text-muted-foreground mt-1">Frage deine Eltern nach dem Code!</p>
             </div>
             <div className="flex gap-2">
               <Button 
                 onClick={handleLink}
-                disabled={!parentName || isLinking}
+                disabled={!parentConnectionId || isLinking}
                 className="bg-primary hover:bg-primary/90"
                 data-testid="button-confirm-link"
               >
