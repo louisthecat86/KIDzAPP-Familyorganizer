@@ -107,18 +107,6 @@ async function linkChildToParent(childId: number, parentConnectionId: string): P
   return data;
 }
 
-async function setupWallet(peerId: number, lnbitsUrl: string, lnbitsAdminKey: string): Promise<User> {
-  const res = await fetch("/api/wallet/setup", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ peerId, lnbitsUrl, lnbitsAdminKey }),
-  });
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.error || "Wallet-Setup fehlgeschlagen");
-  }
-  return data;
-}
 
 async function withdrawSats(peerId: number, sats: number, paymentRequest: string): Promise<any> {
   const res = await fetch("/api/withdraw", {
@@ -559,26 +547,6 @@ function NavBar({ user, onLogout }: { user: User; onLogout: () => void }) {
 }
 
 function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, onApprove }: any) {
-  const [showWalletSetup, setShowWalletSetup] = useState(!user.lnbitsUrl);
-  const [lnbitsUrl, setLnbitsUrl] = useState(user.lnbitsUrl || "");
-  const [lnbitsKey, setLnbitsKey] = useState("");
-  const [isSettingUp, setIsSettingUp] = useState(false);
-  const { toast } = useToast();
-
-  const handleWalletSetup = async () => {
-    if (!lnbitsUrl || !lnbitsKey) return;
-    setIsSettingUp(true);
-    try {
-      const updated = await setupWallet(user.id, lnbitsUrl, lnbitsKey);
-      setUser({ ...user, lnbitsUrl: updated.lnbitsUrl });
-      setShowWalletSetup(false);
-      toast({ title: "Wallet verbunden!", description: "LNBits Wallet ist jetzt aktiv" });
-    } catch (error) {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
-    } finally {
-      setIsSettingUp(false);
-    }
-  };
 
   return (
     <div className="space-y-8">
@@ -602,54 +570,6 @@ function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, 
         </Card>
       </motion.section>
 
-      {!user.lnbitsUrl && (
-        <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-          <Card className="border border-amber-500/50 shadow-[0_0_20px_rgba(217,119,6,0.15)] bg-amber-500/5">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-amber-600">
-                <Settings className="h-5 w-5" /> Wallet-Setup erforderlich
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Verbinde dein LNBits-Wallet, um echte Lightning-Zahlungen durchzuführen
-              </p>
-              <div className="space-y-3">
-                <div className="space-y-2">
-                  <Label htmlFor="lnbits-url">LNBits Instanz URL</Label>
-                  <Input 
-                    id="lnbits-url"
-                    placeholder="https://lnbits.example.com"
-                    value={lnbitsUrl}
-                    onChange={(e) => setLnbitsUrl(e.target.value)}
-                    className="bg-secondary border-border"
-                    data-testid="input-lnbits-url"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lnbits-key">Admin Key</Label>
-                  <Input 
-                    id="lnbits-key"
-                    placeholder="sk_..."
-                    value={lnbitsKey}
-                    onChange={(e) => setLnbitsKey(e.target.value)}
-                    className="bg-secondary border-border font-mono"
-                    data-testid="input-lnbits-key"
-                  />
-                </div>
-              </div>
-              <Button 
-                onClick={handleWalletSetup}
-                disabled={!lnbitsUrl || !lnbitsKey || isSettingUp}
-                className="w-full bg-primary hover:bg-primary/90"
-                data-testid="button-setup-wallet"
-              >
-                {isSettingUp ? "Wird verbunden..." : "Wallet verbinden"}
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.section>
-      )}
 
       <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
         <Card className="border border-primary/20 shadow-[0_0_30px_-10px_rgba(247,147,26,0.15)] bg-card/50 overflow-hidden">
