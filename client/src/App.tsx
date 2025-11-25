@@ -59,22 +59,22 @@ async function loginPeerByPin(name: string, role: UserRole, pin: string): Promis
   return res.json();
 }
 
-async function registerPeerWithPin(name: string, role: UserRole, pin: string): Promise<User> {
+async function registerParentWithPin(name: string, pin: string): Promise<User> {
   const generatedFamilyId = `BTC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
   const res = await fetch("/api/peers/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, role, pin, connectionId: generatedFamilyId }),
+    body: JSON.stringify({ name, role: "parent", pin, connectionId: generatedFamilyId }),
   });
   if (!res.ok) throw new Error("Failed to register");
   return res.json();
 }
 
-async function pairChild(name: string, personalPin: string, parentPin: string): Promise<User> {
+async function pairChildWithParentId(name: string, personalPin: string, parentConnectionId: string): Promise<User> {
   const res = await fetch("/api/peers/pair", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, personalPin, role: "child", parentPin }),
+    body: JSON.stringify({ name, personalPin, role: "child", parentConnectionId }),
   });
   if (!res.ok) throw new Error("Pairing failed");
   return res.json();
@@ -179,29 +179,11 @@ export default function App() {
     }
   };
 
-  const completeSetup = async (name: string, pin: string, parentPinForChild?: string) => {
-    try {
-      let peer;
-      if (selectedRole === "parent") {
-        peer = await registerPeerWithPin(name, "parent", pin);
-      } else {
-        if (!parentPinForChild) throw new Error("Parent PIN required");
-        peer = await pairChild(name, pin, parentPinForChild);
-      }
-      
-      const newUser: User = {
-        id: peer.id,
-        name: peer.name,
-        role: peer.role as UserRole,
-        connectionId: peer.connectionId,
-      };
-      setUser(newUser);
-      setOnboardingStep("completed");
-      localStorage.setItem("sats-user", JSON.stringify(newUser));
-      toast({ title: "Registrierung erfolgreich", description: "Willkommen!" });
-    } catch (error) {
-      toast({ title: "Fehler", description: (error as Error).message || "Bitte versuche es erneut.", variant: "destructive" });
-    }
+  const completeRegistration = (user: User) => {
+    setUser(user);
+    setOnboardingStep("completed");
+    localStorage.setItem("sats-user", JSON.stringify(user));
+    toast({ title: "Registrierung erfolgreich", description: "Willkommen!" });
   };
 
   const logout = () => {
@@ -261,7 +243,7 @@ export default function App() {
   }
 
   if (onboardingStep === "setup" && selectedRole) {
-    return <SetupPage role={selectedRole} onComplete={completeSetup} onBack={() => setOnboardingStep("login-or-register")} />;
+    return <SetupPage role={selectedRole} onComplete={completeRegistration} onBack={() => setOnboardingStep("login-or-register")} />;
   }
 
   if (!user) return null;
@@ -434,29 +416,55 @@ function LoginOrRegisterPage({ role, onLogin, onRegister, onBack }: { role: User
   );
 }
 
-function SetupPage({ role, onComplete, onBack }: { role: UserRole, onComplete: (name: string, pin: string, parentPin?: string) => void, onBack: () => void }) {
+function SetupPage({ role, onComplete, onBack }: { role: UserRole, onComplete: (user: User) => void, onBack: () => void }) {
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [pin, setPin] = useState("");
-  const [parentPin, setParentPin] = useState("");
+  const [parentId, setParentId] = useState("");
+  const [generatedFamilyId, setGeneratedFamilyId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleNext = async () => {
-    if (step === 1 && name) {
+    if (step === 1 && name && pin) {
       setStep(2);
-    } else if (step === 2) {
-      if (!pin) return;
+    } else if (step === 2 && role === "parent") {
+      // Eltern: registrieren und dann Family-ID anzeigen (Step 3)
       setIsLoading(true);
-      if (role === "parent") {
-        await onComplete(name, pin);
-      } else {
-        if (!parentPin) {
-          setIsLoading(false);
-          return;
-        }
-        await onComplete(name, pin, parentPin);
+      try {
+        const peer = await registerParentWithPin(name, pin);
+        setGeneratedFamilyId(peer.connectionId);
+        setStep(3);
+      } catch (error) {
+        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
       }
       setIsLoading(false);
+    } else if (step === 2 && role === "child") {
+      // Kind: mit Parent-ID koppeln
+      if (!parentId) return;
+      setIsLoading(true);
+      try {
+        const peer = await pairChildWithParentId(name, pin, parentId);
+        const newUser: User = {
+          id: peer.id,
+          name: peer.name,
+          role: peer.role as UserRole,
+          connectionId: peer.connectionId,
+        };
+        onComplete(newUser);
+      } catch (error) {
+        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      }
+      setIsLoading(false);
+    } else if (step === 3 && role === "parent") {
+      // Step 3: Family-ID bestätigt, zum Dashboard
+      const newUser: User = {
+        id: 0,
+        name: name,
+        role: "parent",
+        connectionId: generatedFamilyId,
+      };
+      onComplete(newUser);
     }
   };
 
@@ -498,42 +506,77 @@ function SetupPage({ role, onComplete, onBack }: { role: UserRole, onComplete: (
             </div>
           )}
 
-          {step === 2 && (
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <h3 className="font-medium text-foreground">Dein persönlicher PIN</h3>
-                <p className="text-sm text-muted-foreground">
-                  {role === "parent" 
-                    ? "Wähle einen PIN, um dich anzumelden. Gib diesen PIN deinem Kind, damit es der Familie beitreten kann."
-                    : "Wähle deinen eigenen PIN für die Anmeldung."}
-                </p>
+          {step === 1 && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Dein Name</Label>
                 <Input 
-                  placeholder="0000-0000" 
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value)}
-                  className="bg-secondary border-border font-mono text-center tracking-widest"
+                  placeholder={role === "parent" ? "z.B. Mama oder Papa" : "z.B. Luca"} 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="bg-secondary border-border"
                   disabled={isLoading}
                 />
               </div>
+              <div className="space-y-2">
+                <Label>Dein PIN (max. 4 Ziffern)</Label>
+                <Input 
+                  placeholder="1234" 
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value.slice(0, 4))}
+                  className="bg-secondary border-border font-mono text-center tracking-widest text-lg"
+                  disabled={isLoading}
+                  maxLength={4}
+                />
+              </div>
+              <div className="bg-primary/10 p-4 rounded-lg text-sm text-primary-foreground/80 flex gap-3">
+                <Info className="h-5 w-5 flex-shrink-0 text-primary" />
+                <p>
+                  {role === "parent" 
+                    ? "Du erhältst dann eine Familie-ID, die du deinem Kind gibst."
+                    : "Mit diesem PIN meldest du dich an. Deine Eltern geben dir ihre Familie-ID."}
+                </p>
+              </div>
+            </div>
+          )}
 
-              {role === "child" && (
-                <div className="space-y-4">
-                  <Separator />
-                  <div className="space-y-4">
-                    <h3 className="font-medium text-foreground">PIN deiner Eltern</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Frage deine Eltern nach ihrem PIN, um der Familie beizutreten.
-                    </p>
-                    <Input 
-                      placeholder="0000-0000" 
-                      value={parentPin}
-                      onChange={(e) => setParentPin(e.target.value)}
-                      className="bg-secondary border-border font-mono text-center tracking-widest"
-                      disabled={isLoading}
-                    />
-                  </div>
+          {step === 2 && role === "child" && (
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <h3 className="font-medium text-foreground">Familie-ID deiner Eltern</h3>
+                <p className="text-sm text-muted-foreground">
+                  Frage deine Eltern nach ihrer Familie-ID, um der Familie beizutreten.
+                </p>
+                <Input 
+                  placeholder="BTC-XXXXXX" 
+                  value={parentId}
+                  onChange={(e) => setParentId(e.target.value.toUpperCase())}
+                  className="bg-secondary border-border font-mono text-center uppercase tracking-widest"
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+          )}
+
+          {step === 3 && role === "parent" && (
+            <div className="space-y-6">
+              <div className="bg-primary/5 p-6 rounded-lg border border-primary/30 space-y-4">
+                <h3 className="font-medium text-foreground">Deine Familie-ID</h3>
+                <p className="text-sm text-muted-foreground">
+                  Gib diese ID deinem Kind, damit es der Familie beitreten kann.
+                </p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 bg-black p-4 rounded border-2 border-primary text-primary font-mono text-center text-xl tracking-widest font-bold">
+                    {generatedFamilyId}
+                  </code>
+                  <Button size="icon" variant="outline" onClick={() => navigator.clipboard.writeText(generatedFamilyId)}>
+                    <Copy className="h-4 w-4" />
+                  </Button>
                 </div>
-              )}
+              </div>
+              <Button variant="outline" className="w-full" onClick={() => navigator.clipboard.writeText(generatedFamilyId)}>
+                ✓ ID kopiert
+              </Button>
             </div>
           )}
         </CardContent>
@@ -543,13 +586,15 @@ function SetupPage({ role, onComplete, onBack }: { role: UserRole, onComplete: (
             className="w-full" 
             onClick={handleNext} 
             disabled={
-              step === 1 ? !name : 
-              step === 2 && role === "parent" ? !pin || isLoading :
-              step === 2 && role === "child" ? !pin || !parentPin || isLoading :
+              (step === 1 && (!name || !pin || pin.length === 0)) ||
+              (step === 2 && role === "child" && !parentId) ||
               isLoading
             }
           >
-            {isLoading ? "Wird eingerichtet..." : step === 1 ? "Weiter" : "Fertigstellen"}
+            {isLoading ? "Wird eingerichtet..." : 
+             step === 1 ? "Weiter" : 
+             step === 2 ? "Koppeln" :
+             step === 3 ? "Zum Dashboard" : "Weiter"}
           </Button>
         </CardFooter>
       </Card>

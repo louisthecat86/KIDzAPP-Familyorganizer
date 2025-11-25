@@ -49,24 +49,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Pair with family using parent's PIN
+  // Pair child with family using parent's connection ID
   app.post("/api/peers/pair", async (req, res) => {
     try {
-      const { name, personalPin, role, parentPin } = req.body;
+      const { name, personalPin, role, parentConnectionId } = req.body;
       
-      if (!name || !personalPin || !role || !parentPin) {
-        return res.status(400).json({ error: "Name, personalPin, role, and parentPin required" });
+      if (!name || !personalPin || !role || !parentConnectionId) {
+        return res.status(400).json({ error: "Name, personalPin, role, and parentConnectionId required" });
       }
 
       if (role === "parent") {
-        return res.status(400).json({ error: "Parents cannot pair with another PIN" });
-      }
-      
-      // Find parent by their PIN
-      const parentPeer = await storage.getPeerByPin(parentPin);
-      
-      if (!parentPeer || parentPeer.role !== "parent") {
-        return res.status(404).json({ error: "Parent PIN not found" });
+        return res.status(400).json({ error: "Parents cannot pair with another connection" });
       }
       
       // Create child peer with parent's connectionId
@@ -74,8 +67,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name,
         role,
         pin: personalPin,
-        connectionId: parentPeer.connectionId,
-        pairedWithPin: parentPin,
+        connectionId: parentConnectionId,
+        pairedWithPin: null,
       });
       
       res.json(childPeer);
