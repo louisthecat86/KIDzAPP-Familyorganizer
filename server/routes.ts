@@ -54,7 +54,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Setup LNBits wallet
+  // Setup LNBits wallet (simple setup, validation happens on first use)
   app.post("/api/wallet/setup", async (req, res) => {
     try {
       const { peerId, lnbitsUrl, lnbitsAdminKey } = req.body;
@@ -63,27 +63,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "peerId, lnbitsUrl, and lnbitsAdminKey required" });
       }
 
-      // Validate URL format
+      // Simple format validation only
       if (!lnbitsUrl.startsWith("http://") && !lnbitsUrl.startsWith("https://")) {
         return res.status(400).json({ error: "LNBits URL must start with http:// or https://" });
       }
 
-      // Admin key can have various formats - we'll test the connection to validate it
-
-      // Validate LNBits connection
-      const lnbits = new LNBitsClient(lnbitsUrl, lnbitsAdminKey);
-      try {
-        console.log("Testing LNBits connection with URL:", lnbitsUrl);
-        await lnbits.createInvoice(1, "Test connection");
-        console.log("LNBits connection successful");
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        console.error("LNBits connection failed:", errorMsg);
-        return res.status(400).json({ 
-          error: `LNBits connection failed: ${errorMsg}. Check URL, key, and wallet has balance.` 
-        });
-      }
-
+      // Save wallet credentials (connection test happens when creating first task)
       const peer = await storage.updatePeerWallet(peerId, lnbitsUrl, lnbitsAdminKey);
       res.json(peer);
     } catch (error) {
