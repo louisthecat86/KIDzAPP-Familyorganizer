@@ -1040,35 +1040,20 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
             <div className="mt-4 space-y-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
               <div className="flex items-center gap-2">
                 <span className="text-lg">⚡</span>
-                <p className="text-sm font-bold text-amber-600">Escrow-Zahlungslink</p>
+                <p className="text-sm font-bold text-amber-600">Zahlungsanforderung ({task.sats} sats)</p>
               </div>
-              <div className="bg-secondary p-2 rounded border border-border break-all font-mono text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground">Kopiere diesen Link und öffne ihn in deiner Lightning Wallet (Alby, Mutiny, etc.)</p>
+              <div className="bg-secondary p-3 rounded border border-border break-all font-mono text-xs text-muted-foreground cursor-pointer hover:bg-secondary/80 transition" onClick={() => handleCopy(task.paylink)}>
                 {task.paylink}
               </div>
-              <div className="flex gap-2">
-                <Button 
-                  size="sm"
-                  onClick={() => handleCopy(task.paylink)}
-                  className="flex-1 bg-primary hover:bg-primary/90"
-                  data-testid={`button-copy-paylink-${task.id}`}
-                >
-                  📋 Kopieren
-                </Button>
-                <a 
-                  href={task.paylink} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex-1"
-                  data-testid={`link-paylink-${task.id}`}
-                >
-                  <Button 
-                    size="sm"
-                    className="w-full bg-amber-600 hover:bg-amber-700 text-white"
-                  >
-                    ⚡ In Wallet öffnen
-                  </Button>
-                </a>
-              </div>
+              <Button 
+                size="sm"
+                onClick={() => handleCopy(task.paylink)}
+                className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+                data-testid={`button-copy-paylink-${task.id}`}
+              >
+                📋 Link kopieren
+              </Button>
             </div>
           )}
           
@@ -1076,35 +1061,20 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
             <div className="mt-4 space-y-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
               <div className="flex items-center gap-2">
                 <span className="text-lg">💰</span>
-                <p className="text-sm font-bold text-green-600">Abheben-Link</p>
+                <p className="text-sm font-bold text-green-600">Abheben! ({task.sats} sats warten)</p>
               </div>
-              <div className="bg-secondary p-2 rounded border border-border break-all font-mono text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground">Kopiere diesen Link und öffne ihn in deiner Lightning Wallet um deine Sats zu erhalten</p>
+              <div className="bg-secondary p-3 rounded border border-border break-all font-mono text-xs text-muted-foreground cursor-pointer hover:bg-secondary/80 transition" onClick={() => handleCopy(task.withdrawLink)}>
                 {task.withdrawLink}
               </div>
-              <div className="flex gap-2">
-                <Button 
-                  size="sm"
-                  onClick={() => handleCopy(task.withdrawLink)}
-                  className="flex-1 bg-primary hover:bg-primary/90"
-                  data-testid={`button-copy-withdraw-${task.id}`}
-                >
-                  📋 Kopieren
-                </Button>
-                <a 
-                  href={task.withdrawLink} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex-1"
-                  data-testid={`link-withdraw-${task.id}`}
-                >
-                  <Button 
-                    size="sm"
-                    className="w-full bg-green-600 hover:bg-green-700 text-white"
-                  >
-                    💳 In Wallet öffnen
-                  </Button>
-                </a>
-              </div>
+              <Button 
+                size="sm"
+                onClick={() => handleCopy(task.withdrawLink)}
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                data-testid={`button-copy-withdraw-${task.id}`}
+              >
+                📋 Link kopieren
+              </Button>
             </div>
           )}
         </div>
