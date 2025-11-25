@@ -80,4 +80,48 @@ export class LNBitsClient {
     const data = await response.json();
     return data.payment_hash;
   }
+
+  async createPaylink(amount: number, memo: string): Promise<string> {
+    const response = await fetch(`${this.baseUrl}/api/v1/links`, {
+      method: "POST",
+      headers: {
+        "X-Api-Key": this.adminKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        amount: amount * 1000, // Convert sats to millisats
+        description: memo,
+        max_repay: amount * 1000,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to create paylink: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return `${this.baseUrl}/lnurlp/${data.id}`;
+  }
+
+  async createWithdrawLink(amount: number, memo: string, lnAddress: string): Promise<string> {
+    const response = await fetch(`${this.baseUrl}/api/v1/withdraw`, {
+      method: "POST",
+      headers: {
+        "X-Api-Key": this.adminKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        amount: amount * 1000, // Convert sats to millisats
+        memo: memo,
+        webhook_url: lnAddress,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to create withdraw link: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.lnurl;
+  }
 }

@@ -36,6 +36,8 @@ export const tasks = pgTable("tasks", {
   status: text("status").notNull(), // 'open', 'assigned', 'submitted', 'approved'
   assignedTo: integer("assigned_to"), // Peer ID
   proof: text("proof"), // File reference or URL
+  paylink: text("paylink"), // LNBits paylink for funding
+  withdrawLink: text("withdraw_link"), // LNBits withdraw link for child payout
   escrowLocked: boolean("escrow_locked").default(false).notNull(), // Is payment locked in escrow?
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -46,6 +48,8 @@ export const insertTaskSchema = createInsertSchema(tasks).omit({
   createdAt: true,
   updatedAt: true,
   escrowLocked: true,
+  paylink: true,
+  withdrawLink: true,
 });
 
 export type InsertTask = z.infer<typeof insertTaskSchema>;

@@ -121,12 +121,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create a new task with escrow
+  // Create a new task with paylink
   app.post("/api/tasks", async (req, res) => {
     try {
       const data = insertTaskSchema.parse(req.body);
       
-      // Lock sats in escrow
       const createdBy = data.createdBy;
       const parent = await storage.getPeer(createdBy);
       
@@ -134,10 +133,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Parent not found" });
       }
 
-      // Create task with escrow locked (LNBits integration optional for now)
+      if (!parent.lnbitsUrl || !parent.lnbitsAdminKey) {
+        return res.status(400).json({ error: "Parent wallet not configured. Please setup LNBits first." });
+      }
+
+      // Create paylink for task funding
+      const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+      let paylink = "";
+      try {
+        paylink = await lnbits.createPaylink(data.sats, `Task: ${data.title}`);
+      } catch (error) {
+        console.error("Paylink creation error:", error);
+        return res.status(500).json({ error: "Failed to create paylink" });
+      }
+
+      // Create task with paylink
       const task = await storage.createTask({
         ...data,
         escrowLocked: true,
+        paylink,
       });
 
       // Record transaction
@@ -147,8 +161,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sats: data.sats,
         taskId: task.id,
         type: "escrow_lock",
-        status: "completed",
-        paymentHash: `escrow_${task.id}`,
+        status: "pending",
+        paymentHash: paylink,
       });
 
       res.json(task);
@@ -174,12 +188,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Task not found" });
       }
 
-      // If approving, release escrow to child
+      // If approving, pay sats to child via withdraw link
       if (updates.status === "approved" && task.status !== "approved") {
         const child = await storage.getPeer(task.assignedTo!);
+        const parent = await storage.getPeer(task.createdBy);
         
-        if (!child) {
-          return res.status(404).json({ error: "Child not found" });
+        if (!child || !parent) {
+          return res.status(404).json({ error: "Child or parent not found" });
+        }
+
+        if (!parent.lnbitsUrl || !parent.lnbitsAdminKey) {
+          return res.status(500).json({ error: "Parent wallet not configured" });
+        }
+
+        // Create withdraw link for child payout
+        const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+        let withdrawLink = "";
+        try {
+          withdrawLink = await lnbits.createWithdrawLink(
+            task.sats,
+            `Reward for: ${task.title}`,
+            `lnbc${task.sats}`
+          );
+        } catch (error) {
+          console.error("Withdraw link error:", error);
+          return res.status(500).json({ error: "Failed to create withdraw link" });
         }
 
         // Update child balance
@@ -194,8 +227,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           taskId: task.id,
           type: "escrow_release",
           status: "completed",
-          paymentHash: `escrow_release_${task.id}`,
+          paymentHash: withdrawLink,
         });
+
+        // Update task with withdraw link
+        updates.withdrawLink = withdrawLink;
       }
 
       const updatedTask = await storage.updateTask(id, updates);
