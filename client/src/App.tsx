@@ -317,8 +317,8 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
       
       <Card className="w-full max-w-4xl z-10 border-border/50 bg-card/80 backdrop-blur-xl shadow-2xl">
-        <div className="grid md:grid-cols-2 gap-0">
-          <div className="hidden md:flex p-6 md:p-10 bg-gradient-to-br from-primary/10 to-background flex-col justify-center border-r border-border/50">
+        <div className="flex flex-col md:grid md:grid-cols-2 gap-0">
+          <div className="flex p-4 sm:p-6 md:p-10 bg-gradient-to-br from-primary/10 to-background flex-col justify-center border-b md:border-b-0 md:border-r border-border/50">
             <div className="h-12 md:h-16 w-12 md:w-16 bg-primary/20 rounded-2xl flex items-center justify-center mb-4 md:mb-6 text-primary">
               <Bitcoin className="h-8 md:h-10 w-8 md:w-10" />
             </div>
