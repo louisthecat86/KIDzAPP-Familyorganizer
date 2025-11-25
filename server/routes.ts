@@ -163,7 +163,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create a new task
+  // Create a new task with escrow lock
   app.post("/api/tasks", async (req, res) => {
     try {
       const data = insertTaskSchema.parse(req.body);
@@ -180,11 +180,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "LNBits wallet must be configured to create tasks" });
       }
 
-      // Create task without paylink (paylink generated on approval)
+      // Create task with escrow lock
       const task = await storage.createTask({
         ...data,
         escrowLocked: true,
-        paylink: "", // Empty for now, will be generated later
+        paylink: `escrow:${data.title}:${data.sats}`, // Virtual escrow marker
+      });
+
+      // Record escrow lock transaction
+      await storage.createTransaction({
+        fromPeerId: createdBy,
+        toPeerId: createdBy,
+        sats: data.sats,
+        taskId: task.id,
+        type: "escrow_lock",
+        status: "pending",
+        paymentHash: `escrow_lock_${task.id}`,
       });
 
       res.json(task);
@@ -219,28 +230,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(404).json({ error: "Child or parent not found" });
         }
 
-        if (!parent.lnbitsUrl || !parent.lnbitsAdminKey) {
-          return res.status(500).json({ error: "Parent wallet not configured" });
-        }
-
-        // Create withdraw link for child payout
-        const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
-        let withdrawLink = "";
-        try {
-          withdrawLink = await lnbits.createWithdrawLink(
-            task.sats,
-            `Reward for: ${task.title}`,
-            `lnbc${task.sats}`
-          );
-        } catch (error) {
-          console.error("Withdraw link error:", error);
-          return res.status(500).json({ error: "Failed to create withdraw link" });
-        }
-
-        // Update child balance
+        // Release escrow sats to child balance
         const newBalance = (child.balance || 0) + task.sats;
         await storage.updateBalance(child.id, newBalance);
 
+        // Create virtual withdraw link
+        const withdrawLink = `withdraw:${task.id}:${task.sats}:${task.title}`;
+        
         // Record escrow release transaction
         await storage.createTransaction({
           fromPeerId: task.createdBy,
