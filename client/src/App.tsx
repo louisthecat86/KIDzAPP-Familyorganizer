@@ -385,23 +385,23 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
         </motion.p>
       </motion.div>
 
-      <Card className="w-full max-w-4xl z-10 border-4 border-primary shadow-2xl">
+      <Card className="w-full max-w-4xl z-10 border-4 border-primary shadow-2xl mx-3 sm:mx-0">
         <div className="flex flex-col md:grid md:grid-cols-2 gap-0">
           <motion.div 
-            className="flex p-6 sm:p-8 md:p-12 bg-gradient-to-br from-primary/20 via-secondary/15 to-accent/20 flex-col justify-center border-b md:border-b-0 md:border-r-4 border-primary"
+            className="flex p-4 sm:p-8 md:p-12 bg-gradient-to-br from-primary/20 via-secondary/15 to-accent/20 flex-col justify-center border-b md:border-b-0 md:border-r-4 border-primary"
             initial={{ opacity: 0, x: -40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, delay: 0.3, type: "spring" }}
           >
             <motion.div 
-              className="h-20 md:h-24 w-20 md:w-24 bg-gradient-to-br from-primary via-accent to-secondary rounded-3xl flex items-center justify-center mb-6 md:mb-8 text-white shadow-xl"
+              className="h-16 md:h-24 w-16 md:w-24 bg-gradient-to-br from-primary via-accent to-secondary rounded-3xl flex items-center justify-center mb-4 md:mb-8 text-white shadow-xl"
               animate={{ rotate: 360, scale: [1, 1.1, 1], y: [0, -10, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             >
-              <Bitcoin className="h-12 md:h-14 w-12 md:w-14" />
+              <Bitcoin className="h-10 md:h-14 w-10 md:w-14" />
             </motion.div>
             <motion.h2 
-              className="text-4xl md:text-5xl font-heading font-black mb-4 md:mb-6 text-primary"
+              className="text-3xl md:text-5xl font-heading font-black mb-3 md:mb-6 text-primary break-words"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
@@ -409,23 +409,23 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
               Verdiene Sats! 💰
             </motion.h2>
             <motion.p 
-              className="text-foreground text-base md:text-lg leading-relaxed font-semibold"
+              className="text-foreground text-sm md:text-lg leading-relaxed font-semibold break-words"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.7 }}
             >
-              ✨ Die Bitcoin-App für die ganze Familie. Erledige Aufgaben, lerne Verantwortung und verdiene echte Sats!
+              ✨ Bitcoin-App für die ganze Familie. Aufgaben erledigen & Sats verdienen!
             </motion.p>
           </motion.div>
 
           <motion.div 
-            className="p-6 sm:p-8 md:p-12 flex flex-col justify-center bg-gradient-to-b from-transparent to-secondary/10"
+            className="p-4 sm:p-8 md:p-12 flex flex-col justify-center bg-gradient-to-b from-transparent to-secondary/10"
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, delay: 0.3, type: "spring" }}
           >
-            <h3 className="text-3xl sm:text-4xl font-heading font-black mb-8 sm:mb-10 text-foreground">🎮 Wähle deine Rolle</h3>
-            <div className="grid gap-4 sm:gap-5">
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-heading font-black mb-6 sm:mb-8 text-foreground">🎮 Wähle deine Rolle</h3>
+            <div className="grid gap-3 sm:gap-4">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -433,16 +433,16 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
                 whileHover={{ scale: 1.05, y: -5 }}
               >
                 <Button 
-                  className="h-auto p-7 sm:p-9 justify-start text-left bg-gradient-to-r from-primary to-accent hover:shadow-2xl hover:shadow-primary/40 transition-all group w-full text-white border-0 font-bold text-lg rounded-2xl"
+                  className="h-auto p-4 sm:p-6 justify-start text-left bg-gradient-to-r from-primary to-accent hover:shadow-2xl hover:shadow-primary/40 transition-all group w-full text-white border-0 font-bold text-base sm:text-lg rounded-2xl"
                   onClick={() => onSelect("parent")}
                   data-testid="button-select-parent"
                 >
-                  <div className="mr-5 sm:mr-7 h-16 sm:h-18 w-16 sm:w-18 rounded-2xl bg-white/25 flex items-center justify-center group-hover:bg-white/40 transition-colors flex-shrink-0">
-                    <UserIcon className="h-8 sm:h-10 w-8 sm:w-10" />
+                  <div className="mr-3 sm:mr-4 h-12 sm:h-16 w-12 sm:w-16 rounded-2xl bg-white/25 flex items-center justify-center group-hover:bg-white/40 transition-colors flex-shrink-0">
+                    <UserIcon className="h-6 sm:h-8 w-6 sm:w-8" />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="font-black text-xl sm:text-2xl">👨‍👩‍👧 Eltern</h4>
-                    <p className="text-base sm:text-lg font-semibold opacity-95">Wallet verwalten & Aufgaben erstellen 💼</p>
+                    <h4 className="font-black text-base sm:text-xl">👨‍👩‍👧 Eltern</h4>
+                    <p className="text-xs sm:text-sm font-semibold opacity-95 break-words">Wallet & Aufgaben 💼</p>
                   </div>
                 </Button>
               </motion.div>
@@ -454,16 +454,16 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
                 whileHover={{ scale: 1.05, y: -5 }}
               >
                 <Button 
-                  className="h-auto p-7 sm:p-9 justify-start text-left bg-gradient-to-r from-secondary to-accent hover:shadow-2xl hover:shadow-secondary/40 transition-all group w-full text-white border-0 font-bold text-lg rounded-2xl"
+                  className="h-auto p-4 sm:p-6 justify-start text-left bg-gradient-to-r from-secondary to-accent hover:shadow-2xl hover:shadow-secondary/40 transition-all group w-full text-white border-0 font-bold text-base sm:text-lg rounded-2xl"
                   onClick={() => onSelect("child")}
                   data-testid="button-select-child"
                 >
-                  <div className="mr-5 sm:mr-7 h-16 sm:h-18 w-16 sm:w-18 rounded-2xl bg-white/25 flex items-center justify-center group-hover:bg-white/40 transition-colors flex-shrink-0">
-                    <Sparkles className="h-8 sm:h-10 w-8 sm:w-10" />
+                  <div className="mr-3 sm:mr-4 h-12 sm:h-16 w-12 sm:w-16 rounded-2xl bg-white/25 flex items-center justify-center group-hover:bg-white/40 transition-colors flex-shrink-0">
+                    <Sparkles className="h-6 sm:h-8 w-6 sm:w-8" />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="font-black text-xl sm:text-2xl">⭐ Kind</h4>
-                    <p className="text-base sm:text-lg font-semibold opacity-95">Aufgaben erledigen & Sats sammeln 🎯</p>
+                    <h4 className="font-black text-base sm:text-xl">⭐ Kind</h4>
+                    <p className="text-xs sm:text-sm font-semibold opacity-95 break-words">Aufgaben & Sats 🎯</p>
                   </div>
                 </Button>
               </motion.div>
