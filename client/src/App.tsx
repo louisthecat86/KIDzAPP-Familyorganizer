@@ -485,6 +485,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 className="bg-secondary border-border"
                 disabled={isLoading}
                 autoFocus
+                autoComplete="off"
                 data-testid="input-name"
               />
             </div>
@@ -502,6 +503,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 className="bg-secondary border-border font-mono text-center tracking-widest text-lg"
                 disabled={isLoading}
                 maxLength={4}
+                autoComplete="off"
                 data-testid="input-pin"
               />
               <p className="text-xs text-muted-foreground">
@@ -655,6 +657,7 @@ function SettingsModal({ user, setUser, onClose }: any) {
               value={editNwc}
               onChange={(e) => setEditNwc(e.target.value)}
               className="bg-secondary border-border font-mono text-xs"
+              autoComplete="off"
               data-testid="input-settings-nwc"
             />
             <p className="text-xs text-muted-foreground">Aktuell: {user.nwcConnectionString ? "✓ Verbunden" : "✗ Nicht verbunden"}</p>
@@ -725,6 +728,7 @@ function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, 
                     value={nwcConnectionString}
                     onChange={(e) => setNwcConnectionString(e.target.value)}
                     className="bg-secondary border-border font-mono text-xs w-full"
+                    autoComplete="off"
                     data-testid="input-nwc-connection"
                   />
                 </div>
@@ -786,6 +790,7 @@ function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, 
                   value={newTask.title}
                   onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
                   className="bg-secondary border-border focus:border-primary"
+                  autoComplete="off"
                   data-testid="input-task-title"
                 />
               </div>
@@ -800,6 +805,7 @@ function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, 
                   value={newTask.sats}
                   onChange={(e) => setNewTask({ ...newTask, sats: parseInt(e.target.value) || 0 })}
                   className="font-mono bg-secondary border-border focus:border-primary"
+                  autoComplete="off"
                   data-testid="input-task-sats"
                 />
               </div>
