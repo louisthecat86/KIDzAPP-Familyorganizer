@@ -22,12 +22,19 @@ import {
   Trophy, 
   Bitcoin,
   Info,
-  Copy,
   Link as LinkIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// --- Types ---
+type Peer = {
+  id: number;
+  name: string;
+  role: string;
+  pin: string;
+  connectionId: string;
+  createdAt: Date;
+};
+
 type UserRole = "parent" | "child";
 
 type User = {
@@ -49,34 +56,39 @@ type Task = {
 };
 
 // --- API Functions ---
-async function loginPeerByPin(name: string, role: UserRole, pin: string): Promise<User> {
+async function registerUser(name: string, role: UserRole, pin: string): Promise<User> {
+  const res = await fetch("/api/peers/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, role, pin }),
+  });
+  if (!res.ok) throw new Error("Registrierung fehlgeschlagen");
+  return res.json();
+}
+
+async function loginUser(name: string, role: UserRole, pin: string): Promise<User> {
   const res = await fetch("/api/peers/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, role, pin }),
   });
-  if (!res.ok) throw new Error("Login failed");
+  if (!res.ok) throw new Error("Anmeldung fehlgeschlagen");
   return res.json();
 }
 
-async function registerParentWithPin(name: string, pin: string): Promise<User> {
-  const generatedFamilyId = `BTC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-  const res = await fetch("/api/peers/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, role: "parent", pin, connectionId: generatedFamilyId }),
-  });
-  if (!res.ok) throw new Error("Failed to register");
+async function fetchParents(): Promise<Array<any>> {
+  const res = await fetch("/api/peers/parents");
+  if (!res.ok) throw new Error("Fehler beim Abrufen der Eltern");
   return res.json();
 }
 
-async function pairChildWithParentId(name: string, personalPin: string, parentConnectionId: string): Promise<User> {
-  const res = await fetch("/api/peers/pair", {
+async function linkChildToParent(childId: number, parentName: string): Promise<User> {
+  const res = await fetch("/api/peers/link", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, personalPin, role: "child", parentConnectionId }),
+    body: JSON.stringify({ childId, parentName }),
   });
-  if (!res.ok) throw new Error("Pairing failed");
+  if (!res.ok) throw new Error("Fehler beim Verbinden mit Eltern");
   return res.json();
 }
 
@@ -106,39 +118,35 @@ async function updateTask(id: number, updates: Partial<Task>): Promise<Task> {
   return res.json();
 }
 
+
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [newTask, setNewTask] = useState({ title: "", description: "", sats: 50 });
-  
-  // Onboarding State
-  const [onboardingStep, setOnboardingStep] = useState<"role-selection" | "login-or-register" | "setup" | "completed">("role-selection");
+  const [mode, setMode] = useState<"role-select" | "auth" | "app">("role-select");
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Load user from localStorage
   useEffect(() => {
-    const storedUser = localStorage.getItem("sats-user");
-    if (storedUser) {
+    const stored = localStorage.getItem("sats-user");
+    if (stored) {
       try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-        setOnboardingStep("completed");
+        const parsed = JSON.parse(stored);
+        setUser(parsed);
+        setMode("app");
       } catch (e) {
-        console.error("Failed to parse user from storage", e);
+        console.error("Failed to parse stored user", e);
       }
     }
   }, []);
 
-  // Fetch tasks
   const { data: tasks = [] } = useQuery({
     queryKey: ["tasks", user?.connectionId],
     queryFn: () => fetchTasks(user!.connectionId),
     enabled: !!user?.connectionId,
   });
 
-  // Mutations
   const createTaskMutation = useMutation({
     mutationFn: createTask,
     onSuccess: () => {
@@ -154,41 +162,21 @@ export default function App() {
     },
   });
 
-  // --- Actions ---
-
   const handleRoleSelect = (role: UserRole) => {
     setSelectedRole(role);
-    setOnboardingStep("login-or-register");
+    setMode("auth");
   };
 
-  const handleLogin = async (name: string, pin: string) => {
-    try {
-      const peer = await loginPeerByPin(name, selectedRole!, pin);
-      const newUser: User = {
-        id: peer.id,
-        name: peer.name,
-        role: peer.role as UserRole,
-        connectionId: peer.connectionId,
-      };
-      setUser(newUser);
-      setOnboardingStep("completed");
-      localStorage.setItem("sats-user", JSON.stringify(newUser));
-      toast({ title: "Anmeldung erfolgreich", description: "Willkommen zurück!" });
-    } catch (error) {
-      toast({ title: "PIN nicht gefunden", description: "Bitte neu registrieren oder PIN prüfen.", variant: "destructive" });
-    }
-  };
-
-  const completeRegistration = (user: User) => {
-    setUser(user);
-    setOnboardingStep("completed");
-    localStorage.setItem("sats-user", JSON.stringify(user));
-    toast({ title: "Registrierung erfolgreich", description: "Willkommen!" });
+  const handleAuthComplete = (newUser: User) => {
+    setUser(newUser);
+    setMode("app");
+    localStorage.setItem("sats-user", JSON.stringify(newUser));
+    toast({ title: "Willkommen!", description: `Hallo ${newUser.name}` });
   };
 
   const logout = () => {
     setUser(null);
-    setOnboardingStep("role-selection");
+    setMode("role-select");
     setSelectedRole(null);
     localStorage.removeItem("sats-user");
   };
@@ -232,18 +220,18 @@ export default function App() {
     toast({ title: "Sats ausgezahlt!", description: "Transaktion gesendet." });
   };
 
-  // --- Render Logic ---
-
-  if (onboardingStep === "role-selection") {
+  if (mode === "role-select") {
     return <RoleSelectionPage onSelect={handleRoleSelect} />;
   }
 
-  if (onboardingStep === "login-or-register" && selectedRole) {
-    return <LoginOrRegisterPage role={selectedRole} onLogin={handleLogin} onRegister={() => setOnboardingStep("setup")} onBack={() => setOnboardingStep("role-selection")} />;
-  }
-
-  if (onboardingStep === "setup" && selectedRole) {
-    return <SetupPage role={selectedRole} onComplete={completeRegistration} onBack={() => setOnboardingStep("login-or-register")} />;
+  if (mode === "auth" && selectedRole) {
+    return (
+      <AuthPage 
+        role={selectedRole} 
+        onComplete={handleAuthComplete}
+        onBack={() => setMode("role-select")}
+      />
+    );
   }
 
   if (!user) return null;
@@ -274,7 +262,8 @@ export default function App() {
                 user={user}
                 tasks={tasks} 
                 onAccept={acceptTask} 
-                onSubmit={submitProof} 
+                onSubmit={submitProof}
+                onUpdate={handleAuthComplete}
               />
             )}
           </motion.div>
@@ -284,8 +273,6 @@ export default function App() {
     </div>
   );
 }
-
-// --- Onboarding Pages ---
 
 function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void }) {
   return (
@@ -311,6 +298,7 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
                 variant="outline" 
                 className="h-auto p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
                 onClick={() => onSelect("parent")}
+                data-testid="button-select-parent"
               >
                 <div className="mr-4 h-12 w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                   <UserIcon className="h-6 w-6" />
@@ -325,6 +313,7 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
                 variant="outline" 
                 className="h-auto p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
                 onClick={() => onSelect("child")}
+                data-testid="button-select-child"
               >
                 <div className="mr-4 h-12 w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                   <Sparkles className="h-6 w-6" />
@@ -342,51 +331,80 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
   );
 }
 
-function LoginOrRegisterPage({ role, onLogin, onRegister, onBack }: { role: UserRole, onLogin: (name: string, pin: string) => void, onRegister: () => void, onBack: () => void }) {
+function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (user: User) => void; onBack: () => void }) {
   const [name, setName] = useState("");
   const [pin, setPin] = useState("");
+  const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
-  const handleLoginClick = async () => {
+  const handleSubmit = async () => {
     if (!name || !pin) return;
+    
     setIsLoading(true);
-    await onLogin(name, pin);
-    setIsLoading(false);
+    try {
+      const user = isLogin 
+        ? await loginUser(name, role, pin)
+        : await registerUser(name, role, pin);
+      
+      onComplete(user);
+    } catch (error) {
+      toast({
+        title: "Fehler",
+        description: (error as Error).message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-lg border-border/50 bg-card/90 backdrop-blur-xl">
         <CardHeader>
-          <Button variant="ghost" size="sm" onClick={onBack} className="w-fit mb-2 -ml-2 text-muted-foreground">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onBack} 
+            className="w-fit mb-2 -ml-2 text-muted-foreground"
+            data-testid="button-back"
+          >
             ← Zurück
           </Button>
-          <CardTitle className="text-2xl">Willkommen zurück</CardTitle>
+          <CardTitle className="text-2xl">
+            {isLogin ? "Anmelden" : "Registrieren"}
+          </CardTitle>
           <CardDescription>
-            Melde dich mit deinem PIN an
+            {isLogin ? "Melde dich mit Name und PIN an" : "Erstelle einen Account mit Name und PIN"}
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent className="space-y-6">
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Name</Label>
+              <Label htmlFor="name">Dein Name</Label>
               <Input 
-                placeholder={role === "parent" ? "z.B. Mama oder Papa" : "z.B. Luca"} 
+                id="name"
+                placeholder={role === "parent" ? "z.B. Mama" : "z.B. Luca"}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="bg-secondary border-border"
                 disabled={isLoading}
+                data-testid="input-name"
               />
             </div>
             <div className="space-y-2">
-              <Label>Dein PIN</Label>
+              <Label htmlFor="pin">PIN (4 Ziffern)</Label>
               <Input 
-                placeholder="0000-0000" 
+                id="pin"
+                placeholder="1234"
                 value={pin}
-                onChange={(e) => setPin(e.target.value)}
+                onChange={(e) => setPin(e.target.value.slice(0, 4))}
                 className="bg-secondary border-border font-mono text-center tracking-widest"
                 disabled={isLoading}
+                maxLength={4}
+                data-testid="input-pin"
               />
             </div>
           </div>
@@ -395,19 +413,21 @@ function LoginOrRegisterPage({ role, onLogin, onRegister, onBack }: { role: User
 
           <div className="grid gap-3">
             <Button 
-              className="w-full" 
-              onClick={handleLoginClick}
+              className="w-full"
+              onClick={handleSubmit}
               disabled={!name || !pin || isLoading}
+              data-testid={isLogin ? "button-login" : "button-register"}
             >
-              {isLoading ? "Wird angemeldet..." : "Anmelden"}
+              {isLoading ? "Wird verarbeitet..." : isLogin ? "Anmelden" : "Registrieren"}
             </Button>
             <Button 
-              variant="outline" 
-              className="w-full" 
-              onClick={onRegister}
+              variant="outline"
+              className="w-full"
+              onClick={() => setIsLogin(!isLogin)}
               disabled={isLoading}
+              data-testid="button-toggle-mode"
             >
-              Neu registrieren
+              {isLogin ? "Noch kein Account? Registrieren" : "Bereits registriert? Anmelden"}
             </Button>
           </div>
         </CardContent>
@@ -415,196 +435,6 @@ function LoginOrRegisterPage({ role, onLogin, onRegister, onBack }: { role: User
     </div>
   );
 }
-
-function SetupPage({ role, onComplete, onBack }: { role: UserRole, onComplete: (user: User) => void, onBack: () => void }) {
-  const [step, setStep] = useState(1);
-  const [name, setName] = useState("");
-  const [pin, setPin] = useState("");
-  const [parentId, setParentId] = useState("");
-  const [generatedFamilyId, setGeneratedFamilyId] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-
-  const handleNext = async () => {
-    if (step === 1 && name && pin) {
-      setStep(2);
-    } else if (step === 2 && role === "parent") {
-      // Eltern: registrieren und dann Family-ID anzeigen (Step 3)
-      setIsLoading(true);
-      try {
-        const peer = await registerParentWithPin(name, pin);
-        setGeneratedFamilyId(peer.connectionId);
-        setStep(3);
-        toast({ title: "Familie-ID generiert!", description: "Gib diese ID deinem Kind, um es zur Familie hinzuzufügen." });
-      } catch (error) {
-        const errorMsg = (error as Error).message;
-        console.error("Registration error:", errorMsg);
-        toast({ 
-          title: "Registrierung fehlgeschlagen", 
-          description: errorMsg || "Bitte versuche einen anderen PIN", 
-          variant: "destructive" 
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    } else if (step === 2 && role === "child") {
-      // Kind: mit Parent-ID koppeln
-      if (!parentId) return;
-      setIsLoading(true);
-      try {
-        const peer = await pairChildWithParentId(name, pin, parentId);
-        const newUser: User = {
-          id: peer.id,
-          name: peer.name,
-          role: peer.role as UserRole,
-          connectionId: peer.connectionId,
-        };
-        onComplete(newUser);
-      } catch (error) {
-        toast({ title: "Kopplung fehlgeschlagen", description: (error as Error).message || "Überprüfe die Familie-ID", variant: "destructive" });
-      } finally {
-        setIsLoading(false);
-      }
-    } else if (step === 3 && role === "parent") {
-      // Step 3: Family-ID bestätigt, zum Dashboard
-      const newUser: User = {
-        id: 0,
-        name: name,
-        role: "parent",
-        connectionId: generatedFamilyId,
-      };
-      onComplete(newUser);
-    }
-  };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-lg border-border/50 bg-card/90 backdrop-blur-xl">
-        <CardHeader>
-          <Button variant="ghost" size="sm" onClick={onBack} className="w-fit mb-2 -ml-2 text-muted-foreground">
-            ← Zurück
-          </Button>
-          <CardTitle className="text-2xl">
-            {role === "parent" ? "Eltern-Wallet einrichten" : "Verbindung herstellen"}
-          </CardTitle>
-          <CardDescription>
-            Schritt {step} von {role === "parent" ? 3 : 2}: {step === 1 ? "Profil" : step === 2 ? "Verbindung" : "Familie-ID"}
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent className="space-y-6">
-          {step === 1 && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Dein Name</Label>
-                <Input 
-                  placeholder={role === "parent" ? "z.B. Mama oder Papa" : "z.B. Luca"} 
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="bg-secondary border-border"
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Dein PIN (max. 4 Ziffern)</Label>
-                <Input 
-                  placeholder="1234" 
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value.slice(0, 4))}
-                  className="bg-secondary border-border font-mono text-center tracking-widest text-lg"
-                  disabled={isLoading}
-                  maxLength={4}
-                />
-              </div>
-              <div className="bg-primary/10 p-4 rounded-lg text-sm text-primary-foreground/80 flex gap-3">
-                <Info className="h-5 w-5 flex-shrink-0 text-primary" />
-                <p>
-                  {role === "parent" 
-                    ? "Du erhältst dann eine Familie-ID, die du deinem Kind gibst."
-                    : "Mit diesem PIN meldest du dich an. Deine Eltern geben dir ihre Familie-ID."}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {step === 2 && role === "parent" && (
-            <div className="space-y-6">
-              <div className="bg-primary/5 p-6 rounded-lg border border-primary/30 space-y-4">
-                <h3 className="font-medium text-foreground text-lg">Bereit zum Registrieren?</h3>
-                <p className="text-sm text-muted-foreground">
-                  <strong>Name:</strong> {name}<br/>
-                  <strong>PIN:</strong> ••••<br/>
-                  <br/>
-                  Nach dem Registrieren erhältst du deine Familie-ID, die du deinem Kind gibst.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {step === 2 && role === "child" && (
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <h3 className="font-medium text-foreground">Familie-ID deiner Eltern</h3>
-                <p className="text-sm text-muted-foreground">
-                  Frage deine Eltern nach ihrer Familie-ID, um der Familie beizutreten.
-                </p>
-                <Input 
-                  placeholder="BTC-XXXXXX" 
-                  value={parentId}
-                  onChange={(e) => setParentId(e.target.value.toUpperCase())}
-                  className="bg-secondary border-border font-mono text-center uppercase tracking-widest"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-          )}
-
-          {step === 3 && role === "parent" && (
-            <div className="space-y-6">
-              <div className="bg-primary/5 p-6 rounded-lg border border-primary/30 space-y-4">
-                <h3 className="font-medium text-foreground">Deine Familie-ID</h3>
-                <p className="text-sm text-muted-foreground">
-                  Gib diese ID deinem Kind, damit es der Familie beitreten kann.
-                </p>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 bg-black p-4 rounded border-2 border-primary text-primary font-mono text-center text-xl tracking-widest font-bold">
-                    {generatedFamilyId}
-                  </code>
-                  <Button size="icon" variant="outline" onClick={() => navigator.clipboard.writeText(generatedFamilyId)}>
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-              <Button variant="outline" className="w-full" onClick={() => navigator.clipboard.writeText(generatedFamilyId)}>
-                ✓ ID kopiert
-              </Button>
-            </div>
-          )}
-        </CardContent>
-
-        <CardFooter>
-          <Button 
-            className="w-full" 
-            onClick={handleNext} 
-            disabled={
-              (step === 1 && (!name || !pin || pin.length === 0)) ||
-              (step === 2 && role === "child" && !parentId) ||
-              isLoading
-            }
-          >
-            {isLoading ? "Wird eingerichtet..." : 
-             step === 1 ? "Weiter" : 
-             step === 2 && role === "parent" ? "Registrieren & ID zeigen" :
-             step === 2 && role === "child" ? "Koppeln" :
-             step === 3 ? "Zum Dashboard" : "Weiter"}
-          </Button>
-        </CardFooter>
-      </Card>
-    </div>
-  );
-}
-
-// --- Main App Components ---
 
 function NavBar({ user, onLogout }: { user: User; onLogout: () => void }) {
   return (
@@ -621,14 +451,20 @@ function NavBar({ user, onLogout }: { user: User; onLogout: () => void }) {
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3 pl-4 pr-2 py-1.5 rounded-full bg-secondary border border-border">
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground" data-testid="text-username">
               {user.name}
             </span>
             <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold border border-primary/50">
               {user.name[0]}
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={onLogout} className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={onLogout} 
+            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
+            data-testid="button-logout"
+          >
             <LogOut className="h-5 w-5" />
           </Button>
         </div>
@@ -644,9 +480,8 @@ function ParentDashboard({ tasks, newTask, setNewTask, onCreate, onApprove }: an
         <Card className="border border-primary/20 shadow-[0_0_30px_-10px_rgba(247,147,26,0.15)] bg-card/50 overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-accent to-primary" />
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <Plus className="h-5 w-5" /> 
-              Neue Aufgabe erstellen
+            <CardTitle className="flex items-center gap-2 text-primary" data-testid="text-create-task">
+              <Plus className="h-5 w-5" /> Neue Aufgabe erstellen
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -654,30 +489,33 @@ function ParentDashboard({ tasks, newTask, setNewTask, onCreate, onApprove }: an
               <div className="space-y-2 flex-grow w-full">
                 <Label htmlFor="title">Was ist zu tun?</Label>
                 <Input 
-                  id="title" 
+                  id="title"
                   placeholder="z.B. Rasen mähen..." 
                   value={newTask.title}
                   onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
                   className="bg-secondary border-border focus:border-primary"
+                  data-testid="input-task-title"
                 />
               </div>
               <div className="space-y-2 w-full md:w-48">
                 <Label htmlFor="sats" className="flex items-center gap-1">
                   <Bitcoin className="h-4 w-4 text-primary" /> Belohnung
                 </Label>
-                <div className="relative">
-                  <Input 
-                    id="sats" 
-                    type="number" 
-                    placeholder="50" 
-                    value={newTask.sats}
-                    onChange={(e) => setNewTask({ ...newTask, sats: parseInt(e.target.value) || 0 })}
-                    className="pl-8 font-mono bg-secondary border-border focus:border-primary"
-                  />
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-primary font-bold">⚡</span>
-                </div>
+                <Input 
+                  id="sats"
+                  type="number" 
+                  placeholder="50" 
+                  value={newTask.sats}
+                  onChange={(e) => setNewTask({ ...newTask, sats: parseInt(e.target.value) || 0 })}
+                  className="font-mono bg-secondary border-border focus:border-primary"
+                  data-testid="input-task-sats"
+                />
               </div>
-              <Button type="submit" className="w-full md:w-auto bg-primary text-primary-foreground hover:bg-primary/90 font-bold">
+              <Button 
+                type="submit" 
+                className="w-full md:w-auto bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
+                data-testid="button-create-task"
+              >
                 Erstellen
               </Button>
             </form>
@@ -701,11 +539,12 @@ function ParentDashboard({ tasks, newTask, setNewTask, onCreate, onApprove }: an
             </TabsContent>
             
             <TabsContent value="review" className="space-y-4">
-               {tasks.filter((t: Task) => t.status === "submitted").map((task: Task) => (
+              {tasks.filter((t: Task) => t.status === "submitted").map((task: Task) => (
                 <TaskCard key={task.id} task={task} variant="parent">
                   <Button 
                     onClick={() => onApprove(task.id)} 
                     className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
+                    data-testid={`button-approve-task-${task.id}`}
                   >
                     <CheckCircle className="mr-2 h-4 w-4" /> Genehmigen & Zahlen
                   </Button>
@@ -725,10 +564,37 @@ function ParentDashboard({ tasks, newTask, setNewTask, onCreate, onApprove }: an
   );
 }
 
-function ChildDashboard({ user, tasks, onAccept, onSubmit }: any) {
+function ChildDashboard({ user, tasks, onAccept, onSubmit, onUpdate }: any) {
+  const [showLink, setShowLink] = useState(false);
+  const [parentName, setParentName] = useState("");
+  const [isLinking, setIsLinking] = useState(false);
+  const { toast } = useToast();
+
   const myTasks = tasks.filter((t: Task) => t.assignedTo === user.id);
   const availableTasks = tasks.filter((t: Task) => t.status === "open");
   const earnedSats = myTasks.filter((t: Task) => t.status === "approved").reduce((acc: number, t: Task) => acc + t.sats, 0);
+
+  const handleLink = async () => {
+    if (!parentName) return;
+    setIsLinking(true);
+    try {
+      const updated = await linkChildToParent(user.id, parentName);
+      onUpdate(updated);
+      toast({
+        title: "Verbunden!",
+        description: `Du bist jetzt mit ${parentName} verbunden`
+      });
+      setShowLink(false);
+    } catch (error) {
+      toast({
+        title: "Fehler",
+        description: (error as Error).message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsLinking(false);
+    }
+  };
 
   return (
     <div className="space-y-10">
@@ -740,7 +606,7 @@ function ChildDashboard({ user, tasks, onAccept, onSubmit }: any) {
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
             <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest mb-2">Wallet Balance</p>
-            <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-primary">
+            <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-primary" data-testid="text-earned-sats">
               {earnedSats.toLocaleString()} <span className="text-2xl opacity-50 text-white">SATS</span>
             </h2>
           </div>
@@ -750,6 +616,65 @@ function ChildDashboard({ user, tasks, onAccept, onSubmit }: any) {
         </div>
       </motion.section>
 
+      {tasks.length === 0 && (
+        <Card className="border-primary/30 bg-primary/5 p-6">
+          <div className="flex gap-4">
+            <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-bold mb-1">Noch nicht verbunden</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Verbinde dich mit deinen Eltern, um Aufgaben zu sehen
+              </p>
+              <Button 
+                size="sm"
+                onClick={() => setShowLink(true)}
+                className="bg-primary hover:bg-primary/90"
+                data-testid="button-link-parent"
+              >
+                <LinkIcon className="h-4 w-4 mr-2" /> Mit Eltern verbinden
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {showLink && (
+        <Card className="border-primary/30 bg-primary/5 p-6">
+          <h3 className="font-bold mb-4">Mit Eltern verbinden</h3>
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="parent-name">Name deiner Eltern</Label>
+              <Input 
+                id="parent-name"
+                placeholder="z.B. Mama"
+                value={parentName}
+                onChange={(e) => setParentName(e.target.value)}
+                className="bg-secondary border-border"
+                data-testid="input-parent-name"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleLink}
+                disabled={!parentName || isLinking}
+                className="bg-primary hover:bg-primary/90"
+                data-testid="button-confirm-link"
+              >
+                {isLinking ? "Wird verbunden..." : "Verbinden"}
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => setShowLink(false)}
+                disabled={isLinking}
+                data-testid="button-cancel-link"
+              >
+                Abbrechen
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
       <section>
         <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
           <Trophy className="text-primary" /> Meine Aufgaben
@@ -758,16 +683,20 @@ function ChildDashboard({ user, tasks, onAccept, onSubmit }: any) {
           {myTasks.map((task: Task) => (
             <TaskCard key={task.id} task={task} variant="child">
               {task.status === "assigned" && (
-                <Button onClick={() => onSubmit(task.id)} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                <Button 
+                  onClick={() => onSubmit(task.id)} 
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                  data-testid={`button-submit-task-${task.id}`}
+                >
                   <Upload className="mr-2 h-4 w-4" /> Beweis senden
                 </Button>
               )}
             </TaskCard>
           ))}
           {myTasks.length === 0 && (
-             <div className="text-center py-8 border border-dashed border-border rounded-lg text-muted-foreground">
-               Noch keine Aufgaben angenommen.
-             </div>
+            <div className="text-center py-8 border border-dashed border-border rounded-lg text-muted-foreground">
+              Noch keine Aufgaben angenommen.
+            </div>
           )}
         </div>
       </section>
@@ -780,16 +709,21 @@ function ChildDashboard({ user, tasks, onAccept, onSubmit }: any) {
           {availableTasks.map((task: Task) => (
             <Card key={task.id} className="border-border bg-card hover:border-primary/50 transition-colors">
               <CardHeader>
-                 <div className="flex justify-between items-start">
-                    <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 border-transparent font-mono">
-                      {task.sats} sats
-                    </Badge>
-                 </div>
-                 <CardTitle className="mt-2">{task.title}</CardTitle>
-                 <CardDescription>{task.description}</CardDescription>
+                <div className="flex justify-between items-start">
+                  <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 border-transparent font-mono">
+                    {task.sats} sats
+                  </Badge>
+                </div>
+                <CardTitle className="mt-2">{task.title}</CardTitle>
+                <CardDescription>{task.description}</CardDescription>
               </CardHeader>
               <CardFooter>
-                <Button onClick={() => onAccept(task.id)} variant="outline" className="w-full hover:border-primary hover:text-primary">
+                <Button 
+                  onClick={() => onAccept(task.id)} 
+                  variant="outline" 
+                  className="w-full hover:border-primary hover:text-primary"
+                  data-testid={`button-accept-task-${task.id}`}
+                >
                   Annehmen
                 </Button>
               </CardFooter>
@@ -815,19 +749,19 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
   const StatusIcon = statusConfig.icon;
 
   return (
-    <Card className="border-border bg-card/50">
+    <Card className="border-border bg-card/50" data-testid={`card-task-${task.id}`}>
       <CardContent className="p-5 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
         <div className="space-y-1">
           <div className="flex items-center gap-3 mb-2">
             <Badge variant="outline" className={`${statusConfig.color} border px-2 py-0.5 rounded text-[10px] font-bold tracking-wider`}>
               <StatusIcon className="h-3 w-3 mr-1.5" /> {statusConfig.label}
             </Badge>
-            <span className="text-primary font-mono text-sm flex items-center gap-1">
+            <span className="text-primary font-mono text-sm flex items-center gap-1" data-testid={`text-sats-${task.id}`}>
               ⚡ {task.sats}
             </span>
           </div>
-          <h3 className="font-bold text-lg">{task.title}</h3>
-          <p className="text-muted-foreground text-sm">{task.description}</p>
+          <h3 className="font-bold text-lg" data-testid={`text-title-${task.id}`}>{task.title}</h3>
+          <p className="text-muted-foreground text-sm" data-testid={`text-description-${task.id}`}>{task.description}</p>
         </div>
         {children && <div className="w-full sm:w-auto pt-2 sm:pt-0">{children}</div>}
       </CardContent>
