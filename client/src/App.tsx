@@ -377,31 +377,31 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
         </p>
       </motion.div>
 
-      <Card className="w-full max-w-4xl z-10 border-border/50 bg-card/95 backdrop-blur-xl shadow-2xl">
+      <Card className="w-full max-w-4xl z-10 border-2 border-primary/20 bg-card shadow-2xl">
         <div className="flex flex-col md:grid md:grid-cols-2 gap-0">
           <motion.div 
-            className="flex p-4 sm:p-6 md:p-10 bg-gradient-to-br from-primary/10 to-background flex-col justify-center border-b md:border-b-0 md:border-r border-border/50"
+            className="flex p-6 sm:p-8 md:p-12 bg-gradient-to-br from-primary/15 via-accent/5 to-secondary/20 flex-col justify-center border-b md:border-b-0 md:border-r border-primary/15"
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
             <motion.div 
-              className="h-12 md:h-16 w-12 md:w-16 bg-primary/20 rounded-2xl flex items-center justify-center mb-4 md:mb-6 text-primary"
-              animate={{ rotate: 360 }}
+              className="h-16 md:h-20 w-16 md:w-20 bg-gradient-to-br from-primary to-accent rounded-3xl flex items-center justify-center mb-6 md:mb-8 text-white shadow-lg"
+              animate={{ rotate: 360, scale: [1, 1.05, 1] }}
               transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
             >
-              <Bitcoin className="h-8 md:h-10 w-8 md:w-10" />
+              <Bitcoin className="h-10 md:h-12 w-10 md:w-12" />
             </motion.div>
             <motion.h2 
-              className="text-2xl md:text-4xl font-heading font-bold mb-3 md:mb-4"
+              className="text-3xl md:text-5xl font-heading font-bold mb-4 md:mb-6 text-primary"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.6 }}
             >
-              Verdiene Sats
+              Verdiene Sats! 🚀
             </motion.h2>
             <motion.p 
-              className="text-muted-foreground text-sm md:text-lg"
+              className="text-foreground text-base md:text-xl leading-relaxed"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.8 }}
@@ -411,51 +411,51 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
           </motion.div>
 
           <motion.div 
-            className="p-4 sm:p-6 md:p-10 flex flex-col justify-center"
+            className="p-6 sm:p-8 md:p-12 flex flex-col justify-center"
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Wähle deine Rolle</h3>
+            <h3 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-foreground">Wähle deine Rolle</h3>
             <div className="grid gap-3 sm:gap-4">
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 1 }}
+                whileHover={{ scale: 1.02 }}
               >
                 <Button 
-                  variant="outline" 
-                  className="h-auto p-4 sm:p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group w-full"
+                  className="h-auto p-6 sm:p-8 justify-start text-left bg-gradient-to-r from-primary to-accent hover:shadow-lg hover:shadow-primary/30 transition-all group w-full text-white border-0"
                   onClick={() => onSelect("parent")}
                   data-testid="button-select-parent"
                 >
-                  <div className="mr-3 sm:mr-4 h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors flex-shrink-0">
-                    <UserIcon className="h-5 sm:h-6 w-5 sm:w-6" />
+                  <div className="mr-4 sm:mr-6 h-14 sm:h-16 w-14 sm:w-16 rounded-2xl bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors flex-shrink-0">
+                    <UserIcon className="h-7 sm:h-8 w-7 sm:w-8" />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="font-bold text-base sm:text-lg">Eltern</h4>
-                    <p className="text-xs sm:text-sm text-muted-foreground">Wallet verwalten & Aufgaben erstellen</p>
+                    <h4 className="font-bold text-lg sm:text-xl">👨‍👩‍👧 Eltern</h4>
+                    <p className="text-sm sm:text-base font-medium opacity-90">Wallet verwalten & Aufgaben erstellen</p>
                   </div>
                 </Button>
               </motion.div>
 
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 1.1 }}
+                whileHover={{ scale: 1.02 }}
               >
                 <Button 
-                  variant="outline" 
-                  className="h-auto p-4 sm:p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group w-full"
+                  className="h-auto p-6 sm:p-8 justify-start text-left bg-gradient-to-r from-accent to-primary hover:shadow-lg hover:shadow-accent/30 transition-all group w-full text-white border-0"
                   onClick={() => onSelect("child")}
                   data-testid="button-select-child"
                 >
-                  <div className="mr-3 sm:mr-4 h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors flex-shrink-0">
-                    <Sparkles className="h-5 sm:h-6 w-5 sm:w-6" />
+                  <div className="mr-4 sm:mr-6 h-14 sm:h-16 w-14 sm:w-16 rounded-2xl bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors flex-shrink-0">
+                    <Sparkles className="h-7 sm:h-8 w-7 sm:w-8" />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="font-bold text-base sm:text-lg">Kind</h4>
-                    <p className="text-xs sm:text-sm text-muted-foreground">Aufgaben erledigen & Sats sammeln</p>
+                    <h4 className="font-bold text-lg sm:text-xl">⭐ Kind</h4>
+                    <p className="text-sm sm:text-base font-medium opacity-90">Aufgaben erledigen & Sats sammeln</p>
                   </div>
                 </Button>
               </motion.div>
