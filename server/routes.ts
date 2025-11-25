@@ -183,14 +183,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create invoice for task funding (escrow)
       const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
       let paylink = "";
-      let paymentHash = "";
       try {
-        const invoice = await lnbits.createInvoice(data.sats, `Task: ${data.title}`);
-        paylink = invoice.payment_request;
-        paymentHash = invoice.payment_hash;
+        paylink = await lnbits.createPaylink(data.sats, `Task: ${data.title}`);
       } catch (error) {
-        console.error("Invoice creation error:", error);
-        return res.status(500).json({ error: "Failed to create payment invoice for escrow" });
+        console.error("Paylink creation error:", error);
+        return res.status(500).json({ error: "Failed to create payment link for escrow" });
       }
 
       // Create task with paylink
@@ -208,7 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         taskId: task.id,
         type: "escrow_lock",
         status: "pending",
-        paymentHash: paymentHash,
+        paymentHash: paylink,
       });
 
       res.json(task);
