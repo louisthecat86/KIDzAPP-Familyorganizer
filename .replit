@@ -4,6 +4,7 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
+packages = ["unzip"]
 
 [deployment]
 deploymentTarget = "static"
@@ -13,6 +14,10 @@ publicDir = "dist/public"
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 43231
+externalPort = 3000
 
 [env]
 PORT = "5000"
@@ -37,3 +42,6 @@ author = "agent"
 task = "shell.exec"
 args = "npm run dev:client"
 waitForPort = 5000
+
+[agent]
+mockupState = "MOCKUP"
