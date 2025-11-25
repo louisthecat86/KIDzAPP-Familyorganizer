@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertPeerSchema, insertTaskSchema } from "@shared/schema";
 import { z } from "zod";
 import { LNBitsClient } from "./lnbits";
+import { NWCClient } from "./nwc";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Test LNBits connection
@@ -96,22 +97,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Setup LNBits wallet
+  // Setup NWC wallet
   app.post("/api/wallet/setup", async (req, res) => {
     try {
-      const { peerId, lnbitsUrl, lnbitsAdminKey } = req.body;
+      const { peerId, nwcConnectionString } = req.body;
       
-      if (!peerId || !lnbitsUrl || !lnbitsAdminKey) {
-        return res.status(400).json({ error: "peerId, lnbitsUrl, and lnbitsAdminKey required" });
+      if (!peerId || !nwcConnectionString) {
+        return res.status(400).json({ error: "peerId and nwcConnectionString required" });
       }
 
-      // Validate URL format
-      if (!lnbitsUrl.startsWith("http://") && !lnbitsUrl.startsWith("https://")) {
-        return res.status(400).json({ error: "LNBits URL must start with http:// or https://" });
+      // Validate NWC connection string
+      if (!NWCClient.validateConnectionString(nwcConnectionString)) {
+        return res.status(400).json({ error: "Invalid NWC connection string. Must be: nostr+walletconnect://pubkey?relay=...&secret=..." });
       }
 
-      // Save wallet credentials
-      const peer = await storage.updatePeerWallet(peerId, lnbitsUrl, lnbitsAdminKey);
+      // Test NWC connection
+      try {
+        const nwc = new NWCClient(nwcConnectionString);
+        await nwc.getWalletInfo();
+      } catch (error) {
+        return res.status(400).json({ error: `NWC connection failed: ${error}` });
+      }
+
+      // Save NWC credentials
+      const peer = await storage.updatePeerNWC(peerId, nwcConnectionString);
       res.json(peer);
     } catch (error) {
       console.error("Wallet setup error:", error);
@@ -175,22 +184,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Parent not found" });
       }
 
-      // LNBits wallet is REQUIRED
-      if (!parent.lnbitsUrl || !parent.lnbitsAdminKey) {
-        return res.status(400).json({ error: "LNBits wallet must be configured to create tasks" });
+      // NWC wallet is REQUIRED
+      if (!parent.nwcConnectionString) {
+        return res.status(400).json({ error: "NWC wallet must be configured to create tasks" });
       }
 
-      // Create task with escrow_pending status (waiting for payment confirmation)
+      // Create BOLT11 invoice for escrow via NWC
+      const nwc = new NWCClient(parent.nwcConnectionString);
+      let invoice = "";
+      try {
+        const nwcInvoice = await nwc.createInvoice(data.sats, `Task: ${data.title}`);
+        invoice = nwcInvoice.invoice;
+      } catch (error) {
+        console.error("Invoice creation error:", error);
+        return res.status(500).json({ error: "Failed to create payment invoice for escrow" });
+      }
+
+      // Create task with BOLT11 invoice as paylink
       const task = await storage.createTask({
         ...data,
-        status: "open", // Will be confirmed after payment
-        paylink: `escrow:${data.title}:${data.sats}`, // Virtual escrow marker
+        status: "open",
+        paylink: invoice, // BOLT11 invoice
+        escrowLocked: true,
+      });
+
+      // Record escrow lock transaction
+      await storage.createTransaction({
+        fromPeerId: createdBy,
+        toPeerId: createdBy,
+        sats: data.sats,
+        taskId: task.id,
+        type: "escrow_lock",
+        status: "pending",
+        paymentHash: invoice,
       });
 
       res.json({ 
         task,
         requiresPayment: true,
         paymentInfo: {
+          invoice: invoice,
           sats: data.sats,
           description: `Task: ${data.title}`,
           escrowRequired: true

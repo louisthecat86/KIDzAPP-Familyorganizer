@@ -13,6 +13,7 @@ export interface IStorage {
   createPeer(peer: InsertPeer): Promise<Peer>;
   linkChildToParent(childId: number, parentConnectionId: string): Promise<Peer>;
   updatePeerWallet(peerId: number, lnbitsUrl: string, lnbitsAdminKey: string): Promise<Peer>;
+  updatePeerNWC(peerId: number, nwcConnectionString: string): Promise<Peer>;
   updateBalance(peerId: number, sats: number): Promise<Peer>;
   
   // Task operations
@@ -85,6 +86,14 @@ export class DatabaseStorage implements IStorage {
   async updatePeerWallet(peerId: number, lnbitsUrl: string, lnbitsAdminKey: string): Promise<Peer> {
     const result = await db.update(peers)
       .set({ lnbitsUrl, lnbitsAdminKey })
+      .where(eq(peers.id, peerId))
+      .returning();
+    return result[0];
+  }
+
+  async updatePeerNWC(peerId: number, nwcConnectionString: string): Promise<Peer> {
+    const result = await db.update(peers)
+      .set({ nwcConnectionString })
       .where(eq(peers.id, peerId))
       .returning();
     return result[0];
