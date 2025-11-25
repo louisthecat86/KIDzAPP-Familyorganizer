@@ -435,10 +435,18 @@ function SetupPage({ role, onComplete, onBack }: { role: UserRole, onComplete: (
         const peer = await registerParentWithPin(name, pin);
         setGeneratedFamilyId(peer.connectionId);
         setStep(3);
+        toast({ title: "Familie-ID generiert!", description: "Gib diese ID deinem Kind, um es zur Familie hinzuzufügen." });
       } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+        const errorMsg = (error as Error).message;
+        console.error("Registration error:", errorMsg);
+        toast({ 
+          title: "Registrierung fehlgeschlagen", 
+          description: errorMsg || "Bitte versuche einen anderen PIN", 
+          variant: "destructive" 
+        });
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     } else if (step === 2 && role === "child") {
       // Kind: mit Parent-ID koppeln
       if (!parentId) return;
@@ -453,9 +461,10 @@ function SetupPage({ role, onComplete, onBack }: { role: UserRole, onComplete: (
         };
         onComplete(newUser);
       } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+        toast({ title: "Kopplung fehlgeschlagen", description: (error as Error).message || "Überprüfe die Familie-ID", variant: "destructive" });
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     } else if (step === 3 && role === "parent") {
       // Step 3: Family-ID bestätigt, zum Dashboard
       const newUser: User = {
