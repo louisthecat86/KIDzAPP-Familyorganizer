@@ -364,98 +364,106 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
       
       {/* Welcome Text Animation */}
       <motion.div
-        className="absolute top-20 left-0 right-0 text-center z-5 pointer-events-none"
-        initial={{ opacity: 0, y: -30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
+        className="absolute top-16 sm:top-20 left-0 right-0 text-center z-5 pointer-events-none"
+        initial={{ opacity: 0, y: -50, scale: 0.8 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 1, delay: 0.1, type: "spring" }}
       >
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-bold text-primary mb-2">
-          Sats Earn
-        </h1>
-        <p className="text-sm sm:text-base md:text-lg text-muted-foreground font-medium tracking-wide">
-          Übernimm Verantwortung
-        </p>
+        <motion.h1 
+          className="text-4xl sm:text-5xl md:text-6xl font-heading font-black text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary mb-3"
+          animate={{ y: [0, -5, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          Sats Earn 🚀
+        </motion.h1>
+        <motion.p 
+          className="text-base sm:text-lg md:text-xl text-foreground font-bold tracking-widest"
+          animate={{ opacity: [1, 0.7, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          💪 Übernimm Verantwortung 💪
+        </motion.p>
       </motion.div>
 
-      <Card className="w-full max-w-4xl z-10 border-2 border-primary/20 bg-card shadow-2xl">
+      <Card className="w-full max-w-4xl z-10 border-4 border-primary shadow-2xl">
         <div className="flex flex-col md:grid md:grid-cols-2 gap-0">
           <motion.div 
-            className="flex p-6 sm:p-8 md:p-12 bg-gradient-to-br from-primary/15 via-accent/5 to-secondary/20 flex-col justify-center border-b md:border-b-0 md:border-r border-primary/15"
-            initial={{ opacity: 0, x: -30 }}
+            className="flex p-6 sm:p-8 md:p-12 bg-gradient-to-br from-primary/20 via-secondary/15 to-accent/20 flex-col justify-center border-b md:border-b-0 md:border-r-4 border-primary"
+            initial={{ opacity: 0, x: -40 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
+            transition={{ duration: 0.7, delay: 0.3, type: "spring" }}
           >
             <motion.div 
-              className="h-16 md:h-20 w-16 md:w-20 bg-gradient-to-br from-primary to-accent rounded-3xl flex items-center justify-center mb-6 md:mb-8 text-white shadow-lg"
-              animate={{ rotate: 360, scale: [1, 1.05, 1] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              className="h-20 md:h-24 w-20 md:w-24 bg-gradient-to-br from-primary via-accent to-secondary rounded-3xl flex items-center justify-center mb-6 md:mb-8 text-white shadow-xl"
+              animate={{ rotate: 360, scale: [1, 1.1, 1], y: [0, -10, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             >
-              <Bitcoin className="h-10 md:h-12 w-10 md:w-12" />
+              <Bitcoin className="h-12 md:h-14 w-12 md:w-14" />
             </motion.div>
             <motion.h2 
-              className="text-3xl md:text-5xl font-heading font-bold mb-4 md:mb-6 text-primary"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
+              className="text-4xl md:text-5xl font-heading font-black mb-4 md:mb-6 text-primary"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
             >
-              Verdiene Sats! 🚀
+              Verdiene Sats! 💰
             </motion.h2>
             <motion.p 
-              className="text-foreground text-base md:text-xl leading-relaxed"
+              className="text-foreground text-base md:text-lg leading-relaxed font-semibold"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.8 }}
+              transition={{ duration: 0.6, delay: 0.7 }}
             >
-              Die Bitcoin-App für die ganze Familie. Erledige Aufgaben, lerne Verantwortung und verdiene echte Sats.
+              ✨ Die Bitcoin-App für die ganze Familie. Erledige Aufgaben, lerne Verantwortung und verdiene echte Sats!
             </motion.p>
           </motion.div>
 
           <motion.div 
-            className="p-6 sm:p-8 md:p-12 flex flex-col justify-center"
-            initial={{ opacity: 0, x: 30 }}
+            className="p-6 sm:p-8 md:p-12 flex flex-col justify-center bg-gradient-to-b from-transparent to-secondary/10"
+            initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
+            transition={{ duration: 0.7, delay: 0.3, type: "spring" }}
           >
-            <h3 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-foreground">Wähle deine Rolle</h3>
-            <div className="grid gap-3 sm:gap-4">
+            <h3 className="text-3xl sm:text-4xl font-heading font-black mb-8 sm:mb-10 text-foreground">🎮 Wähle deine Rolle</h3>
+            <div className="grid gap-4 sm:gap-5">
               <motion.div
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 1 }}
-                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.5, delay: 0.9 }}
+                whileHover={{ scale: 1.05, y: -5 }}
               >
                 <Button 
-                  className="h-auto p-6 sm:p-8 justify-start text-left bg-gradient-to-r from-primary to-accent hover:shadow-lg hover:shadow-primary/30 transition-all group w-full text-white border-0"
+                  className="h-auto p-7 sm:p-9 justify-start text-left bg-gradient-to-r from-primary to-accent hover:shadow-2xl hover:shadow-primary/40 transition-all group w-full text-white border-0 font-bold text-lg rounded-2xl"
                   onClick={() => onSelect("parent")}
                   data-testid="button-select-parent"
                 >
-                  <div className="mr-4 sm:mr-6 h-14 sm:h-16 w-14 sm:w-16 rounded-2xl bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors flex-shrink-0">
-                    <UserIcon className="h-7 sm:h-8 w-7 sm:w-8" />
+                  <div className="mr-5 sm:mr-7 h-16 sm:h-18 w-16 sm:w-18 rounded-2xl bg-white/25 flex items-center justify-center group-hover:bg-white/40 transition-colors flex-shrink-0">
+                    <UserIcon className="h-8 sm:h-10 w-8 sm:w-10" />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="font-bold text-lg sm:text-xl">👨‍👩‍👧 Eltern</h4>
-                    <p className="text-sm sm:text-base font-medium opacity-90">Wallet verwalten & Aufgaben erstellen</p>
+                    <h4 className="font-black text-xl sm:text-2xl">👨‍👩‍👧 Eltern</h4>
+                    <p className="text-base sm:text-lg font-semibold opacity-95">Wallet verwalten & Aufgaben erstellen 💼</p>
                   </div>
                 </Button>
               </motion.div>
 
               <motion.div
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 1.1 }}
-                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.5, delay: 1.05 }}
+                whileHover={{ scale: 1.05, y: -5 }}
               >
                 <Button 
-                  className="h-auto p-6 sm:p-8 justify-start text-left bg-gradient-to-r from-accent to-primary hover:shadow-lg hover:shadow-accent/30 transition-all group w-full text-white border-0"
+                  className="h-auto p-7 sm:p-9 justify-start text-left bg-gradient-to-r from-secondary to-accent hover:shadow-2xl hover:shadow-secondary/40 transition-all group w-full text-white border-0 font-bold text-lg rounded-2xl"
                   onClick={() => onSelect("child")}
                   data-testid="button-select-child"
                 >
-                  <div className="mr-4 sm:mr-6 h-14 sm:h-16 w-14 sm:w-16 rounded-2xl bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors flex-shrink-0">
-                    <Sparkles className="h-7 sm:h-8 w-7 sm:w-8" />
+                  <div className="mr-5 sm:mr-7 h-16 sm:h-18 w-16 sm:w-18 rounded-2xl bg-white/25 flex items-center justify-center group-hover:bg-white/40 transition-colors flex-shrink-0">
+                    <Sparkles className="h-8 sm:h-10 w-8 sm:w-10" />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="font-bold text-lg sm:text-xl">⭐ Kind</h4>
-                    <p className="text-sm sm:text-base font-medium opacity-90">Aufgaben erledigen & Sats sammeln</p>
+                    <h4 className="font-black text-xl sm:text-2xl">⭐ Kind</h4>
+                    <p className="text-base sm:text-lg font-semibold opacity-95">Aufgaben erledigen & Sats sammeln 🎯</p>
                   </div>
                 </Button>
               </motion.div>
