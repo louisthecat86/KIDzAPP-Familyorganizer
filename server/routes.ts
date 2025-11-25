@@ -28,6 +28,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Peer Login
+  app.post("/api/peers/login", async (req, res) => {
+    try {
+      const { name, connectionId, role } = req.body;
+      
+      if (!name || !connectionId || !role) {
+        return res.status(400).json({ error: "Name, connectionId, and role required" });
+      }
+      
+      const peer = await storage.getPeerByNameAndConnectionId(name, connectionId, role);
+      
+      if (!peer) {
+        return res.status(404).json({ error: "Peer not found. Please register first." });
+      }
+      
+      res.json(peer);
+    } catch (error) {
+      res.status(500).json({ error: "Login failed" });
+    }
+  });
+
   // Get peer by connection ID and role
   app.get("/api/peers/:connectionId/:role", async (req, res) => {
     try {
