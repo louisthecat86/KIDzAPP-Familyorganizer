@@ -9,7 +9,6 @@ import { Separator } from "@/components/ui/separator";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import QRCodeComponent from "qrcode.react";
 import { 
   CheckCircle, 
   Circle, 
@@ -25,7 +24,9 @@ import {
   Info,
   Link as LinkIcon,
   Settings,
-  Send
+  Send,
+  Copy,
+  ExternalLink
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -1019,7 +1020,8 @@ function ChildDashboard({ user, setUser, tasks, onAccept, onSubmit }: any) {
 }
 
 function TaskCard({ task, children, variant }: { task: Task; children?: React.ReactNode; variant: "parent" | "child" }) {
-  const [showQR, setShowQR] = useState(false);
+  const [showLink, setShowLink] = useState(false);
+  const [copied, setCopied] = useState(false);
   
   const getStatusConfig = (status: Task["status"]) => {
     switch (status) {
@@ -1028,6 +1030,12 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
       case "submitted": return { label: "PRÜFUNG", color: "bg-purple-500/10 text-purple-400 border-purple-500/20", icon: Upload };
       case "approved": return { label: "ERLEDIGT", color: "bg-green-500/10 text-green-400 border-green-500/20", icon: CheckCircle };
     }
+  };
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const statusConfig = getStatusConfig(task.status);
@@ -1049,36 +1057,74 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
           <p className="text-muted-foreground text-sm" data-testid={`text-description-${task.id}`}>{task.description}</p>
           
           {task.paylink && task.status === "open" && (
-            <div className="mt-3">
+            <div className="mt-3 space-y-2">
               <Button 
                 size="sm" 
                 variant="outline" 
-                onClick={() => setShowQR(!showQR)}
+                onClick={() => setShowLink(!showLink)}
                 data-testid={`button-show-paylink-${task.id}`}
               >
-                💳 Bezahlung anzeigen
+                💳 Bezahlung-Link
               </Button>
-              {showQR && (
-                <div className="mt-3 bg-white p-3 rounded border border-border inline-block">
-                  <QRCodeComponent value={task.paylink} size={150} level="H" includeMargin={true} />
+              {showLink && (
+                <div className="bg-primary/10 p-3 rounded border border-primary/30 space-y-2">
+                  <p className="text-xs text-muted-foreground">Link zum Zahlen:</p>
+                  <div className="flex gap-2">
+                    <a 
+                      href={task.paylink} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="flex-1 text-xs truncate text-primary hover:underline"
+                      data-testid={`link-paylink-${task.id}`}
+                    >
+                      {task.paylink}
+                    </a>
+                    <Button 
+                      size="sm" 
+                      variant="ghost"
+                      onClick={() => handleCopy(task.paylink)}
+                      data-testid={`button-copy-paylink-${task.id}`}
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
           )}
           
           {task.withdrawLink && task.status === "approved" && variant === "child" && (
-            <div className="mt-3">
+            <div className="mt-3 space-y-2">
               <Button 
                 size="sm" 
                 variant="outline" 
-                onClick={() => setShowQR(!showQR)}
+                onClick={() => setShowLink(!showLink)}
                 data-testid={`button-show-withdraw-${task.id}`}
               >
-                💰 Abheben anzeigen
+                💰 Abheben-Link
               </Button>
-              {showQR && (
-                <div className="mt-3 bg-white p-3 rounded border border-border inline-block">
-                  <QRCodeComponent value={task.withdrawLink} size={150} level="H" includeMargin={true} />
+              {showLink && (
+                <div className="bg-primary/10 p-3 rounded border border-primary/30 space-y-2">
+                  <p className="text-xs text-muted-foreground">Link zum Abheben:</p>
+                  <div className="flex gap-2">
+                    <a 
+                      href={task.withdrawLink} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="flex-1 text-xs truncate text-primary hover:underline"
+                      data-testid={`link-withdraw-${task.id}`}
+                    >
+                      {task.withdrawLink}
+                    </a>
+                    <Button 
+                      size="sm" 
+                      variant="ghost"
+                      onClick={() => handleCopy(task.withdrawLink)}
+                      data-testid={`button-copy-withdraw-${task.id}`}
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
