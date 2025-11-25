@@ -479,7 +479,7 @@ function SetupPage({ role, onComplete, onBack }: { role: UserRole, onComplete: (
             {role === "parent" ? "Eltern-Wallet einrichten" : "Verbindung herstellen"}
           </CardTitle>
           <CardDescription>
-            Schritt {step} von 2: {step === 1 ? "Profil" : "Verbindung"}
+            Schritt {step} von {role === "parent" ? 3 : 2}: {step === 1 ? "Profil" : step === 2 ? "Verbindung" : "Familie-ID"}
           </CardDescription>
         </CardHeader>
         
@@ -585,7 +585,8 @@ function SetupPage({ role, onComplete, onBack }: { role: UserRole, onComplete: (
           >
             {isLoading ? "Wird eingerichtet..." : 
              step === 1 ? "Weiter" : 
-             step === 2 ? "Koppeln" :
+             step === 2 && role === "parent" ? "Registrieren & ID zeigen" :
+             step === 2 && role === "child" ? "Koppeln" :
              step === 3 ? "Zum Dashboard" : "Weiter"}
           </Button>
         </CardFooter>
