@@ -5,26 +5,30 @@ import { insertPeerSchema, insertTaskSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Peer Registration/Login
+  // Peer Registration
   app.post("/api/peers/register", async (req, res) => {
     try {
-      const data = insertPeerSchema.parse(req.body);
+      const { name, role, pin, connectionId } = req.body;
       
-      // Check if peer already exists
-      const existingPeer = await storage.getPeerByConnectionId(data.connectionId, data.role);
-      if (existingPeer) {
-        return res.json(existingPeer);
+      if (!name || !role || !pin || !connectionId) {
+        return res.status(400).json({ error: "Name, role, pin, and connectionId required" });
       }
-      
+
       // Create new peer
-      const peer = await storage.createPeer(data);
+      const peer = await storage.createPeer({
+        name,
+        role,
+        pin,
+        connectionId,
+        pairedWithPin: null,
+      });
       res.json(peer);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ error: error.errors });
-      } else {
-        res.status(500).json({ error: "Failed to register peer" });
+      if ((error as any).message?.includes("unique constraint")) {
+        return res.status(400).json({ error: "PIN already in use" });
       }
+      console.error("Register error:", error);
+      res.status(500).json({ error: "Failed to register peer" });
     }
   });
 

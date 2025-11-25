@@ -493,28 +493,6 @@ function SetupPage({ role, onComplete, onBack }: { role: UserRole, onComplete: (
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="bg-secondary border-border"
-                />
-              </div>
-              <div className="bg-primary/10 p-4 rounded-lg text-sm text-primary-foreground/80 flex gap-3">
-                <Info className="h-5 w-5 flex-shrink-0 text-primary" />
-                <p>
-                  {role === "parent" 
-                    ? "Als Elternteil verwaltest du die Satoshi-Belohnungen. Im nächsten Schritt verbindest du deine Lightning Wallet."
-                    : "Gib deinen Namen ein, damit deine Eltern wissen, wer die Aufgaben erledigt hat."}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {step === 1 && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Dein Name</Label>
-                <Input 
-                  placeholder={role === "parent" ? "z.B. Mama oder Papa" : "z.B. Luca"} 
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="bg-secondary border-border"
                   disabled={isLoading}
                 />
               </div>
@@ -535,6 +513,20 @@ function SetupPage({ role, onComplete, onBack }: { role: UserRole, onComplete: (
                   {role === "parent" 
                     ? "Du erhältst dann eine Familie-ID, die du deinem Kind gibst."
                     : "Mit diesem PIN meldest du dich an. Deine Eltern geben dir ihre Familie-ID."}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {step === 2 && role === "parent" && (
+            <div className="space-y-6">
+              <div className="bg-primary/5 p-6 rounded-lg border border-primary/30 space-y-4">
+                <h3 className="font-medium text-foreground text-lg">Bereit zum Registrieren?</h3>
+                <p className="text-sm text-muted-foreground">
+                  <strong>Name:</strong> {name}<br/>
+                  <strong>PIN:</strong> ••••<br/>
+                  <br/>
+                  Nach dem Registrieren erhältst du deine Familie-ID, die du deinem Kind gibst.
                 </p>
               </div>
             </div>
