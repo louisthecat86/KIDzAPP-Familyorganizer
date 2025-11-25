@@ -317,7 +317,8 @@ export default function App() {
                 newTask={newTask} 
                 setNewTask={setNewTask} 
                 onCreate={handleCreateTask} 
-                onApprove={approveTask} 
+                onApprove={approveTask}
+                onDelete={handleDeleteTask}
               />
             ) : (
               <ChildDashboard 
@@ -573,7 +574,7 @@ function NavBar({ user, onLogout }: { user: User; onLogout: () => void }) {
   );
 }
 
-function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, onApprove }: any) {
+function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, onApprove, onDelete }: any) {
   const [lnbitsUrl, setLnbitsUrl] = useState(user.lnbitsUrl || "");
   const [lnbitsKey, setLnbitsKey] = useState("");
   const { toast } = useToast();
@@ -719,7 +720,7 @@ function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, 
               {tasks.filter((t: Task) => t.status === "open" || t.status === "assigned").map((task: Task) => (
                 <TaskCard key={task.id} task={task} variant="parent">
                   <Button 
-                    onClick={() => handleDeleteTask(task.id)} 
+                    onClick={() => onDelete(task.id)} 
                     className="bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto"
                     data-testid={`button-delete-task-${task.id}`}
                     size="sm"
@@ -743,7 +744,7 @@ function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, 
                       <CheckCircle className="mr-2 h-4 w-4" /> Genehmigen
                     </Button>
                     <Button 
-                      onClick={() => handleDeleteTask(task.id)} 
+                      onClick={() => onDelete(task.id)} 
                       className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white"
                       data-testid={`button-delete-task-${task.id}`}
                       size="sm"
