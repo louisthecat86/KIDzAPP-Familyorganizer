@@ -177,46 +177,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If approving, release escrow to child
       if (updates.status === "approved" && task.status !== "approved") {
         const child = await storage.getPeer(task.assignedTo!);
-        const parent = await storage.getPeer(task.createdBy);
         
-        if (!child || !parent) {
-          return res.status(404).json({ error: "Child or parent not found" });
+        if (!child) {
+          return res.status(404).json({ error: "Child not found" });
         }
 
-        if (!parent.lnbitsUrl || !parent.lnbitsAdminKey) {
-          return res.status(500).json({ error: "Parent wallet not configured" });
-        }
+        // Update child balance
+        const newBalance = (child.balance || 0) + task.sats;
+        await storage.updateBalance(child.id, newBalance);
 
-        // Send Lightning payment to child
-        const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
-        let paymentHash: string;
-        try {
-          const invoice = await lnbits.createInvoice(
-            task.sats,
-            `Payment for task: ${task.title}`
-          );
-          // In real implementation, child would scan this QR or provide address
-          // For now, we record it as sent
-          paymentHash = invoice.payment_hash;
-          
-          // Update child balance (in production, would verify payment)
-          const newBalance = (child.balance || 0) + task.sats;
-          await storage.updateBalance(child.id, newBalance);
-
-          // Record escrow release transaction
-          await storage.createTransaction({
-            fromPeerId: task.createdBy,
-            toPeerId: child.id,
-            sats: task.sats,
-            taskId: task.id,
-            type: "escrow_release",
-            status: "completed",
-            paymentHash,
-          });
-        } catch (error) {
-          console.error("Payment error:", error);
-          return res.status(500).json({ error: "Failed to process payment" });
-        }
+        // Record escrow release transaction
+        await storage.createTransaction({
+          fromPeerId: task.createdBy,
+          toPeerId: child.id,
+          sats: task.sats,
+          taskId: task.id,
+          type: "escrow_release",
+          status: "completed",
+          paymentHash: `escrow_release_${task.id}`,
+        });
       }
 
       const updatedTask = await storage.updateTask(id, updates);
