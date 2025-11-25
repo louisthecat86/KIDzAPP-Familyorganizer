@@ -14,10 +14,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Name, role, and pin required" });
       }
 
-      // Generate unique connection ID
       const connectionId = `BTC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
-      // Create new peer
       const peer = await storage.createPeer({
         name,
         role,
@@ -55,7 +53,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Link child to parent (joins child to parent's family)
+  // Setup LNBits wallet
+  app.post("/api/wallet/setup", async (req, res) => {
+    try {
+      const { peerId, lnbitsUrl, lnbitsAdminKey } = req.body;
+      
+      if (!peerId || !lnbitsUrl || !lnbitsAdminKey) {
+        return res.status(400).json({ error: "peerId, lnbitsUrl, and lnbitsAdminKey required" });
+      }
+
+      const peer = await storage.updatePeerWallet(peerId, lnbitsUrl, lnbitsAdminKey);
+      res.json(peer);
+    } catch (error) {
+      console.error("Wallet setup error:", error);
+      res.status(500).json({ error: "Failed to setup wallet" });
+    }
+  });
+
+  // Link child to parent
   app.post("/api/peers/link", async (req, res) => {
     try {
       const { childId, parentName } = req.body;
@@ -64,14 +79,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "childId and parentName required" });
       }
 
-      // Find parent by name
       const parent = await storage.getPeerByName(parentName);
       
       if (!parent || parent.role !== "parent") {
         return res.status(404).json({ error: "Parent not found" });
       }
 
-      // Update child's connectionId to parent's
       const updatedChild = await storage.linkChildToParent(childId, parent.connectionId);
       res.json(updatedChild);
     } catch (error) {
@@ -90,22 +103,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get peer by connection ID and role
-  app.get("/api/peers/:connectionId/:role", async (req, res) => {
-    try {
-      const { connectionId, role } = req.params;
-      const peer = await storage.getPeerByConnectionId(connectionId, role);
-      
-      if (!peer) {
-        return res.status(404).json({ error: "Peer not found" });
-      }
-      
-      res.json(peer);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch peer" });
-    }
-  });
-
   // Get all tasks for a connection
   app.get("/api/tasks/:connectionId", async (req, res) => {
     try {
@@ -117,36 +114,128 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create a new task
+  // Create a new task with escrow
   app.post("/api/tasks", async (req, res) => {
     try {
       const data = insertTaskSchema.parse(req.body);
-      const task = await storage.createTask(data);
+      
+      // Lock sats in escrow
+      const createdBy = data.createdBy;
+      const parent = await storage.getPeer(createdBy);
+      
+      if (!parent) {
+        return res.status(404).json({ error: "Parent not found" });
+      }
+
+      if (parent.balance < data.sats) {
+        return res.status(400).json({ error: "Insufficient balance for escrow" });
+      }
+
+      // Deduct from parent balance
+      const newBalance = parent.balance - data.sats;
+      await storage.updateBalance(createdBy, newBalance);
+
+      // Create task with escrow locked
+      const task = await storage.createTask({
+        ...data,
+        escrowLocked: true,
+      });
+
+      // Record transaction
+      await storage.createTransaction({
+        fromPeerId: createdBy,
+        toPeerId: createdBy,
+        sats: data.sats,
+        taskId: task.id,
+        type: "escrow_lock",
+        status: "completed",
+      });
+
       res.json(task);
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ error: error.errors });
       } else {
+        console.error("Create task error:", error);
         res.status(500).json({ error: "Failed to create task" });
       }
     }
   });
 
-  // Update a task
+  // Update task and release escrow
   app.patch("/api/tasks/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const updates = req.body;
       
-      const task = await storage.updateTask(id, updates);
+      const task = await storage.getTask(id);
       
       if (!task) {
         return res.status(404).json({ error: "Task not found" });
       }
-      
-      res.json(task);
+
+      // If approving, release escrow to child
+      if (updates.status === "approved" && task.status !== "approved") {
+        const child = await storage.getPeer(task.assignedTo!);
+        if (child) {
+          const newBalance = (child.balance || 0) + task.sats;
+          await storage.updateBalance(child.id, newBalance);
+
+          // Record escrow release transaction
+          await storage.createTransaction({
+            fromPeerId: task.createdBy,
+            toPeerId: child.id,
+            sats: task.sats,
+            taskId: task.id,
+            type: "escrow_release",
+            status: "completed",
+          });
+        }
+      }
+
+      const updatedTask = await storage.updateTask(id, updates);
+      res.json(updatedTask);
     } catch (error) {
+      console.error("Update task error:", error);
       res.status(500).json({ error: "Failed to update task" });
+    }
+  });
+
+  // Withdraw sats
+  app.post("/api/withdraw", async (req, res) => {
+    try {
+      const { peerId, sats, paymentRequest } = req.body;
+      
+      if (!peerId || !sats || !paymentRequest) {
+        return res.status(400).json({ error: "peerId, sats, and paymentRequest required" });
+      }
+
+      const child = await storage.getPeer(peerId);
+      if (!child) {
+        return res.status(404).json({ error: "Child not found" });
+      }
+
+      if (child.balance < sats) {
+        return res.status(400).json({ error: "Insufficient balance" });
+      }
+
+      // Deduct from balance
+      const newBalance = child.balance - sats;
+      await storage.updateBalance(peerId, newBalance);
+
+      // Record withdrawal
+      await storage.createTransaction({
+        fromPeerId: peerId,
+        toPeerId: peerId,
+        sats,
+        type: "withdrawal",
+        status: "pending",
+      });
+
+      res.json({ success: true, newBalance });
+    } catch (error) {
+      console.error("Withdraw error:", error);
+      res.status(500).json({ error: "Failed to process withdrawal" });
     }
   });
 

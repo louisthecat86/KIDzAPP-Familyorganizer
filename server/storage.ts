@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks } from "@shared/schema";
+import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
@@ -12,12 +12,18 @@ export interface IStorage {
   getAllParents(): Promise<Peer[]>;
   createPeer(peer: InsertPeer): Promise<Peer>;
   linkChildToParent(childId: number, parentConnectionId: string): Promise<Peer>;
+  updatePeerWallet(peerId: number, lnbitsUrl: string, lnbitsAdminKey: string): Promise<Peer>;
+  updateBalance(peerId: number, sats: number): Promise<Peer>;
   
   // Task operations
   getTasks(connectionId: string): Promise<Task[]>;
   getTask(id: number): Promise<Task | undefined>;
   createTask(task: InsertTask): Promise<Task>;
   updateTask(id: number, task: Partial<Task>): Promise<Task | undefined>;
+  
+  // Transaction operations
+  createTransaction(transaction: InsertTransaction): Promise<Transaction>;
+  getTransactions(peerId: number): Promise<Transaction[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -76,6 +82,22 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  async updatePeerWallet(peerId: number, lnbitsUrl: string, lnbitsAdminKey: string): Promise<Peer> {
+    const result = await db.update(peers)
+      .set({ lnbitsUrl, lnbitsAdminKey })
+      .where(eq(peers.id, peerId))
+      .returning();
+    return result[0];
+  }
+
+  async updateBalance(peerId: number, sats: number): Promise<Peer> {
+    const result = await db.update(peers)
+      .set({ balance: sats })
+      .where(eq(peers.id, peerId))
+      .returning();
+    return result[0];
+  }
+
   // Task operations
   async getTasks(connectionId: string): Promise<Task[]> {
     return await db.select().from(tasks).where(eq(tasks.connectionId, connectionId));
@@ -97,6 +119,17 @@ export class DatabaseStorage implements IStorage {
       .where(eq(tasks.id, id))
       .returning();
     return result[0];
+  }
+
+  // Transaction operations
+  async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
+    const result = await db.insert(transactions).values(transaction).returning();
+    return result[0];
+  }
+
+  async getTransactions(peerId: number): Promise<Transaction[]> {
+    return await db.select().from(transactions)
+      .where(eq(transactions.toPeerId, peerId));
   }
 }
 
