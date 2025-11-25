@@ -387,32 +387,48 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           {/* Parent Card */}
-          <motion.button
-            whileHover={{ y: -5, transition: { duration: 0.2 } }}
+          <motion.div
+            whileHover={{ y: -5 }}
             onClick={() => onSelect("parent")}
             data-testid="button-select-parent"
             className="p-8 rounded-2xl bg-white border-2 border-primary/30 hover:border-primary hover:shadow-lg transition-all cursor-pointer flex flex-col items-center text-center"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onSelect("parent");
+              }
+            }}
           >
             <div className="h-20 w-20 bg-primary rounded-2xl flex items-center justify-center mb-4 text-white shadow-md">
               <UserIcon className="h-10 w-10" />
             </div>
             <h3 className="text-2xl font-bold text-foreground mb-2">👨‍👩‍👧 Eltern</h3>
             <p className="text-sm text-foreground/70">Wallet verwalten und Aufgaben erstellen</p>
-          </motion.button>
+          </motion.div>
 
           {/* Kid Card */}
-          <motion.button
-            whileHover={{ y: -5, transition: { duration: 0.2 } }}
+          <motion.div
+            whileHover={{ y: -5 }}
             onClick={() => onSelect("child")}
             data-testid="button-select-child"
             className="p-8 rounded-2xl bg-white border-2 border-secondary/30 hover:border-secondary hover:shadow-lg transition-all cursor-pointer flex flex-col items-center text-center"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onSelect("child");
+              }
+            }}
           >
             <div className="h-20 w-20 bg-secondary rounded-2xl flex items-center justify-center mb-4 text-white shadow-md">
               <Sparkles className="h-10 w-10" />
             </div>
             <h3 className="text-2xl font-bold text-foreground mb-2">⭐ Kind</h3>
             <p className="text-sm text-foreground/70">Aufgaben erledigen und Sats sammeln</p>
-          </motion.button>
+          </motion.div>
         </motion.div>
 
         {/* Info Box */}
