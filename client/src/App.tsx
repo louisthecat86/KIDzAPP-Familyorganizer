@@ -364,20 +364,20 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
       
       {/* Welcome Text Animation */}
       <motion.div
-        className="absolute top-16 sm:top-20 left-0 right-0 text-center z-5 pointer-events-none"
+        className="absolute top-16 sm:top-20 left-0 right-0 text-center z-5 pointer-events-none px-4"
         initial={{ opacity: 0, y: -50, scale: 0.8 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 1, delay: 0.1, type: "spring" }}
       >
         <motion.h1 
-          className="text-4xl sm:text-5xl md:text-6xl font-heading font-black text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary mb-3"
+          className="text-3xl sm:text-4xl md:text-6xl font-heading font-black text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary mb-3 break-words"
           animate={{ y: [0, -5, 0] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
           Sats Earn 🚀
         </motion.h1>
         <motion.p 
-          className="text-base sm:text-lg md:text-xl text-foreground font-bold tracking-widest"
+          className="text-sm sm:text-lg md:text-xl text-foreground font-bold tracking-widest px-2 break-words"
           animate={{ opacity: [1, 0.7, 1] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
