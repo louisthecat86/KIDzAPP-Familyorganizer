@@ -8,7 +8,9 @@ export const peers = pgTable("peers", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   role: text("role").notNull(), // 'parent' or 'child'
+  pin: text("pin").notNull().unique(), // Personal PIN for login
   connectionId: text("connection_id").notNull(), // Family ID
+  pairedWithPin: text("paired_with_pin"), // PIN used to join family (null if parent/founder)
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

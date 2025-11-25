@@ -28,16 +28,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Peer Login
+  // Peer Login by PIN
   app.post("/api/peers/login", async (req, res) => {
     try {
-      const { name, connectionId, role } = req.body;
+      const { name, pin, role } = req.body;
       
-      if (!name || !connectionId || !role) {
-        return res.status(400).json({ error: "Name, connectionId, and role required" });
+      if (!name || !pin || !role) {
+        return res.status(400).json({ error: "Name, pin, and role required" });
       }
       
-      const peer = await storage.getPeerByNameAndConnectionId(name, connectionId, role);
+      const peer = await storage.getPeerByNameAndPin(name, pin, role);
       
       if (!peer) {
         return res.status(404).json({ error: "Peer not found. Please register first." });
@@ -46,6 +46,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(peer);
     } catch (error) {
       res.status(500).json({ error: "Login failed" });
+    }
+  });
+
+  // Pair with family using parent's PIN
+  app.post("/api/peers/pair", async (req, res) => {
+    try {
+      const { name, personalPin, role, parentPin } = req.body;
+      
+      if (!name || !personalPin || !role || !parentPin) {
+        return res.status(400).json({ error: "Name, personalPin, role, and parentPin required" });
+      }
+
+      if (role === "parent") {
+        return res.status(400).json({ error: "Parents cannot pair with another PIN" });
+      }
+      
+      // Find parent by their PIN
+      const parentPeer = await storage.getPeerByPin(parentPin);
+      
+      if (!parentPeer || parentPeer.role !== "parent") {
+        return res.status(404).json({ error: "Parent PIN not found" });
+      }
+      
+      // Create child peer with parent's connectionId
+      const childPeer = await storage.createPeer({
+        name,
+        role,
+        pin: personalPin,
+        connectionId: parentPeer.connectionId,
+        pairedWithPin: parentPin,
+      });
+      
+      res.json(childPeer);
+    } catch (error) {
+      if ((error as any).message?.includes("unique constraint")) {
+        return res.status(400).json({ error: "PIN already in use" });
+      }
+      res.status(500).json({ error: "Failed to pair" });
     }
   });
 
