@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import { 
-  CheckCircle2, 
+  CheckCircle, 
   Circle, 
   Clock, 
   Coins, 
@@ -119,32 +119,22 @@ export default function App() {
       <NavBar user={user} onLogout={logout} />
 
       <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={user.role}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            {user.role === "parent" ? (
-              <ParentDashboard 
-                tasks={tasks} 
-                newTask={newTask} 
-                setNewTask={setNewTask} 
-                onCreate={createTask} 
-                onApprove={approveTask} 
-              />
-            ) : (
-              <ChildDashboard 
-                user={user}
-                tasks={tasks} 
-                onAccept={acceptTask} 
-                onSubmit={submitProof} 
-              />
-            )}
-          </motion.div>
-        </AnimatePresence>
+        {user.role === "parent" ? (
+          <ParentDashboard 
+            tasks={tasks} 
+            newTask={newTask} 
+            setNewTask={setNewTask} 
+            onCreate={createTask} 
+            onApprove={approveTask} 
+          />
+        ) : (
+          <ChildDashboard 
+            user={user}
+            tasks={tasks} 
+            onAccept={acceptTask} 
+            onSubmit={submitProof} 
+          />
+        )}
       </main>
       <Toaster />
     </div>
@@ -331,7 +321,7 @@ function ParentDashboard({ tasks, newTask, setNewTask, onCreate, onApprove }: an
                     onClick={() => onApprove(task.id)} 
                     className="bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/20 w-full sm:w-auto"
                   >
-                    <CheckCircle2 className="mr-2 h-4 w-4" /> Genehmigen & Zahlen
+                    <CheckCircle className="mr-2 h-4 w-4" /> Genehmigen & Zahlen
                   </Button>
                 </TaskCard>
               ))}
@@ -464,7 +454,7 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
       case "open": return { label: "Offen", color: "bg-slate-100 text-slate-600 border-slate-200", icon: Circle };
       case "assigned": return { label: "In Arbeit", color: "bg-blue-50 text-blue-700 border-blue-100", icon: Clock };
       case "submitted": return { label: "Prüfung", color: "bg-purple-50 text-purple-700 border-purple-100", icon: Upload };
-      case "approved": return { label: "Erledigt", color: "bg-green-50 text-green-700 border-green-100", icon: CheckCircle2 };
+      case "approved": return { label: "Erledigt", color: "bg-green-50 text-green-700 border-green-100", icon: CheckCircle };
     }
   };
 
