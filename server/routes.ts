@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertPeerSchema, insertTaskSchema } from "@shared/schema";
 import { z } from "zod";
-import { NWCClient } from "./nwc";
+import { LNBitsClient } from "./lnbits";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Peer Registration
@@ -54,22 +54,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Setup NWC wallet connection
+  // Setup LNBits wallet
   app.post("/api/wallet/setup", async (req, res) => {
     try {
-      const { peerId, nwcConnectionString } = req.body;
+      const { peerId, lnbitsUrl, lnbitsAdminKey } = req.body;
       
-      if (!peerId || !nwcConnectionString) {
-        return res.status(400).json({ error: "peerId and nwcConnectionString required" });
+      if (!peerId || !lnbitsUrl || !lnbitsAdminKey) {
+        return res.status(400).json({ error: "peerId, lnbitsUrl, and lnbitsAdminKey required" });
       }
 
-      // Validate NWC connection string format
-      if (!NWCClient.validateConnectionString(nwcConnectionString)) {
-        return res.status(400).json({ error: "Invalid NWC connection string. Must start with nostr+walletconnect://" });
+      // Validate URL format
+      if (!lnbitsUrl.startsWith("http://") && !lnbitsUrl.startsWith("https://")) {
+        return res.status(400).json({ error: "LNBits URL must start with http:// or https://" });
       }
 
-      // Save wallet connection (connection test happens when creating first task)
-      const peer = await storage.updatePeerWallet(peerId, nwcConnectionString);
+      // Save wallet credentials
+      const peer = await storage.updatePeerWallet(peerId, lnbitsUrl, lnbitsAdminKey);
       res.json(peer);
     } catch (error) {
       console.error("Wallet setup error:", error);
@@ -133,26 +133,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Parent not found" });
       }
 
-      // NWC wallet is REQUIRED - must be configured to create tasks
-      if (!parent.nwcConnectionString) {
-        return res.status(400).json({ error: "NWC wallet must be configured to create tasks" });
+      // LNBits wallet is REQUIRED - must be configured to create tasks
+      if (!parent.lnbitsUrl || !parent.lnbitsAdminKey) {
+        return res.status(400).json({ error: "LNBits wallet must be configured to create tasks" });
       }
 
-      // Create payment request via NWC
-      const nwc = new NWCClient(parent.nwcConnectionString);
-      let paymentRequest = "";
+      // Create paylink for task funding (escrow)
+      const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+      let paylink = "";
       try {
-        paymentRequest = await nwc.createPaymentRequest(data.sats, `Task: ${data.title}`);
+        paylink = await lnbits.createPaylink(data.sats, `Task: ${data.title}`);
       } catch (error) {
-        console.error("NWC payment request creation error:", error);
-        return res.status(500).json({ error: "Failed to create payment request" });
+        console.error("Paylink creation error:", error);
+        return res.status(500).json({ error: "Failed to create payment link for escrow" });
       }
 
-      // Create task with escrow flag
+      // Create task with paylink
       const task = await storage.createTask({
         ...data,
         escrowLocked: true,
-        paylink: nwc.generatePaymentLink(paymentRequest),
+        paylink,
       });
 
       // Record transaction for escrow lock
@@ -198,18 +198,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(404).json({ error: "Child or parent not found" });
         }
 
-        if (!parent.nwcConnectionString) {
+        if (!parent.lnbitsUrl || !parent.lnbitsAdminKey) {
           return res.status(500).json({ error: "Parent wallet not configured" });
         }
 
-        // Create withdrawal link via NWC
-        const nwc = new NWCClient(parent.nwcConnectionString);
-        let withdrawRequest = "";
+        // Create withdraw link for child payout
+        const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+        let withdrawLink = "";
         try {
-          withdrawRequest = await nwc.createWithdrawRequest(task.sats, `Reward for: ${task.title}`);
+          withdrawLink = await lnbits.createWithdrawLink(
+            task.sats,
+            `Reward for: ${task.title}`,
+            `lnbc${task.sats}`
+          );
         } catch (error) {
-          console.error("NWC withdraw request error:", error);
-          return res.status(500).json({ error: "Failed to create withdrawal request" });
+          console.error("Withdraw link error:", error);
+          return res.status(500).json({ error: "Failed to create withdraw link" });
         }
 
         // Update child balance
@@ -224,11 +228,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           taskId: task.id,
           type: "escrow_release",
           status: "completed",
-          paymentHash: withdrawRequest,
+          paymentHash: withdrawLink,
         });
 
-        // Update task with withdraw link in Lightning URI format
-        updates.withdrawLink = nwc.generatePaymentLink(withdrawRequest);
+        // Update task with withdraw link
+        updates.withdrawLink = withdrawLink;
       }
 
       const updatedTask = await storage.updateTask(id, updates);
@@ -257,7 +261,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Insufficient balance" });
       }
 
-      // Find parent to use their NWC wallet
+      // Find parent to use their LNBits wallet
       const tasks = await storage.getTasks(child.connectionId || "");
       const parentTask = tasks[0];
       if (!parentTask) {
@@ -265,18 +269,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const parent = await storage.getPeer(parentTask.createdBy);
-      if (!parent || !parent.nwcConnectionString) {
+      if (!parent || !parent.lnbitsUrl || !parent.lnbitsAdminKey) {
         return res.status(500).json({ error: "Parent wallet not configured" });
       }
 
-      // Send Lightning payment via NWC
-      const nwc = new NWCClient(parent.nwcConnectionString);
+      // Send Lightning payment
+      const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
       let paymentHash: string;
       try {
-        paymentHash = await nwc.sendPayment(paymentRequest);
+        paymentHash = await lnbits.payInvoice(paymentRequest);
       } catch (error) {
         console.error("Payment error:", error);
-        return res.status(500).json({ error: "Failed to send withdrawal. Invalid Lightning invoice?" });
+        return res.status(500).json({ error: "Failed to send withdrawal. Invalid Lightning address?" });
       }
 
       // Deduct from balance
