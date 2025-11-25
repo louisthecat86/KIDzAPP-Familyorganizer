@@ -68,10 +68,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "LNBits URL must start with http:// or https://" });
       }
 
-      // Validate admin key format
-      if (!lnbitsAdminKey.startsWith("sk_") && !lnbitsAdminKey.startsWith("pk_")) {
-        return res.status(400).json({ error: "Invalid admin key format (should start with sk_ or pk_)" });
-      }
+      // Admin key can have various formats - we'll test the connection to validate it
 
       // Validate LNBits connection
       const lnbits = new LNBitsClient(lnbitsUrl, lnbitsAdminKey);
