@@ -11,6 +11,8 @@ export const peers = pgTable("peers", {
   pin: text("pin").notNull().unique(), // Personal PIN for login
   connectionId: text("connection_id").notNull(), // Family ID - auto generated
   balance: integer("balance").default(0).notNull(), // Sats balance
+  lnbitsUrl: text("lnbits_url"), // Legacy: LNBits instance URL (kept for backward compatibility)
+  lnbitsAdminKey: text("lnbits_admin_key"), // Legacy: LNBits admin key (kept for backward compatibility)
   nwcConnectionString: text("nwc_connection_string"), // NWC URI for wallet connection
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
