@@ -21,16 +21,24 @@ import {
   Sparkles, 
   Trophy, 
   ArrowRight, 
-  Home
+  Home,
+  Bitcoin,
+  QrCode,
+  Settings,
+  Info,
+  Copy,
+  Link as LinkIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // --- Types ---
+type UserRole = "parent" | "child";
+
 type User = {
   id: number;
   name: string;
-  role: "parent" | "child";
-  avatarColor: string;
+  role: UserRole;
+  connectionId?: string; // The ID linking parent and child
 };
 
 type Task = {
@@ -44,35 +52,46 @@ type Task = {
 };
 
 // --- Mock Data & State ---
-const MOCK_USERS: User[] = [
-  { id: 1, name: "Mama", role: "parent", avatarColor: "bg-pink-200 text-pink-700" },
-  { id: 2, name: "Luca", role: "child", avatarColor: "bg-blue-200 text-blue-700" },
-];
-
 const INITIAL_TASKS: Task[] = [
   { id: 1, title: "Staubsaugen", description: "Wohnzimmer komplett saugen", sats: 50, status: "open" },
   { id: 2, title: "Geschirrspüler", description: "Ausräumen und einräumen", sats: 30, status: "assigned", assignedTo: 2 },
-  { id: 3, title: "Müll rausbringen", description: "Restmüll und Papier trennen", sats: 20, status: "submitted", assignedTo: 2, proof: "garbage.jpg" },
-  { id: 4, title: "Zimmer aufräumen", description: "Alles Lego in die Kiste!", sats: 100, status: "open" },
 ];
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
   const [newTask, setNewTask] = useState({ title: "", description: "", sats: 50 });
+  
+  // Onboarding State
+  const [onboardingStep, setOnboardingStep] = useState<"role-selection" | "setup" | "completed">("role-selection");
+  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
+  
   const { toast } = useToast();
 
   // --- Actions ---
 
-  const login = (role: "parent" | "child") => {
-    const u = MOCK_USERS.find((u) => u.role === role);
-    if (u) {
-      setUser(u);
-    }
+  const handleRoleSelect = (role: UserRole) => {
+    setSelectedRole(role);
+    setOnboardingStep("setup");
+  };
+
+  const completeSetup = (name: string, connectionId: string) => {
+    // In a real app, we would verify the connection ID here
+    const newUser: User = {
+      id: selectedRole === "parent" ? 1 : 2,
+      name,
+      role: selectedRole!,
+      connectionId
+    };
+    setUser(newUser);
+    setOnboardingStep("completed");
+    toast({ title: "Einrichtung erfolgreich", description: "Verbindung hergestellt!" });
   };
 
   const logout = () => {
     setUser(null);
+    setOnboardingStep("role-selection");
+    setSelectedRole(null);
   };
 
   const createTask = (e: React.FormEvent) => {
@@ -89,118 +108,125 @@ export default function App() {
 
     setTasks([task, ...tasks]);
     setNewTask({ title: "", description: "", sats: 50 });
-    toast({ title: "✨ Aufgabe erstellt", description: `${task.title} ist jetzt verfügbar!` });
+    toast({ title: "Aufgabe erstellt", description: `${task.title} ist jetzt verfügbar!` });
   };
 
   const acceptTask = (taskId: number) => {
     if (!user) return;
     setTasks(tasks.map(t => t.id === taskId ? { ...t, status: "assigned", assignedTo: user.id } : t));
-    toast({ title: "🚀 Aufgabe angenommen", description: "Viel Erfolg bei der Arbeit!" });
+    toast({ title: "Aufgabe angenommen", description: "Let's stack sats!" });
   };
 
   const submitProof = (taskId: number) => {
     setTasks(tasks.map(t => t.id === taskId ? { ...t, status: "submitted", proof: "proof_mock.jpg" } : t));
-    toast({ title: "📸 Beweis hochgeladen", description: "Mama wird es sich bald ansehen." });
+    toast({ title: "Beweis hochgeladen", description: "Warte auf Bestätigung." });
   };
 
   const approveTask = (taskId: number) => {
     setTasks(tasks.map(t => t.id === taskId ? { ...t, status: "approved" } : t));
-    toast({ title: "💰 Sats ausgezahlt!", description: "Das hast du super gemacht." });
+    toast({ title: "Sats ausgezahlt!", description: "Transaktion gesendet." });
   };
 
-  // --- Render Helpers ---
+  // --- Render Logic ---
 
-  if (!user) {
-    return <LoginPage onLogin={login} />;
+  if (onboardingStep === "role-selection") {
+    return <RoleSelectionPage onSelect={handleRoleSelect} />;
   }
 
+  if (onboardingStep === "setup" && selectedRole) {
+    return <SetupPage role={selectedRole} onComplete={completeSetup} onBack={() => setOnboardingStep("role-selection")} />;
+  }
+
+  if (!user) return null; // Should not happen
+
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 font-sans">
+    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-primary-foreground">
       <NavBar user={user} onLogout={logout} />
 
       <main className="container mx-auto px-4 py-8 max-w-4xl">
-        {user.role === "parent" ? (
-          <ParentDashboard 
-            tasks={tasks} 
-            newTask={newTask} 
-            setNewTask={setNewTask} 
-            onCreate={createTask} 
-            onApprove={approveTask} 
-          />
-        ) : (
-          <ChildDashboard 
-            user={user}
-            tasks={tasks} 
-            onAccept={acceptTask} 
-            onSubmit={submitProof} 
-          />
-        )}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={user.role}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            {user.role === "parent" ? (
+              <ParentDashboard 
+                tasks={tasks} 
+                newTask={newTask} 
+                setNewTask={setNewTask} 
+                onCreate={createTask} 
+                onApprove={approveTask} 
+              />
+            ) : (
+              <ChildDashboard 
+                user={user}
+                tasks={tasks} 
+                onAccept={acceptTask} 
+                onSubmit={submitProof} 
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </main>
       <Toaster />
     </div>
   );
 }
 
-// --- Pages & Complex Components ---
+// --- Onboarding Pages ---
 
-function LoginPage({ onLogin }: { onLogin: (role: "parent" | "child") => void }) {
+function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-purple-50 to-amber-50 dark:from-slate-900 dark:to-slate-800 p-6">
-      <Card className="w-full max-w-4xl overflow-hidden shadow-2xl border-0 grid md:grid-cols-2 rounded-3xl">
-        <div className="bg-primary p-10 text-primary-foreground flex flex-col justify-between relative overflow-hidden">
-          <div className="relative z-10">
-            <div className="h-16 w-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 shadow-inner">
-              <Home className="h-8 w-8 text-white" />
+    <div className="min-h-screen flex items-center justify-center bg-background p-6 relative overflow-hidden">
+      {/* Background Grid */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+      
+      <Card className="w-full max-w-4xl z-10 border-border/50 bg-card/80 backdrop-blur-xl shadow-2xl">
+        <div className="grid md:grid-cols-2 gap-0">
+          <div className="p-10 bg-gradient-to-br from-primary/10 to-background flex flex-col justify-center border-r border-border/50">
+            <div className="h-16 w-16 bg-primary/20 rounded-2xl flex items-center justify-center mb-6 text-primary">
+              <Bitcoin className="h-10 w-10" />
             </div>
-            <h1 className="text-4xl font-heading font-bold mb-4 leading-tight">
-              Willkommen zu Hause!
-            </h1>
-            <p className="text-primary-foreground/80 text-lg font-medium">
-              Erledige Aufgaben, sammle Sats und erreiche deine Ziele.
+            <h1 className="text-4xl font-heading font-bold mb-4">Sats Earn</h1>
+            <p className="text-muted-foreground text-lg">
+              Die Bitcoin-App für die ganze Familie. Erledige Aufgaben, lerne Verantwortung und verdiene echte Sats.
             </p>
           </div>
-          <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-          <div className="absolute -top-20 -left-20 w-64 h-64 bg-amber-400/20 rounded-full blur-3xl" />
-        </div>
 
-        <div className="p-10 flex flex-col justify-center">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">Wer bist du?</h2>
-            <p className="text-muted-foreground">Wähle dein Profil um zu starten</p>
-          </div>
-          
-          <div className="grid gap-6">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => onLogin("parent")}
-              className="flex items-center gap-4 p-4 rounded-2xl border border-slate-200 bg-white hover:border-primary/50 hover:shadow-lg transition-all group text-left"
-            >
-              <div className="h-14 w-14 rounded-full bg-pink-100 flex items-center justify-center text-2xl border-2 border-white shadow-sm group-hover:scale-110 transition-transform">
-                👩‍💼
-              </div>
-              <div>
-                <h3 className="font-bold text-lg text-slate-800 group-hover:text-primary transition-colors">Mama</h3>
-                <p className="text-sm text-muted-foreground">Aufgaben verwalten</p>
-              </div>
-              <ArrowRight className="ml-auto text-slate-300 group-hover:text-primary transition-colors" />
-            </motion.button>
+          <div className="p-10 flex flex-col justify-center">
+            <h2 className="text-2xl font-bold mb-6">Wähle deine Rolle</h2>
+            <div className="grid gap-4">
+              <Button 
+                variant="outline" 
+                className="h-auto p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
+                onClick={() => onSelect("parent")}
+              >
+                <div className="mr-4 h-12 w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                  <UserIcon className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg">Eltern</h3>
+                  <p className="text-sm text-muted-foreground">Wallet verwalten & Aufgaben erstellen</p>
+                </div>
+              </Button>
 
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => onLogin("child")}
-              className="flex items-center gap-4 p-4 rounded-2xl border border-slate-200 bg-white hover:border-primary/50 hover:shadow-lg transition-all group text-left"
-            >
-              <div className="h-14 w-14 rounded-full bg-blue-100 flex items-center justify-center text-2xl border-2 border-white shadow-sm group-hover:scale-110 transition-transform">
-                👦
-              </div>
-              <div>
-                <h3 className="font-bold text-lg text-slate-800 group-hover:text-primary transition-colors">Luca</h3>
-                <p className="text-sm text-muted-foreground">Sats verdienen</p>
-              </div>
-              <ArrowRight className="ml-auto text-slate-300 group-hover:text-primary transition-colors" />
-            </motion.button>
+              <Button 
+                variant="outline" 
+                className="h-auto p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
+                onClick={() => onSelect("child")}
+              >
+                <div className="mr-4 h-12 w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                  <Sparkles className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg">Kind</h3>
+                  <p className="text-sm text-muted-foreground">Aufgaben erledigen & Sats sammeln</p>
+                </div>
+              </Button>
+            </div>
           </div>
         </div>
       </Card>
@@ -208,29 +234,152 @@ function LoginPage({ onLogin }: { onLogin: (role: "parent" | "child") => void })
   );
 }
 
+function SetupPage({ role, onComplete, onBack }: { role: UserRole, onComplete: (name: string, id: string) => void, onBack: () => void }) {
+  const [step, setStep] = useState(1);
+  const [name, setName] = useState("");
+  const [connectionId, setConnectionId] = useState("");
+  const [generatedId] = useState("F7931A-2025-BTC"); // Mock generated ID
+
+  const handleNext = () => {
+    if (step === 1 && name) setStep(2);
+    else if (step === 2) {
+      if (role === "parent") {
+        // Parent generates ID
+        onComplete(name, generatedId);
+      } else {
+        // Child enters ID
+        if (connectionId) onComplete(name, connectionId);
+      }
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-lg border-border/50 bg-card/90 backdrop-blur-xl">
+        <CardHeader>
+          <Button variant="ghost" size="sm" onClick={onBack} className="w-fit mb-2 -ml-2 text-muted-foreground">
+            ← Zurück
+          </Button>
+          <CardTitle className="text-2xl">
+            {role === "parent" ? "Eltern-Wallet einrichten" : "Verbindung herstellen"}
+          </CardTitle>
+          <CardDescription>
+            Schritt {step} von 2: {step === 1 ? "Profil" : "Verbindung"}
+          </CardDescription>
+        </CardHeader>
+        
+        <CardContent className="space-y-6">
+          {step === 1 && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Dein Name</Label>
+                <Input 
+                  placeholder={role === "parent" ? "z.B. Mama oder Papa" : "z.B. Luca"} 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="bg-secondary border-border"
+                />
+              </div>
+              <div className="bg-primary/10 p-4 rounded-lg text-sm text-primary-foreground/80 flex gap-3">
+                <Info className="h-5 w-5 flex-shrink-0 text-primary" />
+                <p>
+                  {role === "parent" 
+                    ? "Als Elternteil verwaltest du die Satoshi-Belohnungen. Im nächsten Schritt verbindest du deine Lightning Wallet."
+                    : "Gib deinen Namen ein, damit deine Eltern wissen, wer die Aufgaben erledigt hat."}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {step === 2 && role === "parent" && (
+            <div className="space-y-6">
+               <div className="space-y-4">
+                <h3 className="font-medium text-foreground">1. LNbits Verbindung (Optional)</h3>
+                <p className="text-sm text-muted-foreground">
+                  Verbinde deine LNbits Instanz, um echte Zahlungen zu ermöglichen. Für den Testmodus kannst du dies überspringen.
+                </p>
+                <div className="grid gap-2">
+                  <Input placeholder="LNbits URL (z.B. https://legend.lnbits.com)" className="bg-secondary" />
+                  <Input placeholder="Admin Key" type="password" className="bg-secondary" />
+                </div>
+              </div>
+              
+              <Separator />
+
+              <div className="space-y-4">
+                <h3 className="font-medium text-foreground">2. Familien-ID</h3>
+                <p className="text-sm text-muted-foreground">
+                  Gib diese ID deinem Kind, um die Apps zu koppeln.
+                </p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 bg-black p-3 rounded border border-primary/50 text-primary font-mono text-center text-lg tracking-widest">
+                    {generatedId}
+                  </code>
+                  <Button size="icon" variant="outline" onClick={() => navigator.clipboard.writeText(generatedId)}>
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === 2 && role === "child" && (
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label>Familien-ID eingeben</Label>
+                <Input 
+                  placeholder="XXX-XXX-XXX" 
+                  value={connectionId}
+                  onChange={(e) => setConnectionId(e.target.value)}
+                  className="bg-secondary border-border font-mono text-center uppercase tracking-widest"
+                />
+                <p className="text-xs text-muted-foreground text-center">
+                  Frage deine Eltern nach der Familien-ID.
+                </p>
+              </div>
+              <div className="flex justify-center">
+                <LinkIcon className="h-12 w-12 text-muted-foreground opacity-20" />
+              </div>
+            </div>
+          )}
+        </CardContent>
+
+        <CardFooter>
+          <Button className="w-full" onClick={handleNext} disabled={step === 1 ? !name : (role === "child" && !connectionId)}>
+            {step === 1 ? "Weiter" : "Fertigstellen"}
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}
+
+
+// --- Main App Components ---
+
 function NavBar({ user, onLogout }: { user: User; onLogout: () => void }) {
   return (
-    <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b sticky top-0 z-50 transition-all">
+    <header className="bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-50">
       <div className="container mx-auto px-4 h-20 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 bg-gradient-to-tr from-primary to-purple-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
-            <Home className="h-6 w-6" />
+          <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center text-primary-foreground shadow-[0_0_15px_rgba(247,147,26,0.5)]">
+            <Bitcoin className="h-6 w-6" />
           </div>
-          <span className="text-xl font-heading font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300 hidden sm:inline-block">
-            Hausarbeiten
+          <span className="text-xl font-heading font-bold hidden sm:inline-block tracking-tight">
+            Sats Earn
           </span>
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3 pl-4 pr-2 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-            <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+          <div className="flex items-center gap-3 pl-4 pr-2 py-1.5 rounded-full bg-secondary border border-border">
+            <span className="text-sm font-medium text-muted-foreground">
               {user.name}
             </span>
-            <div className={`h-8 w-8 rounded-full ${user.avatarColor} flex items-center justify-center font-bold shadow-sm`}>
+            <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold border border-primary/50">
               {user.name[0]}
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={onLogout} className="text-slate-400 hover:text-destructive hover:bg-destructive/10 rounded-full">
+          <Button variant="ghost" size="icon" onClick={onLogout} className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full">
             <LogOut className="h-5 w-5" />
           </Button>
         </div>
@@ -242,33 +391,30 @@ function NavBar({ user, onLogout }: { user: User; onLogout: () => void }) {
 function ParentDashboard({ tasks, newTask, setNewTask, onCreate, onApprove }: any) {
   return (
     <div className="space-y-8">
-      {/* Create Task Section */}
       <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-        <Card className="border-none shadow-xl bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800 overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-purple-500 to-amber-500" />
+        <Card className="border border-primary/20 shadow-[0_0_30px_-10px_rgba(247,147,26,0.15)] bg-card/50 overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-accent to-primary" />
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="text-amber-500 h-5 w-5" /> 
+            <CardTitle className="flex items-center gap-2 text-primary">
+              <Plus className="h-5 w-5" /> 
               Neue Aufgabe erstellen
             </CardTitle>
-            <CardDescription>Vergib Aufgaben und setze Belohnungen fest.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={onCreate} className="flex flex-col md:flex-row gap-4 items-end">
               <div className="space-y-2 flex-grow w-full">
-                <Label htmlFor="title" className="font-medium">Was ist zu tun?</Label>
+                <Label htmlFor="title">Was ist zu tun?</Label>
                 <Input 
                   id="title" 
-                  placeholder="z.B. Spülmaschine ausräumen..." 
+                  placeholder="z.B. Rasen mähen..." 
                   value={newTask.title}
                   onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                  required
-                  className="h-12 text-lg"
+                  className="bg-secondary border-border focus:border-primary"
                 />
               </div>
               <div className="space-y-2 w-full md:w-48">
-                <Label htmlFor="sats" className="font-medium flex items-center gap-1">
-                  <Coins className="h-4 w-4 text-amber-500" /> Belohnung
+                <Label htmlFor="sats" className="flex items-center gap-1">
+                  <Bitcoin className="h-4 w-4 text-primary" /> Belohnung
                 </Label>
                 <div className="relative">
                   <Input 
@@ -277,67 +423,53 @@ function ParentDashboard({ tasks, newTask, setNewTask, onCreate, onApprove }: an
                     placeholder="50" 
                     value={newTask.sats}
                     onChange={(e) => setNewTask({ ...newTask, sats: parseInt(e.target.value) || 0 })}
-                    className="h-12 pl-9 font-mono text-lg"
+                    className="pl-8 font-mono bg-secondary border-border focus:border-primary"
                   />
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-500 font-bold">⚡</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-primary font-bold">⚡</span>
                 </div>
               </div>
-              <Button type="submit" className="h-12 px-6 w-full md:w-auto bg-slate-900 hover:bg-slate-800 text-white shadow-lg shadow-slate-900/20">
-                <Plus className="mr-2 h-5 w-5" /> Erstellen
+              <Button type="submit" className="w-full md:w-auto bg-primary text-primary-foreground hover:bg-primary/90 font-bold">
+                Erstellen
               </Button>
             </form>
           </CardContent>
         </Card>
       </motion.section>
 
-      {/* Task Lists */}
       <section>
-        <Tabs defaultValue="review" className="w-full">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-heading font-bold">Aufgaben Übersicht</h2>
-            <TabsList className="bg-white dark:bg-slate-900 p-1 rounded-full border shadow-sm">
-              <TabsTrigger value="review" className="rounded-full px-4">Prüfung</TabsTrigger>
-              <TabsTrigger value="active" className="rounded-full px-4">Aktiv</TabsTrigger>
-              <TabsTrigger value="completed" className="rounded-full px-4">Erledigt</TabsTrigger>
-            </TabsList>
-          </div>
+        <Tabs defaultValue="active" className="w-full">
+          <TabsList className="bg-secondary p-1 border border-border">
+            <TabsTrigger value="active">Aktiv</TabsTrigger>
+            <TabsTrigger value="review">Prüfung</TabsTrigger>
+            <TabsTrigger value="completed">Erledigt</TabsTrigger>
+          </TabsList>
           
-          <TabsContent value="active" className="space-y-4">
-            <AnimatePresence>
+          <div className="mt-6 space-y-4">
+            <TabsContent value="active" className="space-y-4">
               {tasks.filter((t: Task) => t.status === "open" || t.status === "assigned").map((task: Task) => (
                 <TaskCard key={task.id} task={task} variant="parent" />
               ))}
-            </AnimatePresence>
-            {tasks.filter((t: Task) => t.status === "open" || t.status === "assigned").length === 0 && (
-              <EmptyState message="Keine aktiven Aufgaben." icon="💤" />
-            )}
-          </TabsContent>
-
-          <TabsContent value="review" className="space-y-4">
-             <AnimatePresence>
+            </TabsContent>
+            
+            <TabsContent value="review" className="space-y-4">
                {tasks.filter((t: Task) => t.status === "submitted").map((task: Task) => (
                 <TaskCard key={task.id} task={task} variant="parent">
                   <Button 
                     onClick={() => onApprove(task.id)} 
-                    className="bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/20 w-full sm:w-auto"
+                    className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
                   >
                     <CheckCircle className="mr-2 h-4 w-4" /> Genehmigen & Zahlen
                   </Button>
                 </TaskCard>
               ))}
-             </AnimatePresence>
-             {tasks.filter((t: Task) => t.status === "submitted").length === 0 && (
-              <EmptyState message="Alles erledigt! Keine Aufgaben zur Prüfung." icon="✨" />
-            )}
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent value="completed" className="space-y-4">
-            <AnimatePresence>
+            <TabsContent value="completed" className="space-y-4">
               {tasks.filter((t: Task) => t.status === "approved").map((task: Task) => (
                 <TaskCard key={task.id} task={task} variant="parent" />
               ))}
-            </AnimatePresence>
-          </TabsContent>
+            </TabsContent>
+          </div>
         </Tabs>
       </section>
     </div>
@@ -351,97 +483,69 @@ function ChildDashboard({ user, tasks, onAccept, onSubmit }: any) {
 
   return (
     <div className="space-y-10">
-      {/* Hero Stats */}
       <motion.section 
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-xl shadow-amber-500/20 p-8"
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black border border-border p-8"
       >
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
-            <p className="text-amber-100 font-medium mb-1 text-lg">Dein Kontostand</p>
-            <h2 className="text-5xl font-heading font-bold flex items-center gap-3">
-              {earnedSats.toLocaleString()} <span className="text-3xl opacity-80">Sats</span>
+            <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest mb-2">Wallet Balance</p>
+            <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-primary">
+              {earnedSats.toLocaleString()} <span className="text-2xl opacity-50 text-white">SATS</span>
             </h2>
           </div>
-          <div className="h-20 w-20 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border-2 border-white/30">
-            <Trophy className="h-10 w-10 text-white" />
+          <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center border border-primary/30 shadow-[0_0_20px_rgba(247,147,26,0.2)]">
+            <Bitcoin className="h-10 w-10 text-primary" />
           </div>
         </div>
-        {/* Decorative circles */}
-        <div className="absolute -right-10 -top-10 h-40 w-40 bg-white/10 rounded-full blur-2xl" />
-        <div className="absolute -left-10 -bottom-10 h-40 w-40 bg-orange-600/20 rounded-full blur-2xl" />
       </motion.section>
 
-      {/* My Tasks */}
       <section>
-        <div className="flex items-center gap-3 mb-6">
-          <div className="h-8 w-1 bg-primary rounded-full" />
-          <h2 className="text-2xl font-heading font-bold">Meine Missionen</h2>
-        </div>
-       
+        <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+          <Trophy className="text-primary" /> Meine Aufgaben
+        </h2>
         <div className="grid gap-4">
-          <AnimatePresence>
-            {myTasks.map((task: Task) => (
-              <TaskCard key={task.id} task={task} variant="child">
-                {task.status === "assigned" && (
-                  <Button onClick={() => onSubmit(task.id)} className="bg-primary hover:bg-primary/90 w-full sm:w-auto shadow-lg shadow-primary/20">
-                    <Upload className="mr-2 h-4 w-4" /> Beweis hochladen
-                  </Button>
-                )}
-              </TaskCard>
-            ))}
-          </AnimatePresence>
+          {myTasks.map((task: Task) => (
+            <TaskCard key={task.id} task={task} variant="child">
+              {task.status === "assigned" && (
+                <Button onClick={() => onSubmit(task.id)} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                  <Upload className="mr-2 h-4 w-4" /> Beweis senden
+                </Button>
+              )}
+            </TaskCard>
+          ))}
           {myTasks.length === 0 && (
-             <EmptyState message="Du hast gerade keine aktiven Missionen." icon="🚀" />
+             <div className="text-center py-8 border border-dashed border-border rounded-lg text-muted-foreground">
+               Noch keine Aufgaben angenommen.
+             </div>
           )}
         </div>
       </section>
 
-      <Separator className="opacity-50" />
-
-      {/* Available Tasks */}
       <section>
-        <div className="flex items-center gap-3 mb-6">
-           <div className="h-8 w-1 bg-emerald-500 rounded-full" />
-           <h2 className="text-2xl font-heading font-bold">Verfügbare Aufgaben</h2>
-        </div>
-        
+        <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+          <Sparkles className="text-primary" /> Verfügbar
+        </h2>
         <div className="grid gap-4 md:grid-cols-2">
-          <AnimatePresence>
-            {availableTasks.map((task: Task) => (
-              <motion.div
-                key={task.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                whileHover={{ y: -5 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <Card className="h-full flex flex-col border-slate-200 dark:border-slate-800 hover:shadow-lg transition-shadow overflow-hidden group">
-                  <div className="h-2 w-full bg-slate-100 group-hover:bg-primary transition-colors" />
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
-                      <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-transparent">
-                        <Coins className="h-3 w-3 mr-1" /> {task.sats}
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-lg mt-2">{task.title}</CardTitle>
-                    <CardDescription className="line-clamp-2">{task.description}</CardDescription>
-                  </CardHeader>
-                  <CardFooter className="mt-auto pt-4">
-                    <Button onClick={() => onAccept(task.id)} variant="outline" className="w-full group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all">
-                      Annehmen
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-           {availableTasks.length === 0 && (
-              <div className="col-span-2">
-                 <EmptyState message="Alles erledigt! Keine neuen Aufgaben." icon="🎉" />
-              </div>
-           )}
+          {availableTasks.map((task: Task) => (
+            <Card key={task.id} className="border-border bg-card hover:border-primary/50 transition-colors">
+              <CardHeader>
+                 <div className="flex justify-between items-start">
+                    <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 border-transparent font-mono">
+                      {task.sats} sats
+                    </Badge>
+                 </div>
+                 <CardTitle className="mt-2">{task.title}</CardTitle>
+                 <CardDescription>{task.description}</CardDescription>
+              </CardHeader>
+              <CardFooter>
+                <Button onClick={() => onAccept(task.id)} variant="outline" className="w-full hover:border-primary hover:text-primary">
+                  Annehmen
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
         </div>
       </section>
     </div>
@@ -451,10 +555,10 @@ function ChildDashboard({ user, tasks, onAccept, onSubmit }: any) {
 function TaskCard({ task, children, variant }: { task: Task; children?: React.ReactNode; variant: "parent" | "child" }) {
   const getStatusConfig = (status: Task["status"]) => {
     switch (status) {
-      case "open": return { label: "Offen", color: "bg-slate-100 text-slate-600 border-slate-200", icon: Circle };
-      case "assigned": return { label: "In Arbeit", color: "bg-blue-50 text-blue-700 border-blue-100", icon: Clock };
-      case "submitted": return { label: "Prüfung", color: "bg-purple-50 text-purple-700 border-purple-100", icon: Upload };
-      case "approved": return { label: "Erledigt", color: "bg-green-50 text-green-700 border-green-100", icon: CheckCircle };
+      case "open": return { label: "OFFEN", color: "bg-secondary text-muted-foreground", icon: Circle };
+      case "assigned": return { label: "IN ARBEIT", color: "bg-blue-500/10 text-blue-400 border-blue-500/20", icon: Clock };
+      case "submitted": return { label: "PRÜFUNG", color: "bg-purple-500/10 text-purple-400 border-purple-500/20", icon: Upload };
+      case "approved": return { label: "ERLEDIGT", color: "bg-green-500/10 text-green-400 border-green-500/20", icon: CheckCircle };
     }
   };
 
@@ -462,44 +566,22 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
   const StatusIcon = statusConfig.icon;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      layout
-    >
-      <Card className="border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all">
-        <CardContent className="p-5 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-          <div className="space-y-1">
-            <div className="flex items-center gap-3 mb-2">
-              <Badge variant="outline" className={`${statusConfig.color} px-2.5 py-0.5 rounded-full border`}>
-                <StatusIcon className="h-3 w-3 mr-1.5" /> {statusConfig.label}
-              </Badge>
-              <span className="text-amber-500 font-bold text-sm flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded-full">
-                <Coins className="h-3 w-3" /> {task.sats}
-              </span>
-            </div>
-            <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">{task.title}</h3>
-            <p className="text-muted-foreground text-sm">{task.description}</p>
-            
-            {task.proof && variant === "parent" && (
-              <div className="mt-3 text-sm bg-slate-50 inline-block px-3 py-1 rounded-md border border-slate-100 text-slate-600">
-                 📸 Beweisfoto angehängt: <span className="font-medium underline cursor-pointer">{task.proof}</span>
-              </div>
-            )}
+    <Card className="border-border bg-card/50">
+      <CardContent className="p-5 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+        <div className="space-y-1">
+          <div className="flex items-center gap-3 mb-2">
+            <Badge variant="outline" className={`${statusConfig.color} border px-2 py-0.5 rounded text-[10px] font-bold tracking-wider`}>
+              <StatusIcon className="h-3 w-3 mr-1.5" /> {statusConfig.label}
+            </Badge>
+            <span className="text-primary font-mono text-sm flex items-center gap-1">
+              ⚡ {task.sats}
+            </span>
           </div>
-          {children && <div className="w-full sm:w-auto pt-2 sm:pt-0">{children}</div>}
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-}
-
-function EmptyState({ message, icon }: { message: string; icon: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-12 px-4 text-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
-      <span className="text-4xl mb-3 grayscale opacity-80">{icon}</span>
-      <p className="text-muted-foreground font-medium">{message}</p>
-    </div>
+          <h3 className="font-bold text-lg">{task.title}</h3>
+          <p className="text-muted-foreground text-sm">{task.description}</p>
+        </div>
+        {children && <div className="w-full sm:w-auto pt-2 sm:pt-0">{children}</div>}
+      </CardContent>
+    </Card>
   );
 }

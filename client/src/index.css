@@ -45,82 +45,77 @@
   
   --font-sans: 'DM Sans', sans-serif;
   --font-heading: 'Outfit', sans-serif;
+  --font-mono: 'Space Mono', monospace;
   
-  --radius: 1rem;
+  --radius: 0.5rem;
 }
 
-/* LIGHT MODE - Playful & Warm */
+/* BITCOIN DARK THEME - Cypherpunk & Modern Finance */
 :root {
-  --background: 210 40% 98%; /* Soft blue-ish white */
-  --foreground: 222 47% 11%; /* Deep navy */
+  /* Dark Mode by Default (but defining light variables just in case, mapped to dark) */
+  --background: 0 0% 7%; /* #121212 - Almost black */
+  --foreground: 0 0% 95%; /* #f2f2f2 - Off white */
 
-  --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
+  --card: 0 0% 10%; /* #1a1a1a */
+  --card-foreground: 0 0% 95%;
 
-  --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
+  --popover: 0 0% 10%;
+  --popover-foreground: 0 0% 95%;
 
-  /* Primary: Vibrant Indigo/Purple */
-  --primary: 262 83% 58%; 
-  --primary-foreground: 210 40% 98%;
+  /* Primary: Bitcoin Orange */
+  --primary: 34 97% 54%; /* #F7931A */
+  --primary-foreground: 0 0% 10%; /* Dark text on orange */
 
-  /* Secondary: Soft Lavender */
-  --secondary: 262 30% 90%;
-  --secondary-foreground: 262 83% 30%;
+  /* Secondary: Dark Grey */
+  --secondary: 0 0% 15%;
+  --secondary-foreground: 0 0% 90%;
 
-  /* Muted: Slate */
-  --muted: 215 16% 90%;
-  --muted-foreground: 215 16% 47%;
+  /* Muted: Mid Grey */
+  --muted: 0 0% 20%;
+  --muted-foreground: 0 0% 60%;
 
-  /* Accent: Warm Amber/Gold (for Sats!) */
-  --accent: 35 92% 58%;
-  --accent-foreground: 0 0% 100%;
+  /* Accent: Gold */
+  --accent: 45 100% 50%;
+  --accent-foreground: 0 0% 10%;
 
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 210 40% 98%;
+  --destructive: 0 62% 30%;
+  --destructive-foreground: 0 0% 98%;
 
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
-  --ring: 262 83% 58%;
+  --border: 0 0% 20%;
+  --input: 0 0% 20%;
+  --ring: 34 97% 54%;
 
-  --radius: 1rem;
-
-  /* Chart colors for gamification graphs */
-  --chart-1: 262 83% 58%;
-  --chart-2: 35 92% 58%;
-  --chart-3: 173 58% 39%;
-  --chart-4: 43 74% 66%;
-  --chart-5: 27 87% 67%;
+  --radius: 0.5rem;
 }
 
 .dark {
-  --background: 222 47% 11%;
-  --foreground: 210 40% 98%;
+  --background: 0 0% 7%;
+  --foreground: 0 0% 95%;
 
-  --card: 222 47% 14%;
-  --card-foreground: 210 40% 98%;
+  --card: 0 0% 10%;
+  --card-foreground: 0 0% 95%;
 
-  --popover: 222 47% 14%;
-  --popover-foreground: 210 40% 98%;
+  --popover: 0 0% 10%;
+  --popover-foreground: 0 0% 95%;
 
-  --primary: 262 83% 65%;
-  --primary-foreground: 210 40% 98%;
+  --primary: 34 97% 54%;
+  --primary-foreground: 0 0% 10%;
 
-  --secondary: 217 19% 27%;
-  --secondary-foreground: 210 40% 98%;
+  --secondary: 0 0% 15%;
+  --secondary-foreground: 0 0% 90%;
 
-  --muted: 217 19% 27%;
-  --muted-foreground: 215 20% 65%;
+  --muted: 0 0% 20%;
+  --muted-foreground: 0 0% 60%;
 
-  --accent: 35 92% 58%;
-  --accent-foreground: 210 40% 98%;
+  --accent: 45 100% 50%;
+  --accent-foreground: 0 0% 10%;
 
   --destructive: 0 62% 30%;
-  --destructive-foreground: 210 40% 98%;
+  --destructive-foreground: 0 0% 98%;
 
-  --border: 217 19% 27%;
-  --input: 217 19% 27%;
-  --ring: 262 83% 65%;
+  --border: 0 0% 20%;
+  --input: 0 0% 20%;
+  --ring: 34 97% 54%;
 }
 
 @layer base {
