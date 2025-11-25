@@ -138,15 +138,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "NWC wallet must be configured to create tasks" });
       }
 
-      // For escrow, we generate a payment request that parent must pay
-      // In NWC, the actual escrow is managed at parent's wallet level
-      const paymentRequest = `lnbc${data.sats}`;
+      // Create payment request via NWC
+      const nwc = new NWCClient(parent.nwcConnectionString);
+      let paymentRequest = "";
+      try {
+        paymentRequest = await nwc.createPaymentRequest(data.sats, `Task: ${data.title}`);
+      } catch (error) {
+        console.error("NWC payment request creation error:", error);
+        return res.status(500).json({ error: "Failed to create payment request" });
+      }
 
       // Create task with escrow flag
       const task = await storage.createTask({
         ...data,
         escrowLocked: true,
-        paylink: paymentRequest, // Store as paylink for backward compatibility
+        paylink: nwc.generatePaymentLink(paymentRequest),
       });
 
       // Record transaction for escrow lock
@@ -196,9 +202,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(500).json({ error: "Parent wallet not configured" });
         }
 
-        // Generate a receive-only withdrawal request for child (no actual payment yet)
-        // Child will use their NWC connection to receive payment later
-        const withdrawRequest = `lnbc${task.sats}`;
+        // Create withdrawal link via NWC
+        const nwc = new NWCClient(parent.nwcConnectionString);
+        let withdrawRequest = "";
+        try {
+          withdrawRequest = await nwc.createWithdrawRequest(task.sats, `Reward for: ${task.title}`);
+        } catch (error) {
+          console.error("NWC withdraw request error:", error);
+          return res.status(500).json({ error: "Failed to create withdrawal request" });
+        }
 
         // Update child balance
         const newBalance = (child.balance || 0) + task.sats;
@@ -215,8 +227,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           paymentHash: withdrawRequest,
         });
 
-        // Update task with withdraw request
-        updates.withdrawLink = withdrawRequest;
+        // Update task with withdraw link in Lightning URI format
+        updates.withdrawLink = nwc.generatePaymentLink(withdrawRequest);
       }
 
       const updatedTask = await storage.updateTask(id, updates);
