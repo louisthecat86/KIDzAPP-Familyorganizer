@@ -138,10 +138,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Parent wallet not configured. Please setup LNBits first." });
       }
 
-      if ((parent.balance || 0) < data.sats) {
-        return res.status(400).json({ error: "Insufficient balance for escrow" });
-      }
-
       // Create LNBits invoice for escrow
       const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
       let paymentHash: string;
