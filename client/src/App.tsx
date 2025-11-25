@@ -1037,76 +1037,74 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
           <p className="text-muted-foreground text-sm" data-testid={`text-description-${task.id}`}>{task.description}</p>
           
           {task.paylink && task.status === "open" && (
-            <div className="mt-3 space-y-2">
-              <Button 
-                size="sm" 
-                variant="outline" 
-                onClick={() => setShowLink(!showLink)}
-                data-testid={`button-show-paylink-${task.id}`}
-              >
-                💳 Bezahlung-Link
-              </Button>
-              {showLink && (
-                <div className="bg-primary/10 p-3 rounded border border-primary/30 space-y-2">
-                  <p className="text-xs text-muted-foreground">Link zum Zahlen:</p>
-                  <div className="flex gap-2">
-                    <a 
-                      href={task.paylink} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="flex-1 text-xs truncate text-primary hover:underline"
-                      data-testid={`link-paylink-${task.id}`}
-                    >
-                      {task.paylink}
-                    </a>
-                    <Button 
-                      size="sm" 
-                      variant="ghost"
-                      onClick={() => handleCopy(task.paylink)}
-                      data-testid={`button-copy-paylink-${task.id}`}
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              )}
+            <div className="mt-4 space-y-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">⚡</span>
+                <p className="text-sm font-bold text-amber-600">Escrow-Zahlungslink</p>
+              </div>
+              <div className="bg-secondary p-2 rounded border border-border break-all font-mono text-xs text-muted-foreground">
+                {task.paylink}
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  size="sm"
+                  onClick={() => handleCopy(task.paylink)}
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                  data-testid={`button-copy-paylink-${task.id}`}
+                >
+                  📋 Kopieren
+                </Button>
+                <a 
+                  href={task.paylink} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex-1"
+                  data-testid={`link-paylink-${task.id}`}
+                >
+                  <Button 
+                    size="sm"
+                    className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+                  >
+                    ⚡ In Wallet öffnen
+                  </Button>
+                </a>
+              </div>
             </div>
           )}
           
           {task.withdrawLink && task.status === "approved" && variant === "child" && (
-            <div className="mt-3 space-y-2">
-              <Button 
-                size="sm" 
-                variant="outline" 
-                onClick={() => setShowLink(!showLink)}
-                data-testid={`button-show-withdraw-${task.id}`}
-              >
-                💰 Abheben-Link
-              </Button>
-              {showLink && (
-                <div className="bg-primary/10 p-3 rounded border border-primary/30 space-y-2">
-                  <p className="text-xs text-muted-foreground">Link zum Abheben:</p>
-                  <div className="flex gap-2">
-                    <a 
-                      href={task.withdrawLink} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="flex-1 text-xs truncate text-primary hover:underline"
-                      data-testid={`link-withdraw-${task.id}`}
-                    >
-                      {task.withdrawLink}
-                    </a>
-                    <Button 
-                      size="sm" 
-                      variant="ghost"
-                      onClick={() => handleCopy(task.withdrawLink)}
-                      data-testid={`button-copy-withdraw-${task.id}`}
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              )}
+            <div className="mt-4 space-y-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">💰</span>
+                <p className="text-sm font-bold text-green-600">Abheben-Link</p>
+              </div>
+              <div className="bg-secondary p-2 rounded border border-border break-all font-mono text-xs text-muted-foreground">
+                {task.withdrawLink}
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  size="sm"
+                  onClick={() => handleCopy(task.withdrawLink)}
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                  data-testid={`button-copy-withdraw-${task.id}`}
+                >
+                  📋 Kopieren
+                </Button>
+                <a 
+                  href={task.withdrawLink} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex-1"
+                  data-testid={`link-withdraw-${task.id}`}
+                >
+                  <Button 
+                    size="sm"
+                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    💳 In Wallet öffnen
+                  </Button>
+                </a>
+              </div>
             </div>
           )}
         </div>
