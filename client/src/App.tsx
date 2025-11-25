@@ -68,6 +68,20 @@ export default function App() {
   
   const { toast } = useToast();
 
+  // --- Effects ---
+  useEffect(() => {
+    const storedUser = localStorage.getItem("sats-user");
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        setOnboardingStep("completed");
+      } catch (e) {
+        console.error("Failed to parse user from storage", e);
+      }
+    }
+  }, []);
+
   // --- Actions ---
 
   const handleRoleSelect = (role: UserRole) => {
@@ -85,6 +99,7 @@ export default function App() {
     };
     setUser(newUser);
     setOnboardingStep("completed");
+    localStorage.setItem("sats-user", JSON.stringify(newUser));
     toast({ title: "Einrichtung erfolgreich", description: "Verbindung hergestellt!" });
   };
 
@@ -92,6 +107,7 @@ export default function App() {
     setUser(null);
     setOnboardingStep("role-selection");
     setSelectedRole(null);
+    localStorage.removeItem("sats-user");
   };
 
   const createTask = (e: React.FormEvent) => {
