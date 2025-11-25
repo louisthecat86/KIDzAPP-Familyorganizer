@@ -22,7 +22,9 @@ import {
   Trophy, 
   Bitcoin,
   Info,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Settings,
+  Send
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -32,6 +34,8 @@ type Peer = {
   role: string;
   pin: string;
   connectionId: string;
+  balance?: number;
+  lnbitsUrl?: string;
   createdAt: Date;
 };
 
@@ -42,17 +46,21 @@ type User = {
   name: string;
   role: UserRole;
   connectionId: string;
+  balance?: number;
+  lnbitsUrl?: string;
 };
 
 type Task = {
   id: number;
   connectionId: string;
+  createdBy: number;
   title: string;
   description: string;
   sats: number;
   status: "open" | "assigned" | "submitted" | "approved";
   assignedTo?: number;
   proof?: string;
+  escrowLocked?: boolean;
 };
 
 // --- API Functions ---
@@ -76,12 +84,6 @@ async function loginUser(name: string, role: UserRole, pin: string): Promise<Use
   return res.json();
 }
 
-async function fetchParents(): Promise<Array<any>> {
-  const res = await fetch("/api/peers/parents");
-  if (!res.ok) throw new Error("Fehler beim Abrufen der Eltern");
-  return res.json();
-}
-
 async function linkChildToParent(childId: number, parentName: string): Promise<User> {
   const res = await fetch("/api/peers/link", {
     method: "POST",
@@ -89,6 +91,26 @@ async function linkChildToParent(childId: number, parentName: string): Promise<U
     body: JSON.stringify({ childId, parentName }),
   });
   if (!res.ok) throw new Error("Fehler beim Verbinden mit Eltern");
+  return res.json();
+}
+
+async function setupWallet(peerId: number, lnbitsUrl: string, lnbitsAdminKey: string): Promise<User> {
+  const res = await fetch("/api/wallet/setup", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ peerId, lnbitsUrl, lnbitsAdminKey }),
+  });
+  if (!res.ok) throw new Error("Wallet-Setup fehlgeschlagen");
+  return res.json();
+}
+
+async function withdrawSats(peerId: number, sats: number, paymentRequest: string): Promise<any> {
+  const res = await fetch("/api/withdraw", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ peerId, sats, paymentRequest }),
+  });
+  if (!res.ok) throw new Error("Auszahlung fehlgeschlagen");
   return res.json();
 }
 
@@ -149,10 +171,16 @@ export default function App() {
 
   const createTaskMutation = useMutation({
     mutationFn: createTask,
-    onSuccess: () => {
+    onSuccess: (task) => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      toast({ title: "Aufgabe erstellt", description: "Aufgabe wurde erfolgreich erstellt!" });
+      setUser(prev => prev ? { ...prev, balance: (prev.balance || 0) - task.sats } : null);
+      localStorage.setItem("sats-user", JSON.stringify(user));
+      toast({ title: "Aufgabe erstellt", description: "Sats in Escrow hinterlegt!" });
+      setNewTask({ title: "", description: "", sats: 50 });
     },
+    onError: (error) => {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    }
   });
 
   const updateTaskMutation = useMutation({
@@ -187,12 +215,12 @@ export default function App() {
 
     createTaskMutation.mutate({
       connectionId: user.connectionId,
+      createdBy: user.id,
       title: newTask.title,
       description: newTask.description,
       sats: newTask.sats,
       status: "open",
     });
-    setNewTask({ title: "", description: "", sats: 50 });
   };
 
   const acceptTask = (taskId: number) => {
@@ -251,6 +279,8 @@ export default function App() {
           >
             {user.role === "parent" ? (
               <ParentDashboard 
+                user={user}
+                setUser={setUser}
                 tasks={tasks} 
                 newTask={newTask} 
                 setNewTask={setNewTask} 
@@ -260,10 +290,10 @@ export default function App() {
             ) : (
               <ChildDashboard 
                 user={user}
+                setUser={setUser}
                 tasks={tasks} 
                 onAccept={acceptTask} 
                 onSubmit={submitProof}
-                onUpdate={handleAuthComplete}
               />
             )}
           </motion.div>
@@ -450,6 +480,12 @@ function NavBar({ user, onLogout }: { user: User; onLogout: () => void }) {
         </div>
 
         <div className="flex items-center gap-4">
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-secondary border border-border">
+            <Bitcoin className="h-4 w-4 text-primary" />
+            <span className="text-sm font-mono font-bold text-primary" data-testid="text-balance">
+              {(user.balance || 0).toLocaleString()} sats
+            </span>
+          </div>
           <div className="flex items-center gap-3 pl-4 pr-2 py-1.5 rounded-full bg-secondary border border-border">
             <span className="text-sm font-medium text-muted-foreground" data-testid="text-username">
               {user.name}
@@ -473,16 +509,91 @@ function NavBar({ user, onLogout }: { user: User; onLogout: () => void }) {
   );
 }
 
-function ParentDashboard({ tasks, newTask, setNewTask, onCreate, onApprove }: any) {
+function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, onApprove }: any) {
+  const [showWalletSetup, setShowWalletSetup] = useState(!user.lnbitsUrl);
+  const [lnbitsUrl, setLnbitsUrl] = useState(user.lnbitsUrl || "");
+  const [lnbitsKey, setLnbitsKey] = useState("");
+  const [isSettingUp, setIsSettingUp] = useState(false);
+  const { toast } = useToast();
+
+  const handleWalletSetup = async () => {
+    if (!lnbitsUrl || !lnbitsKey) return;
+    setIsSettingUp(true);
+    try {
+      const updated = await setupWallet(user.id, lnbitsUrl, lnbitsKey);
+      setUser({ ...user, lnbitsUrl: updated.lnbitsUrl });
+      setShowWalletSetup(false);
+      toast({ title: "Wallet verbunden!", description: "LNBits Wallet ist jetzt aktiv" });
+    } catch (error) {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setIsSettingUp(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
+      {!user.lnbitsUrl && (
+        <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+          <Card className="border border-amber-500/50 shadow-[0_0_20px_rgba(217,119,6,0.15)] bg-amber-500/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-amber-600">
+                <Settings className="h-5 w-5" /> Wallet-Setup erforderlich
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Verbinde dein LNBits-Wallet, um echte Lightning-Zahlungen durchzuführen
+              </p>
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="lnbits-url">LNBits Instanz URL</Label>
+                  <Input 
+                    id="lnbits-url"
+                    placeholder="https://lnbits.example.com"
+                    value={lnbitsUrl}
+                    onChange={(e) => setLnbitsUrl(e.target.value)}
+                    className="bg-secondary border-border"
+                    data-testid="input-lnbits-url"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lnbits-key">Admin Key</Label>
+                  <Input 
+                    id="lnbits-key"
+                    placeholder="sk_..."
+                    value={lnbitsKey}
+                    onChange={(e) => setLnbitsKey(e.target.value)}
+                    className="bg-secondary border-border font-mono"
+                    data-testid="input-lnbits-key"
+                  />
+                </div>
+              </div>
+              <Button 
+                onClick={handleWalletSetup}
+                disabled={!lnbitsUrl || !lnbitsKey || isSettingUp}
+                className="w-full bg-primary hover:bg-primary/90"
+                data-testid="button-setup-wallet"
+              >
+                {isSettingUp ? "Wird verbunden..." : "Wallet verbinden"}
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.section>
+      )}
+
       <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
         <Card className="border border-primary/20 shadow-[0_0_30px_-10px_rgba(247,147,26,0.15)] bg-card/50 overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-accent to-primary" />
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary" data-testid="text-create-task">
-              <Plus className="h-5 w-5" /> Neue Aufgabe erstellen
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-primary" data-testid="text-create-task">
+                <Plus className="h-5 w-5" /> Neue Aufgabe erstellen
+              </CardTitle>
+              <Badge variant="secondary" className="bg-primary/10 text-primary">
+                <Bitcoin className="h-3 w-3 mr-1" /> {(user.balance || 0).toLocaleString()} sats
+              </Badge>
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={onCreate} className="flex flex-col md:flex-row gap-4 items-end">
@@ -514,6 +625,7 @@ function ParentDashboard({ tasks, newTask, setNewTask, onCreate, onApprove }: an
               <Button 
                 type="submit" 
                 className="w-full md:w-auto bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
+                disabled={(user.balance || 0) < newTask.sats}
                 data-testid="button-create-task"
               >
                 Erstellen
@@ -564,22 +676,25 @@ function ParentDashboard({ tasks, newTask, setNewTask, onCreate, onApprove }: an
   );
 }
 
-function ChildDashboard({ user, tasks, onAccept, onSubmit, onUpdate }: any) {
+function ChildDashboard({ user, setUser, tasks, onAccept, onSubmit }: any) {
   const [showLink, setShowLink] = useState(false);
   const [parentName, setParentName] = useState("");
   const [isLinking, setIsLinking] = useState(false);
+  const [showWithdraw, setShowWithdraw] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [lightningAddress, setLightningAddress] = useState("");
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
   const { toast } = useToast();
 
   const myTasks = tasks.filter((t: Task) => t.assignedTo === user.id);
   const availableTasks = tasks.filter((t: Task) => t.status === "open");
-  const earnedSats = myTasks.filter((t: Task) => t.status === "approved").reduce((acc: number, t: Task) => acc + t.sats, 0);
 
   const handleLink = async () => {
     if (!parentName) return;
     setIsLinking(true);
     try {
       const updated = await linkChildToParent(user.id, parentName);
-      onUpdate(updated);
+      setUser(updated);
       toast({
         title: "Verbunden!",
         description: `Du bist jetzt mit ${parentName} verbunden`
@@ -596,6 +711,31 @@ function ChildDashboard({ user, tasks, onAccept, onSubmit, onUpdate }: any) {
     }
   };
 
+  const handleWithdraw = async () => {
+    if (!withdrawAmount || !lightningAddress) return;
+    setIsWithdrawing(true);
+    try {
+      const amount = parseInt(withdrawAmount);
+      const result = await withdrawSats(user.id, amount, lightningAddress);
+      setUser({ ...user, balance: result.newBalance });
+      toast({
+        title: "Auszahlung gestartet!",
+        description: `${amount} sats werden übertragen`
+      });
+      setShowWithdraw(false);
+      setWithdrawAmount("");
+      setLightningAddress("");
+    } catch (error) {
+      toast({
+        title: "Fehler",
+        description: (error as Error).message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsWithdrawing(false);
+    }
+  };
+
   return (
     <div className="space-y-10">
       <motion.section 
@@ -607,7 +747,7 @@ function ChildDashboard({ user, tasks, onAccept, onSubmit, onUpdate }: any) {
           <div>
             <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest mb-2">Wallet Balance</p>
             <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-primary" data-testid="text-earned-sats">
-              {earnedSats.toLocaleString()} <span className="text-2xl opacity-50 text-white">SATS</span>
+              {(user.balance || 0).toLocaleString()} <span className="text-2xl opacity-50 text-white">SATS</span>
             </h2>
           </div>
           <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center border border-primary/30 shadow-[0_0_20px_rgba(247,147,26,0.2)]">
@@ -667,6 +807,81 @@ function ChildDashboard({ user, tasks, onAccept, onSubmit, onUpdate }: any) {
                 onClick={() => setShowLink(false)}
                 disabled={isLinking}
                 data-testid="button-cancel-link"
+              >
+                Abbrechen
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {(user.balance || 0) > 0 && (
+        <Card className="border-primary/30 bg-primary/5 p-6">
+          <div className="flex gap-4">
+            <Send className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="font-bold mb-1">Sats abheben</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Transferiere deine Sats auf eine Lightning-Wallet
+              </p>
+              <Button 
+                size="sm"
+                onClick={() => setShowWithdraw(true)}
+                className="bg-primary hover:bg-primary/90"
+                data-testid="button-show-withdraw"
+              >
+                Abheben
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {showWithdraw && (
+        <Card className="border-primary/30 bg-primary/5 p-6">
+          <h3 className="font-bold mb-4">Sats abheben</h3>
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="withdraw-amount">Betrag (Sats)</Label>
+              <Input 
+                id="withdraw-amount"
+                type="number"
+                placeholder="1000"
+                value={withdrawAmount}
+                onChange={(e) => setWithdrawAmount(e.target.value)}
+                max={user.balance || 0}
+                className="bg-secondary border-border"
+                data-testid="input-withdraw-amount"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Verfügbar: {(user.balance || 0).toLocaleString()} sats
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="lightning-address">Lightning-Adresse</Label>
+              <Input 
+                id="lightning-address"
+                placeholder="lnbc1000..."
+                value={lightningAddress}
+                onChange={(e) => setLightningAddress(e.target.value)}
+                className="bg-secondary border-border font-mono text-sm"
+                data-testid="input-lightning-address"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleWithdraw}
+                disabled={!withdrawAmount || !lightningAddress || isWithdrawing}
+                className="bg-primary hover:bg-primary/90 flex-1"
+                data-testid="button-confirm-withdraw"
+              >
+                {isWithdrawing ? "Wird gesendet..." : "Senden"}
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => setShowWithdraw(false)}
+                disabled={isWithdrawing}
+                data-testid="button-cancel-withdraw"
               >
                 Abbrechen
               </Button>
