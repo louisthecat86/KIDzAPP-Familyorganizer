@@ -180,25 +180,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "LNBits wallet must be configured to create tasks" });
       }
 
-      // Create task with escrow lock
+      // Create task with escrow_pending status (waiting for payment confirmation)
       const task = await storage.createTask({
         ...data,
-        escrowLocked: true,
+        status: "open", // Will be confirmed after payment
         paylink: `escrow:${data.title}:${data.sats}`, // Virtual escrow marker
       });
 
-      // Record escrow lock transaction
-      await storage.createTransaction({
-        fromPeerId: createdBy,
-        toPeerId: createdBy,
-        sats: data.sats,
-        taskId: task.id,
-        type: "escrow_lock",
-        status: "pending",
-        paymentHash: `escrow_lock_${task.id}`,
+      res.json({ 
+        task,
+        requiresPayment: true,
+        paymentInfo: {
+          sats: data.sats,
+          description: `Task: ${data.title}`,
+          escrowRequired: true
+        }
       });
-
-      res.json(task);
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ error: error.errors });

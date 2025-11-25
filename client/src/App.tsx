@@ -1058,35 +1058,39 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
                 <p className="text-sm font-bold text-green-600">Abheben! ({task.sats} sats warten)</p>
               </div>
               <p className="text-xs text-muted-foreground">Kopiere diesen Link/Code und öffne ihn in deiner Lightning Wallet um deine Sats zu erhalten</p>
-              <div className="bg-secondary p-3 rounded border border-border break-all font-mono text-xs text-muted-foreground cursor-pointer hover:bg-secondary/80 transition" onClick={() => handleCopy(task.withdrawLink)}>
-                {task.withdrawLink}
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  size="sm"
-                  onClick={() => handleCopy(task.withdrawLink)}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                  data-testid={`button-copy-withdraw-${task.id}`}
-                >
-                  📋 Kopieren
-                </Button>
-                {task.withdrawLink.startsWith("lnurl") && (
-                  <a 
-                    href={task.withdrawLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1"
-                  >
+              {task.withdrawLink && (
+                <>
+                  <div className="bg-secondary p-3 rounded border border-border break-all font-mono text-xs text-muted-foreground cursor-pointer hover:bg-secondary/80 transition" onClick={() => handleCopy(task.withdrawLink)}>
+                    {task.withdrawLink}
+                  </div>
+                  <div className="flex gap-2">
                     <Button 
                       size="sm"
-                      className="w-full bg-green-600 hover:bg-green-700 text-white"
-                      data-testid={`link-withdraw-${task.id}`}
+                      onClick={() => handleCopy(task.withdrawLink)}
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                      data-testid={`button-copy-withdraw-${task.id}`}
                     >
-                      💳 Öffnen
+                      📋 Kopieren
                     </Button>
-                  </a>
-                )}
-              </div>
+                    {task.withdrawLink.startsWith("lnurl") && (
+                      <a 
+                        href={task.withdrawLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1"
+                      >
+                        <Button 
+                          size="sm"
+                          className="w-full bg-green-600 hover:bg-green-700 text-white"
+                          data-testid={`link-withdraw-${task.id}`}
+                        >
+                          💳 Öffnen
+                        </Button>
+                      </a>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>

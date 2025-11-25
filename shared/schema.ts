@@ -47,9 +47,6 @@ export const insertTaskSchema = createInsertSchema(tasks).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
-  escrowLocked: true,
-  paylink: true,
-  withdrawLink: true,
 });
 
 export type InsertTask = z.infer<typeof insertTaskSchema>;
