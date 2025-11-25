@@ -313,51 +313,51 @@ export default function App() {
 
 function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-6 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-6 relative overflow-hidden">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
       
       <Card className="w-full max-w-4xl z-10 border-border/50 bg-card/80 backdrop-blur-xl shadow-2xl">
         <div className="grid md:grid-cols-2 gap-0">
-          <div className="p-10 bg-gradient-to-br from-primary/10 to-background flex flex-col justify-center border-r border-border/50">
-            <div className="h-16 w-16 bg-primary/20 rounded-2xl flex items-center justify-center mb-6 text-primary">
-              <Bitcoin className="h-10 w-10" />
+          <div className="hidden md:flex p-6 md:p-10 bg-gradient-to-br from-primary/10 to-background flex-col justify-center border-r border-border/50">
+            <div className="h-12 md:h-16 w-12 md:w-16 bg-primary/20 rounded-2xl flex items-center justify-center mb-4 md:mb-6 text-primary">
+              <Bitcoin className="h-8 md:h-10 w-8 md:w-10" />
             </div>
-            <h1 className="text-4xl font-heading font-bold mb-4">Sats Earn</h1>
-            <p className="text-muted-foreground text-lg">
+            <h1 className="text-2xl md:text-4xl font-heading font-bold mb-3 md:mb-4">Sats Earn</h1>
+            <p className="text-muted-foreground text-sm md:text-lg">
               Die Bitcoin-App für die ganze Familie. Erledige Aufgaben, lerne Verantwortung und verdiene echte Sats.
             </p>
           </div>
 
-          <div className="p-10 flex flex-col justify-center">
-            <h2 className="text-2xl font-bold mb-6">Wähle deine Rolle</h2>
-            <div className="grid gap-4">
+          <div className="p-4 sm:p-6 md:p-10 flex flex-col justify-center">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Wähle deine Rolle</h2>
+            <div className="grid gap-3 sm:gap-4">
               <Button 
                 variant="outline" 
-                className="h-auto p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
+                className="h-auto p-4 sm:p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
                 onClick={() => onSelect("parent")}
                 data-testid="button-select-parent"
               >
-                <div className="mr-4 h-12 w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                  <UserIcon className="h-6 w-6" />
+                <div className="mr-3 sm:mr-4 h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors flex-shrink-0">
+                  <UserIcon className="h-5 sm:h-6 w-5 sm:w-6" />
                 </div>
-                <div>
-                  <h3 className="font-bold text-lg">Eltern</h3>
-                  <p className="text-sm text-muted-foreground">Wallet verwalten & Aufgaben erstellen</p>
+                <div className="min-w-0">
+                  <h3 className="font-bold text-base sm:text-lg">Eltern</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Wallet verwalten & Aufgaben erstellen</p>
                 </div>
               </Button>
 
               <Button 
                 variant="outline" 
-                className="h-auto p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
+                className="h-auto p-4 sm:p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
                 onClick={() => onSelect("child")}
                 data-testid="button-select-child"
               >
-                <div className="mr-4 h-12 w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                  <Sparkles className="h-6 w-6" />
+                <div className="mr-3 sm:mr-4 h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors flex-shrink-0">
+                  <Sparkles className="h-5 sm:h-6 w-5 sm:w-6" />
                 </div>
-                <div>
-                  <h3 className="font-bold text-lg">Kind</h3>
-                  <p className="text-sm text-muted-foreground">Aufgaben erledigen & Sats sammeln</p>
+                <div className="min-w-0">
+                  <h3 className="font-bold text-base sm:text-lg">Kind</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Aufgaben erledigen & Sats sammeln</p>
                 </div>
               </Button>
             </div>
