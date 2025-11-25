@@ -407,19 +407,12 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
       
       console.log("Erfolg:", user);
       
-      if (!isLogin) {
-        // Nach erfolgreicher Registrierung: Meldung anzeigen und zu Login wechseln
-        toast({
-          title: "Account erstellt! ✅",
-          description: "Bitte melde dich nun mit deiner PIN an"
-        });
-        setName("");
-        setPin("");
-        setIsLogin(true);
-      } else {
-        // Nach erfolgreichem Login: Weitergeleitet
-        onComplete(user);
-      }
+      // Sowohl bei Registrierung als auch Login: Direkt zum Dashboard
+      toast({
+        title: isLogin ? "Willkommen!" : "Account erstellt! 🎉",
+        description: isLogin ? "Du bist angemeldet" : "Viel Spaß beim Geldverdienen!"
+      });
+      onComplete(user);
     } catch (error) {
       console.error("Fehler:", error);
       toast({
