@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import QRCode from "qrcode.react";
 import { 
   CheckCircle, 
   Circle, 
@@ -61,6 +62,8 @@ type Task = {
   assignedTo?: number;
   proof?: string;
   escrowLocked?: boolean;
+  paylink?: string;
+  withdrawLink?: string;
 };
 
 // --- API Functions ---
@@ -1016,6 +1019,8 @@ function ChildDashboard({ user, setUser, tasks, onAccept, onSubmit }: any) {
 }
 
 function TaskCard({ task, children, variant }: { task: Task; children?: React.ReactNode; variant: "parent" | "child" }) {
+  const [showQR, setShowQR] = useState(false);
+  
   const getStatusConfig = (status: Task["status"]) => {
     switch (status) {
       case "open": return { label: "OFFEN", color: "bg-secondary text-muted-foreground", icon: Circle };
@@ -1031,7 +1036,7 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
   return (
     <Card className="border-border bg-card/50" data-testid={`card-task-${task.id}`}>
       <CardContent className="p-5 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-        <div className="space-y-1">
+        <div className="space-y-1 flex-1">
           <div className="flex items-center gap-3 mb-2">
             <Badge variant="outline" className={`${statusConfig.color} border px-2 py-0.5 rounded text-[10px] font-bold tracking-wider`}>
               <StatusIcon className="h-3 w-3 mr-1.5" /> {statusConfig.label}
@@ -1042,6 +1047,42 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
           </div>
           <h3 className="font-bold text-lg" data-testid={`text-title-${task.id}`}>{task.title}</h3>
           <p className="text-muted-foreground text-sm" data-testid={`text-description-${task.id}`}>{task.description}</p>
+          
+          {task.paylink && task.status === "open" && (
+            <div className="mt-3">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => setShowQR(!showQR)}
+                data-testid={`button-show-paylink-${task.id}`}
+              >
+                💳 Bezahlung anzeigen
+              </Button>
+              {showQR && (
+                <div className="mt-3 bg-white p-3 rounded border border-border inline-block">
+                  <QRCode value={task.paylink} size={150} level="H" includeMargin={true} />
+                </div>
+              )}
+            </div>
+          )}
+          
+          {task.withdrawLink && task.status === "approved" && variant === "child" && (
+            <div className="mt-3">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => setShowQR(!showQR)}
+                data-testid={`button-show-withdraw-${task.id}`}
+              >
+                💰 Abheben anzeigen
+              </Button>
+              {showQR && (
+                <div className="mt-3 bg-white p-3 rounded border border-border inline-block">
+                  <QRCode value={task.withdrawLink} size={150} level="H" includeMargin={true} />
+                </div>
+              )}
+            </div>
+          )}
         </div>
         {children && <div className="w-full sm:w-auto pt-2 sm:pt-0">{children}</div>}
       </CardContent>
