@@ -590,7 +590,7 @@ function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, 
                     placeholder="nostr+walletconnect://...?relay=...&secret=..."
                     value={lnbitsUrl}
                     onChange={(e) => setLnbitsUrl(e.target.value)}
-                    className="bg-secondary border-border font-mono text-xs"
+                    className="bg-secondary border-border font-mono text-xs w-full overflow-x-auto"
                     data-testid="input-nwc-connection"
                   />
                 </div>
@@ -619,7 +619,7 @@ function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, 
           <CardContent>
             <div className="bg-secondary border-2 border-primary/30 rounded-lg p-4 text-center">
               <p className="text-xs text-muted-foreground mb-2 uppercase tracking-widest">Dein Code:</p>
-              <p className="text-3xl font-mono font-bold text-primary tracking-wider" data-testid="text-connection-code">
+              <p className="text-2xl sm:text-3xl font-mono font-bold text-primary tracking-wider break-words word-break" data-testid="text-connection-code">
                 {user.connectionId}
               </p>
               <p className="text-xs text-muted-foreground mt-3">Kinder nutzen diesen Code zum Verbinden</p>
@@ -1049,7 +1049,7 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
               <p className="text-xs text-muted-foreground">Kopiere diesen Link/Code und öffne ihn in deiner Lightning Wallet um deine Sats zu erhalten</p>
               {task.withdrawLink && (
                 <>
-                  <div className="bg-secondary p-3 rounded border border-border break-all font-mono text-xs text-muted-foreground cursor-pointer hover:bg-secondary/80 transition" onClick={() => handleCopy(task.withdrawLink)}>
+                  <div className="bg-secondary p-3 rounded border border-border break-words word-break font-mono text-xs text-muted-foreground cursor-pointer hover:bg-secondary/80 transition overflow-x-auto max-w-full" onClick={() => handleCopy(task.withdrawLink)}>
                     {task.withdrawLink}
                   </div>
                   <div className="flex gap-2">
