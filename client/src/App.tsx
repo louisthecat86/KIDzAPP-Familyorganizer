@@ -575,22 +575,21 @@ function NavBar({ user, onLogout }: { user: User; onLogout: () => void }) {
 }
 
 function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, onApprove, onDelete }: any) {
-  const [lnbitsUrl, setLnbitsUrl] = useState(user.lnbitsUrl || "");
-  const [lnbitsKey, setLnbitsKey] = useState("");
+  const [nwcConnectionString, setNwcConnectionString] = useState(user.nwcConnectionString || "");
   const { toast } = useToast();
 
   const setupWallet = async () => {
-    if (!lnbitsUrl || !lnbitsKey) return;
+    if (!nwcConnectionString) return;
     try {
       const res = await fetch("/api/wallet/setup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ peerId: user.id, lnbitsUrl, lnbitsAdminKey: lnbitsKey }),
+        body: JSON.stringify({ peerId: user.id, nwcConnectionString }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setUser({ ...user, lnbitsUrl: data.lnbitsUrl });
-      toast({ title: "Wallet verbunden!", description: "LNBits ist jetzt aktiv" });
+      setUser({ ...user, nwcConnectionString: data.nwcConnectionString });
+      toast({ title: "Wallet verbunden!", description: "Nostr Wallet Connect ist jetzt aktiv" });
     } catch (error) {
       toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
     }
@@ -614,16 +613,16 @@ function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, 
                   <Input 
                     id="nwc-connection"
                     placeholder="nostr+walletconnect://...?relay=...&secret=..."
-                    value={lnbitsUrl}
-                    onChange={(e) => setLnbitsUrl(e.target.value)}
-                    className="bg-secondary border-border font-mono text-xs w-full overflow-x-auto"
+                    value={nwcConnectionString}
+                    onChange={(e) => setNwcConnectionString(e.target.value)}
+                    className="bg-secondary border-border font-mono text-xs w-full"
                     data-testid="input-nwc-connection"
                   />
                 </div>
               </div>
               <Button 
                 onClick={setupWallet}
-                disabled={!lnbitsUrl}
+                disabled={!nwcConnectionString}
                 className="w-full bg-primary hover:bg-primary/90"
                 data-testid="button-setup-wallet"
               >
