@@ -690,7 +690,6 @@ function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, 
               <Button 
                 type="submit" 
                 className="w-full md:w-auto bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
-                disabled={(user.balance || 0) < newTask.sats}
                 data-testid="button-create-task"
               >
                 Erstellen
