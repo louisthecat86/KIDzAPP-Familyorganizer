@@ -147,6 +147,13 @@ async function updateTask(id: number, updates: Partial<Task>): Promise<Task> {
   return res.json();
 }
 
+async function deleteTask(id: number): Promise<void> {
+  const res = await fetch(`/api/tasks/${id}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error("Failed to delete task");
+}
+
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -195,6 +202,17 @@ export default function App() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
+  });
+
+  const deleteTaskMutation = useMutation({
+    mutationFn: deleteTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      toast({ title: "Aufgabe gelöscht", description: "Die Aufgabe wurde erfolgreich gelöscht" });
+    },
+    onError: (error) => {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    }
   });
 
   const handleRoleSelect = (role: UserRole) => {

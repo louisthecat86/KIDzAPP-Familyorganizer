@@ -239,6 +239,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete task
+  app.delete("/api/tasks/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const task = await storage.getTask(id);
+      
+      if (!task) {
+        return res.status(404).json({ error: "Task not found" });
+      }
+
+      const deleted = await storage.deleteTask(id);
+      if (deleted) {
+        res.json({ success: true, message: "Task deleted" });
+      } else {
+        res.status(500).json({ error: "Failed to delete task" });
+      }
+    } catch (error) {
+      console.error("Delete task error:", error);
+      res.status(500).json({ error: "Failed to delete task" });
+    }
+  });
+
   // Update task and release escrow
   app.patch("/api/tasks/:id", async (req, res) => {
     try {
