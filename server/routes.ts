@@ -193,8 +193,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const nwc = new NWCClient(parent.nwcConnectionString);
       let invoice = "";
       try {
-        const nwcInvoice = await nwc.createInvoice(data.sats, `Task: ${data.title}`);
-        invoice = nwcInvoice.invoice;
+        invoice = await nwc.createPaymentRequest(data.sats, `Task: ${data.title}`);
       } catch (error) {
         console.error("Invoice creation error:", error);
         return res.status(500).json({ error: "Failed to create payment invoice for escrow" });
