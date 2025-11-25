@@ -5,10 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   CheckCircle, 
   Circle, 
@@ -20,11 +20,7 @@ import {
   User as UserIcon, 
   Sparkles, 
   Trophy, 
-  ArrowRight, 
-  Home,
   Bitcoin,
-  QrCode,
-  Settings,
   Info,
   Copy,
   Link as LinkIcon
@@ -38,11 +34,12 @@ type User = {
   id: number;
   name: string;
   role: UserRole;
-  connectionId?: string; // The ID linking parent and child
+  connectionId: string;
 };
 
 type Task = {
   id: number;
+  connectionId: string;
   title: string;
   description: string;
   sats: number;
@@ -51,15 +48,45 @@ type Task = {
   proof?: string;
 };
 
-// --- Mock Data & State ---
-const INITIAL_TASKS: Task[] = [
-  { id: 1, title: "Staubsaugen", description: "Wohnzimmer komplett saugen", sats: 50, status: "open" },
-  { id: 2, title: "Geschirrspüler", description: "Ausräumen und einräumen", sats: 30, status: "assigned", assignedTo: 2 },
-];
+// --- API Functions ---
+async function registerPeer(name: string, role: UserRole, connectionId: string): Promise<User> {
+  const res = await fetch("/api/peers/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, role, connectionId }),
+  });
+  if (!res.ok) throw new Error("Failed to register peer");
+  return res.json();
+}
+
+async function fetchTasks(connectionId: string): Promise<Task[]> {
+  const res = await fetch(`/api/tasks/${connectionId}`);
+  if (!res.ok) throw new Error("Failed to fetch tasks");
+  return res.json();
+}
+
+async function createTask(task: Partial<Task>): Promise<Task> {
+  const res = await fetch("/api/tasks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(task),
+  });
+  if (!res.ok) throw new Error("Failed to create task");
+  return res.json();
+}
+
+async function updateTask(id: number, updates: Partial<Task>): Promise<Task> {
+  const res = await fetch(`/api/tasks/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updates),
+  });
+  if (!res.ok) throw new Error("Failed to update task");
+  return res.json();
+}
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
-  const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
   const [newTask, setNewTask] = useState({ title: "", description: "", sats: 50 });
   
   // Onboarding State
@@ -67,8 +94,9 @@ export default function App() {
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  // --- Effects ---
+  // Load user from localStorage
   useEffect(() => {
     const storedUser = localStorage.getItem("sats-user");
     if (storedUser) {
@@ -82,6 +110,29 @@ export default function App() {
     }
   }, []);
 
+  // Fetch tasks
+  const { data: tasks = [] } = useQuery({
+    queryKey: ["tasks", user?.connectionId],
+    queryFn: () => fetchTasks(user!.connectionId),
+    enabled: !!user?.connectionId,
+  });
+
+  // Mutations
+  const createTaskMutation = useMutation({
+    mutationFn: createTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      toast({ title: "Aufgabe erstellt", description: "Aufgabe wurde erfolgreich erstellt!" });
+    },
+  });
+
+  const updateTaskMutation = useMutation({
+    mutationFn: ({ id, updates }: { id: number; updates: Partial<Task> }) => updateTask(id, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
+  });
+
   // --- Actions ---
 
   const handleRoleSelect = (role: UserRole) => {
@@ -89,18 +140,22 @@ export default function App() {
     setOnboardingStep("setup");
   };
 
-  const completeSetup = (name: string, connectionId: string) => {
-    // In a real app, we would verify the connection ID here
-    const newUser: User = {
-      id: selectedRole === "parent" ? 1 : 2,
-      name,
-      role: selectedRole!,
-      connectionId
-    };
-    setUser(newUser);
-    setOnboardingStep("completed");
-    localStorage.setItem("sats-user", JSON.stringify(newUser));
-    toast({ title: "Einrichtung erfolgreich", description: "Verbindung hergestellt!" });
+  const completeSetup = async (name: string, connectionId: string) => {
+    try {
+      const peer = await registerPeer(name, selectedRole!, connectionId);
+      const newUser: User = {
+        id: peer.id,
+        name: peer.name,
+        role: peer.role as UserRole,
+        connectionId: peer.connectionId,
+      };
+      setUser(newUser);
+      setOnboardingStep("completed");
+      localStorage.setItem("sats-user", JSON.stringify(newUser));
+      toast({ title: "Einrichtung erfolgreich", description: "Verbindung hergestellt!" });
+    } catch (error) {
+      toast({ title: "Fehler", description: "Konnte nicht verbinden. Bitte versuche es erneut.", variant: "destructive" });
+    }
   };
 
   const logout = () => {
@@ -110,36 +165,42 @@ export default function App() {
     localStorage.removeItem("sats-user");
   };
 
-  const createTask = (e: React.FormEvent) => {
+  const handleCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTask.title) return;
+    if (!newTask.title || !user) return;
 
-    const task: Task = {
-      id: Date.now(),
+    createTaskMutation.mutate({
+      connectionId: user.connectionId,
       title: newTask.title,
       description: newTask.description,
       sats: newTask.sats,
       status: "open",
-    };
-
-    setTasks([task, ...tasks]);
+    });
     setNewTask({ title: "", description: "", sats: 50 });
-    toast({ title: "Aufgabe erstellt", description: `${task.title} ist jetzt verfügbar!` });
   };
 
   const acceptTask = (taskId: number) => {
     if (!user) return;
-    setTasks(tasks.map(t => t.id === taskId ? { ...t, status: "assigned", assignedTo: user.id } : t));
+    updateTaskMutation.mutate({
+      id: taskId,
+      updates: { status: "assigned", assignedTo: user.id },
+    });
     toast({ title: "Aufgabe angenommen", description: "Let's stack sats!" });
   };
 
   const submitProof = (taskId: number) => {
-    setTasks(tasks.map(t => t.id === taskId ? { ...t, status: "submitted", proof: "proof_mock.jpg" } : t));
+    updateTaskMutation.mutate({
+      id: taskId,
+      updates: { status: "submitted", proof: "proof_mock.jpg" },
+    });
     toast({ title: "Beweis hochgeladen", description: "Warte auf Bestätigung." });
   };
 
   const approveTask = (taskId: number) => {
-    setTasks(tasks.map(t => t.id === taskId ? { ...t, status: "approved" } : t));
+    updateTaskMutation.mutate({
+      id: taskId,
+      updates: { status: "approved" },
+    });
     toast({ title: "Sats ausgezahlt!", description: "Transaktion gesendet." });
   };
 
@@ -153,7 +214,7 @@ export default function App() {
     return <SetupPage role={selectedRole} onComplete={completeSetup} onBack={() => setOnboardingStep("role-selection")} />;
   }
 
-  if (!user) return null; // Should not happen
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-primary-foreground">
@@ -173,7 +234,7 @@ export default function App() {
                 tasks={tasks} 
                 newTask={newTask} 
                 setNewTask={setNewTask} 
-                onCreate={createTask} 
+                onCreate={handleCreateTask} 
                 onApprove={approveTask} 
               />
             ) : (
@@ -197,7 +258,6 @@ export default function App() {
 function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-6 relative overflow-hidden">
-      {/* Background Grid */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
       
       <Card className="w-full max-w-4xl z-10 border-border/50 bg-card/80 backdrop-blur-xl shadow-2xl">
@@ -254,16 +314,14 @@ function SetupPage({ role, onComplete, onBack }: { role: UserRole, onComplete: (
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [connectionId, setConnectionId] = useState("");
-  const [generatedId] = useState("F7931A-2025-BTC"); // Mock generated ID
+  const [generatedId] = useState(() => `BTC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`);
 
   const handleNext = () => {
     if (step === 1 && name) setStep(2);
     else if (step === 2) {
       if (role === "parent") {
-        // Parent generates ID
         onComplete(name, generatedId);
       } else {
-        // Child enters ID
         if (connectionId) onComplete(name, connectionId);
       }
     }
@@ -344,9 +402,9 @@ function SetupPage({ role, onComplete, onBack }: { role: UserRole, onComplete: (
               <div className="space-y-2">
                 <Label>Familien-ID eingeben</Label>
                 <Input 
-                  placeholder="XXX-XXX-XXX" 
+                  placeholder="BTC-XXXXXX" 
                   value={connectionId}
-                  onChange={(e) => setConnectionId(e.target.value)}
+                  onChange={(e) => setConnectionId(e.target.value.toUpperCase())}
                   className="bg-secondary border-border font-mono text-center uppercase tracking-widest"
                 />
                 <p className="text-xs text-muted-foreground text-center">
@@ -369,7 +427,6 @@ function SetupPage({ role, onComplete, onBack }: { role: UserRole, onComplete: (
     </div>
   );
 }
-
 
 // --- Main App Components ---
 

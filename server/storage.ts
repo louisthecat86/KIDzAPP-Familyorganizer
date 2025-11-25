@@ -1,38 +1,61 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+import { db } from "./db";
+import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks } from "@shared/schema";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  // Peer operations
+  getPeer(id: number): Promise<Peer | undefined>;
+  getPeerByConnectionId(connectionId: string, role: string): Promise<Peer | undefined>;
+  createPeer(peer: InsertPeer): Promise<Peer>;
+  
+  // Task operations
+  getTasks(connectionId: string): Promise<Task[]>;
+  getTask(id: number): Promise<Task | undefined>;
+  createTask(task: InsertTask): Promise<Task>;
+  updateTask(id: number, task: Partial<Task>): Promise<Task | undefined>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-
-  constructor() {
-    this.users = new Map();
+export class DatabaseStorage implements IStorage {
+  // Peer operations
+  async getPeer(id: number): Promise<Peer | undefined> {
+    const result = await db.select().from(peers).where(eq(peers.id, id)).limit(1);
+    return result[0];
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  async getPeerByConnectionId(connectionId: string, role: string): Promise<Peer | undefined> {
+    const result = await db.select().from(peers)
+      .where(and(eq(peers.connectionId, connectionId), eq(peers.role, role)))
+      .limit(1);
+    return result[0];
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+  async createPeer(insertPeer: InsertPeer): Promise<Peer> {
+    const result = await db.insert(peers).values(insertPeer).returning();
+    return result[0];
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  // Task operations
+  async getTasks(connectionId: string): Promise<Task[]> {
+    return await db.select().from(tasks).where(eq(tasks.connectionId, connectionId));
+  }
+
+  async getTask(id: number): Promise<Task | undefined> {
+    const result = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createTask(insertTask: InsertTask): Promise<Task> {
+    const result = await db.insert(tasks).values(insertTask).returning();
+    return result[0];
+  }
+
+  async updateTask(id: number, updates: Partial<Task>): Promise<Task | undefined> {
+    const result = await db.update(tasks)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(tasks.id, id))
+      .returning();
+    return result[0];
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
