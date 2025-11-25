@@ -368,17 +368,32 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = async () => {
-    if (!name || !pin) return;
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
+    const trimmedName = name.trim();
+    const trimmedPin = pin.trim();
+    
+    if (!trimmedName || !trimmedPin || trimmedPin.length !== 4) {
+      toast({
+        title: "Fehler",
+        description: "Bitte fülle alle Felder aus (PIN muss 4 Ziffern sein)",
+        variant: "destructive"
+      });
+      return;
+    }
     
     setIsLoading(true);
     try {
+      console.log("Versuche", isLogin ? "Login" : "Registrierung", { name: trimmedName, role, pin: trimmedPin });
       const user = isLogin 
-        ? await loginUser(name, role, pin)
-        : await registerUser(name, role, pin);
+        ? await loginUser(trimmedName, role, trimmedPin)
+        : await registerUser(trimmedName, role, trimmedPin);
       
+      console.log("Erfolg:", user);
       onComplete(user);
     } catch (error) {
+      console.error("Fehler:", error);
       toast({
         title: "Fehler",
         description: (error as Error).message,
@@ -411,7 +426,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
         </CardHeader>
 
         <CardContent className="space-y-6">
-          <div className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Dein Name</Label>
               <Input 
@@ -421,6 +436,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 onChange={(e) => setName(e.target.value)}
                 className="bg-secondary border-border"
                 disabled={isLoading}
+                autoFocus
                 data-testid="input-name"
               />
             </div>
@@ -428,38 +444,46 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               <Label htmlFor="pin">PIN (4 Ziffern)</Label>
               <Input 
                 id="pin"
-                placeholder="1234"
+                type="password"
+                placeholder="••••"
                 value={pin}
-                onChange={(e) => setPin(e.target.value.slice(0, 4))}
-                className="bg-secondary border-border font-mono text-center tracking-widest"
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, "").slice(0, 4);
+                  setPin(val);
+                }}
+                className="bg-secondary border-border font-mono text-center tracking-widest text-lg"
                 disabled={isLoading}
                 maxLength={4}
                 data-testid="input-pin"
               />
+              <p className="text-xs text-muted-foreground">
+                {pin.length}/4 Ziffern
+              </p>
             </div>
-          </div>
 
-          <Separator />
+            <Separator />
 
-          <div className="grid gap-3">
-            <Button 
-              className="w-full"
-              onClick={handleSubmit}
-              disabled={!name || !pin || isLoading}
-              data-testid={isLogin ? "button-login" : "button-register"}
-            >
-              {isLoading ? "Wird verarbeitet..." : isLogin ? "Anmelden" : "Registrieren"}
-            </Button>
-            <Button 
-              variant="outline"
-              className="w-full"
-              onClick={() => setIsLogin(!isLogin)}
-              disabled={isLoading}
-              data-testid="button-toggle-mode"
-            >
-              {isLogin ? "Noch kein Account? Registrieren" : "Bereits registriert? Anmelden"}
-            </Button>
-          </div>
+            <div className="grid gap-3">
+              <Button 
+                type="submit"
+                className="w-full"
+                disabled={isLoading || name.trim().length === 0 || pin.length !== 4}
+                data-testid={isLogin ? "button-login" : "button-register"}
+              >
+                {isLoading ? "Wird verarbeitet..." : isLogin ? "Anmelden" : "Registrieren"}
+              </Button>
+              <Button 
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsLogin(!isLogin)}
+                disabled={isLoading}
+                data-testid="button-toggle-mode"
+              >
+                {isLogin ? "Noch kein Account? Registrieren" : "Bereits registriert? Anmelden"}
+              </Button>
+            </div>
+          </form>
         </CardContent>
       </Card>
     </div>
