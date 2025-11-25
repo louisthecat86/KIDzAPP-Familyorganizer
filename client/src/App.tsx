@@ -374,14 +374,14 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
           animate={{ y: [0, -5, 0] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          Sats Earn 🚀
+          Spark ⚡ Kids
         </motion.h1>
         <motion.p 
           className="text-sm sm:text-lg md:text-xl text-foreground font-bold tracking-widest px-2 break-words"
           animate={{ opacity: [1, 0.7, 1] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          💪 Übernimm Verantwortung 💪
+          💪 Wo Aufgaben zu Belohnungen werden 💪
         </motion.p>
       </motion.div>
 
@@ -414,7 +414,7 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.7 }}
             >
-              ✨ Bitcoin-App für die ganze Familie. Aufgaben erledigen & Sats verdienen!
+              ✨ Die Bitcoin-Chore-App für die ganze Familie. Erledige Aufgaben und sammle Sats als Belohnung!
             </motion.p>
           </motion.div>
 
