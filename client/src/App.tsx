@@ -27,7 +27,8 @@ import {
   Send,
   Copy,
   ExternalLink,
-  Trash2
+  Trash2,
+  X
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -296,10 +297,14 @@ export default function App() {
 
   if (!user) return null;
 
+  const openParentSettings = () => {
+    if (user?.role === "parent") {
+      // Settings werden im ParentDashboard gehandhabt
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-primary-foreground">
-      <NavBar user={user} onLogout={logout} />
-
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <AnimatePresence mode="wait">
           <motion.div
@@ -310,24 +315,30 @@ export default function App() {
             transition={{ duration: 0.3 }}
           >
             {user.role === "parent" ? (
-              <ParentDashboard 
-                user={user}
-                setUser={setUser}
-                tasks={tasks} 
-                newTask={newTask} 
-                setNewTask={setNewTask} 
-                onCreate={handleCreateTask} 
-                onApprove={approveTask}
-                onDelete={handleDeleteTask}
-              />
+              <>
+                <NavBar user={user} onLogout={logout} />
+                <ParentDashboard
+                  user={user}
+                  setUser={setUser}
+                  tasks={tasks} 
+                  newTask={newTask} 
+                  setNewTask={setNewTask} 
+                  onCreate={handleCreateTask} 
+                  onApprove={approveTask}
+                  onDelete={handleDeleteTask}
+                />
+              </>
             ) : (
-              <ChildDashboard 
-                user={user}
-                setUser={setUser}
-                tasks={tasks} 
-                onAccept={acceptTask} 
-                onSubmit={submitProof}
-              />
+              <>
+                <NavBar user={user} onLogout={logout} />
+                <ChildDashboard 
+                  user={user}
+                  setUser={setUser}
+                  tasks={tasks} 
+                  onAccept={acceptTask} 
+                  onSubmit={submitProof}
+                />
+              </>
             )}
           </motion.div>
         </AnimatePresence>
@@ -529,7 +540,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
   );
 }
 
-function NavBar({ user, onLogout }: { user: User; onLogout: () => void }) {
+function NavBar({ user, onLogout, onSettings }: { user: User; onLogout: () => void; onSettings?: () => void }) {
   return (
     <header className="bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-50">
       <div className="container mx-auto px-4 h-20 flex items-center justify-between">
@@ -559,6 +570,17 @@ function NavBar({ user, onLogout }: { user: User; onLogout: () => void }) {
               {user.name[0]}
             </div>
           </div>
+          {user.role === "parent" && onSettings && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={onSettings} 
+              className="text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full"
+              data-testid="button-settings"
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
+          )}
           <Button 
             variant="ghost" 
             size="icon" 
@@ -571,6 +593,94 @@ function NavBar({ user, onLogout }: { user: User; onLogout: () => void }) {
         </div>
       </div>
     </header>
+  );
+}
+
+function ParentDashboardWithSettings({ user, setUser, tasks, newTask, setNewTask, onCreate, onApprove, onDelete }: any) {
+  const [showSettings, setShowSettings] = useState(false);
+  
+  return (
+    <>
+      {showSettings && <SettingsModal user={user} setUser={setUser} onClose={() => setShowSettings(false)} />}
+      <NavBar user={user} onLogout={() => {}} onSettings={() => setShowSettings(true)} />
+      <ParentDashboard user={user} setUser={setUser} tasks={tasks} newTask={newTask} setNewTask={setNewTask} onCreate={onCreate} onApprove={onApprove} onDelete={onDelete} />
+    </>
+  );
+}
+
+function SettingsModal({ user, setUser, onClose }: any) {
+  const [editNwc, setEditNwc] = useState(user.nwcConnectionString || "");
+  const [isSaving, setIsSaving] = useState(false);
+  const { toast } = useToast();
+
+  const saveSettings = async () => {
+    if (!editNwc) return;
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/wallet/setup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ peerId: user.id, nwcConnectionString: editNwc }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setUser({ ...user, nwcConnectionString: editNwc });
+      toast({ title: "Einstellungen gespeichert!", description: "NWC Wallet aktualisiert" });
+      onClose();
+    } catch (error) {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <CardTitle>Einstellungen</CardTitle>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={onClose}
+            data-testid="button-close-settings"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="settings-nwc">NWC Connection String</Label>
+            <Input 
+              id="settings-nwc"
+              placeholder="nostr+walletconnect://...?relay=...&secret=..."
+              value={editNwc}
+              onChange={(e) => setEditNwc(e.target.value)}
+              className="bg-secondary border-border font-mono text-xs"
+              data-testid="input-settings-nwc"
+            />
+            <p className="text-xs text-muted-foreground">Aktuell: {user.nwcConnectionString ? "✓ Verbunden" : "✗ Nicht verbunden"}</p>
+          </div>
+        </CardContent>
+        <CardFooter className="gap-2">
+          <Button 
+            variant="outline" 
+            onClick={onClose}
+            data-testid="button-cancel-settings"
+          >
+            Abbrechen
+          </Button>
+          <Button 
+            onClick={saveSettings}
+            disabled={!editNwc || isSaving}
+            className="bg-primary hover:bg-primary/90"
+            data-testid="button-save-settings"
+          >
+            {isSaving ? "Speichern..." : "Speichern"}
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
   );
 }
 
@@ -597,6 +707,7 @@ function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, 
 
   return (
     <div className="space-y-8">
+
       {!user.nwcConnectionString && (
         <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
           <Card className="border border-amber-500/50 shadow-[0_0_20px_rgba(217,119,6,0.15)] bg-amber-500/5">
