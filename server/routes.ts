@@ -133,25 +133,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Parent not found" });
       }
 
-      if (!parent.lnbitsUrl || !parent.lnbitsAdminKey) {
-        return res.status(400).json({ error: "Parent wallet not configured. Please setup LNBits first." });
-      }
-
-      // Create paylink for task funding
-      const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+      // Create paylink for task funding if wallet is configured
       let paylink = "";
-      try {
-        paylink = await lnbits.createPaylink(data.sats, `Task: ${data.title}`);
-      } catch (error) {
-        console.error("Paylink creation error:", error);
-        return res.status(500).json({ error: "Failed to create paylink" });
+      if (parent.lnbitsUrl && parent.lnbitsAdminKey) {
+        const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+        try {
+          paylink = await lnbits.createPaylink(data.sats, `Task: ${data.title}`);
+        } catch (error) {
+          console.error("Paylink creation error:", error);
+          // Continue without paylink if creation fails
+        }
       }
 
-      // Create task with paylink
+      // Create task with paylink (or without if wallet not configured)
       const task = await storage.createTask({
         ...data,
         escrowLocked: true,
-        paylink,
+        paylink: paylink || undefined,
       });
 
       // Record transaction
@@ -197,22 +195,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(404).json({ error: "Child or parent not found" });
         }
 
-        if (!parent.lnbitsUrl || !parent.lnbitsAdminKey) {
-          return res.status(500).json({ error: "Parent wallet not configured" });
-        }
-
-        // Create withdraw link for child payout
-        const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+        // Create withdraw link for child payout if wallet is configured
         let withdrawLink = "";
-        try {
-          withdrawLink = await lnbits.createWithdrawLink(
-            task.sats,
-            `Reward for: ${task.title}`,
-            `lnbc${task.sats}`
-          );
-        } catch (error) {
-          console.error("Withdraw link error:", error);
-          return res.status(500).json({ error: "Failed to create withdraw link" });
+        if (parent.lnbitsUrl && parent.lnbitsAdminKey) {
+          const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+          try {
+            withdrawLink = await lnbits.createWithdrawLink(
+              task.sats,
+              `Reward for: ${task.title}`,
+              `lnbc${task.sats}`
+            );
+          } catch (error) {
+            console.error("Withdraw link error:", error);
+            // Continue without withdraw link if creation fails
+          }
         }
 
         // Update child balance
@@ -227,11 +223,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           taskId: task.id,
           type: "escrow_release",
           status: "completed",
-          paymentHash: withdrawLink,
+          paymentHash: withdrawLink || `withdraw_${task.id}`,
         });
 
-        // Update task with withdraw link
-        updates.withdrawLink = withdrawLink;
+        // Update task with withdraw link if available
+        if (withdrawLink) {
+          updates.withdrawLink = withdrawLink;
+        }
       }
 
       const updatedTask = await storage.updateTask(id, updates);
