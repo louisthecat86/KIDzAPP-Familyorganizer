@@ -315,12 +315,17 @@ function SetupPage({ role, onComplete, onBack }: { role: UserRole, onComplete: (
   const [name, setName] = useState("");
   const [connectionId, setConnectionId] = useState("");
   const [generatedId] = useState(() => `BTC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`);
+  const [parentMode, setParentMode] = useState<"new" | "existing" | null>(null);
 
   const handleNext = () => {
     if (step === 1 && name) setStep(2);
     else if (step === 2) {
       if (role === "parent") {
-        onComplete(name, generatedId);
+        if (parentMode === "new") {
+          onComplete(name, generatedId);
+        } else if (parentMode === "existing" && connectionId) {
+          onComplete(name, connectionId);
+        }
       } else {
         if (connectionId) onComplete(name, connectionId);
       }
@@ -367,33 +372,86 @@ function SetupPage({ role, onComplete, onBack }: { role: UserRole, onComplete: (
 
           {step === 2 && role === "parent" && (
             <div className="space-y-6">
-               <div className="space-y-4">
-                <h3 className="font-medium text-foreground">1. LNbits Verbindung (Optional)</h3>
-                <p className="text-sm text-muted-foreground">
-                  Verbinde deine LNbits Instanz, um echte Zahlungen zu ermöglichen. Für den Testmodus kannst du dies überspringen.
-                </p>
-                <div className="grid gap-2">
-                  <Input placeholder="LNbits URL (z.B. https://legend.lnbits.com)" className="bg-secondary" />
-                  <Input placeholder="Admin Key" type="password" className="bg-secondary" />
-                </div>
-              </div>
-              
-              <Separator />
-
-              <div className="space-y-4">
-                <h3 className="font-medium text-foreground">2. Familien-ID</h3>
-                <p className="text-sm text-muted-foreground">
-                  Gib diese ID deinem Kind, um die Apps zu koppeln.
-                </p>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 bg-black p-3 rounded border border-primary/50 text-primary font-mono text-center text-lg tracking-widest">
-                    {generatedId}
-                  </code>
-                  <Button size="icon" variant="outline" onClick={() => navigator.clipboard.writeText(generatedId)}>
-                    <Copy className="h-4 w-4" />
+              {!parentMode && (
+                <div className="grid gap-4">
+                  <p className="text-sm text-muted-foreground mb-2">Möchtest du eine neue Familie-ID erstellen oder eine bestehende verwenden?</p>
+                  <Button 
+                    onClick={() => setParentMode("new")} 
+                    variant="outline" 
+                    className="h-auto p-4 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
+                  >
+                    <Plus className="mr-3 text-primary" />
+                    <div>
+                      <h4 className="font-bold">Neue Familie-ID erstellen</h4>
+                      <p className="text-xs text-muted-foreground">Neue Familie gründen</p>
+                    </div>
+                  </Button>
+                  <Button 
+                    onClick={() => setParentMode("existing")} 
+                    variant="outline" 
+                    className="h-auto p-4 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
+                  >
+                    <LinkIcon className="mr-3 text-primary" />
+                    <div>
+                      <h4 className="font-bold">Bestehende Familie-ID verwenden</h4>
+                      <p className="text-xs text-muted-foreground">Zur existierenden Familie beitreten</p>
+                    </div>
                   </Button>
                 </div>
-              </div>
+              )}
+
+              {parentMode === "new" && (
+                <div className="space-y-4">
+                  <div className="space-y-4">
+                    <h3 className="font-medium text-foreground">1. LNbits Verbindung (Optional)</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Verbinde deine LNbits Instanz, um echte Zahlungen zu ermöglichen. Für den Testmodus kannst du dies überspringen.
+                    </p>
+                    <div className="grid gap-2">
+                      <Input placeholder="LNbits URL (z.B. https://legend.lnbits.com)" className="bg-secondary" />
+                      <Input placeholder="Admin Key" type="password" className="bg-secondary" />
+                    </div>
+                  </div>
+                  
+                  <Separator />
+
+                  <div className="space-y-4">
+                    <h3 className="font-medium text-foreground">2. Deine neue Familien-ID</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Gib diese ID deinem Kind, um die Apps zu koppeln.
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 bg-black p-3 rounded border border-primary/50 text-primary font-mono text-center text-lg tracking-widest">
+                        {generatedId}
+                      </code>
+                      <Button size="icon" variant="outline" onClick={() => navigator.clipboard.writeText(generatedId)}>
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => setParentMode(null)} className="w-full">
+                    ← Zurück
+                  </Button>
+                </div>
+              )}
+
+              {parentMode === "existing" && (
+                <div className="space-y-4">
+                  <Label>Familien-ID eingeben</Label>
+                  <Input 
+                    placeholder="BTC-XXXXXX" 
+                    value={connectionId}
+                    onChange={(e) => setConnectionId(e.target.value.toUpperCase())}
+                    className="bg-secondary border-border font-mono text-center uppercase tracking-widest"
+                  />
+                  <p className="text-xs text-muted-foreground text-center">
+                    Gib deine bestehende Familie-ID ein, um dich anzumelden.
+                  </p>
+                  <Button variant="ghost" size="sm" onClick={() => setParentMode(null)} className="w-full">
+                    ← Zurück
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 
@@ -419,7 +477,15 @@ function SetupPage({ role, onComplete, onBack }: { role: UserRole, onComplete: (
         </CardContent>
 
         <CardFooter>
-          <Button className="w-full" onClick={handleNext} disabled={step === 1 ? !name : (role === "child" && !connectionId)}>
+          <Button 
+            className="w-full" 
+            onClick={handleNext} 
+            disabled={
+              step === 1 ? !name : 
+              role === "parent" ? !parentMode || (parentMode === "existing" && !connectionId) :
+              !connectionId
+            }
+          >
             {step === 1 ? "Weiter" : "Fertigstellen"}
           </Button>
         </CardFooter>
