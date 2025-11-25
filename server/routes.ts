@@ -63,12 +63,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "peerId, lnbitsUrl, and lnbitsAdminKey required" });
       }
 
+      // Validate URL format
+      if (!lnbitsUrl.startsWith("http://") && !lnbitsUrl.startsWith("https://")) {
+        return res.status(400).json({ error: "LNBits URL must start with http:// or https://" });
+      }
+
+      // Validate admin key format
+      if (!lnbitsAdminKey.startsWith("sk_") && !lnbitsAdminKey.startsWith("pk_")) {
+        return res.status(400).json({ error: "Invalid admin key format (should start with sk_ or pk_)" });
+      }
+
       // Validate LNBits connection
       const lnbits = new LNBitsClient(lnbitsUrl, lnbitsAdminKey);
       try {
+        console.log("Testing LNBits connection with URL:", lnbitsUrl);
         await lnbits.createInvoice(1, "Test connection");
+        console.log("LNBits connection successful");
       } catch (error) {
-        return res.status(400).json({ error: "Invalid LNBits credentials or URL" });
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        console.error("LNBits connection failed:", errorMsg);
+        return res.status(400).json({ 
+          error: `LNBits connection failed: ${errorMsg}. Check URL, key, and wallet has balance.` 
+        });
       }
 
       const peer = await storage.updatePeerWallet(peerId, lnbitsUrl, lnbitsAdminKey);

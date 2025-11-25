@@ -17,7 +17,10 @@ export class LNBitsClient {
   ) {}
 
   async createInvoice(amount: number, memo: string): Promise<LNBitsInvoice> {
-    const response = await fetch(`${this.baseUrl}/api/v1/invoices`, {
+    const url = `${this.baseUrl}/api/v1/invoices`;
+    console.log("LNBits createInvoice - URL:", url);
+    
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "X-Api-Key": this.adminKey,
@@ -31,7 +34,9 @@ export class LNBitsClient {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to create invoice: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error("LNBits error:", response.status, errorText);
+      throw new Error(`LNBits error (${response.status}): ${errorText || response.statusText}`);
     }
 
     return response.json();
