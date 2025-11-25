@@ -26,7 +26,8 @@ import {
   Settings,
   Send,
   Copy,
-  ExternalLink
+  ExternalLink,
+  Trash2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -271,6 +272,12 @@ export default function App() {
       updates: { status: "approved" },
     });
     toast({ title: "Sats ausgezahlt!", description: "Transaktion gesendet." });
+  };
+
+  const handleDeleteTask = (taskId: number) => {
+    if (window.confirm("Aufgabe wirklich löschen?")) {
+      deleteTaskMutation.mutate(taskId);
+    }
   };
 
   if (mode === "role-select") {
@@ -710,20 +717,40 @@ function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, 
           <div className="mt-6 space-y-4">
             <TabsContent value="active" className="space-y-4">
               {tasks.filter((t: Task) => t.status === "open" || t.status === "assigned").map((task: Task) => (
-                <TaskCard key={task.id} task={task} variant="parent" />
+                <TaskCard key={task.id} task={task} variant="parent">
+                  <Button 
+                    onClick={() => handleDeleteTask(task.id)} 
+                    className="bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto"
+                    data-testid={`button-delete-task-${task.id}`}
+                    size="sm"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" /> Löschen
+                  </Button>
+                </TaskCard>
               ))}
             </TabsContent>
             
             <TabsContent value="review" className="space-y-4">
               {tasks.filter((t: Task) => t.status === "submitted").map((task: Task) => (
                 <TaskCard key={task.id} task={task} variant="parent">
-                  <Button 
-                    onClick={() => onApprove(task.id)} 
-                    className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
-                    data-testid={`button-approve-task-${task.id}`}
-                  >
-                    <CheckCircle className="mr-2 h-4 w-4" /> Genehmigen & Zahlen
-                  </Button>
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <Button 
+                      onClick={() => onApprove(task.id)} 
+                      className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white"
+                      data-testid={`button-approve-task-${task.id}`}
+                      size="sm"
+                    >
+                      <CheckCircle className="mr-2 h-4 w-4" /> Genehmigen
+                    </Button>
+                    <Button 
+                      onClick={() => handleDeleteTask(task.id)} 
+                      className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white"
+                      data-testid={`button-delete-task-${task.id}`}
+                      size="sm"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" /> Löschen
+                    </Button>
+                  </div>
                 </TaskCard>
               ))}
             </TabsContent>
