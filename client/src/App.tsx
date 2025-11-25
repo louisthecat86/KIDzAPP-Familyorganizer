@@ -517,12 +517,14 @@ function NavBar({ user, onLogout }: { user: User; onLogout: () => void }) {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-secondary border border-border">
-            <Bitcoin className="h-4 w-4 text-primary" />
-            <span className="text-sm font-mono font-bold text-primary" data-testid="text-balance">
-              {(user.balance || 0).toLocaleString()} sats
-            </span>
-          </div>
+          {user.role === "child" && (
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-secondary border border-border">
+              <Bitcoin className="h-4 w-4 text-primary" />
+              <span className="text-sm font-mono font-bold text-primary" data-testid="text-balance">
+                {(user.balance || 0).toLocaleString()} sats
+              </span>
+            </div>
+          )}
           <div className="flex items-center gap-3 pl-4 pr-2 py-1.5 rounded-full bg-secondary border border-border">
             <span className="text-sm font-medium text-muted-foreground" data-testid="text-username">
               {user.name}
