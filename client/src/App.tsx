@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import QRCode from "qrcode.react";
+import QRCodeComponent from "qrcode.react";
 import { 
   CheckCircle, 
   Circle, 
@@ -1060,7 +1060,7 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
               </Button>
               {showQR && (
                 <div className="mt-3 bg-white p-3 rounded border border-border inline-block">
-                  <QRCode value={task.paylink} size={150} level="H" includeMargin={true} />
+                  <QRCodeComponent value={task.paylink} size={150} level="H" includeMargin={true} />
                 </div>
               )}
             </div>
@@ -1078,7 +1078,7 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
               </Button>
               {showQR && (
                 <div className="mt-3 bg-white p-3 rounded border border-border inline-block">
-                  <QRCode value={task.withdrawLink} size={150} level="H" includeMargin={true} />
+                  <QRCodeComponent value={task.withdrawLink} size={150} level="H" includeMargin={true} />
                 </div>
               )}
             </div>
