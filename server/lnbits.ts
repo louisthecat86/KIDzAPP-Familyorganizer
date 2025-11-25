@@ -82,8 +82,8 @@ export class LNBitsClient {
   }
 
   async createPaylink(amount: number, memo: string): Promise<string> {
-    // Use Invoice API instead of Paylink to generate BOLT11 invoices
-    const response = await fetch(`${this.baseUrl}/api/v1/invoices`, {
+    // Try Invoice API first (modern LNBits)
+    let response = await fetch(`${this.baseUrl}/api/v1/invoices`, {
       method: "POST",
       headers: {
         "X-Api-Key": this.adminKey,
@@ -96,14 +96,33 @@ export class LNBitsClient {
       }),
     });
 
+    if (response.ok) {
+      const data = await response.json();
+      return data.payment_request;
+    }
+
+    // Fallback to Paylinks API (older LNBits)
+    console.log("Invoice API failed, trying Paylinks API");
+    response = await fetch(`${this.baseUrl}/api/v1/links`, {
+      method: "POST",
+      headers: {
+        "X-Api-Key": this.adminKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        amount: amount * 1000,
+        description: memo,
+        max_repay: amount * 1000,
+      }),
+    });
+
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Failed to create invoice: ${errorText || response.statusText}`);
+      throw new Error(`Failed to create paylink: ${errorText || response.statusText}`);
     }
 
     const data = await response.json();
-    // Return the BOLT11 payment request (this is the actual invoice)
-    return data.payment_request;
+    return `${this.baseUrl}/lnurlp/${data.id}`;
   }
 
   async createWithdrawLink(amount: number, memo: string, lnAddress: string): Promise<string> {

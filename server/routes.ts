@@ -6,6 +6,48 @@ import { z } from "zod";
 import { LNBitsClient } from "./lnbits";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Test LNBits connection
+  app.post("/api/wallet/test", async (req, res) => {
+    try {
+      const { lnbitsUrl, lnbitsAdminKey } = req.body;
+      
+      if (!lnbitsUrl || !lnbitsAdminKey) {
+        return res.status(400).json({ error: "lnbitsUrl and lnbitsAdminKey required" });
+      }
+
+      // Test invoice creation
+      const response = await fetch(`${lnbitsUrl}/api/v1/invoices`, {
+        method: "POST",
+        headers: {
+          "X-Api-Key": lnbitsAdminKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: 1,
+          memo: "Test invoice",
+          out: false,
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        return res.status(response.status).json({ 
+          error: `LNBits API error: ${response.status}`,
+          details: data 
+        });
+      }
+
+      res.json({ 
+        success: true, 
+        message: "LNBits wallet is working",
+        invoice: data
+      });
+    } catch (error) {
+      res.status(500).json({ error: String(error) });
+    }
+  });
+
   // Peer Registration
   app.post("/api/peers/register", async (req, res) => {
     try {
