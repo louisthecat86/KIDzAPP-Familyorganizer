@@ -70,8 +70,11 @@ async function registerUser(name: string, role: UserRole, pin: string): Promise<
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, role, pin }),
   });
-  if (!res.ok) throw new Error("Registrierung fehlgeschlagen");
-  return res.json();
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || "Registrierung fehlgeschlagen");
+  }
+  return data;
 }
 
 async function loginUser(name: string, role: UserRole, pin: string): Promise<User> {
@@ -80,8 +83,11 @@ async function loginUser(name: string, role: UserRole, pin: string): Promise<Use
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, role, pin }),
   });
-  if (!res.ok) throw new Error("Anmeldung fehlgeschlagen");
-  return res.json();
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || "Anmeldung fehlgeschlagen");
+  }
+  return data;
 }
 
 async function linkChildToParent(childId: number, parentName: string): Promise<User> {
@@ -90,8 +96,11 @@ async function linkChildToParent(childId: number, parentName: string): Promise<U
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ childId, parentName }),
   });
-  if (!res.ok) throw new Error("Fehler beim Verbinden mit Eltern");
-  return res.json();
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || "Fehler beim Verbinden mit Eltern");
+  }
+  return data;
 }
 
 async function setupWallet(peerId: number, lnbitsUrl: string, lnbitsAdminKey: string): Promise<User> {
@@ -100,8 +109,11 @@ async function setupWallet(peerId: number, lnbitsUrl: string, lnbitsAdminKey: st
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ peerId, lnbitsUrl, lnbitsAdminKey }),
   });
-  if (!res.ok) throw new Error("Wallet-Setup fehlgeschlagen");
-  return res.json();
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || "Wallet-Setup fehlgeschlagen");
+  }
+  return data;
 }
 
 async function withdrawSats(peerId: number, sats: number, paymentRequest: string): Promise<any> {
@@ -110,8 +122,11 @@ async function withdrawSats(peerId: number, sats: number, paymentRequest: string
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ peerId, sats, paymentRequest }),
   });
-  if (!res.ok) throw new Error("Auszahlung fehlgeschlagen");
-  return res.json();
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || "Auszahlung fehlgeschlagen");
+  }
+  return data;
 }
 
 async function fetchTasks(connectionId: string): Promise<Task[]> {
