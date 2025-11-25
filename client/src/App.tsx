@@ -315,19 +315,17 @@ export default function App() {
             transition={{ duration: 0.3 }}
           >
             {user.role === "parent" ? (
-              <>
-                <NavBar user={user} onLogout={logout} />
-                <ParentDashboard
-                  user={user}
-                  setUser={setUser}
-                  tasks={tasks} 
-                  newTask={newTask} 
-                  setNewTask={setNewTask} 
-                  onCreate={handleCreateTask} 
-                  onApprove={approveTask}
-                  onDelete={handleDeleteTask}
-                />
-              </>
+              <ParentDashboardWithSettings
+                user={user}
+                setUser={setUser}
+                tasks={tasks} 
+                newTask={newTask} 
+                setNewTask={setNewTask} 
+                onCreate={handleCreateTask} 
+                onApprove={approveTask}
+                onDelete={handleDeleteTask}
+                onLogout={logout}
+              />
             ) : (
               <>
                 <NavBar user={user} onLogout={logout} />
@@ -596,13 +594,13 @@ function NavBar({ user, onLogout, onSettings }: { user: User; onLogout: () => vo
   );
 }
 
-function ParentDashboardWithSettings({ user, setUser, tasks, newTask, setNewTask, onCreate, onApprove, onDelete }: any) {
+function ParentDashboardWithSettings({ user, setUser, tasks, newTask, setNewTask, onCreate, onApprove, onDelete, onLogout }: any) {
   const [showSettings, setShowSettings] = useState(false);
   
   return (
     <>
       {showSettings && <SettingsModal user={user} setUser={setUser} onClose={() => setShowSettings(false)} />}
-      <NavBar user={user} onLogout={() => {}} onSettings={() => setShowSettings(true)} />
+      <NavBar user={user} onLogout={onLogout} onSettings={() => setShowSettings(true)} />
       <ParentDashboard user={user} setUser={setUser} tasks={tasks} newTask={newTask} setNewTask={setNewTask} onCreate={onCreate} onApprove={onApprove} onDelete={onDelete} />
     </>
   );
