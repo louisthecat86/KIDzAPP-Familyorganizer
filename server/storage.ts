@@ -5,11 +5,13 @@ import { eq, and } from "drizzle-orm";
 export interface IStorage {
   // Peer operations
   getPeer(id: number): Promise<Peer | undefined>;
+  getPeerByName(name: string): Promise<Peer | undefined>;
   getPeerByConnectionId(connectionId: string, role: string): Promise<Peer | undefined>;
-  getPeerByNameAndConnectionId(name: string, connectionId: string, role: string): Promise<Peer | undefined>;
   getPeerByNameAndPin(name: string, pin: string, role: string): Promise<Peer | undefined>;
   getPeerByPin(pin: string): Promise<Peer | undefined>;
+  getAllParents(): Promise<Peer[]>;
   createPeer(peer: InsertPeer): Promise<Peer>;
+  linkChildToParent(childId: number, parentConnectionId: string): Promise<Peer>;
   
   // Task operations
   getTasks(connectionId: string): Promise<Task[]>;
@@ -25,20 +27,16 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  async getPeerByConnectionId(connectionId: string, role: string): Promise<Peer | undefined> {
+  async getPeerByName(name: string): Promise<Peer | undefined> {
     const result = await db.select().from(peers)
-      .where(and(eq(peers.connectionId, connectionId), eq(peers.role, role)))
+      .where(eq(peers.name, name))
       .limit(1);
     return result[0];
   }
 
-  async getPeerByNameAndConnectionId(name: string, connectionId: string, role: string): Promise<Peer | undefined> {
+  async getPeerByConnectionId(connectionId: string, role: string): Promise<Peer | undefined> {
     const result = await db.select().from(peers)
-      .where(and(
-        eq(peers.name, name),
-        eq(peers.connectionId, connectionId),
-        eq(peers.role, role)
-      ))
+      .where(and(eq(peers.connectionId, connectionId), eq(peers.role, role)))
       .limit(1);
     return result[0];
   }
@@ -61,8 +59,20 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  async getAllParents(): Promise<Peer[]> {
+    return await db.select().from(peers).where(eq(peers.role, "parent"));
+  }
+
   async createPeer(insertPeer: InsertPeer): Promise<Peer> {
     const result = await db.insert(peers).values(insertPeer).returning();
+    return result[0];
+  }
+
+  async linkChildToParent(childId: number, parentConnectionId: string): Promise<Peer> {
+    const result = await db.update(peers)
+      .set({ connectionId: parentConnectionId })
+      .where(eq(peers.id, childId))
+      .returning();
     return result[0];
   }
 

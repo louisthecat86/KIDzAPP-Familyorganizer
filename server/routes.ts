@@ -8,11 +8,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Peer Registration
   app.post("/api/peers/register", async (req, res) => {
     try {
-      const { name, role, pin, connectionId } = req.body;
+      const { name, role, pin } = req.body;
       
-      if (!name || !role || !pin || !connectionId) {
-        return res.status(400).json({ error: "Name, role, pin, and connectionId required" });
+      if (!name || !role || !pin) {
+        return res.status(400).json({ error: "Name, role, and pin required" });
       }
+
+      // Generate unique connection ID
+      const connectionId = `BTC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
       // Create new peer
       const peer = await storage.createPeer({
@@ -20,7 +23,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role,
         pin,
         connectionId,
-        pairedWithPin: null,
       });
       res.json(peer);
     } catch (error) {
@@ -53,34 +55,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Pair child with family using parent's connection ID
-  app.post("/api/peers/pair", async (req, res) => {
+  // Link child to parent (joins child to parent's family)
+  app.post("/api/peers/link", async (req, res) => {
     try {
-      const { name, personalPin, role, parentConnectionId } = req.body;
+      const { childId, parentName } = req.body;
       
-      if (!name || !personalPin || !role || !parentConnectionId) {
-        return res.status(400).json({ error: "Name, personalPin, role, and parentConnectionId required" });
+      if (!childId || !parentName) {
+        return res.status(400).json({ error: "childId and parentName required" });
       }
 
-      if (role === "parent") {
-        return res.status(400).json({ error: "Parents cannot pair with another connection" });
+      // Find parent by name
+      const parent = await storage.getPeerByName(parentName);
+      
+      if (!parent || parent.role !== "parent") {
+        return res.status(404).json({ error: "Parent not found" });
       }
-      
-      // Create child peer with parent's connectionId
-      const childPeer = await storage.createPeer({
-        name,
-        role,
-        pin: personalPin,
-        connectionId: parentConnectionId,
-        pairedWithPin: null,
-      });
-      
-      res.json(childPeer);
+
+      // Update child's connectionId to parent's
+      const updatedChild = await storage.linkChildToParent(childId, parent.connectionId);
+      res.json(updatedChild);
     } catch (error) {
-      if ((error as any).message?.includes("unique constraint")) {
-        return res.status(400).json({ error: "PIN already in use" });
-      }
-      res.status(500).json({ error: "Failed to pair" });
+      console.error("Link error:", error);
+      res.status(500).json({ error: "Failed to link child to parent" });
+    }
+  });
+
+  // Get all parents
+  app.get("/api/peers/parents", async (req, res) => {
+    try {
+      const parents = await storage.getAllParents();
+      res.json(parents);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch parents" });
     }
   });
 
