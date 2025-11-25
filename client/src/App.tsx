@@ -363,70 +363,79 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
       
       {/* Welcome Text Animation */}
-      <motion.div
-        className="absolute top-12 sm:top-16 left-0 right-0 text-center z-5 pointer-events-none px-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-      >
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-heading font-black text-primary mb-2">
-          Spark ⚡ Kids
-        </h1>
-        <p className="text-sm sm:text-base md:text-lg text-foreground font-semibold">
-          Wo Aufgaben zu Belohnungen werden
-        </p>
-      </motion.div>
+      <div className="w-full flex flex-col items-center gap-8 px-4 sm:px-0">
+        {/* Header */}
+        <motion.div 
+          className="text-center"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-heading font-black text-primary mb-3">
+            Spark ⚡
+          </h1>
+          <p className="text-xl sm:text-2xl text-foreground font-bold">
+            Kids
+          </p>
+          <p className="text-base sm:text-lg text-foreground/70 mt-3 font-medium">
+            Wo Aufgaben zu Belohnungen werden
+          </p>
+        </motion.div>
 
-      <Card className="w-full max-w-2xl z-10 border-2 border-primary/30 shadow-lg mx-4 sm:mx-0">
-        <div className="flex flex-col gap-0">
-          <div className="p-6 sm:p-8 md:p-10 bg-gradient-to-r from-primary/10 to-secondary/10 border-b border-primary/20 text-center">
-            <div className="h-16 md:h-20 w-16 md:w-20 bg-primary rounded-2xl flex items-center justify-center mb-4 mx-auto text-white shadow-md">
-              <Bitcoin className="h-10 md:h-12 w-10 md:w-12" />
+        {/* Role Selection */}
+        <motion.div 
+          className="w-full max-w-md grid grid-cols-2 gap-4 sm:gap-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          {/* Parent Card */}
+          <motion.button
+            whileHover={{ y: -8, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)" }}
+            onClick={() => onSelect("parent")}
+            data-testid="button-select-parent"
+            className="group flex flex-col items-center justify-center p-6 sm:p-8 rounded-2xl bg-white border-2 border-primary/20 hover:border-primary transition-all cursor-pointer"
+          >
+            <div className="h-16 sm:h-20 w-16 sm:w-20 bg-primary rounded-xl flex items-center justify-center mb-4 text-white group-hover:scale-110 transition-transform">
+              <UserIcon className="h-8 sm:h-10 w-8 sm:w-10" />
             </div>
-            <h2 className="text-2xl md:text-3xl font-heading font-bold mb-2 text-primary">
-              Verdiene Sats
-            </h2>
-            <p className="text-foreground text-sm md:text-base leading-relaxed">
-              Bitcoin-Chore-App für die ganze Familie. Erledige Aufgaben und sammle Sats als Belohnung!
+            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-1">Eltern</h3>
+            <p className="text-xs sm:text-sm text-foreground/60 text-center">Wallet & Aufgaben</p>
+          </motion.button>
+
+          {/* Kid Card */}
+          <motion.button
+            whileHover={{ y: -8, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)" }}
+            onClick={() => onSelect("child")}
+            data-testid="button-select-child"
+            className="group flex flex-col items-center justify-center p-6 sm:p-8 rounded-2xl bg-white border-2 border-secondary/20 hover:border-secondary transition-all cursor-pointer"
+          >
+            <div className="h-16 sm:h-20 w-16 sm:w-20 bg-secondary rounded-xl flex items-center justify-center mb-4 text-white group-hover:scale-110 transition-transform">
+              <Sparkles className="h-8 sm:h-10 w-8 sm:w-10" />
+            </div>
+            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-1">Kind</h3>
+            <p className="text-xs sm:text-sm text-foreground/60 text-center">Aufgaben & Sats</p>
+          </motion.button>
+        </motion.div>
+
+        {/* Info Box */}
+        <motion.div
+          className="w-full max-w-md bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl p-5 sm:p-6 border border-primary/10 text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+        >
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Bitcoin className="h-5 w-5 text-primary" />
+            <p className="text-sm sm:text-base font-semibold text-foreground">
+              Bitcoin-Chore-App für die Familie
             </p>
           </div>
-
-          <div className="p-6 sm:p-8 md:p-10">
-            <h3 className="text-xl sm:text-2xl font-heading font-bold mb-6 text-foreground text-center">Wähle deine Rolle</h3>
-            <div className="grid gap-4">
-              <motion.button 
-                whileHover={{ y: -3 }}
-                onClick={() => onSelect("parent")}
-                data-testid="button-select-parent"
-                className="w-full p-5 sm:p-6 rounded-xl border-2 border-primary bg-gradient-to-r from-primary/5 to-transparent hover:bg-gradient-to-r hover:from-primary/15 hover:to-transparent transition-all flex items-center gap-4 group"
-              >
-                <div className="h-14 sm:h-16 w-14 sm:w-16 rounded-lg bg-primary flex items-center justify-center text-white flex-shrink-0">
-                  <UserIcon className="h-7 sm:h-8 w-7 sm:w-8" />
-                </div>
-                <div className="text-left min-w-0">
-                  <h4 className="font-bold text-lg sm:text-xl text-foreground">Eltern</h4>
-                  <p className="text-sm text-foreground/70 font-medium">Wallet & Aufgaben verwalten</p>
-                </div>
-              </motion.button>
-
-              <motion.button 
-                whileHover={{ y: -3 }}
-                onClick={() => onSelect("child")}
-                data-testid="button-select-child"
-                className="w-full p-5 sm:p-6 rounded-xl border-2 border-secondary bg-gradient-to-r from-secondary/5 to-transparent hover:bg-gradient-to-r hover:from-secondary/15 hover:to-transparent transition-all flex items-center gap-4 group"
-              >
-                <div className="h-14 sm:h-16 w-14 sm:w-16 rounded-lg bg-secondary flex items-center justify-center text-white flex-shrink-0">
-                  <Sparkles className="h-7 sm:h-8 w-7 sm:w-8" />
-                </div>
-                <div className="text-left min-w-0">
-                  <h4 className="font-bold text-lg sm:text-xl text-foreground">Kind</h4>
-                  <p className="text-sm text-foreground/70 font-medium">Aufgaben erledigen & Sats sammeln</p>
-                </div>
-              </motion.button>
-            </div>
-          </div>
-        </div>
-      </Card>
+          <p className="text-xs sm:text-sm text-foreground/60">
+            Erledige Aufgaben und verdiene echte Sats
+          </p>
+        </motion.div>
+      </div>
     </div>
   );
 }
