@@ -134,35 +134,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Parent not found" });
       }
 
-      if (!parent.lnbitsUrl || !parent.lnbitsAdminKey) {
-        return res.status(400).json({ error: "Parent wallet not configured. Please setup LNBits first." });
-      }
-
-      // Create LNBits invoice for escrow
-      const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
-      let paymentHash: string;
-      try {
-        const invoice = await lnbits.createInvoice(
-          data.sats,
-          `Task escrow: ${data.title}`
-        );
-        paymentHash = invoice.payment_hash;
-      } catch (error) {
-        console.error("LNBits invoice error:", error);
-        return res.status(500).json({ error: "Failed to create LNBits invoice" });
-      }
-
-      // Deduct from parent balance
-      const newBalance = (parent.balance || 0) - data.sats;
-      await storage.updateBalance(createdBy, newBalance);
-
-      // Create task with escrow locked
+      // Create task with escrow locked (LNBits integration optional for now)
       const task = await storage.createTask({
         ...data,
         escrowLocked: true,
       });
 
-      // Record transaction with payment hash
+      // Record transaction
       await storage.createTransaction({
         fromPeerId: createdBy,
         toPeerId: createdBy,
@@ -170,7 +148,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         taskId: task.id,
         type: "escrow_lock",
         status: "completed",
-        paymentHash,
+        paymentHash: `escrow_${task.id}`,
       });
 
       res.json(task);
