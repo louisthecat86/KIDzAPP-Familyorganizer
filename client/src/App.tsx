@@ -437,6 +437,7 @@ export default function App() {
                   newEvent={newEvent}
                   setNewEvent={setNewEvent}
                   currentView={currentView}
+                  setCurrentView={setCurrentView}
                   onCreate={handleCreateTask}
                   onCreateEvent={handleCreateEvent}
                   onApprove={approveTask}
@@ -915,7 +916,7 @@ function SettingsModal({ user, setUser, onClose }: any) {
   );
 }
 
-function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent }: any) {
+function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent }: any) {
   const [nwcConnectionString, setNwcConnectionString] = useState(user.nwcConnectionString || "");
   const [lnbitsUrl, setLnbitsUrl] = useState(user.lnbitsUrl || "");
   const [lnbitsAdminKey, setLnbitsAdminKey] = useState(user.lnbitsAdminKey || "");
