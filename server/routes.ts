@@ -293,8 +293,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       try {
         const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
-        const walletInfo = await lnbits.getWalletInfo();
-        res.json({ walletBalance: walletInfo.balance });
+        const balance = await lnbits.getBalance();
+        res.json({ walletBalance: balance });
       } catch (error) {
         console.warn("LNbits wallet balance fetch failed:", error);
         res.json({ walletBalance: null, message: "Failed to fetch wallet balance" });

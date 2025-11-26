@@ -154,4 +154,19 @@ export class LNBitsClient {
       throw new Error(`Failed to pay to lightning address: ${error}`);
     }
   }
+
+  async getBalance(): Promise<number> {
+    const response = await fetch(`${this.baseUrl}/api/v1/wallet`, {
+      headers: {
+        "X-Api-Key": this.adminKey,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to get wallet balance: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.balance || 0;
+  }
 }
