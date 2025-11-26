@@ -408,7 +408,7 @@ export default function App() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-primary-foreground flex">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-foreground font-sans selection:bg-primary selection:text-primary-foreground flex">
       <Sidebar 
         user={user} 
         currentView={currentView} 
@@ -517,7 +517,7 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
         initial={{ x: 250 }}
         animate={{ x: sidebarOpen ? 0 : 250 }}
         transition={{ duration: 0.3 }}
-        className="fixed right-0 top-0 h-screen w-64 bg-card border-l border-border z-40 flex flex-col md:hidden"
+        className="fixed right-0 top-0 h-screen w-64 bg-gradient-to-b from-gray-900 to-black border-l border-border z-40 flex flex-col md:hidden"
       >
         <div className="p-4 border-b border-border space-y-3">
           <div className="flex items-center justify-between">
@@ -657,8 +657,8 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
 
 function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-6 relative overflow-hidden">
-      <Card className="w-full max-w-4xl z-10 border-border/50 bg-card/80 backdrop-blur-xl shadow-2xl">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4 sm:p-6 relative overflow-hidden">
+      <Card className="w-full max-w-4xl z-10 border-border/50 bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl shadow-2xl">
         <div className="flex flex-col md:grid md:grid-cols-2 gap-0">
           <div className="flex p-4 sm:p-6 md:p-10 bg-gradient-to-br from-primary/10 to-background flex-col justify-center border-b md:border-b-0 md:border-r border-border/50">
             <div className="h-12 md:h-16 w-12 md:w-16 bg-primary/20 rounded-2xl flex items-center justify-center mb-4 md:mb-6 text-primary">
@@ -772,8 +772,8 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-lg border-border/50 bg-card/90 backdrop-blur-xl">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4">
+      <Card className="w-full max-w-lg border-border/50 bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl">
         <CardHeader>
           <Button 
             variant="ghost" 
@@ -874,7 +874,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
 
 function NavBar({ user, onLogout, onSettings }: { user: User; onLogout: () => void; onSettings?: () => void }) {
   return (
-    <header className="bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-50">
+    <header className="bg-gradient-to-r from-gray-900 to-gray-950 backdrop-blur-md border-b border-border sticky top-0 z-50">
       <div className="container mx-auto px-4 h-20 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center text-primary-foreground shadow-[0_0_15px_rgba(247,147,26,0.5)]">
