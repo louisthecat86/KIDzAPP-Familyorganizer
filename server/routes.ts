@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertPeerSchema, insertTaskSchema, insertFamilyEventSchema } from "@shared/schema";
+import { insertPeerSchema, insertTaskSchema, insertFamilyEventSchema, insertEventRsvpSchema } from "@shared/schema";
 import { z } from "zod";
 import { LNBitsClient } from "./lnbits";
 import { NWCClient } from "./nwc";
@@ -586,6 +586,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Delete event error:", error);
       res.status(500).json({ error: "Failed to delete event" });
+    }
+  });
+
+  // Get RSVPs for an event
+  app.get("/api/events/:id/rsvps", async (req, res) => {
+    try {
+      const eventId = parseInt(req.params.id);
+      const rsvps = await storage.getRsvpsByEvent(eventId);
+      
+      // Enrich with child names
+      const enrichedRsvps = await Promise.all(rsvps.map(async (rsvp) => {
+        const child = await storage.getPeer(rsvp.peerId);
+        return {
+          ...rsvp,
+          childName: child?.name || "Unknown",
+        };
+      }));
+      
+      res.json(enrichedRsvps);
+    } catch (error) {
+      console.error("Get RSVPs error:", error);
+      res.status(500).json({ error: "Failed to fetch RSVPs" });
+    }
+  });
+
+  // Submit RSVP (child accepts/declines event)
+  app.post("/api/events/:id/rsvps", async (req, res) => {
+    try {
+      const eventId = parseInt(req.params.id);
+      const { peerId, response } = req.body;
+
+      if (!peerId || !response || !["accepted", "declined"].includes(response)) {
+        return res.status(400).json({ error: "peerId and response (accepted/declined) required" });
+      }
+
+      const rsvp = await storage.createOrUpdateRsvp(peerId, eventId, response);
+      res.json(rsvp);
+    } catch (error) {
+      console.error("Create RSVP error:", error);
+      res.status(500).json({ error: "Failed to submit RSVP" });
     }
   });
 

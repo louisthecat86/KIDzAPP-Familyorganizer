@@ -2232,6 +2232,33 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
   };
 
   if (currentView === "calendar") {
+    const [rsvps, setRsvps] = useState<Record<number, string>>({});
+    const [loading, setLoading] = useState<Record<number, boolean>>({});
+
+    const handleRsvp = async (eventId: number, response: string) => {
+      setLoading({ ...loading, [eventId]: true });
+      try {
+        await fetch(`/api/events/${eventId}/rsvps`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ peerId: user.id, response }),
+        });
+        setRsvps({ ...rsvps, [eventId]: response });
+        toast({
+          title: response === "accepted" ? "Zusage! 🎉" : "Absage bestätigt",
+          description: response === "accepted" ? "Du nimmst am Termin teil!" : "Die Absage wurde registriert"
+        });
+      } catch (error) {
+        toast({
+          title: "Fehler",
+          description: "RSVP konnte nicht gespeichert werden",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading({ ...loading, [eventId]: false });
+      }
+    };
+
     return (
       <div className="max-w-4xl">
         <h1 className="text-3xl font-bold mb-8">Familienkalender</h1>
@@ -2262,6 +2289,25 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                           <MapPin className="h-4 w-4" /> {event.location}
                         </p>
                       )}
+                      <div className="flex gap-2 mt-4">
+                        <Button
+                          onClick={() => handleRsvp(event.id, "accepted")}
+                          disabled={loading[event.id] || rsvps[event.id] === "declined"}
+                          className={`flex-1 ${rsvps[event.id] === "accepted" ? "bg-green-600 hover:bg-green-700" : "bg-primary"}`}
+                          data-testid={`button-accept-event-${event.id}`}
+                        >
+                          {rsvps[event.id] === "accepted" ? "✓ Zusage" : "Zusagen"}
+                        </Button>
+                        <Button
+                          onClick={() => handleRsvp(event.id, "declined")}
+                          disabled={loading[event.id] || rsvps[event.id] === "accepted"}
+                          variant="destructive"
+                          className="flex-1"
+                          data-testid={`button-decline-event-${event.id}`}
+                        >
+                          {rsvps[event.id] === "declined" ? "✗ Absage" : "Absagen"}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>

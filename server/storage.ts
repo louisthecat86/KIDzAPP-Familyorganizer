@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents } from "@shared/schema";
+import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
@@ -33,6 +33,11 @@ export interface IStorage {
   createEvent(event: InsertFamilyEvent): Promise<FamilyEvent>;
   updateEvent(id: number, event: Partial<FamilyEvent>): Promise<FamilyEvent | undefined>;
   deleteEvent(id: number): Promise<boolean>;
+
+  // Event RSVP operations
+  getRsvpsByEvent(eventId: number): Promise<EventRsvp[]>;
+  getRsvpForUserEvent(peerId: number, eventId: number): Promise<EventRsvp | undefined>;
+  createOrUpdateRsvp(peerId: number, eventId: number, response: string): Promise<EventRsvp>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -265,6 +270,37 @@ export class DatabaseStorage implements IStorage {
     const result = await db.select().from(tasks)
       .where(and(eq(tasks.createdBy, peerId), eq(tasks.connectionId, connectionId)));
     return result.reduce((sum, t) => sum + t.sats, 0);
+  }
+
+  // Event RSVP operations
+  async getRsvpsByEvent(eventId: number): Promise<EventRsvp[]> {
+    return await db.select().from(eventRsvps).where(eq(eventRsvps.eventId, eventId));
+  }
+
+  async getRsvpForUserEvent(peerId: number, eventId: number): Promise<EventRsvp | undefined> {
+    const result = await db.select().from(eventRsvps)
+      .where(and(eq(eventRsvps.peerId, peerId), eq(eventRsvps.eventId, eventId)))
+      .limit(1);
+    return result[0];
+  }
+
+  async createOrUpdateRsvp(peerId: number, eventId: number, response: string): Promise<EventRsvp> {
+    const existing = await this.getRsvpForUserEvent(peerId, eventId);
+    
+    if (existing) {
+      const result = await db.update(eventRsvps)
+        .set({ response, updatedAt: new Date() })
+        .where(and(eq(eventRsvps.peerId, peerId), eq(eventRsvps.eventId, eventId)))
+        .returning();
+      return result[0];
+    } else {
+      const result = await db.insert(eventRsvps).values({
+        peerId,
+        eventId,
+        response,
+      }).returning();
+      return result[0];
+    }
   }
 }
 
