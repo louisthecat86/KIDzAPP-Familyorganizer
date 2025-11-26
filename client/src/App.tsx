@@ -403,6 +403,7 @@ export default function App() {
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         onLogout={logout}
+        side="right"
       />
       <main className="flex-1 overflow-auto relative">
         {!sidebarOpen && (
@@ -410,7 +411,7 @@ export default function App() {
             variant="ghost"
             size="icon"
             onClick={() => setSidebarOpen(true)}
-            className="fixed left-4 top-4 z-30 md:hidden"
+            className="fixed right-4 top-4 z-30 md:hidden"
             data-testid="button-open-sidebar"
           >
             <Menu className="h-5 w-5" />
