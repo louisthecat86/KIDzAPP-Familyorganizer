@@ -920,8 +920,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   const [nwcConnectionString, setNwcConnectionString] = useState(user.nwcConnectionString || "");
   const [lnbitsUrl, setLnbitsUrl] = useState(user.lnbitsUrl || "");
   const [lnbitsAdminKey, setLnbitsAdminKey] = useState(user.lnbitsAdminKey || "");
-  const [lnbitsWithdrawUrl, setLnbitsWithdrawUrl] = useState(user.lnbitsWithdrawUrl || "");
-  const [lnbitsWithdrawKey, setLnbitsWithdrawKey] = useState(user.lnbitsWithdrawKey || "");
+  const [lightningAddress, setLightningAddress] = useState(user.lightningAddress || "");
   const [showConnectionCode, setShowConnectionCode] = useState(() => {
     const stored = localStorage.getItem(`connectionCodeShown_${user.id}`);
     return !stored;
