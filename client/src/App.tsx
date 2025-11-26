@@ -479,6 +479,7 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
         { id: "dashboard", label: "Dashboard", icon: Home },
         { id: "tasks", label: "Aufgaben", icon: Trophy },
         { id: "calendar", label: "Familienkalender", icon: Calendar },
+        { id: "leaderboard", label: "🏆 Bestenliste", icon: Trophy },
         { id: "peers", label: "Familienmitglieder", icon: Users },
         { id: "nostr", label: "Wallet-Einstellungen", icon: Bitcoin },
       ]
