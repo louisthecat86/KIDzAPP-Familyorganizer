@@ -396,7 +396,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Insufficient balance" });
       }
 
-      let paymentHash: string;
+      let paymentHash: string = "";
 
       // Try child's own withdraw wallet first
       if (child.lnbitsWithdrawUrl && child.lnbitsWithdrawKey) {

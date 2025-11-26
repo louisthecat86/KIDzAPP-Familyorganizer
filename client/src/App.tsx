@@ -1194,47 +1194,95 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           </TabsContent>
 
           <TabsContent value="lnbits">
-            <Card>
-              <CardHeader>
-                <CardTitle>LNbits Wallet-Verbindung</CardTitle>
-                <CardDescription>Verbinde dein LNbits Wallet für Zahlungen</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="lnbits-url">LNbits Server URL</Label>
-                  <Input 
-                    id="lnbits-url"
-                    placeholder="https://lnbits.example.com"
-                    value={lnbitsUrl}
-                    onChange={(e) => setLnbitsUrl(e.target.value)}
-                    className="font-mono text-xs"
-                    data-testid="input-lnbits-url"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lnbits-key">LNbits Admin Key</Label>
-                  <Input 
-                    id="lnbits-key"
-                    placeholder="deine-admin-key..."
-                    type="password"
-                    value={lnbitsAdminKey}
-                    onChange={(e) => setLnbitsAdminKey(e.target.value)}
-                    className="font-mono text-xs"
-                    data-testid="input-lnbits-key"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Status: {user.lnbitsUrl ? "✓ Verbunden" : "✗ Nicht verbunden"}
-                  </p>
-                </div>
-                <Button 
-                  onClick={setupLNbits}
-                  className="bg-primary hover:bg-primary/90"
-                  data-testid="button-setup-lnbits-settings"
-                >
-                  Speichern
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>LNbits Wallet (für Aufgaben & Auszahlungen)</CardTitle>
+                  <CardDescription>Verbinde dein LNbits Wallet für Zahlungen und Escrow</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="lnbits-url">LNbits Server URL</Label>
+                    <Input 
+                      id="lnbits-url"
+                      placeholder="https://lnbits.example.com"
+                      value={lnbitsUrl}
+                      onChange={(e) => setLnbitsUrl(e.target.value)}
+                      className="font-mono text-xs"
+                      data-testid="input-lnbits-url"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lnbits-key">LNbits Admin Key</Label>
+                    <Input 
+                      id="lnbits-key"
+                      placeholder="deine-admin-key..."
+                      type="password"
+                      value={lnbitsAdminKey}
+                      onChange={(e) => setLnbitsAdminKey(e.target.value)}
+                      className="font-mono text-xs"
+                      data-testid="input-lnbits-key"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Status: {user.lnbitsUrl ? "✓ Verbunden" : "✗ Nicht verbunden"}
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={setupLNbits}
+                    className="bg-primary hover:bg-primary/90"
+                    data-testid="button-setup-lnbits-settings"
+                  >
+                    Speichern
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {user.role === "child" && (
+                <Card className="border-2 border-primary/40 bg-primary/5">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Bitcoin className="h-5 w-5 text-primary" /> Auszahlungs-Wallet
+                    </CardTitle>
+                    <CardDescription>Hinterlege deine Lightning Wallet für Sats-Auszahlungen</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="withdraw-url">LNbits Server URL</Label>
+                      <Input 
+                        id="withdraw-url"
+                        placeholder="https://lnbits.example.com"
+                        value={lnbitsWithdrawUrl}
+                        onChange={(e) => setLnbitsWithdrawUrl(e.target.value)}
+                        className="font-mono text-xs"
+                        data-testid="input-withdraw-url"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="withdraw-key">LNbits Withdraw Key</Label>
+                      <Input 
+                        id="withdraw-key"
+                        placeholder="deine-withdraw-key..."
+                        type="password"
+                        value={lnbitsWithdrawKey}
+                        onChange={(e) => setLnbitsWithdrawKey(e.target.value)}
+                        className="font-mono text-xs"
+                        data-testid="input-withdraw-key"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Status: {user.lnbitsWithdrawUrl ? "✓ Konfiguriert" : "✗ Nicht konfiguriert"}
+                      </p>
+                    </div>
+                    <Button 
+                      onClick={setupChildWithdrawWallet}
+                      className="bg-primary hover:bg-primary/90"
+                      data-testid="button-setup-withdraw-wallet"
+                    >
+                      Speichern
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </div>
