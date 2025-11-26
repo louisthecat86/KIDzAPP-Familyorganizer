@@ -477,8 +477,9 @@ export default function App() {
 }
 
 function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpen, onLogout }: any) {
-  const [showSettingsSubmenu, setShowSettingsSubmenu] = useState(false);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+  const [showWalletSubmenu, setShowWalletSubmenu] = useState(false);
+  const [activeSettingsTab, setActiveSettingsTab] = useState<"ansicht" | "wallet" | "peers" | null>(null);
   
   const menuItems = user.role === "parent" 
     ? [
@@ -486,26 +487,28 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
         { id: "tasks", label: "Aufgaben", icon: Trophy },
         { id: "calendar", label: "Familienkalender", icon: Calendar },
         { id: "leaderboard", label: "🏆 Bestenliste", icon: Trophy },
-        { id: "peers", label: "Familienmitglieder", icon: Users },
       ]
     : [
         { id: "dashboard", label: "Mein Dashboard", icon: Home },
         { id: "tasks", label: "Verfügbare Aufgaben", icon: Trophy },
         { id: "calendar", label: "Familienkalender", icon: Calendar },
         { id: "leaderboard", label: "🏆 Bestenliste", icon: Trophy },
-        { id: "peers", label: "Meine Familie", icon: Users },
       ];
 
-  const handleSettingsSubmenu = (action: string) => {
-    if (action === "view") {
-      setShowSettingsModal(true);
-      setSidebarOpen(false);
-    }
+  const handleSettingsClick = (tab: "ansicht" | "wallet" | "peers") => {
+    setActiveSettingsTab(tab);
   };
 
   return (
     <>
-      {showSettingsModal && <SettingsModal user={user} setUser={() => {}} onClose={() => setShowSettingsModal(false)} />}
+      {activeSettingsTab && (
+        <SettingsModal 
+          user={user} 
+          setUser={() => {}} 
+          activeTab={activeSettingsTab}
+          onClose={() => setActiveSettingsTab(null)} 
+        />
+      )}
       <motion.aside
         initial={{ x: 250 }}
         animate={{ x: sidebarOpen ? 0 : 250 }}
@@ -568,23 +571,64 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
 
           <div className="pt-2 border-t border-border">
             <button
-              onClick={() => setShowSettingsSubmenu(!showSettingsSubmenu)}
+              onClick={() => setShowSettingsMenu(!showSettingsMenu)}
               className="w-full px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-muted-foreground hover:bg-secondary"
               data-testid="menu-item-settings"
             >
               <Settings className="h-4 w-4" />
               <span>Einstellungen</span>
-              <ChevronDown className={`h-4 w-4 ml-auto transition-transform ${showSettingsSubmenu ? "rotate-180" : ""}`} />
+              <ChevronDown className={`h-4 w-4 ml-auto transition-transform ${showSettingsMenu ? "rotate-180" : ""}`} />
             </button>
             
-            {showSettingsSubmenu && (
+            {showSettingsMenu && (
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-4 mt-1 space-y-1">
+                {/* Ansicht */}
                 <button
-                  onClick={() => handleSettingsSubmenu("view")}
+                  onClick={() => { handleSettingsClick("ansicht"); setSidebarOpen(false); }}
                   className="w-full px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary transition-colors text-left"
-                  data-testid="submenu-view-settings"
+                  data-testid="submenu-ansicht"
                 >
                   📐 Ansicht
+                </button>
+
+                {/* Wallet Einstellung mit Submenü */}
+                <div>
+                  <button
+                    onClick={() => setShowWalletSubmenu(!showWalletSubmenu)}
+                    className="w-full px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary transition-colors text-left flex items-center justify-between"
+                    data-testid="submenu-wallet"
+                  >
+                    <span>💰 Wallet Einstellung</span>
+                    <ChevronDown className={`h-3 w-3 transition-transform ${showWalletSubmenu ? "rotate-180" : ""}`} />
+                  </button>
+                  
+                  {showWalletSubmenu && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-6 mt-1 space-y-1">
+                      <button
+                        onClick={() => { handleSettingsClick("wallet"); setSidebarOpen(false); }}
+                        className="w-full px-4 py-2 rounded-lg text-xs text-muted-foreground hover:bg-secondary transition-colors text-left"
+                        data-testid="submenu-wallet-lnbits"
+                      >
+                        ⚡ LNbits Anbindung
+                      </button>
+                      <button
+                        onClick={() => { handleSettingsClick("wallet"); setSidebarOpen(false); }}
+                        className="w-full px-4 py-2 rounded-lg text-xs text-muted-foreground hover:bg-secondary transition-colors text-left"
+                        data-testid="submenu-wallet-nwc"
+                      >
+                        🔌 NWC Einstellungen
+                      </button>
+                    </motion.div>
+                  )}
+                </div>
+
+                {/* Peers */}
+                <button
+                  onClick={() => { handleSettingsClick("peers"); setSidebarOpen(false); }}
+                  className="w-full px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary transition-colors text-left"
+                  data-testid="submenu-peers"
+                >
+                  👥 Peers
                 </button>
               </motion.div>
             )}
@@ -891,15 +935,17 @@ function ParentDashboardWithSettings({ user, setUser, currentView, onCreate, onC
   );
 }
 
-function SettingsModal({ user, setUser, onClose }: any) {
+function SettingsModal({ user, setUser, activeTab, onClose }: any) {
   const [editNwc, setEditNwc] = useState(user.nwcConnectionString || "");
+  const [editLnbitsUrl, setEditLnbitsUrl] = useState(user.lnbitsUrl || "");
+  const [editLnbitsAdminKey, setEditLnbitsAdminKey] = useState(user.lnbitsAdminKey || "");
   const [isSaving, setIsSaving] = useState(false);
   const [layoutView, setLayoutView] = useState(() => {
     return localStorage.getItem(`layoutView_${user.id}`) || "two-column";
   });
   const { toast } = useToast();
 
-  const saveSettings = async () => {
+  const saveNWC = async () => {
     if (!editNwc) return;
     setIsSaving(true);
     try {
@@ -911,8 +957,27 @@ function SettingsModal({ user, setUser, onClose }: any) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setUser({ ...user, nwcConnectionString: editNwc });
-      toast({ title: "Einstellungen gespeichert!", description: "NWC Wallet aktualisiert" });
-      onClose();
+      toast({ title: "NWC gespeichert!", description: "Nostr Wallet Connect ist jetzt aktiv" });
+    } catch (error) {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const saveLNbits = async () => {
+    if (!editLnbitsUrl || !editLnbitsAdminKey) return;
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/wallet/setup-lnbits", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ peerId: user.id, lnbitsUrl: editLnbitsUrl, lnbitsAdminKey: editLnbitsAdminKey }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setUser({ ...user, lnbitsUrl: editLnbitsUrl, lnbitsAdminKey: editLnbitsAdminKey });
+      toast({ title: "LNbits gespeichert!", description: "LNbits Wallet ist jetzt aktiv" });
     } catch (error) {
       toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
     } finally {
@@ -930,7 +995,11 @@ function SettingsModal({ user, setUser, onClose }: any) {
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
         <CardHeader className="flex flex-row items-center justify-between pb-3">
-          <CardTitle>Einstellungen</CardTitle>
+          <CardTitle>
+            {activeTab === "ansicht" && "Ansicht"}
+            {activeTab === "wallet" && "Wallet Einstellungen"}
+            {activeTab === "peers" && "Peers"}
+          </CardTitle>
           <Button 
             variant="ghost" 
             size="icon" 
@@ -941,75 +1010,122 @@ function SettingsModal({ user, setUser, onClose }: any) {
           </Button>
         </CardHeader>
         <CardContent className="space-y-6">
-          <Tabs defaultValue="wallet" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="wallet" data-testid="tab-wallet-settings">Wallet</TabsTrigger>
-              <TabsTrigger value="view" data-testid="tab-view-settings">Ansicht</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="wallet" className="space-y-4 mt-4">
+          {/* ANSICHT TAB */}
+          {activeTab === "ansicht" && (
+            <div className="space-y-3">
+              <Label>Dashboard Ansicht</Label>
               <div className="space-y-2">
-                <Label htmlFor="settings-nwc">NWC Connection String</Label>
-                <Input 
-                  id="settings-nwc"
-                  placeholder="nostr+walletconnect://...?relay=...&secret=..."
-                  value={editNwc}
-                  onChange={(e) => setEditNwc(e.target.value)}
-                  className="bg-secondary border-border font-mono text-xs"
-                  autoComplete="off"
-                  data-testid="input-settings-nwc"
-                />
-                <p className="text-xs text-muted-foreground">Aktuell: {user.nwcConnectionString ? "✓ Verbunden" : "✗ Nicht verbunden"}</p>
+                <Button
+                  variant={layoutView === "one-column" ? "default" : "outline"}
+                  className="w-full justify-start text-left"
+                  onClick={() => handleLayoutChange("one-column")}
+                  data-testid="button-layout-one-column"
+                >
+                  <div className="flex flex-col gap-1">
+                    <span className="font-semibold">Einreihig</span>
+                    <span className="text-xs text-muted-foreground">Kästchen untereinander angeordnet</span>
+                  </div>
+                </Button>
+                <Button
+                  variant={layoutView === "two-column" ? "default" : "outline"}
+                  className="w-full justify-start text-left"
+                  onClick={() => handleLayoutChange("two-column")}
+                  data-testid="button-layout-two-column"
+                >
+                  <div className="flex flex-col gap-1">
+                    <span className="font-semibold">Zweireihig</span>
+                    <span className="text-xs text-muted-foreground">2 Kästchen nebeneinander</span>
+                  </div>
+                </Button>
               </div>
-            </TabsContent>
+            </div>
+          )}
 
-            <TabsContent value="view" className="space-y-4 mt-4">
-              <div className="space-y-3">
-                <Label>Dashboard Ansicht</Label>
+          {/* WALLET TAB */}
+          {activeTab === "wallet" && (
+            <Tabs defaultValue="nwc" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="nwc" data-testid="tab-nwc">NWC</TabsTrigger>
+                <TabsTrigger value="lnbits" data-testid="tab-lnbits">LNbits</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="nwc" className="space-y-4 mt-4">
                 <div className="space-y-2">
-                  <Button
-                    variant={layoutView === "one-column" ? "default" : "outline"}
-                    className="w-full justify-start text-left"
-                    onClick={() => handleLayoutChange("one-column")}
-                    data-testid="button-layout-one-column"
-                  >
-                    <div className="flex flex-col gap-1">
-                      <span className="font-semibold">Einreihig</span>
-                      <span className="text-xs text-muted-foreground">Kästchen untereinander angeordnet</span>
-                    </div>
-                  </Button>
-                  <Button
-                    variant={layoutView === "two-column" ? "default" : "outline"}
-                    className="w-full justify-start text-left"
-                    onClick={() => handleLayoutChange("two-column")}
-                    data-testid="button-layout-two-column"
-                  >
-                    <div className="flex flex-col gap-1">
-                      <span className="font-semibold">Zweireihig</span>
-                      <span className="text-xs text-muted-foreground">2 Kästchen nebeneinander</span>
-                    </div>
-                  </Button>
+                  <Label htmlFor="nwc-string">NWC Connection String</Label>
+                  <Input 
+                    id="nwc-string"
+                    placeholder="nostr+walletconnect://...?relay=...&secret=..."
+                    value={editNwc}
+                    onChange={(e) => setEditNwc(e.target.value)}
+                    className="bg-secondary border-border font-mono text-xs"
+                    autoComplete="off"
+                    data-testid="input-nwc"
+                  />
+                  <p className="text-xs text-muted-foreground">Status: {user.nwcConnectionString ? "✓ Verbunden" : "✗ Nicht verbunden"}</p>
                 </div>
+              </TabsContent>
+
+              <TabsContent value="lnbits" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="lnbits-url">LNbits URL</Label>
+                  <Input 
+                    id="lnbits-url"
+                    placeholder="https://lnbits.example.com"
+                    value={editLnbitsUrl}
+                    onChange={(e) => setEditLnbitsUrl(e.target.value)}
+                    className="bg-secondary border-border text-sm"
+                    data-testid="input-lnbits-url"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lnbits-key">LNbits Admin Key</Label>
+                  <Input 
+                    id="lnbits-key"
+                    placeholder="Admin key..."
+                    value={editLnbitsAdminKey}
+                    onChange={(e) => setEditLnbitsAdminKey(e.target.value)}
+                    className="bg-secondary border-border font-mono text-xs"
+                    autoComplete="off"
+                    data-testid="input-lnbits-key"
+                  />
+                  <p className="text-xs text-muted-foreground">Status: {user.lnbitsUrl ? "✓ Verbunden" : "✗ Nicht verbunden"}</p>
+                </div>
+              </TabsContent>
+            </Tabs>
+          )}
+
+          {/* PEERS TAB */}
+          {activeTab === "peers" && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">Deine Familienmitglieder werden hier angezeigt.</p>
+              <div className="bg-secondary p-4 rounded-lg text-center text-muted-foreground text-sm">
+                Gehe zu "Familienmitglieder" im Menü um deine Familie zu verwalten
               </div>
-            </TabsContent>
-          </Tabs>
+            </div>
+          )}
         </CardContent>
+        
         <CardFooter className="gap-2">
           <Button 
             variant="outline" 
             onClick={onClose}
             data-testid="button-cancel-settings"
           >
-            Abbrechen
+            Schließen
           </Button>
-          <Button 
-            onClick={saveSettings}
-            disabled={!editNwc || isSaving}
-            className="bg-primary hover:bg-primary/90"
-            data-testid="button-save-settings"
-          >
-            {isSaving ? "Speichern..." : "Speichern"}
-          </Button>
+          {activeTab === "wallet" && (
+            <Button 
+              onClick={() => {
+                if (editNwc && !editLnbitsUrl) saveNWC();
+                else if (editLnbitsUrl && editLnbitsAdminKey) saveLNbits();
+              }}
+              disabled={isSaving || (!editNwc && (!editLnbitsUrl || !editLnbitsAdminKey))}
+              className="bg-primary hover:bg-primary/90"
+              data-testid="button-save-wallet"
+            >
+              {isSaving ? "Speichern..." : "Speichern"}
+            </Button>
+          )}
         </CardFooter>
       </Card>
     </div>
