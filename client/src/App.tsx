@@ -938,6 +938,26 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       <div className="space-y-8">
         <h1 className="text-3xl font-bold">Dashboard</h1>
         
+        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+          <Card className="border-2 border-primary/40 bg-primary/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <LinkIcon className="h-5 w-5 text-primary" /> Verbindungscode für Kinder
+              </CardTitle>
+              <CardDescription>Gebe diesen Code deinen Kindern, damit sie sich verbinden können</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-secondary border-2 border-primary/30 rounded-lg p-4 text-center">
+                <p className="text-xs text-muted-foreground mb-2 uppercase tracking-widest">Dein Code:</p>
+                <p className="text-3xl font-mono font-bold text-primary tracking-wider break-words word-break mb-3" data-testid="text-connection-code">
+                  {user.connectionId}
+                </p>
+                <p className="text-xs text-muted-foreground">Später findest du diesen Code in den Wallet-Einstellungen</p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+        
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
             <Card className="bg-card/50 border-border">
@@ -1047,11 +1067,32 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     return (
       <div className="max-w-4xl">
         <h1 className="text-3xl font-bold mb-8">Wallet-Einstellungen</h1>
-        <Tabs defaultValue="nwc" className="w-full">
+        <Tabs defaultValue="verbindung" className="w-full">
           <TabsList className="bg-secondary p-1 border border-border mb-6">
+            <TabsTrigger value="verbindung">Verbindung</TabsTrigger>
             <TabsTrigger value="nwc">Nostr Wallet Connect</TabsTrigger>
             <TabsTrigger value="lnbits">LNbits</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="verbindung">
+            <Card>
+              <CardHeader>
+                <CardTitle>Dein Verbindungscode</CardTitle>
+                <CardDescription>Teile diesen Code mit deinen Kindern zum Verbinden</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-secondary border-2 border-primary/30 rounded-lg p-4 text-center">
+                  <p className="text-xs text-muted-foreground mb-2 uppercase tracking-widest">Code:</p>
+                  <p className="text-3xl font-mono font-bold text-primary tracking-wider break-words word-break" data-testid="text-connection-code-settings">
+                    {user.connectionId}
+                  </p>
+                </div>
+                <p className="text-xs text-muted-foreground bg-blue-500/10 border border-blue-500/30 rounded p-3">
+                  💡 Dieser Code wird für die Verbindung mit deinen Kindern benötigt. Teile ihn sicher mit ihnen.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="nwc">
             <Card>
