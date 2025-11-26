@@ -30,7 +30,10 @@ import {
   Trash2,
   X,
   Calendar,
-  MapPin
+  MapPin,
+  Menu,
+  ChevronDown,
+  Home
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -199,7 +202,8 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [newTask, setNewTask] = useState({ title: "", description: "", sats: 50 });
   const [newEvent, setNewEvent] = useState({ title: "", description: "", location: "" });
-  const [currentView, setCurrentView] = useState<"tasks" | "calendar" | "profile">("tasks");
+  const [currentView, setCurrentView] = useState<string>("tasks");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mode, setMode] = useState<"role-select" | "auth" | "app">("role-select");
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   
@@ -390,38 +394,43 @@ export default function App() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-primary-foreground">
-      <main className="container mx-auto px-4 py-8 max-w-6xl">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={user.role}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            {user.role === "parent" ? (
-              <ParentDashboardWithSettings
-                user={user}
-                setUser={setUser}
-                tasks={tasks}
-                events={events}
-                newTask={newTask} 
-                setNewTask={setNewTask}
-                newEvent={newEvent}
-                setNewEvent={setNewEvent}
-                currentView={currentView}
-                setCurrentView={setCurrentView}
-                onCreate={handleCreateTask}
-                onCreateEvent={handleCreateEvent}
-                onApprove={approveTask}
-                onDelete={handleDeleteTask}
-                onDeleteEvent={handleDeleteEvent}
-                onLogout={logout}
-              />
-            ) : (
-              <>
-                <NavBar user={user} onLogout={logout} />
+    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-primary-foreground flex">
+      <Sidebar 
+        user={user} 
+        currentView={currentView} 
+        setCurrentView={setCurrentView}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        onLogout={logout}
+      />
+      <main className="flex-1 overflow-auto">
+        <div className="px-4 py-8">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`${user.role}-${currentView}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {user.role === "parent" ? (
+                <ParentDashboard
+                  user={user}
+                  setUser={setUser}
+                  tasks={tasks}
+                  events={events}
+                  newTask={newTask} 
+                  setNewTask={setNewTask}
+                  newEvent={newEvent}
+                  setNewEvent={setNewEvent}
+                  currentView={currentView}
+                  onCreate={handleCreateTask}
+                  onCreateEvent={handleCreateEvent}
+                  onApprove={approveTask}
+                  onDelete={handleDeleteTask}
+                  onDeleteEvent={handleDeleteEvent}
+                />
+              ) : (
                 <ChildDashboard 
                   user={user}
                   setUser={setUser}
@@ -433,13 +442,100 @@ export default function App() {
                   onSubmit={submitProof}
                   onDeleteEvent={handleDeleteEvent}
                 />
-              </>
-            )}
-          </motion.div>
-        </AnimatePresence>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </main>
       <Toaster />
     </div>
+  );
+}
+
+function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpen, onLogout }: any) {
+  const menuItems = user.role === "parent" 
+    ? [
+        { id: "tasks", label: "Aufgaben", icon: Trophy },
+        { id: "calendar", label: "Familienkalender", icon: Calendar },
+        { id: "settings", label: "Einstellungen", icon: Settings },
+      ]
+    : [
+        { id: "dashboard", label: "Mein Dashboard", icon: Home },
+        { id: "tasks", label: "Verfügbare Aufgaben", icon: Trophy },
+        { id: "calendar", label: "Familienkalender", icon: Calendar },
+      ];
+
+  return (
+    <motion.aside
+      initial={{ x: -250 }}
+      animate={{ x: sidebarOpen ? 0 : -250 }}
+      transition={{ duration: 0.3 }}
+      className="fixed left-0 top-0 h-screen w-64 bg-card border-r border-border z-40 flex flex-col"
+    >
+      <div className="p-4 border-b border-border flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">
+            <Bitcoin className="h-5 w-5" />
+          </div>
+          <span className="text-lg font-bold">Family</span>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setSidebarOpen(false)}
+          className="md:hidden"
+          data-testid="button-close-sidebar"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <nav className="flex-1 overflow-y-auto p-4 space-y-2">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = currentView === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => {
+                setCurrentView(item.id);
+                setSidebarOpen(false);
+              }}
+              className={`w-full px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${
+                isActive
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-secondary"
+              }`}
+              data-testid={`menu-item-${item.id}`}
+            >
+              <Icon className="h-4 w-4" />
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+      <div className="p-4 border-t border-border space-y-2">
+        <div className="px-4 py-2 rounded-lg bg-secondary flex items-center gap-2">
+          <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm">
+            {user.name[0]}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">{user.name}</p>
+            <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
+          </div>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onLogout}
+          className="w-full gap-2 text-destructive hover:text-destructive"
+          data-testid="button-logout-sidebar"
+        >
+          <LogOut className="h-4 w-4" /> Abmelden
+        </Button>
+      </div>
+    </motion.aside>
   );
 }
 
@@ -693,47 +789,13 @@ function NavBar({ user, onLogout, onSettings }: { user: User; onLogout: () => vo
   );
 }
 
-function ParentDashboardWithSettings({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, onLogout }: any) {
+function ParentDashboardWithSettings({ user, setUser, currentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent }: any) {
   const [showSettings, setShowSettings] = useState(false);
   
   return (
     <>
       {showSettings && <SettingsModal user={user} setUser={setUser} onClose={() => setShowSettings(false)} />}
-      <NavBar user={user} onLogout={onLogout} onSettings={() => setShowSettings(true)} />
-      <div className="mb-6 flex gap-2 flex-wrap">
-        <Button
-          variant={currentView === "calendar" ? "default" : "outline"}
-          onClick={() => setCurrentView("calendar")}
-          className="gap-2"
-          data-testid="button-view-calendar"
-        >
-          <Calendar className="h-4 w-4" /> Familienkalender
-        </Button>
-        <Button
-          variant={currentView === "tasks" ? "default" : "outline"}
-          onClick={() => setCurrentView("tasks")}
-          className="gap-2"
-          data-testid="button-view-tasks"
-        >
-          <Trophy className="h-4 w-4" /> Aufgaben
-        </Button>
-      </div>
-      <ParentDashboard 
-        user={user}
-        setUser={setUser}
-        tasks={tasks}
-        events={events}
-        newTask={newTask}
-        setNewTask={setNewTask}
-        newEvent={newEvent}
-        setNewEvent={setNewEvent}
-        currentView={currentView}
-        onCreate={onCreate}
-        onCreateEvent={onCreateEvent}
-        onApprove={onApprove}
-        onDelete={onDelete}
-        onDeleteEvent={onDeleteEvent}
-      />
+      {currentView === "settings" && <SettingsModal user={user} setUser={setUser} onClose={() => {}} />}
     </>
   );
 }
@@ -835,6 +897,43 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
     }
   };
+
+  if (currentView === "settings") {
+    return (
+      <div className="max-w-4xl">
+        <h1 className="text-3xl font-bold mb-8">Einstellungen</h1>
+        <Card>
+          <CardHeader>
+            <CardTitle>NWC Wallet-Verbindung</CardTitle>
+            <CardDescription>Verwalte dein Nostr Wallet Connect</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="nwc-settings">NWC Connection String</Label>
+              <Input 
+                id="nwc-settings"
+                placeholder="nostr+walletconnect://...?relay=...&secret=..."
+                value={nwcConnectionString}
+                onChange={(e) => setNwcConnectionString(e.target.value)}
+                className="font-mono text-xs"
+                data-testid="input-nwc-settings"
+              />
+              <p className="text-xs text-muted-foreground">
+                Status: {user.nwcConnectionString ? "✓ Verbunden" : "✗ Nicht verbunden"}
+              </p>
+            </div>
+            <Button 
+              onClick={setupWallet}
+              className="bg-primary hover:bg-primary/90"
+              data-testid="button-setup-wallet-settings"
+            >
+              Speichern
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (currentView === "calendar") {
     return (
@@ -1176,82 +1275,57 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
 
   if (currentView === "calendar") {
     return (
-      <div className="space-y-10">
-        <div className="mb-6 flex gap-2 flex-wrap">
-          <Button
-            variant="outline"
-            onClick={() => setCurrentView("tasks")}
-            className="gap-2"
-            data-testid="button-view-tasks-child"
-          >
-            <Trophy className="h-4 w-4" /> Aufgaben
-          </Button>
-        </div>
-
-        <section>
-          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-            <Calendar className="text-primary" /> Familienkalender
-          </h2>
-          <div className="grid gap-4">
-            {events.length === 0 ? (
-              <Card className="border-dashed border-border p-8 text-center">
-                <p className="text-muted-foreground">Noch keine Termine geplant</p>
-              </Card>
-            ) : (
-              events.map((event: FamilyEvent) => (
-                <Card key={event.id} className="border-border bg-card/50">
-                  <CardContent className="p-5">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="font-bold text-lg" data-testid={`text-event-title-child-${event.id}`}>{event.title}</h3>
-                        {event.description && <p className="text-muted-foreground text-sm mt-1">{event.description}</p>}
-                        {event.location && (
-                          <p className="text-sm text-muted-foreground flex items-center gap-1 mt-2">
-                            <MapPin className="h-4 w-4" /> {event.location}
-                          </p>
-                        )}
-                      </div>
+      <div className="max-w-4xl">
+        <h1 className="text-3xl font-bold mb-8">Familienkalender</h1>
+        <div className="grid gap-4">
+          {events.length === 0 ? (
+            <Card className="border-dashed border-border p-8 text-center">
+              <p className="text-muted-foreground">Noch keine Termine geplant</p>
+            </Card>
+          ) : (
+            events.map((event: FamilyEvent) => (
+              <Card key={event.id} className="border-border bg-card/50">
+                <CardContent className="p-5">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg" data-testid={`text-event-title-child-${event.id}`}>{event.title}</h3>
+                      {event.description && <p className="text-muted-foreground text-sm mt-1">{event.description}</p>}
+                      {event.location && (
+                        <p className="text-sm text-muted-foreground flex items-center gap-1 mt-2">
+                          <MapPin className="h-4 w-4" /> {event.location}
+                        </p>
+                      )}
                     </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
-        </section>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
       </div>
     );
   }
 
-  return (
-    <div className="space-y-10">
-      <div className="mb-6 flex gap-2 flex-wrap">
-        <Button
-          variant="outline"
-          onClick={() => setCurrentView("calendar")}
-          className="gap-2"
-          data-testid="button-view-calendar-child"
+  if (currentView === "dashboard") {
+    return (
+      <div className="max-w-4xl space-y-10">
+        <motion.section 
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black border border-border p-8"
         >
-          <Calendar className="h-4 w-4" /> Familienkalender
-        </Button>
-      </div>
-
-      <motion.section 
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black border border-border p-8"
-      >
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div>
-            <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest mb-2">Wallet Balance</p>
-            <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-primary" data-testid="text-earned-sats">
-              {(user.balance || 0).toLocaleString()} <span className="text-2xl opacity-50 text-white">SATS</span>
-            </h2>
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+              <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest mb-2">Wallet Balance</p>
+              <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-primary" data-testid="text-earned-sats">
+                {(user.balance || 0).toLocaleString()} <span className="text-2xl opacity-50 text-white">SATS</span>
+              </h2>
+            </div>
+            <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center border border-primary/30 shadow-[0_0_20px_rgba(247,147,26,0.2)]">
+              <Bitcoin className="h-10 w-10 text-primary" />
+            </div>
           </div>
-          <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center border border-primary/30 shadow-[0_0_20px_rgba(247,147,26,0.2)]">
-            <Bitcoin className="h-10 w-10 text-primary" />
-          </div>
-        </div>
-      </motion.section>
+        </motion.section>
 
       {tasks.length === 0 && (
         <Card className="border-primary/30 bg-primary/5 p-6">
@@ -1444,9 +1518,14 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           ))}
         </div>
       </section>
-    </div>
-  );
-}
+      </div>
+    );
+  }
+
+  // Default tasks view
+  return (
+    <div className="max-w-4xl space-y-10">
+      <h1 className="text-3xl font-bold">Verfügbare Aufgaben</h1>
 
 function TaskCard({ task, children, variant }: { task: Task; children?: React.ReactNode; variant: "parent" | "child" }) {
   const [showLink, setShowLink] = useState(false);
