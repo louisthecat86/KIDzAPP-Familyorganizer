@@ -2242,12 +2242,21 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
             </Card>
           ) : (
             events.map((event: FamilyEvent) => (
-              <Card key={event.id} className="border-border bg-card/50">
+              <Card key={event.id} className="border-border bg-gradient-to-br from-gray-900 to-black hover:from-gray-800 hover:to-gray-950 transition-colors">
                 <CardContent className="p-5">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <h3 className="font-bold text-lg" data-testid={`text-event-title-child-${event.id}`}>{event.title}</h3>
-                      {event.description && <p className="text-muted-foreground text-sm mt-1">{event.description}</p>}
+                      <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                        <Calendar className="h-4 w-4" />
+                        {new Date(event.startDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+                      </p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <span>⏰</span>
+                        {new Date(event.startDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                        {event.endDate && ` - ${new Date(event.endDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`}
+                      </p>
+                      {event.description && <p className="text-muted-foreground text-sm mt-3">{event.description}</p>}
                       {event.location && (
                         <p className="text-sm text-muted-foreground flex items-center gap-1 mt-2">
                           <MapPin className="h-4 w-4" /> {event.location}
