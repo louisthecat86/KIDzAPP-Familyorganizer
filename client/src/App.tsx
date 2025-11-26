@@ -583,9 +583,10 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
             <div className="h-12 md:h-16 w-12 md:w-16 bg-primary/20 rounded-2xl flex items-center justify-center mb-4 md:mb-6 text-primary">
               <Bitcoin className="h-8 md:h-10 w-8 md:w-10" />
             </div>
-            <h1 className="text-2xl md:text-4xl font-heading font-bold mb-3 md:mb-4">Sats Earn</h1>
+            <h1 className="text-2xl md:text-4xl font-heading font-bold mb-3 md:mb-4">Spark ⚡ Kids</h1>
+            <h2 className="text-lg md:text-xl font-semibold text-primary mb-4">der Familienorganizer</h2>
             <p className="text-muted-foreground text-sm md:text-lg">
-              Die Bitcoin-App für die ganze Familie. Erledige Aufgaben, lerne Verantwortung und verdiene echte Sats.
+              Wo aus Aufgaben Belohnungen werden. Erledige Aufgaben, lerne Verantwortung und verdiene echte Sats.
             </p>
           </div>
 
@@ -796,10 +797,10 @@ function NavBar({ user, onLogout, onSettings }: { user: User; onLogout: () => vo
       <div className="container mx-auto px-4 h-20 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center text-primary-foreground shadow-[0_0_15px_rgba(247,147,26,0.5)]">
-            <Bitcoin className="h-6 w-6" />
+            <span className="text-lg">⚡</span>
           </div>
           <span className="text-xl font-heading font-bold hidden sm:inline-block tracking-tight">
-            Sats Earn
+            Spark Kids
           </span>
         </div>
 
