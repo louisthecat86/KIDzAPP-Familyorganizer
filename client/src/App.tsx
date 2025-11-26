@@ -1247,6 +1247,82 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     );
   }
 
+  if (currentView === "leaderboard") {
+    const { data: leaderboard = [] } = useQuery({
+      queryKey: ["leaderboard", user.connectionId],
+      queryFn: async () => {
+        const res = await fetch(`/api/leaderboard/${user.connectionId}`);
+        if (!res.ok) throw new Error("Failed to fetch leaderboard");
+        return res.json();
+      },
+      refetchInterval: 2000
+    });
+
+    const getMedalEmoji = (position: number) => {
+      if (position === 0) return "🥇";
+      if (position === 1) return "🥈";
+      if (position === 2) return "🥉";
+      return `${position + 1}.`;
+    };
+
+    return (
+      <div className="max-w-4xl">
+        <h1 className="text-3xl font-bold mb-2">🏆 Bestenliste</h1>
+        <p className="text-muted-foreground mb-6">Wer ist der beste Aufgabenerlediger in der Familie?</p>
+        
+        {leaderboard.length === 0 ? (
+          <Card className="border-dashed border-border p-8 text-center">
+            <Trophy className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground">Noch keine Kinder in der Familie</p>
+          </Card>
+        ) : (
+          <div className="grid gap-3">
+            {leaderboard.map((entry: any, index: number) => (
+              <Card 
+                key={entry.id} 
+                className={`border-2 transition-all ${
+                  index === 0 
+                    ? "border-yellow-500/50 bg-yellow-500/5" 
+                    : index === 1 
+                    ? "border-slate-400/50 bg-slate-400/5"
+                    : index === 2
+                    ? "border-orange-600/50 bg-orange-600/5"
+                    : "border-border"
+                }`}
+              >
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-4">
+                    <div className="text-3xl font-bold w-12 text-center">
+                      {getMedalEmoji(index)}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-bold text-lg" data-testid={`text-leaderboard-name-${entry.id}`}>{entry.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {entry.completedTasks} Aufgabe{entry.completedTasks !== 1 ? "n" : ""} erledigt
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-primary" data-testid={`text-leaderboard-sats-${entry.id}`}>
+                        {entry.satsEarned}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Sats verdient</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Aktuelles Guthaben</span>
+                      <span className="font-semibold" data-testid={`text-leaderboard-balance-${entry.id}`}>{entry.balance} Sats</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   if (currentView === "nostr") {
     return (
       <div className="max-w-4xl">
