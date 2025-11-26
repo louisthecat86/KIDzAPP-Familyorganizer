@@ -1003,6 +1003,28 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     const submittedTasks = tasks.filter((t: Task) => t.status === "submitted");
     const completedTasks = tasks.filter((t: Task) => t.status === "approved");
     
+    const { data: satsSpent = 0 } = useQuery({
+      queryKey: ["sats-spent", user.id, user.connectionId],
+      queryFn: async () => {
+        const res = await fetch(`/api/parent/${user.id}/sats-spent/${user.connectionId}`);
+        if (!res.ok) throw new Error("Failed to fetch sats spent");
+        const data = await res.json();
+        return data.satsSpent;
+      },
+      refetchInterval: 5000
+    });
+
+    const { data: walletBalance = null } = useQuery({
+      queryKey: ["wallet-balance", user.id],
+      queryFn: async () => {
+        const res = await fetch(`/api/parent/${user.id}/wallet-balance`);
+        if (!res.ok) throw new Error("Failed to fetch wallet balance");
+        const data = await res.json();
+        return data.walletBalance;
+      },
+      refetchInterval: 10000
+    });
+    
     return (
       <div className="space-y-8">
         <h1 className="text-3xl font-bold">Dashboard</h1>
@@ -1091,9 +1113,28 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               <CardContent className="pt-6">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-primary flex items-center justify-center gap-1">
-                    ⚡ {(user.balance || 0).toLocaleString()}
+                    📤 {(satsSpent || 0).toLocaleString()}
                   </div>
-                  <p className="text-sm text-muted-foreground mt-2">Sats Guthaben</p>
+                  <p className="text-sm text-muted-foreground mt-2">Ausgegeben an Kinder</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
+            <Card className={`border-border ${walletBalance !== null ? "bg-card/50" : "bg-card/50 opacity-60"}`}>
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary flex items-center justify-center gap-1">
+                    {walletBalance !== null ? (
+                      <>
+                        ⚡ {(walletBalance / 1000).toLocaleString("de-DE", { maximumFractionDigits: 0 })} mSat
+                      </>
+                    ) : (
+                      "⚠️ ---"
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-2">{walletBalance !== null ? "LNbits Wallet" : "Wallet nicht verbunden"}</p>
                 </div>
               </CardContent>
             </Card>

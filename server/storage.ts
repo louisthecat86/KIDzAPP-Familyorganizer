@@ -260,6 +260,12 @@ export class DatabaseStorage implements IStorage {
     const result = await db.delete(familyEvents).where(eq(familyEvents.id, id));
     return (result.rowCount ?? 0) > 0;
   }
+
+  async getSatsSpentByParent(peerId: number, connectionId: string): Promise<number> {
+    const result = await db.select().from(tasks)
+      .where(and(eq(tasks.createdBy, peerId), eq(tasks.connectionId, connectionId)));
+    return result.reduce((sum, t) => sum + t.sats, 0);
+  }
 }
 
 export const storage = new DatabaseStorage();

@@ -265,6 +265,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get sats spent by parent
+  app.get("/api/parent/:peerId/sats-spent/:connectionId", async (req, res) => {
+    try {
+      const { peerId, connectionId } = req.params;
+      const satsSpent = await storage.getSatsSpentByParent(parseInt(peerId), connectionId);
+      res.json({ satsSpent });
+    } catch (error) {
+      console.error("Sats spent error:", error);
+      res.status(500).json({ error: "Failed to fetch sats spent" });
+    }
+  });
+
+  // Get parent wallet balance from LNbits
+  app.get("/api/parent/:peerId/wallet-balance", async (req, res) => {
+    try {
+      const { peerId } = req.params;
+      const parent = await storage.getPeer(parseInt(peerId));
+      
+      if (!parent) {
+        return res.status(404).json({ error: "Parent not found" });
+      }
+
+      if (!parent.lnbitsUrl || !parent.lnbitsAdminKey) {
+        return res.json({ walletBalance: null, message: "Wallet not configured" });
+      }
+
+      try {
+        const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+        const walletInfo = await lnbits.getWalletInfo();
+        res.json({ walletBalance: walletInfo.balance });
+      } catch (error) {
+        console.warn("LNbits wallet balance fetch failed:", error);
+        res.json({ walletBalance: null, message: "Failed to fetch wallet balance" });
+      }
+    } catch (error) {
+      console.error("Wallet balance error:", error);
+      res.status(500).json({ error: "Failed to fetch wallet balance" });
+    }
+  });
+
   // Create a new task (with optional escrow via wallet)
   app.post("/api/tasks", async (req, res) => {
     try {
