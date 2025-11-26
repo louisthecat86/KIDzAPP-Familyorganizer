@@ -1030,7 +1030,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
             <Card 
               className="bg-card/50 border-border cursor-pointer hover:bg-card/70 transition-colors"
-              onClick={() => setCurrentView("tasks")}
+              onClick={() => setCurrentView("tasks-open")}
               data-testid="card-open-tasks"
             >
               <CardContent className="pt-6">
@@ -1045,7 +1045,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
             <Card 
               className="bg-card/50 border-border cursor-pointer hover:bg-card/70 transition-colors"
-              onClick={() => setCurrentView("tasks")}
+              onClick={() => setCurrentView("tasks-pending")}
               data-testid="card-submitted-tasks"
             >
               <CardContent className="pt-6">
@@ -1060,7 +1060,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
             <Card 
               className="bg-card/50 border-border cursor-pointer hover:bg-card/70 transition-colors"
-              onClick={() => setCurrentView("tasks")}
+              onClick={() => setCurrentView("tasks-completed")}
               data-testid="card-completed-tasks"
             >
               <CardContent className="pt-6">
@@ -1101,7 +1101,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   <Card 
                     key={task.id} 
                     className="border-border bg-card/50 cursor-pointer hover:bg-card/70 transition-colors"
-                    onClick={() => setCurrentView("tasks")}
+                    onClick={() => setCurrentView("tasks-pending")}
                     data-testid={`card-pending-task-${task.id}`}
                   >
                     <CardContent className="p-4">
@@ -1312,10 +1312,101 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     );
   }
 
+  if (currentView === "tasks-open") {
+    return (
+      <div className="space-y-8">
+        <h1 className="text-3xl font-bold mb-8">Offene Aufgaben</h1>
+        <section>
+          <div className="space-y-4">
+            {tasks.filter((t: Task) => t.status === "open" || t.status === "assigned").length === 0 ? (
+              <Card className="border-dashed border-border p-8 text-center">
+                <p className="text-muted-foreground">Keine offenen Aufgaben</p>
+              </Card>
+            ) : (
+              tasks.filter((t: Task) => t.status === "open" || t.status === "assigned").map((task: Task) => (
+                <TaskCard key={task.id} task={task} variant="parent">
+                  <Button 
+                    onClick={() => onDelete(task.id)} 
+                    className="bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto"
+                    data-testid={`button-delete-task-${task.id}`}
+                    size="sm"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" /> Löschen
+                  </Button>
+                </TaskCard>
+              ))
+            )}
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (currentView === "tasks-pending") {
+    return (
+      <div className="space-y-8">
+        <h1 className="text-3xl font-bold mb-8">Zur Bestätigung</h1>
+        <section>
+          <div className="space-y-4">
+            {tasks.filter((t: Task) => t.status === "submitted").length === 0 ? (
+              <Card className="border-dashed border-border p-8 text-center">
+                <p className="text-muted-foreground">Keine Aufgaben zur Bestätigung</p>
+              </Card>
+            ) : (
+              tasks.filter((t: Task) => t.status === "submitted").map((task: Task) => (
+                <TaskCard key={task.id} task={task} variant="parent">
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <Button 
+                      onClick={() => onApprove(task.id)} 
+                      className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white"
+                      data-testid={`button-approve-task-${task.id}`}
+                      size="sm"
+                    >
+                      <CheckCircle className="mr-2 h-4 w-4" /> Genehmigen
+                    </Button>
+                    <Button 
+                      onClick={() => onDelete(task.id)} 
+                      className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white"
+                      data-testid={`button-delete-task-${task.id}`}
+                      size="sm"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" /> Löschen
+                    </Button>
+                  </div>
+                </TaskCard>
+              ))
+            )}
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (currentView === "tasks-completed") {
+    return (
+      <div className="space-y-8">
+        <h1 className="text-3xl font-bold mb-8">Abgeschlossene Aufgaben</h1>
+        <section>
+          <div className="space-y-4">
+            {tasks.filter((t: Task) => t.status === "approved").length === 0 ? (
+              <Card className="border-dashed border-border p-8 text-center">
+                <p className="text-muted-foreground">Keine abgeschlossenen Aufgaben</p>
+              </Card>
+            ) : (
+              tasks.filter((t: Task) => t.status === "approved").map((task: Task) => (
+                <TaskCard key={task.id} task={task} variant="parent" />
+              ))
+            )}
+          </div>
+        </section>
+      </div>
+    );
+  }
+
   if (currentView === "tasks") {
     return (
       <div className="space-y-8">
-        <h1 className="text-3xl font-bold mb-8">Aufgaben verwalten</h1>
+        <h1 className="text-3xl font-bold mb-8">Neue Aufgabe erstellen</h1>
         <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
           <Card className="border border-primary/20 shadow-[0_0_30px_-10px_rgba(247,147,26,0.15)] bg-card/50 overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-accent to-primary" />
@@ -1369,64 +1460,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             </CardContent>
           </Card>
         </motion.section>
-
-        <section>
-          <Tabs defaultValue="active" className="w-full">
-            <TabsList className="bg-secondary p-1 border border-border">
-              <TabsTrigger value="active">Aktiv</TabsTrigger>
-              <TabsTrigger value="review">Prüfung</TabsTrigger>
-              <TabsTrigger value="completed">Erledigt</TabsTrigger>
-            </TabsList>
-            
-            <div className="mt-6 space-y-4">
-              <TabsContent value="active" className="space-y-4">
-                {tasks.filter((t: Task) => t.status === "open" || t.status === "assigned").map((task: Task) => (
-                  <TaskCard key={task.id} task={task} variant="parent">
-                    <Button 
-                      onClick={() => onDelete(task.id)} 
-                      className="bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto"
-                      data-testid={`button-delete-task-${task.id}`}
-                      size="sm"
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" /> Löschen
-                    </Button>
-                  </TaskCard>
-                ))}
-              </TabsContent>
-              
-              <TabsContent value="review" className="space-y-4">
-                {tasks.filter((t: Task) => t.status === "submitted").map((task: Task) => (
-                  <TaskCard key={task.id} task={task} variant="parent">
-                    <div className="flex gap-2 w-full sm:w-auto">
-                      <Button 
-                        onClick={() => onApprove(task.id)} 
-                        className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white"
-                        data-testid={`button-approve-task-${task.id}`}
-                        size="sm"
-                      >
-                        <CheckCircle className="mr-2 h-4 w-4" /> Genehmigen
-                      </Button>
-                      <Button 
-                        onClick={() => onDelete(task.id)} 
-                        className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white"
-                        data-testid={`button-delete-task-${task.id}`}
-                        size="sm"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" /> Löschen
-                      </Button>
-                    </div>
-                  </TaskCard>
-                ))}
-              </TabsContent>
-
-              <TabsContent value="completed" className="space-y-4">
-                {tasks.filter((t: Task) => t.status === "approved").map((task: Task) => (
-                  <TaskCard key={task.id} task={task} variant="parent" />
-                ))}
-              </TabsContent>
-            </div>
-          </Tabs>
-        </section>
       </div>
     );
   }
