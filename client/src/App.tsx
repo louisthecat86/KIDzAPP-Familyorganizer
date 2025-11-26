@@ -2217,18 +2217,23 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     };
 
     const getAchievement = (completedTasks: number) => {
-      if (completedTasks >= 7) return { emoji: "⭐", title: "Meister", color: "text-yellow-500" };
-      if (completedTasks >= 5) return { emoji: "👑", title: "Champion", color: "text-purple-500" };
-      if (completedTasks >= 3) return { emoji: "🦸", title: "Haushaltsheld", color: "text-blue-500" };
-      if (completedTasks >= 2) return { emoji: "🎯", title: "Aufgabenpro", color: "text-green-500" };
-      if (completedTasks >= 1) return { emoji: "🌱", title: "Anfänger", color: "text-slate-500" };
-      return { emoji: "🌍", title: "Neuling", color: "text-slate-400" };
+      if (completedTasks >= 30) return { emoji: "👑", title: "Level 10 – Großmeister der Blitze", color: "text-yellow-600" };
+      if (completedTasks >= 27) return { emoji: "⭐", title: "Level 9 – Familienheld", color: "text-yellow-500" };
+      if (completedTasks >= 24) return { emoji: "🏆", title: "Level 8 – Wochenchampion", color: "text-purple-500" };
+      if (completedTasks >= 21) return { emoji: "🎯", title: "Level 7 – Aufgabenprofi", color: "text-blue-600" };
+      if (completedTasks >= 18) return { emoji: "🦸", title: "Level 6 – Superheld der Woche", color: "text-blue-500" };
+      if (completedTasks >= 15) return { emoji: "⚡", title: "Level 5 – Blitzbringer", color: "text-orange-500" };
+      if (completedTasks >= 12) return { emoji: "🚀", title: "Level 4 – Alltagsmeister", color: "text-orange-600" };
+      if (completedTasks >= 9) return { emoji: "🤝", title: "Level 3 – Familienhelfer", color: "text-green-500" };
+      if (completedTasks >= 6) return { emoji: "🔍", title: "Level 2 – Aufgabenentdecker", color: "text-green-600" };
+      if (completedTasks >= 3) return { emoji: "✨", title: "Level 1 – Funkenstarter", color: "text-slate-500" };
+      return { emoji: "🌱", title: "Anfänger", color: "text-slate-400" };
     };
 
     return (
       <div className="max-w-4xl">
         <h1 className="text-3xl font-bold mb-2">🏆 Bestenliste</h1>
-        <p className="text-muted-foreground mb-6">Wer ist der beste Aufgabenerlediger in der Familie?</p>
+        <p className="text-muted-foreground mb-6">Wer ist der beste Aufgabenerlediger in der Familie? (Jedes Level = 3 Aufgaben)</p>
         
         {leaderboard.length === 0 ? (
           <Card className="border-dashed border-border p-8 text-center">
