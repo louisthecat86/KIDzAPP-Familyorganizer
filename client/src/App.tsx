@@ -1050,44 +1050,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
 
   return (
     <div className="space-y-8">
-
-      {!user.nwcConnectionString && (
-        <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-          <Card className="border border-amber-500/50 shadow-[0_0_20px_rgba(217,119,6,0.15)] bg-amber-500/5">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-amber-600">
-                <Settings className="h-5 w-5" /> NWC Wallet erforderlich
-              </CardTitle>
-              <CardDescription>Verbinde dein Nostr Wallet Connect um Aufgaben mit Escrow zu erstellen</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="space-y-2">
-                  <Label htmlFor="nwc-connection">NWC Connection String</Label>
-                  <Input 
-                    id="nwc-connection"
-                    placeholder="nostr+walletconnect://...?relay=...&secret=..."
-                    value={nwcConnectionString}
-                    onChange={(e) => setNwcConnectionString(e.target.value)}
-                    className="bg-secondary border-border font-mono text-xs w-full"
-                    autoComplete="off"
-                    data-testid="input-nwc-connection"
-                  />
-                </div>
-              </div>
-              <Button 
-                onClick={setupWallet}
-                disabled={!nwcConnectionString}
-                className="w-full bg-primary hover:bg-primary/90"
-                data-testid="button-setup-wallet"
-              >
-                NWC Wallet verbinden
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.section>
-      )}
-
       <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
         <Card className="border border-primary/20 shadow-[0_0_20px_rgba(247,147,26,0.15)] bg-card/50">
           <CardHeader>
