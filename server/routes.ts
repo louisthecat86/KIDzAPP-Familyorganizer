@@ -70,7 +70,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(peer);
     } catch (error) {
       if ((error as any).message?.includes("unique constraint")) {
-        return res.status(400).json({ error: "PIN already in use" });
+        return res.status(400).json({ error: "Name und PIN Kombination existiert bereits" });
       }
       console.error("Register error:", error);
       res.status(500).json({ error: "Failed to register peer" });

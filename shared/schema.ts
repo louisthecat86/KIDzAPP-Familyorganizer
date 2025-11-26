@@ -8,7 +8,7 @@ export const peers = pgTable("peers", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   role: text("role").notNull(), // 'parent' or 'child'
-  pin: text("pin").notNull().unique(), // Personal PIN for login
+  pin: text("pin").notNull(), // Personal PIN for login (unique per name)
   connectionId: text("connection_id").notNull(), // Family ID - auto generated
   familyName: text("family_name"), // Family name (set by parent on registration)
   balance: integer("balance").default(0).notNull(), // Sats balance
@@ -16,7 +16,9 @@ export const peers = pgTable("peers", {
   lnbitsUrl: text("lnbits_url"), // LNBits instance URL (legacy)
   lnbitsAdminKey: text("lnbits_admin_key"), // LNBits admin key (legacy)
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => ({
+  uniqueNamePin: sql`unique (name, pin)`,
+}));
 
 export const insertPeerSchema = createInsertSchema(peers).omit({
   id: true,
