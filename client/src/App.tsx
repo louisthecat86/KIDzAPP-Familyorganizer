@@ -478,6 +478,7 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
         { id: "dashboard", label: "Mein Dashboard", icon: Home },
         { id: "tasks", label: "Verfügbare Aufgaben", icon: Trophy },
         { id: "calendar", label: "Familienkalender", icon: Calendar },
+        { id: "settings", label: "Lightning Wallet", icon: Bitcoin },
       ];
 
   return (
@@ -1695,15 +1696,6 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
             <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center border border-primary/30 shadow-[0_0_20px_rgba(247,147,26,0.2)]">
               <Bitcoin className="h-10 w-10 text-primary" />
             </div>
-            <Button 
-              onClick={() => setCurrentView("settings")}
-              variant="outline"
-              size="sm"
-              className="absolute top-4 right-4"
-              data-testid="button-child-settings"
-            >
-              ⚙️ Einstellungen
-            </Button>
           </div>
         </motion.section>
 
