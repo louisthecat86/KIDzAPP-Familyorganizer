@@ -468,7 +468,7 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
     ? [
         { id: "tasks", label: "Aufgaben", icon: Trophy },
         { id: "calendar", label: "Familienkalender", icon: Calendar },
-        { id: "settings", label: "Einstellungen", icon: Settings },
+        { id: "nostr", label: "Nostr Wallet", icon: Bitcoin },
       ]
     : [
         { id: "dashboard", label: "Mein Dashboard", icon: Home },
@@ -909,14 +909,14 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     }
   };
 
-  if (currentView === "settings") {
+  if (currentView === "nostr") {
     return (
       <div className="max-w-4xl">
-        <h1 className="text-3xl font-bold mb-8">Einstellungen</h1>
+        <h1 className="text-3xl font-bold mb-8">Nostr Wallet Connect</h1>
         <Card>
           <CardHeader>
             <CardTitle>NWC Wallet-Verbindung</CardTitle>
-            <CardDescription>Verwalte dein Nostr Wallet Connect</CardDescription>
+            <CardDescription>Verbinde dein Lightning Wallet via Nostr Wallet Connect</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
