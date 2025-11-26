@@ -477,6 +477,9 @@ export default function App() {
 }
 
 function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpen, onLogout }: any) {
+  const [showSettingsSubmenu, setShowSettingsSubmenu] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  
   const menuItems = user.role === "parent" 
     ? [
         { id: "dashboard", label: "Dashboard", icon: Home },
@@ -484,7 +487,6 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
         { id: "calendar", label: "Familienkalender", icon: Calendar },
         { id: "leaderboard", label: "🏆 Bestenliste", icon: Trophy },
         { id: "peers", label: "Familienmitglieder", icon: Users },
-        { id: "nostr", label: "Wallet-Einstellungen", icon: Bitcoin },
       ]
     : [
         { id: "dashboard", label: "Mein Dashboard", icon: Home },
@@ -492,83 +494,116 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
         { id: "calendar", label: "Familienkalender", icon: Calendar },
         { id: "leaderboard", label: "🏆 Bestenliste", icon: Trophy },
         { id: "peers", label: "Meine Familie", icon: Users },
-        { id: "settings", label: "Lightning Wallet", icon: Bitcoin },
       ];
 
+  const handleSettingsSubmenu = (action: string) => {
+    if (action === "view") {
+      setShowSettingsModal(true);
+      setSidebarOpen(false);
+    }
+  };
+
   return (
-    <motion.aside
-      initial={{ x: 250 }}
-      animate={{ x: sidebarOpen ? 0 : 250 }}
-      transition={{ duration: 0.3 }}
-      className="fixed right-0 top-0 h-screen w-64 bg-card border-l border-border z-40 flex flex-col md:hidden"
-    >
-      <div className="p-4 border-b border-border space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
-            <Bitcoin className="h-5 w-5" />
+    <>
+      {showSettingsModal && <SettingsModal user={user} setUser={() => {}} onClose={() => setShowSettingsModal(false)} />}
+      <motion.aside
+        initial={{ x: 250 }}
+        animate={{ x: sidebarOpen ? 0 : 250 }}
+        transition={{ duration: 0.3 }}
+        className="fixed right-0 top-0 h-screen w-64 bg-card border-l border-border z-40 flex flex-col md:hidden"
+      >
+        <div className="p-4 border-b border-border space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+              <Bitcoin className="h-5 w-5" />
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSidebarOpen(false)}
+              className="md:hidden"
+              data-testid="button-close-sidebar"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Familie</p>
+            <h2 className="text-2xl font-bold">{user.familyName || "Family"}</h2>
+            <div className="flex items-center gap-2 pt-2">
+              <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm">
+                {user.name[0]}
+              </div>
+              <div>
+                <p className="text-sm font-medium">{user.name}</p>
+                <p className="text-xs text-muted-foreground capitalize">{user.role === "child" ? "Kind" : "Eltern"}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <nav className="flex-1 overflow-y-auto p-4 space-y-2">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentView === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setCurrentView(item.id);
+                  setSidebarOpen(false);
+                }}
+                className={`w-full px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-secondary"
+                }`}
+                data-testid={`menu-item-${item.id}`}
+              >
+                <Icon className="h-4 w-4" />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+
+          <div className="pt-2 border-t border-border">
+            <button
+              onClick={() => setShowSettingsSubmenu(!showSettingsSubmenu)}
+              className="w-full px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-muted-foreground hover:bg-secondary"
+              data-testid="menu-item-settings"
+            >
+              <Settings className="h-4 w-4" />
+              <span>Einstellungen</span>
+              <ChevronDown className={`h-4 w-4 ml-auto transition-transform ${showSettingsSubmenu ? "rotate-180" : ""}`} />
+            </button>
+            
+            {showSettingsSubmenu && (
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-4 mt-1 space-y-1">
+                <button
+                  onClick={() => handleSettingsSubmenu("view")}
+                  className="w-full px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary transition-colors text-left"
+                  data-testid="submenu-view-settings"
+                >
+                  📐 Ansicht
+                </button>
+              </motion.div>
+            )}
+          </div>
+        </nav>
+
+        <div className="p-4 border-t border-border">
           <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setSidebarOpen(false)}
-            className="md:hidden"
-            data-testid="button-close-sidebar"
+            variant="outline"
+            size="sm"
+            onClick={onLogout}
+            className="w-full gap-2 text-destructive hover:text-destructive"
+            data-testid="button-logout-sidebar"
           >
-            <X className="h-4 w-4" />
+            <LogOut className="h-4 w-4" /> Abmelden
           </Button>
         </div>
-        <div className="space-y-2">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Familie</p>
-          <h2 className="text-2xl font-bold">{user.familyName || "Family"}</h2>
-          <div className="flex items-center gap-2 pt-2">
-            <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm">
-              {user.name[0]}
-            </div>
-            <div>
-              <p className="text-sm font-medium">{user.name}</p>
-              <p className="text-xs text-muted-foreground capitalize">{user.role === "child" ? "Kind" : "Eltern"}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <nav className="flex-1 overflow-y-auto p-4 space-y-2">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = currentView === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => {
-                setCurrentView(item.id);
-                setSidebarOpen(false);
-              }}
-              className={`w-full px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-secondary"
-              }`}
-              data-testid={`menu-item-${item.id}`}
-            >
-              <Icon className="h-4 w-4" />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
-      </nav>
-
-      <div className="p-4 border-t border-border">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onLogout}
-          className="w-full gap-2 text-destructive hover:text-destructive"
-          data-testid="button-logout-sidebar"
-        >
-          <LogOut className="h-4 w-4" /> Abmelden
-        </Button>
-      </div>
-    </motion.aside>
+      </motion.aside>
+    </>
   );
 }
 
