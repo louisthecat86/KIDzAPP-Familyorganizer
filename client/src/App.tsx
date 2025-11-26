@@ -309,6 +309,7 @@ export default function App() {
   const handleAuthComplete = (newUser: User) => {
     setUser(newUser);
     setMode("app");
+    setCurrentView("dashboard");
     localStorage.setItem("sats-user", JSON.stringify(newUser));
     toast({ title: "Willkommen!", description: `Hallo ${newUser.name}` });
   };
