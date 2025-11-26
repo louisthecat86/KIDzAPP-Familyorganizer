@@ -485,7 +485,7 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
     { id: "dashboard", label: user.role === "parent" ? "Dashboard" : "Mein Dashboard", icon: Home },
     { id: "tasks", label: user.role === "parent" ? "Aufgaben" : "Verfügbare Aufgaben", icon: CheckCircle },
     { id: "calendar", label: "Familienkalender", icon: Calendar },
-    { id: "leaderboard", label: "🏆 Bestenliste", icon: Trophy },
+    { id: "leaderboard", label: "Bestenliste", icon: Trophy },
   ];
 
   const handleSettingsClick = (tab: "ansicht" | "wallet" | "peers") => {
