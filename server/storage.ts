@@ -71,7 +71,25 @@ export class DatabaseStorage implements IStorage {
     const result = await db.select().from(peers)
       .where(eq(peers.pin, pin))
       .limit(1);
-    return result[0];
+    
+    const peer = result[0];
+    if (peer && peer.role === "child") {
+      // Wenn Kind mit Parent gekoppelt ist, stelle sicher dass familyName korrekt ist
+      const parent = await db.select().from(peers)
+        .where(and(eq(peers.connectionId, peer.connectionId), eq(peers.role, "parent")))
+        .limit(1);
+      
+      if (parent[0] && parent[0].familyName !== peer.familyName) {
+        // Aktualisiere familyName des Kindes
+        const updated = await db.update(peers)
+          .set({ familyName: parent[0].familyName })
+          .where(eq(peers.id, peer.id))
+          .returning();
+        return updated[0];
+      }
+    }
+    
+    return peer;
   }
 
   async getAllParents(): Promise<Peer[]> {
