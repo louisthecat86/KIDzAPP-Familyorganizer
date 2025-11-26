@@ -928,8 +928,7 @@ function ParentDashboardWithSettings({ user, setUser, currentView, onCreate, onC
   );
 }
 
-function PeersContent({ user, setUser, queryClient, toast: useToastHook }: any) {
-  const { toast } = useToastHook();
+function PeersContent({ user, setUser, queryClient, toast }: any) {
   
   if (user.role === "parent") {
     // Parent view - show connected children
