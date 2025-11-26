@@ -115,6 +115,14 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  async updateChildWallet(peerId: number, lnbitsWithdrawUrl: string, lnbitsWithdrawKey: string): Promise<Peer> {
+    const result = await db.update(peers)
+      .set({ lnbitsWithdrawUrl, lnbitsWithdrawKey })
+      .where(eq(peers.id, peerId))
+      .returning();
+    return result[0];
+  }
+
   // Task operations
   async getTasks(connectionId: string): Promise<Task[]> {
     return await db.select().from(tasks).where(eq(tasks.connectionId, connectionId));

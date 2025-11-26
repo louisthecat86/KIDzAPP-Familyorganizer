@@ -919,6 +919,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   const [nwcConnectionString, setNwcConnectionString] = useState(user.nwcConnectionString || "");
   const [lnbitsUrl, setLnbitsUrl] = useState(user.lnbitsUrl || "");
   const [lnbitsAdminKey, setLnbitsAdminKey] = useState(user.lnbitsAdminKey || "");
+  const [lnbitsWithdrawUrl, setLnbitsWithdrawUrl] = useState(user.lnbitsWithdrawUrl || "");
+  const [lnbitsWithdrawKey, setLnbitsWithdrawKey] = useState(user.lnbitsWithdrawKey || "");
   const [showConnectionCode, setShowConnectionCode] = useState(() => {
     const stored = localStorage.getItem(`connectionCodeShown_${user.id}`);
     return !stored;
@@ -959,6 +961,23 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       if (!res.ok) throw new Error(data.error);
       setUser({ ...user, lnbitsUrl: data.lnbitsUrl, lnbitsAdminKey: data.lnbitsAdminKey });
       toast({ title: "LNbits verbunden!", description: "LNbits Wallet ist jetzt aktiv" });
+    } catch (error) {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    }
+  };
+
+  const setupChildWithdrawWallet = async () => {
+    if (!lnbitsWithdrawUrl || !lnbitsWithdrawKey) return;
+    try {
+      const res = await fetch("/api/wallet/setup-child-withdraw", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ peerId: user.id, lnbitsWithdrawUrl, lnbitsWithdrawKey }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setUser({ ...user, lnbitsWithdrawUrl: data.lnbitsWithdrawUrl, lnbitsWithdrawKey: data.lnbitsWithdrawKey });
+      toast({ title: "Auszahlungs-Wallet verbunden!", description: "Sats können jetzt empfangen werden" });
     } catch (error) {
       toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
     }

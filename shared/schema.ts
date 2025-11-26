@@ -12,9 +12,11 @@ export const peers = pgTable("peers", {
   connectionId: text("connection_id").notNull(), // Family ID - auto generated
   familyName: text("family_name"), // Family name (set by parent on registration)
   balance: integer("balance").default(0).notNull(), // Sats balance
-  nwcConnectionString: text("nwc_connection_string"), // NWC: nostr+walletconnect://...
-  lnbitsUrl: text("lnbits_url"), // LNBits instance URL (legacy)
-  lnbitsAdminKey: text("lnbits_admin_key"), // LNBits admin key (legacy)
+  nwcConnectionString: text("nwc_connection_string"), // NWC: nostr+walletconnect://... (parent for escrow)
+  lnbitsUrl: text("lnbits_url"), // LNBits instance URL (parent)
+  lnbitsAdminKey: text("lnbits_admin_key"), // LNBits admin key (parent)
+  lnbitsWithdrawKey: text("lnbits_withdraw_key"), // LNBits withdraw key (child for receiving sats)
+  lnbitsWithdrawUrl: text("lnbits_withdraw_url"), // LNBits instance URL for child withdrawals
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => ({
   uniqueNamePin: sql`unique (name, pin)`,

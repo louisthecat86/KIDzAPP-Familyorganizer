@@ -129,7 +129,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Setup LNbits wallet
+  // Setup LNbits wallet for Parent
   app.post("/api/wallet/setup-lnbits", async (req, res) => {
     try {
       const { peerId, lnbitsUrl, lnbitsAdminKey } = req.body;
@@ -156,6 +156,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("LNbits wallet setup error:", error);
       res.status(500).json({ error: "Failed to setup LNbits wallet" });
+    }
+  });
+
+  // Setup Child Withdraw Wallet
+  app.post("/api/wallet/setup-child-withdraw", async (req, res) => {
+    try {
+      const { peerId, lnbitsWithdrawUrl, lnbitsWithdrawKey } = req.body;
+      
+      if (!peerId || !lnbitsWithdrawUrl || !lnbitsWithdrawKey) {
+        return res.status(400).json({ error: "peerId, lnbitsWithdrawUrl, and lnbitsWithdrawKey required" });
+      }
+
+      const normalizedUrl = lnbitsWithdrawUrl.replace(/\/$/, "");
+
+      // Test withdraw key by creating a test invoice
+      try {
+        const lnbits = new LNBitsClient(normalizedUrl, lnbitsWithdrawKey);
+        await lnbits.createInvoice(1, "Test withdraw wallet");
+      } catch (error) {
+        console.error("Child withdraw wallet test failed:", error);
+        return res.status(400).json({ error: `Withdraw wallet test failed: ${error}` });
+      }
+
+      const peer = await storage.updateChildWallet(peerId, normalizedUrl, lnbitsWithdrawKey);
+      res.json(peer);
+    } catch (error) {
+      console.error("Child wallet setup error:", error);
+      res.status(500).json({ error: "Failed to setup child wallet" });
     }
   });
 
@@ -350,7 +378,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Withdraw sats
+  // Withdraw sats via child's Lightning wallet
   app.post("/api/withdraw", async (req, res) => {
     try {
       const { peerId, sats, paymentRequest } = req.body;
@@ -368,26 +396,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Insufficient balance" });
       }
 
-      // Find parent to use their LNBits wallet
-      const tasks = await storage.getTasks(child.connectionId || "");
-      const parentTask = tasks[0];
-      if (!parentTask) {
-        return res.status(400).json({ error: "No parent connection found" });
-      }
-
-      const parent = await storage.getPeer(parentTask.createdBy);
-      if (!parent || !parent.lnbitsUrl || !parent.lnbitsAdminKey) {
-        return res.status(500).json({ error: "Parent wallet not configured" });
-      }
-
-      // Send Lightning payment
-      const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
       let paymentHash: string;
-      try {
-        paymentHash = await lnbits.payInvoice(paymentRequest);
-      } catch (error) {
-        console.error("Payment error:", error);
-        return res.status(500).json({ error: "Failed to send withdrawal. Invalid Lightning address?" });
+
+      // Try child's own withdraw wallet first
+      if (child.lnbitsWithdrawUrl && child.lnbitsWithdrawKey) {
+        try {
+          const childLnbits = new LNBitsClient(child.lnbitsWithdrawUrl, child.lnbitsWithdrawKey);
+          paymentHash = await childLnbits.payInvoice(paymentRequest);
+        } catch (error) {
+          console.warn("Child wallet withdrawal failed, trying parent wallet:", error);
+          // Fall through to parent wallet
+          paymentHash = "";
+        }
+      }
+
+      // Fall back to parent's wallet if child's isn't configured
+      if (!paymentHash) {
+        const tasks = await storage.getTasks(child.connectionId || "");
+        const parentTask = tasks[0];
+        if (!parentTask) {
+          return res.status(400).json({ error: "No parent connection found" });
+        }
+
+        const parent = await storage.getPeer(parentTask.createdBy);
+        if (!parent || !parent.lnbitsUrl || !parent.lnbitsAdminKey) {
+          return res.status(500).json({ error: "Parent wallet not configured" });
+        }
+
+        const parentLnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+        try {
+          paymentHash = await parentLnbits.payInvoice(paymentRequest);
+        } catch (error) {
+          console.error("Payment error:", error);
+          return res.status(500).json({ error: "Failed to send withdrawal. Invalid Lightning address?" });
+        }
       }
 
       // Deduct from balance
