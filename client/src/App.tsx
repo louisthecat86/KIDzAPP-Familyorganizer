@@ -1174,6 +1174,23 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
 
     const children = connectedPeers.filter((p: any) => p.role === "child");
 
+    const handleUnlinkChild = async (childId: number, childName: string) => {
+      if (!window.confirm(`Möchtest du ${childName} wirklich von der Familie trennen?`)) return;
+      
+      try {
+        const res = await fetch("/api/peers/unlink", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ childId })
+        });
+        if (!res.ok) throw new Error("Failed to unlink");
+        queryClient.invalidateQueries({ queryKey: ["peers", user.connectionId] });
+        toast({ title: "Trennung erfolgreich", description: `${childName} wurde von der Familie getrennt` });
+      } catch (error) {
+        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      }
+    };
+
     return (
       <div className="max-w-4xl">
         <h1 className="text-3xl font-bold mb-8">Familienmitglieder</h1>
@@ -1199,6 +1216,15 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         <Badge variant="outline" className="text-xs">💰 {child.balance || 0} sats</Badge>
                       </div>
                     </div>
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleUnlinkChild(child.id, child.name)}
+                      className="text-destructive hover:text-destructive"
+                      data-testid={`button-unlink-child-${child.id}`}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -1711,6 +1737,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         if (!res.ok) throw new Error("Failed to unlink");
         const updated = await res.json();
         setUser(updated);
+        queryClient.invalidateQueries({ queryKey: ["peers"] });
         toast({ title: "Trennung erfolgreich", description: "Du bist nicht mehr mit der Familie verbunden" });
       } catch (error) {
         toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
