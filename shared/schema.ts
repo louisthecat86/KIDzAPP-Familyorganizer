@@ -92,11 +92,16 @@ export const familyEvents = pgTable("family_events", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const insertFamilyEventSchema = createInsertSchema(familyEvents).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertFamilyEventSchema = createInsertSchema(familyEvents)
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  })
+  .extend({
+    endDate: z.union([z.string(), z.date()]).optional(),
+    startDate: z.union([z.string(), z.date()]),
+  });
 
 export type InsertFamilyEvent = z.infer<typeof insertFamilyEventSchema>;
 export type FamilyEvent = typeof familyEvents.$inferSelect;
