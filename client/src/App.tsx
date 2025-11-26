@@ -1429,7 +1429,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           </motion.div>
         )}
         
-        <div className={`grid ${layoutView === "one-column" ? "grid-cols-1" : "grid-cols-2"} gap-1`}>
+        <div className={`grid ${layoutView === "one-column" ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
             <Card 
               className="bg-gradient-to-br from-gray-900 to-black border border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
@@ -2513,7 +2513,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         </motion.section>
 
         {tasks.length > 0 && (
-          <div className={`grid ${layoutView === "one-column" ? "grid-cols-1" : "grid-cols-2"} gap-1`}>
+          <div className={`grid ${layoutView === "one-column" ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
               <Card 
                 className="bg-gradient-to-br from-gray-900 to-black border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
@@ -2577,7 +2577,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         )}
 
         {tasks.length === 0 && (
-          <Card className="border-primary/30 bg-primary/5 p-6">
+          <Card className="border-primary/30 bg-primary/5 p-6 -mt-2">
             <div className="flex gap-4">
               <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
               <div>
