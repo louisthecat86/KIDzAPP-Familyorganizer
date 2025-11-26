@@ -2546,7 +2546,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
             
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
               <Card 
-                className="bg-card/50 border-border cursor-pointer hover:bg-card/70 transition-colors"
+                className="bg-gradient-to-br from-gray-900 to-black border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
                 onClick={() => setCurrentView("tasks-completed")}
                 data-testid="card-completed-tasks"
               >
@@ -2561,7 +2561,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
             
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}>
               <Card 
-                className="bg-card/50 border-border cursor-pointer hover:bg-card/70 transition-colors"
+                className="bg-gradient-to-br from-gray-900 to-black border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
                 onClick={() => setCurrentView("tasks-open")}
                 data-testid="card-available-tasks"
               >
