@@ -2199,6 +2199,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
   }
 
   if (currentView === "leaderboard") {
+    const [showLevels, setShowLevels] = useState(false);
     const { data: leaderboard = [] } = useQuery({
       queryKey: ["leaderboard", user.connectionId],
       queryFn: async () => {
@@ -2249,22 +2250,31 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         <h1 className="text-3xl font-bold mb-2">🏆 Bestenliste</h1>
         <p className="text-muted-foreground mb-6">Wer ist der beste Aufgabenerlediger in der Familie?</p>
         
-        {/* Level Legend */}
+        {/* Level Legend - Collapsible */}
         <Card className="mb-6 bg-primary/5 border border-primary/30">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">📋 Level-Übersicht</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-              {levels.map((level, idx) => (
-                <div key={idx} className="text-center p-2 rounded-lg bg-card/50 border border-border hover:border-primary/50 transition-colors">
-                  <div className="text-2xl mb-1">{level.emoji}</div>
-                  <p className="text-xs font-semibold line-clamp-2">{level.title}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{level.tasks}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
+          <button
+            onClick={() => setShowLevels(!showLevels)}
+            className="w-full flex items-center justify-between p-4 hover:bg-primary/10 transition-colors"
+            data-testid="button-toggle-levels"
+          >
+            <h3 className="text-lg font-semibold">📋 Level-Übersicht</h3>
+            <ChevronDown 
+              className={`h-5 w-5 transition-transform ${showLevels ? "rotate-180" : ""}`}
+            />
+          </button>
+          {showLevels && (
+            <CardContent className="pt-0 pb-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                {levels.map((level, idx) => (
+                  <div key={idx} className="text-center p-2 rounded-lg bg-card/50 border border-border hover:border-primary/50 transition-colors">
+                    <div className="text-2xl mb-1">{level.emoji}</div>
+                    <p className="text-xs font-semibold line-clamp-2">{level.title}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{level.tasks}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          )}
         </Card>
         
         {leaderboard.length === 0 ? (
