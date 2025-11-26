@@ -2216,6 +2216,15 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
       return `${position + 1}.`;
     };
 
+    const getAchievement = (completedTasks: number) => {
+      if (completedTasks >= 7) return { emoji: "⭐", title: "Meister", color: "text-yellow-500" };
+      if (completedTasks >= 5) return { emoji: "👑", title: "Champion", color: "text-purple-500" };
+      if (completedTasks >= 3) return { emoji: "🦸", title: "Haushaltsheld", color: "text-blue-500" };
+      if (completedTasks >= 2) return { emoji: "🎯", title: "Aufgabenpro", color: "text-green-500" };
+      if (completedTasks >= 1) return { emoji: "🌱", title: "Anfänger", color: "text-slate-500" };
+      return { emoji: "🌍", title: "Neuling", color: "text-slate-400" };
+    };
+
     return (
       <div className="max-w-4xl">
         <h1 className="text-3xl font-bold mb-2">🏆 Bestenliste</h1>
@@ -2228,7 +2237,9 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           </Card>
         ) : (
           <div className="grid gap-3">
-            {leaderboard.map((entry: any, index: number) => (
+            {leaderboard.map((entry: any, index: number) => {
+              const achievement = getAchievement(entry.completedTasks);
+              return (
               <Card 
                 key={entry.id} 
                 className={`border-2 transition-all ${
@@ -2251,6 +2262,10 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                       <p className="text-sm text-muted-foreground">
                         {entry.completedTasks} Aufgabe{entry.completedTasks !== 1 ? "n" : ""} erledigt
                       </p>
+                      <div className="flex items-center gap-1 mt-2">
+                        <span className={`text-2xl ${achievement.color}`}>{achievement.emoji}</span>
+                        <span className="text-xs font-semibold text-foreground">{achievement.title}</span>
+                      </div>
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-bold text-primary" data-testid={`text-leaderboard-sats-${entry.id}`}>
@@ -2267,7 +2282,8 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            );
+            })}
           </div>
         )}
       </div>
