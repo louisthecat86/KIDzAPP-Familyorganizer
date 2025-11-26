@@ -1564,10 +1564,6 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
   const [showLink, setShowLink] = useState(false);
   const [parentConnectionId, setParentConnectionId] = useState("");
   const [isLinking, setIsLinking] = useState(false);
-  const [showWithdraw, setShowWithdraw] = useState(false);
-  const [withdrawAmount, setWithdrawAmount] = useState("");
-  const [lightningAddress, setLightningAddress] = useState("");
-  const [isWithdrawing, setIsWithdrawing] = useState(false);
   const { toast } = useToast();
 
   const myTasks = tasks.filter((t: Task) => t.assignedTo === user.id);
@@ -1592,31 +1588,6 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
       });
     } finally {
       setIsLinking(false);
-    }
-  };
-
-  const handleWithdraw = async () => {
-    if (!withdrawAmount || !lightningAddress) return;
-    setIsWithdrawing(true);
-    try {
-      const amount = parseInt(withdrawAmount);
-      const result = await withdrawSats(user.id, amount, lightningAddress);
-      setUser({ ...user, balance: result.newBalance });
-      toast({
-        title: "Auszahlung gestartet!",
-        description: `${amount} sats werden übertragen`
-      });
-      setShowWithdraw(false);
-      setWithdrawAmount("");
-      setLightningAddress("");
-    } catch (error) {
-      toast({
-        title: "Fehler",
-        description: (error as Error).message,
-        variant: "destructive"
-      });
-    } finally {
-      setIsWithdrawing(false);
     }
   };
 
@@ -1653,6 +1624,59 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     );
   }
 
+  if (currentView === "settings") {
+    return (
+      <div className="max-w-4xl">
+        <h1 className="text-3xl font-bold mb-8">Einstellungen</h1>
+        <Card className="border-2 border-primary/40 bg-primary/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bitcoin className="h-5 w-5 text-primary" /> Lightning Adresse
+            </CardTitle>
+            <CardDescription>Hinterlege deine Lightning Adresse um Sats zu erhalten (z.B. skypilink@walletofsatoshi.com)</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="child-lightning-address">Lightning Adresse</Label>
+              <Input 
+                id="child-lightning-address"
+                placeholder="name@walletofsatoshi.com"
+                defaultValue={user.lightningAddress || ""}
+                className="font-mono text-xs"
+                data-testid="input-child-lightning-address"
+              />
+              <p className="text-xs text-muted-foreground">
+                Format: name@domain.com
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Status: {user.lightningAddress ? "✓ Konfiguriert" : "✗ Nicht konfiguriert"}
+              </p>
+            </div>
+            <Button 
+              onClick={() => {
+                const addr = (document.getElementById("child-lightning-address") as HTMLInputElement)?.value;
+                if (addr) {
+                  fetch("/api/wallet/setup-child-address", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ peerId: user.id, lightningAddress: addr }),
+                  }).then(r => r.json()).then(data => {
+                    setUser(data);
+                    toast({ title: "Lightning Adresse gespeichert!", description: "Du erhältst nun Sats direkt" });
+                  }).catch(err => toast({ title: "Fehler", description: err.message, variant: "destructive" }));
+                }
+              }}
+              className="bg-primary hover:bg-primary/90"
+              data-testid="button-save-child-lightning-address"
+            >
+              Speichern
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (currentView === "dashboard") {
     return (
       <div className="max-w-4xl space-y-10">
@@ -1671,6 +1695,15 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
             <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center border border-primary/30 shadow-[0_0_20px_rgba(247,147,26,0.2)]">
               <Bitcoin className="h-10 w-10 text-primary" />
             </div>
+            <Button 
+              onClick={() => setCurrentView("settings")}
+              variant="outline"
+              size="sm"
+              className="absolute top-4 right-4"
+              data-testid="button-child-settings"
+            >
+              ⚙️ Einstellungen
+            </Button>
           </div>
         </motion.section>
 
@@ -1734,80 +1767,6 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         </Card>
       )}
 
-      {(user.balance || 0) > 0 && (
-        <Card className="border-primary/30 bg-primary/5 p-6">
-          <div className="flex gap-4">
-            <Send className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h3 className="font-bold mb-1">Sats abheben</h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                Transferiere deine Sats auf eine Lightning-Wallet
-              </p>
-              <Button 
-                size="sm"
-                onClick={() => setShowWithdraw(true)}
-                className="bg-primary hover:bg-primary/90"
-                data-testid="button-show-withdraw"
-              >
-                Abheben
-              </Button>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {showWithdraw && (
-        <Card className="border-primary/30 bg-primary/5 p-6">
-          <h3 className="font-bold mb-4">Sats abheben</h3>
-          <div className="space-y-3">
-            <div>
-              <Label htmlFor="withdraw-amount">Betrag (Sats)</Label>
-              <Input 
-                id="withdraw-amount"
-                type="number"
-                placeholder="1000"
-                value={withdrawAmount}
-                onChange={(e) => setWithdrawAmount(e.target.value)}
-                max={user.balance || 0}
-                className="bg-secondary border-border"
-                data-testid="input-withdraw-amount"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Verfügbar: {(user.balance || 0).toLocaleString()} sats
-              </p>
-            </div>
-            <div>
-              <Label htmlFor="lightning-address">Lightning-Adresse</Label>
-              <Input 
-                id="lightning-address"
-                placeholder="lnbc1000..."
-                value={lightningAddress}
-                onChange={(e) => setLightningAddress(e.target.value)}
-                className="bg-secondary border-border font-mono text-sm"
-                data-testid="input-lightning-address"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button 
-                onClick={handleWithdraw}
-                disabled={!withdrawAmount || !lightningAddress || isWithdrawing}
-                className="bg-primary hover:bg-primary/90 flex-1"
-                data-testid="button-confirm-withdraw"
-              >
-                {isWithdrawing ? "Wird gesendet..." : "Senden"}
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={() => setShowWithdraw(false)}
-                disabled={isWithdrawing}
-                data-testid="button-cancel-withdraw"
-              >
-                Abbrechen
-              </Button>
-            </div>
-          </div>
-        </Card>
-      )}
 
       <section>
         <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
