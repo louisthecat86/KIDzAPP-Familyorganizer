@@ -129,6 +129,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Setup LNbits wallet
+  app.post("/api/wallet/setup-lnbits", async (req, res) => {
+    try {
+      const { peerId, lnbitsUrl, lnbitsAdminKey } = req.body;
+      
+      if (!peerId || !lnbitsUrl || !lnbitsAdminKey) {
+        return res.status(400).json({ error: "peerId, lnbitsUrl, and lnbitsAdminKey required" });
+      }
+
+      // Normalize URL (remove trailing slash)
+      const normalizedUrl = lnbitsUrl.replace(/\/$/, "");
+
+      // Test LNbits connection by creating a test invoice
+      try {
+        const lnbits = new LNBitsClient(normalizedUrl, lnbitsAdminKey);
+        await lnbits.createInvoice(1, "Test connection");
+      } catch (error) {
+        console.error("LNbits connection test failed:", error);
+        return res.status(400).json({ error: `LNbits connection failed: ${error}` });
+      }
+
+      // Save LNbits credentials
+      const peer = await storage.updatePeerWallet(peerId, normalizedUrl, lnbitsAdminKey);
+      res.json(peer);
+    } catch (error) {
+      console.error("LNbits wallet setup error:", error);
+      res.status(500).json({ error: "Failed to setup LNbits wallet" });
+    }
+  });
+
   // Link child to parent by connection ID
   app.post("/api/peers/link", async (req, res) => {
     try {
@@ -173,7 +203,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create a new task with escrow lock
+  // Create a new task (with optional escrow via wallet)
   app.post("/api/tasks", async (req, res) => {
     try {
       const data = insertTaskSchema.parse(req.body);
@@ -185,49 +215,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Parent not found" });
       }
 
-      // NWC wallet is REQUIRED
-      if (!parent.nwcConnectionString) {
-        return res.status(400).json({ error: "NWC wallet must be configured to create tasks" });
-      }
-
-      // Create BOLT11 invoice for escrow via NWC
-      const nwc = new NWCClient(parent.nwcConnectionString);
       let invoice = "";
-      try {
-        invoice = await nwc.createPaymentRequest(data.sats, `Task: ${data.title}`);
-      } catch (error) {
-        console.error("Invoice creation error:", error);
-        return res.status(500).json({ error: "Failed to create payment invoice for escrow" });
+      let escrowLocked = false;
+
+      // Try to create escrow invoice if wallet is configured
+      if (parent.lnbitsUrl && parent.lnbitsAdminKey) {
+        try {
+          const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+          invoice = await lnbits.createPaylink(data.sats, `Task: ${data.title}`);
+          escrowLocked = true;
+        } catch (error) {
+          console.warn("LNbits invoice creation failed, creating task without escrow:", error);
+        }
+      } else if (parent.nwcConnectionString) {
+        try {
+          const nwc = new NWCClient(parent.nwcConnectionString);
+          invoice = await nwc.createPaymentRequest(data.sats, `Task: ${data.title}`);
+          escrowLocked = true;
+        } catch (error) {
+          console.warn("NWC invoice creation failed, creating task without escrow:", error);
+        }
       }
 
-      // Create task with BOLT11 invoice as paylink
+      // Create task (with or without escrow)
       const task = await storage.createTask({
         ...data,
         status: "open",
-        paylink: invoice, // BOLT11 invoice
-        escrowLocked: true,
+        paylink: invoice || undefined,
+        escrowLocked: escrowLocked,
       });
 
-      // Record escrow lock transaction
-      await storage.createTransaction({
-        fromPeerId: createdBy,
-        toPeerId: createdBy,
-        sats: data.sats,
-        taskId: task.id,
-        type: "escrow_lock",
-        status: "pending",
-        paymentHash: invoice,
-      });
+      // Record escrow lock transaction if applicable
+      if (escrowLocked && invoice) {
+        await storage.createTransaction({
+          fromPeerId: createdBy,
+          toPeerId: createdBy,
+          sats: data.sats,
+          taskId: task.id,
+          type: "escrow_lock",
+          status: "pending",
+          paymentHash: invoice,
+        });
+      }
 
       res.json({ 
         task,
-        requiresPayment: true,
-        paymentInfo: {
+        escrowLocked: escrowLocked,
+        paymentInfo: escrowLocked ? {
           invoice: invoice,
           sats: data.sats,
           description: `Task: ${data.title}`,
-          escrowRequired: true
-        }
+        } : undefined
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -387,7 +425,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/events", async (req, res) => {
     try {
       const data = insertFamilyEventSchema.parse(req.body);
-      const event = await storage.createEvent(data);
+      
+      // Ensure dates are properly formatted
+      const eventData = {
+        ...data,
+        startDate: new Date(data.startDate),
+        endDate: data.endDate ? new Date(data.endDate) : undefined,
+      };
+      
+      const event = await storage.createEvent(eventData);
       res.json(event);
     } catch (error) {
       if (error instanceof z.ZodError) {
