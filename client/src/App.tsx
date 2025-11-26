@@ -493,7 +493,8 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
   const menuItems = [
     { id: "dashboard", label: user.role === "parent" ? "Dashboard" : "Mein Dashboard", icon: Home },
     { id: "tasks", label: user.role === "parent" ? "Aufgaben" : "Verfügbare Aufgaben", icon: CheckCircle },
-    { id: "calendar", label: "Familienkalender", icon: Calendar },
+    { id: "calendar-create", label: "📅 Termin anlegen", icon: Plus },
+    { id: "calendar-view", label: "📋 Termine ansehen", icon: Calendar },
     { id: "leaderboard", label: "Bestenliste", icon: Trophy },
   ];
 
@@ -2143,10 +2144,10 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     );
   }
 
-  if (currentView === "calendar") {
+  if (currentView === "calendar-create") {
     return (
       <div className="space-y-8">
-        <h1 className="text-3xl font-bold mb-8">Familienkalender</h1>
+        <h1 className="text-3xl font-bold mb-8">Neuen Termin anlegen</h1>
         <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
           <Card className="border border-primary/20 shadow-[0_0_30px_-10px_rgba(247,147,26,0.15)] bg-card/50">
             <CardHeader>
@@ -2227,10 +2228,17 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             </CardContent>
           </Card>
         </motion.section>
+      </div>
+    );
+  }
 
+  if (currentView === "calendar-view") {
+    return (
+      <div className="space-y-8">
+        <h1 className="text-3xl font-bold mb-8">Familienkalender</h1>
         <section>
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-            <Calendar className="text-primary" /> Familienkalender
+            <Calendar className="text-primary" /> Alle Termine
           </h2>
           <ParentEventsList events={events} onDeleteEvent={onDeleteEvent} />
         </section>
