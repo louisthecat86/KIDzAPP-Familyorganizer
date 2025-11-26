@@ -1307,6 +1307,11 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     const stored = localStorage.getItem(`connectionCodeShown_${user.id}`);
     return !stored;
   });
+  const [cardOrder, setCardOrder] = useState<string[]>(() => {
+    const stored = localStorage.getItem(`cardOrder_${user.id}`);
+    return stored ? JSON.parse(stored) : ["tasks-open", "tasks-pending", "tasks-completed", "sats-spent", "wallet-balance"];
+  });
+  const [draggedCard, setDraggedCard] = useState<string | null>(null);
   const { toast } = useToast();
 
   const hideConnectionCode = () => {
