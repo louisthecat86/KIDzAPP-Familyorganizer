@@ -1670,6 +1670,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     try {
       const updated = await linkChildToParent(user.id, parentConnectionId);
       setUser(updated);
+      localStorage.setItem("sats-user", JSON.stringify(updated));
       toast({
         title: "Verbunden! 🎉",
         description: "Du bist jetzt mit deinen Eltern verbunden"
