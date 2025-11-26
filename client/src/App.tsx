@@ -224,7 +224,12 @@ export default function App() {
         console.error("Failed to parse stored user", e);
       }
     }
+    setSidebarOpen(false);
   }, []);
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [user]);
 
   const { data: tasks = [] } = useQuery({
     queryKey: ["tasks", user?.connectionId],
