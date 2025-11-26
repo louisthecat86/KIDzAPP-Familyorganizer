@@ -1730,38 +1730,27 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           })}
         </div>
 
-        <div className="grid grid-cols-1 gap-4">
-          <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <Calendar className="text-primary" /> Familienkalender
-            </h2>
-            <div className="space-y-3">
+        <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
+          <Card className="bg-gradient-to-br from-gray-900 to-black border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors" onClick={() => setCurrentView("calendar-view")} data-testid="card-calendar">
+            <CardContent className="p-6">
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <Calendar className="text-primary" /> Familienkalender ({events.length})
+              </h3>
               {events.length === 0 ? (
-                <Card className="border-dashed border-border p-6 text-center">
-                  <p className="text-muted-foreground text-sm">Noch keine Termine geplant</p>
-                </Card>
+                <p className="text-sm text-muted-foreground text-center py-4">Noch keine Termine geplant</p>
               ) : (
-                events.slice(0, 3).map((event: FamilyEvent) => (
-                  <Card 
-                    key={event.id} 
-                    className="border-border bg-gradient-to-br from-gray-900 to-black cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
-                    onClick={() => setCurrentView("calendar")}
-                    data-testid={`card-dash-event-${event.id}`}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-sm" data-testid={`text-dash-event-${event.id}`}>{event.title}</h4>
-                          {event.location && <p className="text-xs text-muted-foreground mt-1">📍 {event.location}</p>}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
+                <div className="space-y-2">
+                  {events.slice(0, 3).map((event: FamilyEvent) => (
+                    <div key={event.id} className="text-sm border-l-2 border-primary/30 pl-3 py-1">
+                      <p className="font-semibold text-xs" data-testid={`text-dash-event-${event.id}`}>{event.title}</p>
+                      {event.location && <p className="text-xs text-muted-foreground">📍 {event.location}</p>}
+                    </div>
+                  ))}
+                </div>
               )}
-            </div>
-          </motion.section>
-        </div>
+            </CardContent>
+          </Card>
+        </motion.section>
       </div>
     );
   }
