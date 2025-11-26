@@ -115,9 +115,9 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  async updateChildWallet(peerId: number, lnbitsWithdrawUrl: string, lnbitsWithdrawKey: string): Promise<Peer> {
+  async updateChildLightningAddress(peerId: number, lightningAddress: string): Promise<Peer> {
     const result = await db.update(peers)
-      .set({ lnbitsWithdrawUrl, lnbitsWithdrawKey })
+      .set({ lightningAddress })
       .where(eq(peers.id, peerId))
       .returning();
     return result[0];

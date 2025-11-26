@@ -1264,41 +1264,44 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 <Card className="border-2 border-primary/40 bg-primary/5">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Bitcoin className="h-5 w-5 text-primary" /> Auszahlungs-Wallet
+                      <Bitcoin className="h-5 w-5 text-primary" /> Lightning Adresse
                     </CardTitle>
-                    <CardDescription>Hinterlege deine Lightning Wallet für Sats-Auszahlungen</CardDescription>
+                    <CardDescription>Hinterlege deine Lightning Adresse um Sats zu erhalten</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="withdraw-url">LNbits Server URL</Label>
+                      <Label htmlFor="lightning-address">Lightning Adresse</Label>
                       <Input 
-                        id="withdraw-url"
-                        placeholder="https://lnbits.example.com"
-                        value={lnbitsWithdrawUrl}
-                        onChange={(e) => setLnbitsWithdrawUrl(e.target.value)}
+                        id="lightning-address"
+                        placeholder="name@example.com"
+                        value={user.lightningAddress || ""}
+                        onChange={(e) => setLnbitsUrl(e.target.value)}
                         className="font-mono text-xs"
-                        data-testid="input-withdraw-url"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="withdraw-key">LNbits Withdraw Key</Label>
-                      <Input 
-                        id="withdraw-key"
-                        placeholder="deine-withdraw-key..."
-                        type="password"
-                        value={lnbitsWithdrawKey}
-                        onChange={(e) => setLnbitsWithdrawKey(e.target.value)}
-                        className="font-mono text-xs"
-                        data-testid="input-withdraw-key"
+                        data-testid="input-lightning-address"
                       />
                       <p className="text-xs text-muted-foreground">
-                        Status: {user.lnbitsWithdrawUrl ? "✓ Konfiguriert" : "✗ Nicht konfiguriert"}
+                        Format: name@domain.com
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Status: {user.lightningAddress ? "✓ Konfiguriert" : "✗ Nicht konfiguriert"}
                       </p>
                     </div>
                     <Button 
-                      onClick={setupChildWithdrawWallet}
+                      onClick={() => {
+                        const lightningAddress = (document.getElementById("lightning-address") as HTMLInputElement)?.value;
+                        if (lightningAddress) {
+                          fetch("/api/wallet/setup-child-address", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ peerId: user.id, lightningAddress }),
+                          }).then(r => r.json()).then(data => {
+                            setUser(data);
+                            toast({ title: "Lightning Adresse gespeichert!", description: "Du erhältst nun Sats direkt" });
+                          }).catch(err => toast({ title: "Fehler", description: err.message, variant: "destructive" }));
+                        }
+                      }}
                       className="bg-primary hover:bg-primary/90"
-                      data-testid="button-setup-withdraw-wallet"
+                      data-testid="button-setup-lightning-address"
                     >
                       Speichern
                     </Button>

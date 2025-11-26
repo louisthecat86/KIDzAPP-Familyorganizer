@@ -159,31 +159,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Setup Child Withdraw Wallet
-  app.post("/api/wallet/setup-child-withdraw", async (req, res) => {
+  // Setup Child Lightning Address
+  app.post("/api/wallet/setup-child-address", async (req, res) => {
     try {
-      const { peerId, lnbitsWithdrawUrl, lnbitsWithdrawKey } = req.body;
+      const { peerId, lightningAddress } = req.body;
       
-      if (!peerId || !lnbitsWithdrawUrl || !lnbitsWithdrawKey) {
-        return res.status(400).json({ error: "peerId, lnbitsWithdrawUrl, and lnbitsWithdrawKey required" });
+      if (!peerId || !lightningAddress) {
+        return res.status(400).json({ error: "peerId and lightningAddress required" });
       }
 
-      const normalizedUrl = lnbitsWithdrawUrl.replace(/\/$/, "");
-
-      // Test withdraw key by creating a test invoice
-      try {
-        const lnbits = new LNBitsClient(normalizedUrl, lnbitsWithdrawKey);
-        await lnbits.createInvoice(1, "Test withdraw wallet");
-      } catch (error) {
-        console.error("Child withdraw wallet test failed:", error);
-        return res.status(400).json({ error: `Withdraw wallet test failed: ${error}` });
+      // Validate lightning address format
+      if (!lightningAddress.includes("@")) {
+        return res.status(400).json({ error: "Invalid lightning address format (should be name@domain)" });
       }
 
-      const peer = await storage.updateChildWallet(peerId, normalizedUrl, lnbitsWithdrawKey);
+      const peer = await storage.updateChildLightningAddress(peerId, lightningAddress);
       res.json(peer);
     } catch (error) {
-      console.error("Child wallet setup error:", error);
-      res.status(500).json({ error: "Failed to setup child wallet" });
+      console.error("Child address setup error:", error);
+      res.status(500).json({ error: "Failed to setup child lightning address" });
     }
   });
 
@@ -327,7 +321,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update task and release escrow
+  // Update task and send payment to child's lightning address
   app.patch("/api/tasks/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -339,7 +333,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Task not found" });
       }
 
-      // If approving, release escrow sats to child
+      // If approving, send sats to child's lightning address
       if (updates.status === "approved" && task.status !== "approved") {
         const child = await storage.getPeer(task.assignedTo!);
         const parent = await storage.getPeer(task.createdBy);
@@ -348,26 +342,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(404).json({ error: "Child or parent not found" });
         }
 
-        // Release escrow sats to child balance
-        const newBalance = (child.balance || 0) + task.sats;
-        await storage.updateBalance(child.id, newBalance);
+        if (!child.lightningAddress) {
+          return res.status(400).json({ error: "Child has no lightning address configured" });
+        }
 
-        // Create virtual withdraw link
-        const withdrawLink = `withdraw:${task.id}:${task.sats}:${task.title}`;
-        
-        // Record escrow release transaction
-        await storage.createTransaction({
-          fromPeerId: task.createdBy,
-          toPeerId: child.id,
-          sats: task.sats,
-          taskId: task.id,
-          type: "escrow_release",
-          status: "completed",
-          paymentHash: withdrawLink,
-        });
+        if (!parent.lnbitsUrl || !parent.lnbitsAdminKey) {
+          return res.status(400).json({ error: "Parent wallet not configured" });
+        }
 
-        // Update task with withdraw link
-        updates.withdrawLink = withdrawLink;
+        // Send payment to child's lightning address
+        try {
+          const parentLnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+          const paymentHash = await parentLnbits.payToLightningAddress(
+            task.sats,
+            child.lightningAddress,
+            `Task: ${task.title}`
+          );
+
+          // Record transaction
+          await storage.createTransaction({
+            fromPeerId: task.createdBy,
+            toPeerId: child.id,
+            sats: task.sats,
+            taskId: task.id,
+            type: "task_payment",
+            status: "completed",
+            paymentHash: paymentHash,
+          });
+
+          updates.paymentHash = paymentHash;
+        } catch (error) {
+          console.error("Payment error:", error);
+          return res.status(500).json({ error: `Payment failed: ${error}` });
+        }
       }
 
       const updatedTask = await storage.updateTask(id, updates);
@@ -398,36 +405,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       let paymentHash: string = "";
 
-      // Try child's own withdraw wallet first
-      if (child.lnbitsWithdrawUrl && child.lnbitsWithdrawKey) {
-        try {
-          const childLnbits = new LNBitsClient(child.lnbitsWithdrawUrl, child.lnbitsWithdrawKey);
-          paymentHash = await childLnbits.payInvoice(paymentRequest);
-        } catch (error) {
-          console.warn("Child wallet withdrawal failed, trying parent wallet:", error);
-          // Fall through to parent wallet
-          paymentHash = "";
-        }
+      // Use parent's wallet for withdrawal
+      const tasks = await storage.getTasks(child.connectionId || "");
+      const parentTask = tasks[0];
+      if (!parentTask) {
+        return res.status(400).json({ error: "No parent connection found" });
       }
 
-      // Fall back to parent's wallet if child's isn't configured
-      if (!paymentHash) {
-        const tasks = await storage.getTasks(child.connectionId || "");
-        const parentTask = tasks[0];
-        if (!parentTask) {
-          return res.status(400).json({ error: "No parent connection found" });
-        }
+      const parent = await storage.getPeer(parentTask.createdBy);
+      if (!parent || !parent.lnbitsUrl || !parent.lnbitsAdminKey) {
+        return res.status(500).json({ error: "Parent wallet not configured" });
+      }
 
-        const parent = await storage.getPeer(parentTask.createdBy);
-        if (!parent || !parent.lnbitsUrl || !parent.lnbitsAdminKey) {
-          return res.status(500).json({ error: "Parent wallet not configured" });
-        }
-
-        const parentLnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
-        try {
-          paymentHash = await parentLnbits.payInvoice(paymentRequest);
-        } catch (error) {
-          console.error("Payment error:", error);
+      const parentLnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+      try {
+        paymentHash = await parentLnbits.payInvoice(paymentRequest);
+      } catch (error) {
+        console.error("Payment error:", error);
           return res.status(500).json({ error: "Failed to send withdrawal. Invalid Lightning address?" });
         }
       }

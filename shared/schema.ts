@@ -15,8 +15,7 @@ export const peers = pgTable("peers", {
   nwcConnectionString: text("nwc_connection_string"), // NWC: nostr+walletconnect://... (parent for escrow)
   lnbitsUrl: text("lnbits_url"), // LNBits instance URL (parent)
   lnbitsAdminKey: text("lnbits_admin_key"), // LNBits admin key (parent)
-  lnbitsWithdrawKey: text("lnbits_withdraw_key"), // LNBits withdraw key (child for receiving sats)
-  lnbitsWithdrawUrl: text("lnbits_withdraw_url"), // LNBits instance URL for child withdrawals
+  lightningAddress: text("lightning_address"), // Lightning address for child (receives sats directly)
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => ({
   uniqueNamePin: sql`unique (name, pin)`,
@@ -42,9 +41,7 @@ export const tasks = pgTable("tasks", {
   status: text("status").notNull(), // 'open', 'assigned', 'submitted', 'approved'
   assignedTo: integer("assigned_to"), // Peer ID
   proof: text("proof"), // File reference or URL
-  paylink: text("paylink"), // LNBits paylink for funding
-  withdrawLink: text("withdraw_link"), // LNBits withdraw link for child payout
-  escrowLocked: boolean("escrow_locked").default(false).notNull(), // Is payment locked in escrow?
+  paymentHash: text("payment_hash"), // Payment hash from lightning payment
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
