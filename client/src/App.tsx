@@ -1171,7 +1171,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         const res = await fetch(`/api/peers/connection/${user.connectionId}`);
         if (!res.ok) throw new Error("Failed to fetch peers");
         return res.json();
-      }
+      },
+      refetchInterval: 2000
     });
 
     const children = connectedPeers.filter((p: any) => p.role === "child");
@@ -1722,7 +1723,8 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         const res = await fetch(`/api/peers/connection/${user.connectionId}`);
         if (!res.ok) throw new Error("Failed to fetch peers");
         return res.json();
-      }
+      },
+      refetchInterval: 2000
     });
 
     const parent = connectedPeers.find((p: any) => p.role === "parent");
