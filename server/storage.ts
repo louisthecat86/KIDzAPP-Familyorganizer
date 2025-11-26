@@ -78,6 +78,10 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(peers).where(eq(peers.role, "parent"));
   }
 
+  async getPeersByConnectionId(connectionId: string): Promise<Peer[]> {
+    return await db.select().from(peers).where(eq(peers.connectionId, connectionId));
+  }
+
   async createPeer(insertPeer: InsertPeer): Promise<Peer> {
     const result = await db.insert(peers).values(insertPeer).returning();
     return result[0];

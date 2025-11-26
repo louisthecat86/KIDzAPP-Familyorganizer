@@ -33,7 +33,8 @@ import {
   MapPin,
   Menu,
   ChevronDown,
-  Home
+  Home,
+  Users
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -473,12 +474,14 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
         { id: "dashboard", label: "Dashboard", icon: Home },
         { id: "tasks", label: "Aufgaben", icon: Trophy },
         { id: "calendar", label: "Familienkalender", icon: Calendar },
+        { id: "peers", label: "Familienmitglieder", icon: Users },
         { id: "nostr", label: "Wallet-Einstellungen", icon: Bitcoin },
       ]
     : [
         { id: "dashboard", label: "Mein Dashboard", icon: Home },
         { id: "tasks", label: "Verfügbare Aufgaben", icon: Trophy },
         { id: "calendar", label: "Familienkalender", icon: Calendar },
+        { id: "peers", label: "Meine Familie", icon: Users },
         { id: "settings", label: "Lightning Wallet", icon: Bitcoin },
       ];
 
@@ -489,7 +492,7 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
       transition={{ duration: 0.3 }}
       className="fixed right-0 top-0 h-screen w-64 bg-card border-l border-border z-40 flex flex-col"
     >
-      <div className="p-4 border-b border-border space-y-3">
+      <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">
@@ -510,16 +513,6 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
             <X className="h-4 w-4" />
           </Button>
         </div>
-        {user.role === "child" && user.familyName && (
-          <div className="bg-primary/10 border border-primary/30 rounded px-3 py-2 text-xs">
-            <p className="text-muted-foreground">✓ Gekoppelt mit: <span className="text-primary font-semibold">{user.name}</span></p>
-          </div>
-        )}
-        {user.role === "parent" && (
-          <div className="bg-primary/10 border border-primary/30 rounded px-3 py-2 text-xs">
-            <p className="text-muted-foreground">📋 Eltern: <span className="text-primary font-semibold">{user.familyName || "Keine Familie"}</span></p>
-          </div>
-        )}
       </div>
 
       <nav className="flex-1 overflow-y-auto p-4 space-y-2">
@@ -1637,6 +1630,42 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
             ))
           )}
         </div>
+      </div>
+    );
+  }
+
+  if (currentView === "peers") {
+    return (
+      <div className="max-w-4xl">
+        <h1 className="text-3xl font-bold mb-8">Meine Familie</h1>
+        {user.familyName ? (
+          <Card className="border-2 border-primary/40 bg-primary/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-primary" /> Verbunden mit
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-card border border-border rounded-lg p-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold">
+                    {user.familyName[0]}
+                  </div>
+                  <div>
+                    <p className="font-semibold">{user.familyName}</p>
+                    <p className="text-xs text-muted-foreground">👨‍👩‍👧 Eltern</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="border-dashed border-border p-8 text-center">
+            <Info className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground">Du bist noch nicht mit einer Familie verbunden</p>
+            <p className="text-xs text-muted-foreground mt-2">Verbinde dich mit deinen Eltern über den Dashboard Bereich</p>
+          </Card>
+        )}
       </div>
     );
   }
