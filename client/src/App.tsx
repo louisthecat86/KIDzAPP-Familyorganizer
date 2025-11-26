@@ -410,7 +410,7 @@ export default function App() {
             variant="ghost"
             size="icon"
             onClick={() => setSidebarOpen(true)}
-            className="fixed left-4 top-4 z-30 md:hidden"
+            className="fixed right-4 top-4 z-30 md:hidden"
             data-testid="button-open-sidebar"
           >
             <Menu className="h-5 w-5" />
