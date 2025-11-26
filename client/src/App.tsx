@@ -204,7 +204,7 @@ async function deleteEvent(id: number): Promise<void> {
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [newTask, setNewTask] = useState({ title: "", description: "", sats: 50 });
-  const [newEvent, setNewEvent] = useState({ title: "", description: "", location: "" });
+  const [newEvent, setNewEvent] = useState({ title: "", description: "", location: "", startDate: "", endDate: "" });
   const [currentView, setCurrentView] = useState<string>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mode, setMode] = useState<"role-select" | "auth" | "app">("role-select");
@@ -279,7 +279,7 @@ export default function App() {
     mutationFn: createEvent,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
-      setNewEvent({ title: "", description: "", location: "" });
+      setNewEvent({ title: "", description: "", location: "", startDate: "", endDate: "" });
       toast({ title: "Termin erstellt", description: "Der Familienkalender wurde aktualisiert" });
     },
     onError: (error) => {
@@ -364,16 +364,19 @@ export default function App() {
 
   const handleCreateEvent = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newEvent.title || !user) return;
+    if (!newEvent.title || !user || !newEvent.startDate) return;
     
-    const now = new Date();
+    const startDate = new Date(newEvent.startDate);
+    const endDate = newEvent.endDate ? new Date(newEvent.endDate) : undefined;
+    
     createEventMutation.mutate({
       connectionId: user.connectionId,
       createdBy: user.id,
       title: newEvent.title,
       description: newEvent.description,
       location: newEvent.location,
-      startDate: now,
+      startDate: startDate,
+      endDate: endDate,
       color: "primary",
       eventType: "appointment",
     });
@@ -1701,6 +1704,30 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     data-testid="input-event-description"
                   />
                 </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="event-start-date">📅 Startdatum</Label>
+                    <Input 
+                      id="event-start-date"
+                      type="datetime-local"
+                      value={newEvent.startDate}
+                      onChange={(e) => setNewEvent({ ...newEvent, startDate: e.target.value })}
+                      className="bg-secondary border-border"
+                      data-testid="input-event-start-date"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="event-end-date">📅 Enddatum (optional)</Label>
+                    <Input 
+                      id="event-end-date"
+                      type="datetime-local"
+                      value={newEvent.endDate}
+                      onChange={(e) => setNewEvent({ ...newEvent, endDate: e.target.value })}
+                      className="bg-secondary border-border"
+                      data-testid="input-event-end-date"
+                    />
+                  </div>
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="event-location" className="flex items-center gap-1">
                     <MapPin className="h-4 w-4" /> Ort (optional)
@@ -1717,6 +1744,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 <Button 
                   type="submit" 
                   className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                  disabled={!newEvent.title || !newEvent.startDate}
                   data-testid="button-create-event"
                 >
                   Termin hinzufügen
@@ -1742,7 +1770,11 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <h3 className="font-bold text-lg" data-testid={`text-event-title-${event.id}`}>{event.title}</h3>
-                        {event.description && <p className="text-muted-foreground text-sm mt-1">{event.description}</p>}
+                        <p className="text-xs text-muted-foreground mt-1">
+                          📅 {new Date(event.startDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                          {event.endDate && ` - ${new Date(event.endDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}`}
+                        </p>
+                        {event.description && <p className="text-muted-foreground text-sm mt-2">{event.description}</p>}
                         {event.location && (
                           <p className="text-sm text-muted-foreground flex items-center gap-1 mt-2">
                             <MapPin className="h-4 w-4" /> {event.location}
