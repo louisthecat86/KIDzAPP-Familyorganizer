@@ -1143,39 +1143,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 gap-8">
           <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <Trophy className="text-primary" /> Ausstehende Bestätigung
-            </h2>
-            <div className="space-y-3">
-              {submittedTasks.length === 0 ? (
-                <Card className="border-dashed border-border p-6 text-center">
-                  <p className="text-muted-foreground text-sm">Keine Aufgaben zur Bestätigung</p>
-                </Card>
-              ) : (
-                submittedTasks.slice(0, 3).map((task: Task) => (
-                  <Card 
-                    key={task.id} 
-                    className="border-border bg-card/50 cursor-pointer hover:bg-card/70 transition-colors"
-                    onClick={() => setCurrentView("tasks-pending")}
-                    data-testid={`card-pending-task-${task.id}`}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-sm" data-testid={`text-pending-task-${task.id}`}>{task.title}</h4>
-                          <p className="text-xs text-muted-foreground mt-1">⚡ {task.sats} sats</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
-          </motion.section>
-
-          <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}>
             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
               <Calendar className="text-primary" /> Familienkalender
             </h2>
