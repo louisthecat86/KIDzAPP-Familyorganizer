@@ -1298,6 +1298,85 @@ function SettingsModal({ user, setUser, activeTab, onClose, layoutView, setLayou
   );
 }
 
+function ParentEventsList({ events, onDeleteEvent }: any) {
+  const [rsvpData, setRsvpData] = useState<Record<number, any[]>>({});
+
+  useEffect(() => {
+    events.forEach(async (event: FamilyEvent) => {
+      try {
+        const res = await fetch(`/api/events/${event.id}/rsvps`);
+        if (res.ok) {
+          const rsvps = await res.json();
+          setRsvpData(prev => ({ ...prev, [event.id]: rsvps }));
+        }
+      } catch (error) {
+        console.error("Failed to fetch RSVPs:", error);
+      }
+    });
+  }, [events]);
+
+  return (
+    <div className="grid gap-4">
+      {events.length === 0 ? (
+        <Card className="border-dashed border-border p-8 text-center">
+          <p className="text-muted-foreground">Noch keine Termine geplant</p>
+        </Card>
+      ) : (
+        events.map((event: FamilyEvent) => {
+          const rsvps = rsvpData[event.id] || [];
+          const accepted = rsvps.filter(r => r.response === "accepted");
+          const declined = rsvps.filter(r => r.response === "declined");
+
+          return (
+            <Card key={event.id} className="border-border bg-gradient-to-br from-gray-900 to-black hover:from-gray-800 hover:to-gray-950 transition-colors">
+              <CardContent className="p-5">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg" data-testid={`text-event-title-${event.id}`}>{event.title}</h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      📅 {new Date(event.startDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      {event.endDate && ` - ${new Date(event.endDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}`}
+                    </p>
+                    {event.description && <p className="text-muted-foreground text-sm mt-2">{event.description}</p>}
+                    {event.location && (
+                      <p className="text-sm text-muted-foreground flex items-center gap-1 mt-2">
+                        <MapPin className="h-4 w-4" /> {event.location}
+                      </p>
+                    )}
+                    {rsvps.length > 0 && (
+                      <div className="mt-4 p-3 bg-secondary/50 rounded-lg">
+                        {accepted.length > 0 && (
+                          <p className="text-xs text-green-400 flex items-center gap-1" data-testid={`text-rsvp-accepted-${event.id}`}>
+                            ✓ Zusagen: {accepted.map(r => r.childName).join(", ")}
+                          </p>
+                        )}
+                        {declined.length > 0 && (
+                          <p className="text-xs text-red-400 flex items-center gap-1 mt-1" data-testid={`text-rsvp-declined-${event.id}`}>
+                            ✗ Absagen: {declined.map(r => r.childName).join(", ")}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onDeleteEvent(event.id)}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    data-testid={`button-delete-event-${event.id}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })
+      )}
+    </div>
+  );
+}
+
 function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, queryClient, layoutView, setLayoutView }: any) {
   const [nwcConnectionString, setNwcConnectionString] = useState(user.nwcConnectionString || "");
   const [lnbitsUrl, setLnbitsUrl] = useState(user.lnbitsUrl || "");
@@ -2153,44 +2232,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
             <Calendar className="text-primary" /> Familienkalender
           </h2>
-          <div className="grid gap-4">
-            {events.length === 0 ? (
-              <Card className="border-dashed border-border p-8 text-center">
-                <p className="text-muted-foreground">Noch keine Termine geplant</p>
-              </Card>
-            ) : (
-              events.map((event: FamilyEvent) => (
-                <Card key={event.id} className="border-border bg-card/50 hover:border-primary/50 transition-colors">
-                  <CardContent className="p-5">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="font-bold text-lg" data-testid={`text-event-title-${event.id}`}>{event.title}</h3>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          📅 {new Date(event.startDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                          {event.endDate && ` - ${new Date(event.endDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}`}
-                        </p>
-                        {event.description && <p className="text-muted-foreground text-sm mt-2">{event.description}</p>}
-                        {event.location && (
-                          <p className="text-sm text-muted-foreground flex items-center gap-1 mt-2">
-                            <MapPin className="h-4 w-4" /> {event.location}
-                          </p>
-                        )}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onDeleteEvent(event.id)}
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        data-testid={`button-delete-event-${event.id}`}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
+          <ParentEventsList events={events} onDeleteEvent={onDeleteEvent} />
         </section>
       </div>
     );
