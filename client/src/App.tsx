@@ -202,7 +202,7 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [newTask, setNewTask] = useState({ title: "", description: "", sats: 50 });
   const [newEvent, setNewEvent] = useState({ title: "", description: "", location: "" });
-  const [currentView, setCurrentView] = useState<string>("tasks");
+  const [currentView, setCurrentView] = useState<string>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mode, setMode] = useState<"role-select" | "auth" | "app">("role-select");
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
@@ -466,6 +466,7 @@ export default function App() {
 function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpen, onLogout }: any) {
   const menuItems = user.role === "parent" 
     ? [
+        { id: "dashboard", label: "Dashboard", icon: Home },
         { id: "tasks", label: "Aufgaben", icon: Trophy },
         { id: "calendar", label: "Familienkalender", icon: Calendar },
         { id: "nostr", label: "Wallet-Einstellungen", icon: Bitcoin },
@@ -928,6 +929,120 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     }
   };
 
+  if (currentView === "dashboard") {
+    const openTasks = tasks.filter((t: Task) => t.status === "open" || t.status === "assigned");
+    const submittedTasks = tasks.filter((t: Task) => t.status === "submitted");
+    const completedTasks = tasks.filter((t: Task) => t.status === "approved");
+    
+    return (
+      <div className="space-y-8">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+            <Card className="bg-card/50 border-border">
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary">{openTasks.length}</div>
+                  <p className="text-sm text-muted-foreground mt-2">Offene Aufgaben</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+          
+          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
+            <Card className="bg-card/50 border-border">
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-amber-500">{submittedTasks.length}</div>
+                  <p className="text-sm text-muted-foreground mt-2">Zur Bestätigung</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+          
+          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
+            <Card className="bg-card/50 border-border">
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-green-500">{completedTasks.length}</div>
+                  <p className="text-sm text-muted-foreground mt-2">Abgeschlossen</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+          
+          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}>
+            <Card className="bg-card/50 border-border">
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary flex items-center justify-center gap-1">
+                    ⚡ {(user.balance || 0).toLocaleString()}
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-2">Sats Guthaben</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
+            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+              <Trophy className="text-primary" /> Ausstehende Bestätigung
+            </h2>
+            <div className="space-y-3">
+              {submittedTasks.length === 0 ? (
+                <Card className="border-dashed border-border p-6 text-center">
+                  <p className="text-muted-foreground text-sm">Keine Aufgaben zur Bestätigung</p>
+                </Card>
+              ) : (
+                submittedTasks.slice(0, 3).map((task: Task) => (
+                  <Card key={task.id} className="border-border bg-card/50">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-sm" data-testid={`text-pending-task-${task.id}`}>{task.title}</h4>
+                          <p className="text-xs text-muted-foreground mt-1">⚡ {task.sats} sats</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </motion.section>
+
+          <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}>
+            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+              <Calendar className="text-primary" /> Familienkalender
+            </h2>
+            <div className="space-y-3">
+              {events.length === 0 ? (
+                <Card className="border-dashed border-border p-6 text-center">
+                  <p className="text-muted-foreground text-sm">Noch keine Termine geplant</p>
+                </Card>
+              ) : (
+                events.slice(0, 3).map((event: FamilyEvent) => (
+                  <Card key={event.id} className="border-border bg-card/50">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-sm" data-testid={`text-dash-event-${event.id}`}>{event.title}</h4>
+                          {event.location && <p className="text-xs text-muted-foreground mt-1">📍 {event.location}</p>}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </motion.section>
+        </div>
+      </div>
+    );
+  }
+
   if (currentView === "nostr") {
     return (
       <div className="max-w-4xl">
@@ -1018,9 +1133,129 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     );
   }
 
+  if (currentView === "tasks") {
+    return (
+      <div className="space-y-8">
+        <h1 className="text-3xl font-bold mb-8">Aufgaben verwalten</h1>
+        <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+          <Card className="border border-primary/20 shadow-[0_0_30px_-10px_rgba(247,147,26,0.15)] bg-card/50 overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-accent to-primary" />
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-primary" data-testid="text-create-task">
+                  <Plus className="h-5 w-5" /> Neue Aufgabe erstellen
+                </CardTitle>
+                <Badge variant="secondary" className="bg-primary/10 text-primary">
+                  <Bitcoin className="h-3 w-3 mr-1" /> {(user.balance || 0).toLocaleString()} sats
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={onCreate} className="flex flex-col md:flex-row gap-4 items-end">
+                <div className="space-y-2 flex-grow w-full">
+                  <Label htmlFor="title">Was ist zu tun?</Label>
+                  <Input 
+                    id="title"
+                    placeholder="z.B. Rasen mähen..." 
+                    value={newTask.title}
+                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                    className="bg-secondary border-border focus:border-primary"
+                    autoComplete="off"
+                    data-testid="input-task-title"
+                  />
+                </div>
+                <div className="space-y-2 w-full md:w-48">
+                  <Label htmlFor="sats" className="flex items-center gap-1">
+                    <Bitcoin className="h-4 w-4 text-primary" /> Belohnung
+                  </Label>
+                  <Input 
+                    id="sats"
+                    type="number" 
+                    placeholder="50" 
+                    value={newTask.sats}
+                    onChange={(e) => setNewTask({ ...newTask, sats: parseInt(e.target.value) || 0 })}
+                    className="font-mono bg-secondary border-border focus:border-primary"
+                    autoComplete="off"
+                    data-testid="input-task-sats"
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full md:w-auto bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
+                  data-testid="button-create-task"
+                >
+                  Erstellen
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </motion.section>
+
+        <section>
+          <Tabs defaultValue="active" className="w-full">
+            <TabsList className="bg-secondary p-1 border border-border">
+              <TabsTrigger value="active">Aktiv</TabsTrigger>
+              <TabsTrigger value="review">Prüfung</TabsTrigger>
+              <TabsTrigger value="completed">Erledigt</TabsTrigger>
+            </TabsList>
+            
+            <div className="mt-6 space-y-4">
+              <TabsContent value="active" className="space-y-4">
+                {tasks.filter((t: Task) => t.status === "open" || t.status === "assigned").map((task: Task) => (
+                  <TaskCard key={task.id} task={task} variant="parent">
+                    <Button 
+                      onClick={() => onDelete(task.id)} 
+                      className="bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto"
+                      data-testid={`button-delete-task-${task.id}`}
+                      size="sm"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" /> Löschen
+                    </Button>
+                  </TaskCard>
+                ))}
+              </TabsContent>
+              
+              <TabsContent value="review" className="space-y-4">
+                {tasks.filter((t: Task) => t.status === "submitted").map((task: Task) => (
+                  <TaskCard key={task.id} task={task} variant="parent">
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      <Button 
+                        onClick={() => onApprove(task.id)} 
+                        className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white"
+                        data-testid={`button-approve-task-${task.id}`}
+                        size="sm"
+                      >
+                        <CheckCircle className="mr-2 h-4 w-4" /> Genehmigen
+                      </Button>
+                      <Button 
+                        onClick={() => onDelete(task.id)} 
+                        className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white"
+                        data-testid={`button-delete-task-${task.id}`}
+                        size="sm"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" /> Löschen
+                      </Button>
+                    </div>
+                  </TaskCard>
+                ))}
+              </TabsContent>
+
+              <TabsContent value="completed" className="space-y-4">
+                {tasks.filter((t: Task) => t.status === "approved").map((task: Task) => (
+                  <TaskCard key={task.id} task={task} variant="parent" />
+                ))}
+              </TabsContent>
+            </div>
+          </Tabs>
+        </section>
+      </div>
+    );
+  }
+
   if (currentView === "calendar") {
     return (
       <div className="space-y-8">
+        <h1 className="text-3xl font-bold mb-8">Familienkalender</h1>
         <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
           <Card className="border border-primary/20 shadow-[0_0_30px_-10px_rgba(247,147,26,0.15)] bg-card/50">
             <CardHeader>
@@ -1120,142 +1355,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     );
   }
 
-  return (
-    <div className="space-y-8">
-      <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-        <Card className="border border-primary/20 shadow-[0_0_20px_rgba(247,147,26,0.15)] bg-card/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <LinkIcon className="h-5 w-5" /> Verbindungscode für Kinder
-            </CardTitle>
-            <CardDescription>Gebe diesen Code deinen Kindern, damit sie sich mit dir verbinden können</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="bg-secondary border-2 border-primary/30 rounded-lg p-4 text-center">
-              <p className="text-xs text-muted-foreground mb-2 uppercase tracking-widest">Dein Code:</p>
-              <p className="text-2xl sm:text-3xl font-mono font-bold text-primary tracking-wider break-words word-break" data-testid="text-connection-code">
-                {user.connectionId}
-              </p>
-              <p className="text-xs text-muted-foreground mt-3">Kinder nutzen diesen Code zum Verbinden</p>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.section>
-
-
-      <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-        <Card className="border border-primary/20 shadow-[0_0_30px_-10px_rgba(247,147,26,0.15)] bg-card/50 overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-accent to-primary" />
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-primary" data-testid="text-create-task">
-                <Plus className="h-5 w-5" /> Neue Aufgabe erstellen
-              </CardTitle>
-              <Badge variant="secondary" className="bg-primary/10 text-primary">
-                <Bitcoin className="h-3 w-3 mr-1" /> {(user.balance || 0).toLocaleString()} sats
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={onCreate} className="flex flex-col md:flex-row gap-4 items-end">
-              <div className="space-y-2 flex-grow w-full">
-                <Label htmlFor="title">Was ist zu tun?</Label>
-                <Input 
-                  id="title"
-                  placeholder="z.B. Rasen mähen..." 
-                  value={newTask.title}
-                  onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                  className="bg-secondary border-border focus:border-primary"
-                  autoComplete="off"
-                  data-testid="input-task-title"
-                />
-              </div>
-              <div className="space-y-2 w-full md:w-48">
-                <Label htmlFor="sats" className="flex items-center gap-1">
-                  <Bitcoin className="h-4 w-4 text-primary" /> Belohnung
-                </Label>
-                <Input 
-                  id="sats"
-                  type="number" 
-                  placeholder="50" 
-                  value={newTask.sats}
-                  onChange={(e) => setNewTask({ ...newTask, sats: parseInt(e.target.value) || 0 })}
-                  className="font-mono bg-secondary border-border focus:border-primary"
-                  autoComplete="off"
-                  data-testid="input-task-sats"
-                />
-              </div>
-              <Button 
-                type="submit" 
-                className="w-full md:w-auto bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
-                data-testid="button-create-task"
-              >
-                Erstellen
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </motion.section>
-
-      <section>
-        <Tabs defaultValue="active" className="w-full">
-          <TabsList className="bg-secondary p-1 border border-border">
-            <TabsTrigger value="active">Aktiv</TabsTrigger>
-            <TabsTrigger value="review">Prüfung</TabsTrigger>
-            <TabsTrigger value="completed">Erledigt</TabsTrigger>
-          </TabsList>
-          
-          <div className="mt-6 space-y-4">
-            <TabsContent value="active" className="space-y-4">
-              {tasks.filter((t: Task) => t.status === "open" || t.status === "assigned").map((task: Task) => (
-                <TaskCard key={task.id} task={task} variant="parent">
-                  <Button 
-                    onClick={() => onDelete(task.id)} 
-                    className="bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto"
-                    data-testid={`button-delete-task-${task.id}`}
-                    size="sm"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" /> Löschen
-                  </Button>
-                </TaskCard>
-              ))}
-            </TabsContent>
-            
-            <TabsContent value="review" className="space-y-4">
-              {tasks.filter((t: Task) => t.status === "submitted").map((task: Task) => (
-                <TaskCard key={task.id} task={task} variant="parent">
-                  <div className="flex gap-2 w-full sm:w-auto">
-                    <Button 
-                      onClick={() => onApprove(task.id)} 
-                      className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white"
-                      data-testid={`button-approve-task-${task.id}`}
-                      size="sm"
-                    >
-                      <CheckCircle className="mr-2 h-4 w-4" /> Genehmigen
-                    </Button>
-                    <Button 
-                      onClick={() => onDelete(task.id)} 
-                      className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white"
-                      data-testid={`button-delete-task-${task.id}`}
-                      size="sm"
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" /> Löschen
-                    </Button>
-                  </div>
-                </TaskCard>
-              ))}
-            </TabsContent>
-
-            <TabsContent value="completed" className="space-y-4">
-              {tasks.filter((t: Task) => t.status === "approved").map((task: Task) => (
-                <TaskCard key={task.id} task={task} variant="parent" />
-              ))}
-            </TabsContent>
-          </div>
-        </Tabs>
-      </section>
-    </div>
-  );
+  return null;
 }
 
 function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentView, onAccept, onSubmit, onDeleteEvent }: any) {
