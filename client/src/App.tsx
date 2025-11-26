@@ -3010,6 +3010,113 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     );
   }
 
+  if (currentView === "chat") {
+    const [messages, setMessages] = useState<any[]>([]);
+    const [newMessage, setNewMessage] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+      const fetchMessages = async () => {
+        try {
+          const res = await fetch(`/api/chat/${user.connectionId}`);
+          if (res.ok) {
+            const data = await res.json();
+            setMessages(data);
+          }
+        } catch (error) {
+          console.error("Failed to fetch messages:", error);
+        }
+      };
+      
+      fetchMessages();
+      const interval = setInterval(fetchMessages, 2000);
+      return () => clearInterval(interval);
+    }, [user.connectionId]);
+
+    const handleSendMessage = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!newMessage.trim() || isLoading) return;
+
+      setIsLoading(true);
+      try {
+        await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            connectionId: user.connectionId,
+            fromPeerId: user.id,
+            message: newMessage.trim(),
+          }),
+        });
+
+        setNewMessage("");
+        const res = await fetch(`/api/chat/${user.connectionId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setMessages(data);
+        }
+      } catch (error) {
+        toast({ title: "Fehler", description: "Nachricht konnte nicht gesendet werden", variant: "destructive" });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    return (
+      <div className="max-w-2xl">
+        <h1 className="text-3xl font-bold mb-8">💬 Familienchat</h1>
+        <Card className="border-border bg-gradient-to-br from-gray-900 to-black">
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <div className="h-96 overflow-y-auto bg-secondary/20 rounded-lg p-4 space-y-3">
+                {messages.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">Noch keine Nachrichten</p>
+                ) : (
+                  messages.map((msg, idx) => (
+                    <div key={idx} className={`flex ${msg.fromPeerId === user.id ? "justify-end" : "justify-start"}`}>
+                      <div
+                        className={`max-w-xs rounded-lg px-4 py-2 ${
+                          msg.fromPeerId === user.id
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-secondary text-foreground"
+                        }`}
+                      >
+                        <p className="text-xs font-semibold mb-1">{msg.senderName}</p>
+                        <p className="text-sm">{msg.message}</p>
+                        <p className="text-xs opacity-70 mt-1">
+                          {new Date(msg.createdAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <form onSubmit={handleSendMessage} className="flex gap-2">
+                <Input
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder="Nachricht eingeben..."
+                  disabled={isLoading}
+                  className="flex-1"
+                  data-testid="input-chat-message"
+                />
+                <Button
+                  type="submit"
+                  disabled={!newMessage.trim() || isLoading}
+                  className="bg-primary hover:bg-primary/90"
+                  data-testid="button-send-message"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </form>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (currentView === "tasks-my") {
     return (
       <div className="max-w-4xl">
