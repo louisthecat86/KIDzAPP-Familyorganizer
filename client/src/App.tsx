@@ -1162,6 +1162,59 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     );
   }
 
+  if (currentView === "peers") {
+    const { data: connectedPeers = [] } = useQuery({
+      queryKey: ["peers", user.connectionId],
+      queryFn: async () => {
+        const res = await fetch(`/api/peers/connection/${user.connectionId}`);
+        if (!res.ok) throw new Error("Failed to fetch peers");
+        return res.json();
+      }
+    });
+
+    const children = connectedPeers.filter((p: any) => p.role === "child");
+
+    return (
+      <div className="max-w-4xl">
+        <h1 className="text-3xl font-bold mb-8">Familienmitglieder</h1>
+        {children.length > 0 ? (
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold mt-6 mb-4">👶 Kinder ({children.length})</h2>
+            {children.map((child: any) => (
+              <Card key={child.id} className="border-border bg-card/50">
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-lg">
+                      {child.name[0]}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg">{child.name}</h3>
+                      <p className="text-xs text-muted-foreground">
+                        {child.lightningAddress ? `⚡ ${child.lightningAddress}` : "⚠️ Keine Lightning Adresse"}
+                      </p>
+                      <div className="flex gap-2 mt-2 flex-wrap">
+                        {child.lightningAddress && (
+                          <Badge variant="secondary" className="text-xs">✓ Lightning konfiguriert</Badge>
+                        )}
+                        <Badge variant="outline" className="text-xs">💰 {child.balance || 0} sats</Badge>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Card className="border-dashed border-border p-8 text-center">
+            <Users className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground font-semibold">Noch keine Kinder verbunden</p>
+            <p className="text-xs text-muted-foreground mt-2">Teile deinen Verbindungscode mit deinen Kindern, um sie hinzuzufügen</p>
+          </Card>
+        )}
+      </div>
+    );
+  }
+
   if (currentView === "nostr") {
     return (
       <div className="max-w-4xl">

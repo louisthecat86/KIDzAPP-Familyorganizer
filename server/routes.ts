@@ -214,6 +214,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all peers by connection ID
+  app.get("/api/peers/connection/:connectionId", async (req, res) => {
+    try {
+      const { connectionId } = req.params;
+      const peers = await storage.getPeersByConnectionId(connectionId);
+      res.json(peers);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch peers" });
+    }
+  });
+
   // Get all tasks for a connection
   app.get("/api/tasks/:connectionId", async (req, res) => {
     try {
