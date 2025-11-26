@@ -359,7 +359,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Task not found" });
       }
 
-      // If approving, send sats to child's lightning address
+      // If approving, send sats to child's lightning address if wallet is configured
       if (updates.status === "approved" && task.status !== "approved") {
         const child = await storage.getPeer(task.assignedTo!);
         const parent = await storage.getPeer(task.createdBy);
@@ -368,38 +368,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(404).json({ error: "Child or parent not found" });
         }
 
-        if (!child.lightningAddress) {
-          return res.status(400).json({ error: "Child has no lightning address configured" });
-        }
+        let paymentHash = "";
 
-        if (!parent.lnbitsUrl || !parent.lnbitsAdminKey) {
-          return res.status(400).json({ error: "Parent wallet not configured" });
-        }
+        // Try to send payment if both wallet and lightning address are configured
+        if (child.lightningAddress && parent.lnbitsUrl && parent.lnbitsAdminKey) {
+          try {
+            const parentLnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+            paymentHash = await parentLnbits.payToLightningAddress(
+              task.sats,
+              child.lightningAddress,
+              `Task: ${task.title}`
+            );
 
-        // Send payment to child's lightning address
-        try {
-          const parentLnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
-          const paymentHash = await parentLnbits.payToLightningAddress(
-            task.sats,
-            child.lightningAddress,
-            `Task: ${task.title}`
-          );
+            // Record transaction
+            await storage.createTransaction({
+              fromPeerId: task.createdBy,
+              toPeerId: child.id,
+              sats: task.sats,
+              taskId: task.id,
+              type: "task_payment",
+              status: "completed",
+              paymentHash: paymentHash,
+            });
 
-          // Record transaction
-          await storage.createTransaction({
-            fromPeerId: task.createdBy,
-            toPeerId: child.id,
-            sats: task.sats,
-            taskId: task.id,
-            type: "task_payment",
-            status: "completed",
-            paymentHash: paymentHash,
-          });
-
-          updates.paymentHash = paymentHash;
-        } catch (error) {
-          console.error("Payment error:", error);
-          return res.status(500).json({ error: `Payment failed: ${error}` });
+            updates.paymentHash = paymentHash;
+          } catch (error) {
+            console.warn("Payment sending warning (but approval continues):", error);
+          }
+        } else if (!child.lightningAddress) {
+          console.warn(`Child ${child.name} has no lightning address configured`);
         }
       }
 
