@@ -961,8 +961,33 @@ function PeersContent({ user, setUser, queryClient, toast }: any) {
       }
     };
 
+    const handleCopyConnectionId = () => {
+      navigator.clipboard.writeText(user.connectionId);
+      toast({ title: "Kopiert!", description: "Kopplungs-ID wurde kopiert" });
+    };
+
     return (
       <div className="space-y-3">
+        {/* Connection ID Box */}
+        <div className="p-3 rounded-lg bg-primary/10 border border-primary/30">
+          <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Kopplungs-ID für Kinder</p>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 text-xs bg-secondary p-2 rounded font-mono break-all text-primary" data-testid="text-connection-id">
+              {user.connectionId}
+            </code>
+            <Button 
+              variant="ghost"
+              size="icon"
+              onClick={handleCopyConnectionId}
+              className="h-8 w-8 flex-shrink-0"
+              data-testid="button-copy-connection-id"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">Teile diese ID mit deinen Kindern, um sie mit der Familie zu verbinden</p>
+        </div>
+
         {children.length > 0 ? (
           <div className="space-y-3">
             <h3 className="font-semibold text-sm">👶 Kinder ({children.length})</h3>
