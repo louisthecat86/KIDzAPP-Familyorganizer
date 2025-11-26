@@ -481,19 +481,12 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
   const [showWalletSubmenu, setShowWalletSubmenu] = useState(false);
   const [activeSettingsTab, setActiveSettingsTab] = useState<"ansicht" | "wallet" | "peers" | null>(null);
   
-  const menuItems = user.role === "parent" 
-    ? [
-        { id: "dashboard", label: "Dashboard", icon: Home },
-        { id: "tasks", label: "Aufgaben", icon: Trophy },
-        { id: "calendar", label: "Familienkalender", icon: Calendar },
-        { id: "leaderboard", label: "🏆 Bestenliste", icon: Trophy },
-      ]
-    : [
-        { id: "dashboard", label: "Mein Dashboard", icon: Home },
-        { id: "tasks", label: "Verfügbare Aufgaben", icon: Trophy },
-        { id: "calendar", label: "Familienkalender", icon: Calendar },
-        { id: "leaderboard", label: "🏆 Bestenliste", icon: Trophy },
-      ];
+  const menuItems = [
+    { id: "dashboard", label: user.role === "parent" ? "Dashboard" : "Mein Dashboard", icon: Home },
+    { id: "tasks", label: user.role === "parent" ? "Aufgaben" : "Verfügbare Aufgaben", icon: Trophy },
+    { id: "calendar", label: "Familienkalender", icon: Calendar },
+    { id: "leaderboard", label: "🏆 Bestenliste", icon: Trophy },
+  ];
 
   const handleSettingsClick = (tab: "ansicht" | "wallet" | "peers") => {
     setActiveSettingsTab(tab);
@@ -935,7 +928,146 @@ function ParentDashboardWithSettings({ user, setUser, currentView, onCreate, onC
   );
 }
 
+function PeersContent({ user, setUser, queryClient, toast: useToastHook }: any) {
+  const { toast } = useToastHook();
+  
+  if (user.role === "parent") {
+    // Parent view - show connected children
+    const { data: connectedPeers = [] } = useQuery({
+      queryKey: ["peers", user.connectionId],
+      queryFn: async () => {
+        const res = await fetch(`/api/peers/connection/${user.connectionId}`);
+        if (!res.ok) throw new Error("Failed to fetch peers");
+        return res.json();
+      },
+      refetchInterval: 2000
+    });
+
+    const children = connectedPeers.filter((p: any) => p.role === "child");
+
+    const handleUnlinkChild = async (childId: number, childName: string) => {
+      if (!window.confirm(`Möchtest du ${childName} wirklich von der Familie trennen?`)) return;
+      
+      try {
+        const res = await fetch("/api/peers/unlink", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ childId })
+        });
+        if (!res.ok) throw new Error("Failed to unlink");
+        queryClient.invalidateQueries({ queryKey: ["peers", user.connectionId] });
+        toast({ title: "Trennung erfolgreich", description: `${childName} wurde von der Familie getrennt` });
+      } catch (error) {
+        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      }
+    };
+
+    return (
+      <div className="space-y-3">
+        {children.length > 0 ? (
+          <div className="space-y-3">
+            <h3 className="font-semibold text-sm">👶 Kinder ({children.length})</h3>
+            {children.map((child: any) => (
+              <div key={child.id} className="p-3 rounded-lg bg-secondary border border-border flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs">
+                    {child.name[0]}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">{child.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {child.lightningAddress ? `⚡ ${child.lightningAddress}` : "⚠️ Keine Adresse"}
+                    </p>
+                  </div>
+                </div>
+                <Button 
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleUnlinkChild(child.id, child.name)}
+                  className="text-destructive hover:text-destructive h-8 w-8"
+                  data-testid={`button-unlink-child-${child.id}`}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-4 text-muted-foreground text-sm">
+            <p>Noch keine Kinder verbunden</p>
+            <p className="text-xs mt-1">Teile deinen Verbindungscode mit deinen Kindern</p>
+          </div>
+        )}
+      </div>
+    );
+  } else {
+    // Child view - show connected parent
+    const { data: connectedPeers = [] } = useQuery({
+      queryKey: ["peers", user.connectionId],
+      queryFn: async () => {
+        const res = await fetch(`/api/peers/connection/${user.connectionId}`);
+        if (!res.ok) throw new Error("Failed to fetch peers");
+        return res.json();
+      },
+      refetchInterval: 2000
+    });
+
+    const parent = connectedPeers.find((p: any) => p.role === "parent");
+
+    const handleUnlink = async () => {
+      if (!window.confirm("Möchtest du dich wirklich von dieser Familie trennen?")) return;
+      
+      try {
+        const res = await fetch("/api/peers/unlink", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ childId: user.id })
+        });
+        if (!res.ok) throw new Error("Failed to unlink");
+        setUser(await res.json());
+        queryClient.invalidateQueries({ queryKey: ["peers"] });
+        toast({ title: "Trennung erfolgreich", description: "Du bist nicht mehr mit der Familie verbunden" });
+      } catch (error) {
+        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      }
+    };
+
+    return (
+      <div className="space-y-3">
+        {parent ? (
+          <div className="space-y-3">
+            <p className="text-xs font-semibold text-muted-foreground uppercase">Verbunden mit</p>
+            <div className="p-3 rounded-lg bg-primary/10 border border-primary/30 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm">
+                {parent.name[0]}
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-sm">{parent.name}</p>
+                <p className="text-xs text-muted-foreground">👨‍👩‍👧 Eltern</p>
+              </div>
+            </div>
+            <Button 
+              variant="outline"
+              onClick={handleUnlink}
+              className="w-full text-destructive hover:text-destructive text-sm h-8"
+              data-testid="button-unlink-parent"
+            >
+              <X className="h-3 w-3 mr-2" /> Von Familie trennen
+            </Button>
+          </div>
+        ) : (
+          <div className="text-center py-4 text-muted-foreground text-sm">
+            <p>Nicht mit einer Familie verbunden</p>
+            <p className="text-xs mt-1">Verbinde dich mit deinen Eltern</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+}
+
 function SettingsModal({ user, setUser, activeTab, onClose }: any) {
+  const queryClient = useQueryClient();
   const [editNwc, setEditNwc] = useState(user.nwcConnectionString || "");
   const [editLnbitsUrl, setEditLnbitsUrl] = useState(user.lnbitsUrl || "");
   const [editLnbitsAdminKey, setEditLnbitsAdminKey] = useState(user.lnbitsAdminKey || "");
@@ -943,7 +1075,7 @@ function SettingsModal({ user, setUser, activeTab, onClose }: any) {
   const [layoutView, setLayoutView] = useState(() => {
     return localStorage.getItem(`layoutView_${user.id}`) || "two-column";
   });
-  const { toast } = useToast();
+  const { toast: useToastFn } = useToast();
 
   const saveNWC = async () => {
     if (!editNwc) return;
@@ -957,9 +1089,9 @@ function SettingsModal({ user, setUser, activeTab, onClose }: any) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setUser({ ...user, nwcConnectionString: editNwc });
-      toast({ title: "NWC gespeichert!", description: "Nostr Wallet Connect ist jetzt aktiv" });
+      useToastFn({ title: "NWC gespeichert!", description: "Nostr Wallet Connect ist jetzt aktiv" });
     } catch (error) {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      useToastFn({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
     } finally {
       setIsSaving(false);
     }
@@ -977,9 +1109,9 @@ function SettingsModal({ user, setUser, activeTab, onClose }: any) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setUser({ ...user, lnbitsUrl: editLnbitsUrl, lnbitsAdminKey: editLnbitsAdminKey });
-      toast({ title: "LNbits gespeichert!", description: "LNbits Wallet ist jetzt aktiv" });
+      useToastFn({ title: "LNbits gespeichert!", description: "LNbits Wallet ist jetzt aktiv" });
     } catch (error) {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      useToastFn({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
     } finally {
       setIsSaving(false);
     }
@@ -988,7 +1120,7 @@ function SettingsModal({ user, setUser, activeTab, onClose }: any) {
   const handleLayoutChange = (layout: string) => {
     setLayoutView(layout);
     localStorage.setItem(`layoutView_${user.id}`, layout);
-    toast({ title: "Ansicht aktualisiert", description: `Dashboard wird jetzt ${layout === "one-column" ? "einreihig" : "zweireihig"} angezeigt` });
+    useToastFn({ title: "Ansicht aktualisiert", description: `Dashboard wird jetzt ${layout === "one-column" ? "einreihig" : "zweireihig"} angezeigt` });
   };
 
   return (
@@ -1096,12 +1228,7 @@ function SettingsModal({ user, setUser, activeTab, onClose }: any) {
 
           {/* PEERS TAB */}
           {activeTab === "peers" && (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">Deine Familienmitglieder werden hier angezeigt.</p>
-              <div className="bg-secondary p-4 rounded-lg text-center text-muted-foreground text-sm">
-                Gehe zu "Familienmitglieder" im Menü um deine Familie zu verwalten
-              </div>
-            </div>
+            <PeersContent user={user} setUser={setUser} queryClient={queryClient} toast={useToastFn} />
           )}
         </CardContent>
         
