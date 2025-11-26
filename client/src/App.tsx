@@ -720,13 +720,13 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4 sm:p-6 relative overflow-hidden">
       <Card className="w-full max-w-4xl z-10 border-border/50 bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl shadow-2xl">
         <div className="flex flex-col md:grid md:grid-cols-2 gap-0">
-          <div className="flex p-4 sm:p-6 md:p-10 bg-gradient-to-br from-primary/30 via-primary/20 to-primary/10 flex-col justify-center border-b md:border-b-0 md:border-r border-primary/50">
-            <div className="h-12 md:h-16 w-12 md:w-16 bg-primary/40 rounded-2xl flex items-center justify-center mb-4 md:mb-6 text-primary shadow-[0_0_20px_rgba(247,147,26,0.3)]">
+          <div className="flex p-4 sm:p-6 md:p-10 bg-gradient-to-br from-sky-500/25 via-cyan-500/15 to-blue-600/10 flex-col justify-center border-b md:border-b-0 md:border-r border-sky-500/50">
+            <div className="h-12 md:h-16 w-12 md:w-16 bg-sky-500/40 rounded-2xl flex items-center justify-center mb-4 md:mb-6 text-sky-300 shadow-[0_0_25px_rgba(14,165,233,0.4)]">
               <Bitcoin className="h-8 md:h-10 w-8 md:w-10" />
             </div>
-            <h1 className="text-2xl md:text-4xl font-heading font-bold mb-3 md:mb-4 text-primary">Spark ⚡ Kids</h1>
-            <h2 className="text-lg md:text-xl font-semibold text-primary/90 mb-4">der Familienorganizer</h2>
-            <p className="text-primary/80 text-sm md:text-lg">
+            <h1 className="text-2xl md:text-4xl font-heading font-bold mb-3 md:mb-4 text-sky-300">Spark ⚡ Kids</h1>
+            <h2 className="text-lg md:text-xl font-semibold text-sky-200 mb-4">der Familienorganizer</h2>
+            <p className="text-sky-100 text-sm md:text-lg">
               Wo aus Aufgaben Belohnungen werden. Erledige Aufgaben, lerne Verantwortung und verdiene echte Sats.
             </p>
           </div>
@@ -861,7 +861,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                   id="familyName"
                   value={familyName}
                   onChange={(e) => setFamilyName(e.target.value)}
-                  className="bg-primary/10 border-primary/30 focus:border-primary focus:bg-primary/20 text-foreground"
+                  className="bg-sky-500/10 border-sky-500/40 focus:border-sky-400 focus:bg-sky-500/20 text-foreground placeholder:text-sky-300/50"
                   disabled={isLoading}
                   autoComplete="off"
                   data-testid="input-family-name"
@@ -874,7 +874,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="bg-primary/10 border-primary/30 focus:border-primary focus:bg-primary/20 text-foreground"
+                className="bg-sky-500/10 border-sky-500/40 focus:border-sky-400 focus:bg-sky-500/20 text-foreground placeholder:text-sky-300/50"
                 disabled={isLoading}
                 autoFocus
                 autoComplete="off"
@@ -892,7 +892,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                   const val = e.target.value.replace(/\D/g, "").slice(0, 4);
                   setPin(val);
                 }}
-                className="bg-primary/10 border-primary/30 focus:border-primary focus:bg-primary/20 font-mono text-center tracking-widest text-lg text-foreground"
+                className="bg-sky-500/10 border-sky-500/40 focus:border-sky-400 focus:bg-sky-500/20 font-mono text-center tracking-widest text-lg text-foreground placeholder:text-sky-300/50"
                 disabled={isLoading}
                 maxLength={4}
                 autoComplete="off"
