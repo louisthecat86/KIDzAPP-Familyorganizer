@@ -1393,7 +1393,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     });
     
     return (
-      <div className="space-y-8">
+      <div className="space-y-4">
         <h1 className="text-3xl font-bold">Dashboard</h1>
         
         {showConnectionCode && (
@@ -1508,7 +1508,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 gap-8">
+        <div className="grid grid-cols-1 gap-4">
           <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
               <Calendar className="text-primary" /> Familienkalender
