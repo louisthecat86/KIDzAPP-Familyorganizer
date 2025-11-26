@@ -697,7 +697,6 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 <Label htmlFor="familyName">Familienname</Label>
                 <Input 
                   id="familyName"
-                  placeholder="z.B. Müller"
                   value={familyName}
                   onChange={(e) => setFamilyName(e.target.value)}
                   className="bg-secondary border-border"
@@ -711,7 +710,6 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               <Label htmlFor="name">Dein Name</Label>
               <Input 
                 id="name"
-                placeholder={role === "parent" ? "z.B. Mama" : "z.B. Luca"}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="bg-secondary border-border"
