@@ -105,3 +105,22 @@ export const insertFamilyEventSchema = createInsertSchema(familyEvents)
 
 export type InsertFamilyEvent = z.infer<typeof insertFamilyEventSchema>;
 export type FamilyEvent = typeof familyEvents.$inferSelect;
+
+// Event RSVPs Table
+export const eventRsvps = pgTable("event_rsvps", {
+  id: serial("id").primaryKey(),
+  eventId: integer("event_id").notNull(),
+  peerId: integer("peer_id").notNull(),
+  response: text("response").notNull(), // 'accepted', 'declined', 'pending'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertEventRsvpSchema = createInsertSchema(eventRsvps).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertEventRsvp = z.infer<typeof insertEventRsvpSchema>;
+export type EventRsvp = typeof eventRsvps.$inferSelect;
