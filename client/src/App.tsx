@@ -1358,7 +1358,7 @@ function SettingsModal({ user, setUser, activeTab, onClose, layoutView, setLayou
 function ParentEventsList({ events, onDeleteEvent }: any) {
   const [rsvpData, setRsvpData] = useState<Record<number, any[]>>({});
 
-  useEffect(() => {
+  const fetchRsvps = () => {
     events.forEach(async (event: FamilyEvent) => {
       try {
         const res = await fetch(`/api/events/${event.id}/rsvps`);
@@ -1370,6 +1370,12 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
         console.error("Failed to fetch RSVPs:", error);
       }
     });
+  };
+
+  useEffect(() => {
+    fetchRsvps();
+    const interval = setInterval(fetchRsvps, 3000); // Auto-refresh every 3 seconds
+    return () => clearInterval(interval);
   }, [events]);
 
   return (
@@ -1400,20 +1406,37 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
                         <MapPin className="h-4 w-4" /> {event.location}
                       </p>
                     )}
-                    {rsvps.length > 0 && (
-                      <div className="mt-4 p-3 bg-secondary/50 rounded-lg">
-                        {accepted.length > 0 && (
-                          <p className="text-xs text-green-400 flex items-center gap-1" data-testid={`text-rsvp-accepted-${event.id}`}>
-                            ✓ Zusagen: {accepted.map(r => r.childName).join(", ")}
-                          </p>
-                        )}
-                        {declined.length > 0 && (
-                          <p className="text-xs text-red-400 flex items-center gap-1 mt-1" data-testid={`text-rsvp-declined-${event.id}`}>
-                            ✗ Absagen: {declined.map(r => r.childName).join(", ")}
-                          </p>
-                        )}
-                      </div>
-                    )}
+                    <div className="mt-4 p-4 bg-secondary/70 rounded-lg border border-border">
+                      <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                        📋 Rückmeldungen ({rsvps.length})
+                      </h4>
+                      {rsvps.length === 0 ? (
+                        <p className="text-xs text-muted-foreground italic">Noch keine Rückmeldungen erhalten</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {accepted.length > 0 && (
+                            <div className="bg-green-500/10 border border-green-500/30 rounded p-2">
+                              <p className="text-xs text-green-400 font-medium" data-testid={`text-rsvp-accepted-${event.id}`}>
+                                ✓ Zusagen ({accepted.length}):
+                              </p>
+                              <p className="text-xs text-green-300 ml-4">
+                                {accepted.map(r => r.childName).join(", ")}
+                              </p>
+                            </div>
+                          )}
+                          {declined.length > 0 && (
+                            <div className="bg-red-500/10 border border-red-500/30 rounded p-2">
+                              <p className="text-xs text-red-400 font-medium" data-testid={`text-rsvp-declined-${event.id}`}>
+                                ✗ Absagen ({declined.length}):
+                              </p>
+                              <p className="text-xs text-red-300 ml-4">
+                                {declined.map(r => r.childName).join(", ")}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <Button
                     variant="ghost"
