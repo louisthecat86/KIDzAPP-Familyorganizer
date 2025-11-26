@@ -1688,10 +1688,39 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
   }
 
   if (currentView === "peers") {
+    const { data: connectedPeers = [] } = useQuery({
+      queryKey: ["peers", user.connectionId],
+      queryFn: async () => {
+        const res = await fetch(`/api/peers/connection/${user.connectionId}`);
+        if (!res.ok) throw new Error("Failed to fetch peers");
+        return res.json();
+      }
+    });
+
+    const parent = connectedPeers.find((p: any) => p.role === "parent");
+
+    const handleUnlink = async () => {
+      if (!window.confirm("Möchtest du dich wirklich von dieser Familie trennen?")) return;
+      
+      try {
+        const res = await fetch("/api/peers/unlink", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ childId: user.id })
+        });
+        if (!res.ok) throw new Error("Failed to unlink");
+        const updated = await res.json();
+        setUser(updated);
+        toast({ title: "Trennung erfolgreich", description: "Du bist nicht mehr mit der Familie verbunden" });
+      } catch (error) {
+        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      }
+    };
+
     return (
       <div className="max-w-4xl">
         <h1 className="text-3xl font-bold mb-8">Meine Familie</h1>
-        {user.familyName ? (
+        {parent ? (
           <Card className="border-2 border-primary/40 bg-primary/5">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -1702,14 +1731,22 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
               <div className="bg-card border border-border rounded-lg p-4">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold">
-                    {user.familyName[0]}
+                    {parent.name[0]}
                   </div>
-                  <div>
-                    <p className="font-semibold">{user.familyName}</p>
+                  <div className="flex-1">
+                    <p className="font-semibold">{parent.name}</p>
                     <p className="text-xs text-muted-foreground">👨‍👩‍👧 Eltern</p>
                   </div>
                 </div>
               </div>
+              <Button 
+                variant="outline"
+                onClick={handleUnlink}
+                className="w-full text-destructive hover:text-destructive"
+                data-testid="button-unlink-parent"
+              >
+                <X className="h-4 w-4 mr-2" /> Von Familie trennen
+              </Button>
             </CardContent>
           </Card>
         ) : (

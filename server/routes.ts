@@ -204,6 +204,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Unlink child from parent
+  app.post("/api/peers/unlink", async (req, res) => {
+    try {
+      const { childId } = req.body;
+      
+      if (!childId) {
+        return res.status(400).json({ error: "childId required" });
+      }
+
+      const updatedChild = await storage.unlinkChildFromParent(childId);
+      res.json(updatedChild);
+    } catch (error) {
+      console.error("Unlink error:", error);
+      res.status(500).json({ error: "Failed to unlink child from parent" });
+    }
+  });
+
   // Get all parents
   app.get("/api/peers/parents", async (req, res) => {
     try {

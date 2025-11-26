@@ -103,6 +103,20 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  async unlinkChildFromParent(childId: number): Promise<Peer> {
+    const child = await db.select().from(peers).where(eq(peers.id, childId)).limit(1);
+    const newConnectionId = `BTC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    
+    const result = await db.update(peers)
+      .set({ 
+        connectionId: newConnectionId,
+        familyName: null
+      })
+      .where(eq(peers.id, childId))
+      .returning();
+    return result[0];
+  }
+
   async updatePeerWallet(peerId: number, lnbitsUrl: string, lnbitsAdminKey: string): Promise<Peer> {
     const result = await db.update(peers)
       .set({ lnbitsUrl, lnbitsAdminKey })
