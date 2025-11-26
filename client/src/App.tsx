@@ -1288,7 +1288,7 @@ function SettingsModal({ user, setUser, activeTab, onClose }: any) {
   );
 }
 
-function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, queryClient }: any) {
+function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, queryClient, layoutView }: any) {
   const [nwcConnectionString, setNwcConnectionString] = useState(user.nwcConnectionString || "");
   const [lnbitsUrl, setLnbitsUrl] = useState(user.lnbitsUrl || "");
   const [lnbitsAdminKey, setLnbitsAdminKey] = useState(user.lnbitsAdminKey || "");
@@ -1296,9 +1296,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   const [showConnectionCode, setShowConnectionCode] = useState(() => {
     const stored = localStorage.getItem(`connectionCodeShown_${user.id}`);
     return !stored;
-  });
-  const [layoutView, setLayoutView] = useState(() => {
-    return localStorage.getItem(`layoutView_${user.id}`) || "two-column";
   });
   const { toast } = useToast();
 
