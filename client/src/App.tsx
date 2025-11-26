@@ -2263,18 +2263,42 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   }
 
   if (currentView === "tasks-completed") {
+    const { data: connectedPeers = [] } = useQuery({
+      queryKey: ["peers", user.connectionId],
+      queryFn: async () => {
+        const res = await fetch(`/api/peers/connection/${user.connectionId}`);
+        if (!res.ok) throw new Error("Failed to fetch peers");
+        return res.json();
+      },
+      refetchInterval: 5000
+    });
+
+    const getChildName = (childId?: number) => {
+      if (!childId) return "Unbekannt";
+      const child = connectedPeers.find((p: any) => p.id === childId);
+      return child?.name || "Unbekannt";
+    };
+
+    const completedTasks = tasks.filter((t: Task) => t.status === "approved");
+
     return (
       <div className="space-y-8">
         <h1 className="text-3xl font-bold mb-8">Abgeschlossene Aufgaben</h1>
         <section>
           <div className="space-y-4">
-            {tasks.filter((t: Task) => t.status === "approved").length === 0 ? (
+            {completedTasks.length === 0 ? (
               <Card className="border-dashed border-border p-8 text-center">
                 <p className="text-muted-foreground">Keine abgeschlossenen Aufgaben</p>
               </Card>
             ) : (
-              tasks.filter((t: Task) => t.status === "approved").map((task: Task) => (
-                <TaskCard key={task.id} task={task} variant="parent" />
+              completedTasks.map((task: Task) => (
+                <div key={task.id} className="space-y-2">
+                  <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-green-500/10 border border-green-500/30 w-fit">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span className="text-xs font-semibold text-green-300">Erledigt von: {getChildName(task.assignedTo)}</span>
+                  </div>
+                  <TaskCard task={task} variant="parent" />
+                </div>
               ))
             )}
           </div>
