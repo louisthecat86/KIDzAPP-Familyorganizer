@@ -3325,9 +3325,11 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
       <CardContent className="p-5 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
         <div className="space-y-1 flex-1">
           <div className="flex items-center gap-3 mb-2">
-            <Badge variant="outline" className={`${statusConfig.color} border px-2 py-0.5 rounded text-[10px] font-bold tracking-wider`}>
-              <StatusIcon className="h-3 w-3 mr-1.5" /> {statusConfig.label}
-            </Badge>
+            {!(task.status === "approved" && children) && (
+              <Badge variant="outline" className={`${statusConfig.color} border px-2 py-0.5 rounded text-[10px] font-bold tracking-wider`}>
+                <StatusIcon className="h-3 w-3 mr-1.5" /> {statusConfig.label}
+              </Badge>
+            )}
             <span className="text-primary font-mono text-sm flex items-center gap-1" data-testid={`text-sats-${task.id}`}>
               ⚡ {task.sats}
             </span>
