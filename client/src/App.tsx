@@ -918,7 +918,16 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   const [nwcConnectionString, setNwcConnectionString] = useState(user.nwcConnectionString || "");
   const [lnbitsUrl, setLnbitsUrl] = useState(user.lnbitsUrl || "");
   const [lnbitsAdminKey, setLnbitsAdminKey] = useState(user.lnbitsAdminKey || "");
+  const [showConnectionCode, setShowConnectionCode] = useState(() => {
+    const stored = localStorage.getItem(`connectionCodeShown_${user.id}`);
+    return !stored;
+  });
   const { toast } = useToast();
+
+  const hideConnectionCode = () => {
+    setShowConnectionCode(false);
+    localStorage.setItem(`connectionCodeShown_${user.id}`, "true");
+  };
 
   const setupWallet = async () => {
     if (!nwcConnectionString) return;
@@ -963,25 +972,38 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       <div className="space-y-8">
         <h1 className="text-3xl font-bold">Dashboard</h1>
         
-        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-          <Card className="border-2 border-primary/40 bg-primary/5">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <LinkIcon className="h-5 w-5 text-primary" /> Verbindungscode für Kinder
-              </CardTitle>
-              <CardDescription>Gebe diesen Code deinen Kindern, damit sie sich verbinden können</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-secondary border-2 border-primary/30 rounded-lg p-4 text-center">
-                <p className="text-xs text-muted-foreground mb-2 uppercase tracking-widest">Dein Code:</p>
-                <p className="text-3xl font-mono font-bold text-primary tracking-wider break-words word-break mb-3" data-testid="text-connection-code">
-                  {user.connectionId}
-                </p>
-                <p className="text-xs text-muted-foreground">Später findest du diesen Code in den Wallet-Einstellungen</p>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+        {showConnectionCode && (
+          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }}>
+            <Card className="border-2 border-primary/40 bg-primary/5">
+              <CardHeader className="flex flex-row items-start justify-between pb-3">
+                <div className="flex-1">
+                  <CardTitle className="flex items-center gap-2">
+                    <LinkIcon className="h-5 w-5 text-primary" /> Verbindungscode für Kinder
+                  </CardTitle>
+                  <CardDescription>Gebe diesen Code deinen Kindern, damit sie sich verbinden können</CardDescription>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={hideConnectionCode}
+                  className="ml-2"
+                  data-testid="button-hide-connection-code"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-secondary border-2 border-primary/30 rounded-lg p-4 text-center">
+                  <p className="text-xs text-muted-foreground mb-2 uppercase tracking-widest">Dein Code:</p>
+                  <p className="text-3xl font-mono font-bold text-primary tracking-wider break-words word-break mb-3" data-testid="text-connection-code">
+                    {user.connectionId}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Später findest du diesen Code in den Wallet-Einstellungen</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
