@@ -1115,7 +1115,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           </motion.div>
         )}
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        <div className={`grid ${layoutView === "one-column" ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-2"} gap-6`}>
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
             <Card 
               className="bg-card/50 border-border cursor-pointer hover:bg-card/70 transition-colors"
@@ -1827,6 +1827,9 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
   const [showLink, setShowLink] = useState(false);
   const [parentConnectionId, setParentConnectionId] = useState("");
   const [isLinking, setIsLinking] = useState(false);
+  const [layoutView, setLayoutView] = useState(() => {
+    return localStorage.getItem(`layoutView_${user.id}`) || "two-column";
+  });
   const { toast } = useToast();
 
   const myTasks = tasks.filter((t: Task) => t.assignedTo === user.id);
@@ -2136,7 +2139,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         </motion.section>
 
         {tasks.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+          <div className={`grid ${layoutView === "one-column" ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-2"} gap-6`}>
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
               <Card 
                 className="bg-card/50 border-border cursor-pointer hover:bg-card/70 transition-colors"
