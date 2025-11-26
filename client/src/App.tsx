@@ -2292,13 +2292,12 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               </Card>
             ) : (
               completedTasks.map((task: Task) => (
-                <div key={task.id} className="space-y-2">
+                <TaskCard key={task.id} task={task} variant="parent">
                   <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-green-500/10 border border-green-500/30 w-fit">
                     <CheckCircle className="h-4 w-4 text-green-500" />
                     <span className="text-xs font-semibold text-green-300">Erledigt von: {getChildName(task.assignedTo)}</span>
                   </div>
-                  <TaskCard task={task} variant="parent" />
-                </div>
+                </TaskCard>
               ))
             )}
           </div>
@@ -3336,6 +3335,12 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
           <h3 className="font-bold text-lg" data-testid={`text-title-${task.id}`}>{task.title}</h3>
           <p className="text-muted-foreground text-sm" data-testid={`text-description-${task.id}`}>{task.description}</p>
           
+          {children && (
+            <div className="mt-3 mb-2">
+              {children}
+            </div>
+          )}
+
           {task.status === "open" && variant === "parent" && (
             <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
               <p className="text-xs text-muted-foreground">Warte bis ein Kind die Aufgabe annimmt oder genehmige sie um die Zahlung zu aktivieren</p>
@@ -3385,7 +3390,6 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
             </div>
           )}
         </div>
-        {children && <div className="w-full sm:w-auto pt-2 sm:pt-0">{children}</div>}
       </CardContent>
     </Card>
   );
