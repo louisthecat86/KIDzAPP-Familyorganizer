@@ -253,7 +253,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createEvent(insertEvent: InsertFamilyEvent): Promise<FamilyEvent> {
-    const result = await db.insert(familyEvents).values(insertEvent).returning();
+    const result = await db.insert(familyEvents).values([insertEvent]).returning();
     return result[0];
   }
 
@@ -321,7 +321,7 @@ export class DatabaseStorage implements IStorage {
     .where(eq(chatMessages.connectionId, connectionId))
     .orderBy(desc(chatMessages.createdAt))
     .limit(50);
-    return messages.reverse();
+    return messages.map(m => ({ ...m, senderName: m.senderName || "Unknown" })).reverse();
   }
 
   async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
