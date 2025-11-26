@@ -966,18 +966,18 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     }
   };
 
-  const setupChildWithdrawWallet = async () => {
-    if (!lnbitsWithdrawUrl || !lnbitsWithdrawKey) return;
+  const setupLightningAddress = async () => {
+    if (!lightningAddress) return;
     try {
-      const res = await fetch("/api/wallet/setup-child-withdraw", {
+      const res = await fetch("/api/wallet/setup-child-address", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ peerId: user.id, lnbitsWithdrawUrl, lnbitsWithdrawKey }),
+        body: JSON.stringify({ peerId: user.id, lightningAddress }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setUser({ ...user, lnbitsWithdrawUrl: data.lnbitsWithdrawUrl, lnbitsWithdrawKey: data.lnbitsWithdrawKey });
-      toast({ title: "Auszahlungs-Wallet verbunden!", description: "Sats können jetzt empfangen werden" });
+      setUser({ ...user, lightningAddress: data.lightningAddress });
+      toast({ title: "Lightning Adresse gespeichert!", description: "Du erhältst nun Sats direkt" });
     } catch (error) {
       toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
     }
@@ -1273,8 +1273,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       <Input 
                         id="lightning-address"
                         placeholder="name@example.com"
-                        value={user.lightningAddress || ""}
-                        onChange={(e) => setLnbitsUrl(e.target.value)}
+                        value={lightningAddress}
+                        onChange={(e) => setLightningAddress(e.target.value)}
                         className="font-mono text-xs"
                         data-testid="input-lightning-address"
                       />
@@ -1286,19 +1286,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       </p>
                     </div>
                     <Button 
-                      onClick={() => {
-                        const lightningAddress = (document.getElementById("lightning-address") as HTMLInputElement)?.value;
-                        if (lightningAddress) {
-                          fetch("/api/wallet/setup-child-address", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ peerId: user.id, lightningAddress }),
-                          }).then(r => r.json()).then(data => {
-                            setUser(data);
-                            toast({ title: "Lightning Adresse gespeichert!", description: "Du erhältst nun Sats direkt" });
-                          }).catch(err => toast({ title: "Fehler", description: err.message, variant: "destructive" }));
-                        }
-                      }}
+                      onClick={setupLightningAddress}
                       className="bg-primary hover:bg-primary/90"
                       data-testid="button-setup-lightning-address"
                     >
