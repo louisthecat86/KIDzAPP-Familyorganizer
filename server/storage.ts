@@ -195,6 +195,33 @@ export class DatabaseStorage implements IStorage {
     return (result.rowCount ?? 0) > 0;
   }
 
+  async getLeaderboard(connectionId: string): Promise<Array<{ id: number; name: string; completedTasks: number; balance: number; satsEarned: number }>> {
+    const result = await db.select({
+      id: peers.id,
+      name: peers.name,
+      balance: peers.balance,
+    }).from(peers)
+      .where(and(eq(peers.connectionId, connectionId), eq(peers.role, "child")));
+
+    const leaderboard = [];
+    for (const child of result) {
+      const childTasks = await db.select().from(tasks)
+        .where(and(eq(tasks.connectionId, connectionId), eq(tasks.assignedTo, child.id), eq(tasks.status, "approved")));
+      
+      const satsEarned = childTasks.reduce((sum, t) => sum + t.sats, 0);
+      
+      leaderboard.push({
+        id: child.id,
+        name: child.name,
+        completedTasks: childTasks.length,
+        balance: child.balance || 0,
+        satsEarned: satsEarned,
+      });
+    }
+
+    return leaderboard.sort((a, b) => b.satsEarned - a.satsEarned);
+  }
+
   // Transaction operations
   async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
     const result = await db.insert(transactions).values(transaction).returning();

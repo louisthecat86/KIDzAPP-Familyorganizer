@@ -253,6 +253,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get leaderboard for a family
+  app.get("/api/leaderboard/:connectionId", async (req, res) => {
+    try {
+      const { connectionId } = req.params;
+      const leaderboard = await storage.getLeaderboard(connectionId);
+      res.json(leaderboard);
+    } catch (error) {
+      console.error("Leaderboard error:", error);
+      res.status(500).json({ error: "Failed to fetch leaderboard" });
+    }
+  });
+
   // Create a new task (with optional escrow via wallet)
   app.post("/api/tasks", async (req, res) => {
     try {

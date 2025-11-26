@@ -486,6 +486,7 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
         { id: "dashboard", label: "Mein Dashboard", icon: Home },
         { id: "tasks", label: "Verfügbare Aufgaben", icon: Trophy },
         { id: "calendar", label: "Familienkalender", icon: Calendar },
+        { id: "leaderboard", label: "🏆 Bestenliste", icon: Trophy },
         { id: "peers", label: "Meine Familie", icon: Users },
         { id: "settings", label: "Lightning Wallet", icon: Bitcoin },
       ];
