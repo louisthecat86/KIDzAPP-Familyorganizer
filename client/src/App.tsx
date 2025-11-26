@@ -859,6 +859,9 @@ function ParentDashboardWithSettings({ user, setUser, currentView, onCreate, onC
 function SettingsModal({ user, setUser, onClose }: any) {
   const [editNwc, setEditNwc] = useState(user.nwcConnectionString || "");
   const [isSaving, setIsSaving] = useState(false);
+  const [layoutView, setLayoutView] = useState(() => {
+    return localStorage.getItem(`layoutView_${user.id}`) || "two-column";
+  });
   const { toast } = useToast();
 
   const saveSettings = async () => {
@@ -882,9 +885,15 @@ function SettingsModal({ user, setUser, onClose }: any) {
     }
   };
 
+  const handleLayoutChange = (layout: string) => {
+    setLayoutView(layout);
+    localStorage.setItem(`layoutView_${user.id}`, layout);
+    toast({ title: "Ansicht aktualisiert", description: `Dashboard wird jetzt ${layout === "one-column" ? "einreihig" : "zweireihig"} angezeigt` });
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle>Einstellungen</CardTitle>
           <Button 
@@ -896,20 +905,59 @@ function SettingsModal({ user, setUser, onClose }: any) {
             <X className="h-4 w-4" />
           </Button>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="settings-nwc">NWC Connection String</Label>
-            <Input 
-              id="settings-nwc"
-              placeholder="nostr+walletconnect://...?relay=...&secret=..."
-              value={editNwc}
-              onChange={(e) => setEditNwc(e.target.value)}
-              className="bg-secondary border-border font-mono text-xs"
-              autoComplete="off"
-              data-testid="input-settings-nwc"
-            />
-            <p className="text-xs text-muted-foreground">Aktuell: {user.nwcConnectionString ? "✓ Verbunden" : "✗ Nicht verbunden"}</p>
-          </div>
+        <CardContent className="space-y-6">
+          <Tabs defaultValue="wallet" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="wallet" data-testid="tab-wallet-settings">Wallet</TabsTrigger>
+              <TabsTrigger value="view" data-testid="tab-view-settings">Ansicht</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="wallet" className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label htmlFor="settings-nwc">NWC Connection String</Label>
+                <Input 
+                  id="settings-nwc"
+                  placeholder="nostr+walletconnect://...?relay=...&secret=..."
+                  value={editNwc}
+                  onChange={(e) => setEditNwc(e.target.value)}
+                  className="bg-secondary border-border font-mono text-xs"
+                  autoComplete="off"
+                  data-testid="input-settings-nwc"
+                />
+                <p className="text-xs text-muted-foreground">Aktuell: {user.nwcConnectionString ? "✓ Verbunden" : "✗ Nicht verbunden"}</p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="view" className="space-y-4 mt-4">
+              <div className="space-y-3">
+                <Label>Dashboard Ansicht</Label>
+                <div className="space-y-2">
+                  <Button
+                    variant={layoutView === "one-column" ? "default" : "outline"}
+                    className="w-full justify-start text-left"
+                    onClick={() => handleLayoutChange("one-column")}
+                    data-testid="button-layout-one-column"
+                  >
+                    <div className="flex flex-col gap-1">
+                      <span className="font-semibold">Einreihig</span>
+                      <span className="text-xs text-muted-foreground">Kästchen untereinander angeordnet</span>
+                    </div>
+                  </Button>
+                  <Button
+                    variant={layoutView === "two-column" ? "default" : "outline"}
+                    className="w-full justify-start text-left"
+                    onClick={() => handleLayoutChange("two-column")}
+                    data-testid="button-layout-two-column"
+                  >
+                    <div className="flex flex-col gap-1">
+                      <span className="font-semibold">Zweireihig</span>
+                      <span className="text-xs text-muted-foreground">2 Kästchen nebeneinander</span>
+                    </div>
+                  </Button>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
         <CardFooter className="gap-2">
           <Button 
@@ -941,6 +989,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   const [showConnectionCode, setShowConnectionCode] = useState(() => {
     const stored = localStorage.getItem(`connectionCodeShown_${user.id}`);
     return !stored;
+  });
+  const [layoutView, setLayoutView] = useState(() => {
+    return localStorage.getItem(`layoutView_${user.id}`) || "two-column";
   });
   const { toast } = useToast();
 
