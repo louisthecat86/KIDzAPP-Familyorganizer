@@ -403,7 +403,18 @@ export default function App() {
         setSidebarOpen={setSidebarOpen}
         onLogout={logout}
       />
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto relative">
+        {!sidebarOpen && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSidebarOpen(true)}
+            className="fixed left-4 top-4 z-30 md:hidden"
+            data-testid="button-open-sidebar"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        )}
         <div className="px-4 py-8">
           <AnimatePresence mode="wait">
             <motion.div
