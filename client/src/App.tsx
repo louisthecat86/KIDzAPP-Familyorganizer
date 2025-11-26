@@ -1732,8 +1732,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
             <Card className="bg-gradient-to-br from-gray-900 to-black border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors h-full" onClick={() => setCurrentView("calendar-view")} data-testid="card-calendar">
               <CardContent className="p-6">
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                  <Calendar className="text-primary" /> Familienkalender ({events.length})
+                <h3 className="text-base font-bold mb-3 flex items-center gap-1">
+                  <Calendar className="h-4 w-4 text-primary" /> Kalender ({events.length})
                 </h3>
                 {events.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">Noch keine Termine geplant</p>
@@ -2817,8 +2817,8 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                 data-testid="card-child-calendar"
               >
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                    <Calendar className="text-primary" /> Familienkalender ({events.length})
+                  <h3 className="text-base font-bold mb-3 flex items-center gap-1">
+                    <Calendar className="h-4 w-4 text-primary" /> Kalender ({events.length})
                   </h3>
                   {events.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-4">Noch keine Termine geplant</p>
