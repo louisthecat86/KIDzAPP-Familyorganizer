@@ -91,6 +91,28 @@ type FamilyEvent = {
   eventType: string;
 };
 
+// --- Color Generation Function ---
+const chatColors = [
+  "bg-red-500/20 border-red-500/50 text-red-100",
+  "bg-blue-500/20 border-blue-500/50 text-blue-100",
+  "bg-green-500/20 border-green-500/50 text-green-100",
+  "bg-purple-500/20 border-purple-500/50 text-purple-100",
+  "bg-pink-500/20 border-pink-500/50 text-pink-100",
+  "bg-yellow-500/20 border-yellow-500/50 text-yellow-100",
+  "bg-indigo-500/20 border-indigo-500/50 text-indigo-100",
+  "bg-teal-500/20 border-teal-500/50 text-teal-100",
+];
+
+function getMessageColor(senderName: string): string {
+  let hash = 0;
+  for (let i = 0; i < senderName.length; i++) {
+    hash = ((hash << 5) - hash) + senderName.charCodeAt(i);
+    hash = hash & hash;
+  }
+  const index = Math.abs(hash) % chatColors.length;
+  return chatColors[index];
+}
+
 // --- API Functions ---
 async function registerUser(name: string, role: UserRole, pin: string, familyName?: string): Promise<User> {
   const res = await fetch("/api/peers/register", {
@@ -1822,10 +1844,10 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   messages.map((msg, idx) => (
                     <div key={idx} className={`flex ${msg.fromPeerId === user.id ? "justify-end" : "justify-start"}`}>
                       <div
-                        className={`max-w-xs rounded-lg px-4 py-2 ${
+                        className={`max-w-xs rounded-lg px-4 py-2 border ${
                           msg.fromPeerId === user.id
                             ? "bg-primary text-primary-foreground"
-                            : "bg-secondary text-foreground"
+                            : getMessageColor(msg.senderName)
                         }`}
                       >
                         <p className="text-xs font-semibold mb-1">{msg.senderName}</p>
@@ -3076,10 +3098,10 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                   messages.map((msg, idx) => (
                     <div key={idx} className={`flex ${msg.fromPeerId === user.id ? "justify-end" : "justify-start"}`}>
                       <div
-                        className={`max-w-xs rounded-lg px-4 py-2 ${
+                        className={`max-w-xs rounded-lg px-4 py-2 border ${
                           msg.fromPeerId === user.id
                             ? "bg-primary text-primary-foreground"
-                            : "bg-secondary text-foreground"
+                            : getMessageColor(msg.senderName)
                         }`}
                       >
                         <p className="text-xs font-semibold mb-1">{msg.senderName}</p>
