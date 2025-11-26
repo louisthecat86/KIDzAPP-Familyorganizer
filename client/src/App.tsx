@@ -206,7 +206,7 @@ export default function App() {
   const [newTask, setNewTask] = useState({ title: "", description: "", sats: 50 });
   const [newEvent, setNewEvent] = useState({ title: "", description: "", location: "" });
   const [currentView, setCurrentView] = useState<string>("dashboard");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mode, setMode] = useState<"role-select" | "auth" | "app">("role-select");
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   
