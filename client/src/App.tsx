@@ -55,6 +55,7 @@ type User = {
   name: string;
   role: UserRole;
   connectionId: string;
+  familyName?: string;
   balance?: number;
   lnbitsUrl?: string;
 };
@@ -88,11 +89,11 @@ type FamilyEvent = {
 };
 
 // --- API Functions ---
-async function registerUser(name: string, role: UserRole, pin: string): Promise<User> {
+async function registerUser(name: string, role: UserRole, pin: string, familyName?: string): Promise<User> {
   const res = await fetch("/api/peers/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, role, pin }),
+    body: JSON.stringify({ name, role, pin, familyName }),
   });
   const data = await res.json();
   if (!res.ok) {
@@ -489,7 +490,7 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
           <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">
             <Bitcoin className="h-5 w-5" />
           </div>
-          <span className="text-lg font-bold">Family</span>
+          <span className="text-lg font-bold">{user.familyName || "Family"}</span>
         </div>
         <Button
           variant="ghost"
@@ -610,6 +611,7 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
 
 function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (user: User) => void; onBack: () => void }) {
   const [name, setName] = useState("");
+  const [familyName, setFamilyName] = useState("");
   const [pin, setPin] = useState("");
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -620,11 +622,21 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
     
     const trimmedName = name.trim();
     const trimmedPin = pin.trim();
+    const trimmedFamilyName = familyName.trim();
     
     if (!trimmedName || !trimmedPin || trimmedPin.length !== 4) {
       toast({
         title: "Fehler",
         description: "Bitte fülle alle Felder aus (PIN muss 4 Ziffern sein)",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!isLogin && role === "parent" && !trimmedFamilyName) {
+      toast({
+        title: "Fehler",
+        description: "Bitte gib den Familiennamen ein",
         variant: "destructive"
       });
       return;
@@ -635,7 +647,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
       console.log("Versuche", isLogin ? "Login" : "Registrierung", { name: trimmedName, role, pin: trimmedPin });
       const user = isLogin 
         ? await loginUser(trimmedName, role, trimmedPin)
-        : await registerUser(trimmedName, role, trimmedPin);
+        : await registerUser(trimmedName, role, trimmedPin, role === "parent" ? trimmedFamilyName : undefined);
       
       console.log("Erfolg:", user);
       
@@ -680,6 +692,21 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
 
         <CardContent className="space-y-6">
           <form onSubmit={handleSubmit} className="space-y-4">
+            {!isLogin && role === "parent" && (
+              <div className="space-y-2">
+                <Label htmlFor="familyName">Familienname</Label>
+                <Input 
+                  id="familyName"
+                  placeholder="z.B. Müller"
+                  value={familyName}
+                  onChange={(e) => setFamilyName(e.target.value)}
+                  className="bg-secondary border-border"
+                  disabled={isLoading}
+                  autoComplete="off"
+                  data-testid="input-family-name"
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="name">Dein Name</Label>
               <Input 

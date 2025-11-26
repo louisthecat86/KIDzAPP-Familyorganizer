@@ -10,6 +10,7 @@ export const peers = pgTable("peers", {
   role: text("role").notNull(), // 'parent' or 'child'
   pin: text("pin").notNull().unique(), // Personal PIN for login
   connectionId: text("connection_id").notNull(), // Family ID - auto generated
+  familyName: text("family_name"), // Family name (set by parent on registration)
   balance: integer("balance").default(0).notNull(), // Sats balance
   nwcConnectionString: text("nwc_connection_string"), // NWC: nostr+walletconnect://...
   lnbitsUrl: text("lnbits_url"), // LNBits instance URL (legacy)

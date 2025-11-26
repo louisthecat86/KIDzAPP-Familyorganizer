@@ -52,7 +52,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Peer Registration
   app.post("/api/peers/register", async (req, res) => {
     try {
-      const { name, role, pin } = req.body;
+      const { name, role, pin, familyName } = req.body;
       
       if (!name || !role || !pin) {
         return res.status(400).json({ error: "Name, role, and pin required" });
@@ -65,6 +65,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role,
         pin,
         connectionId,
+        familyName: familyName && role === "parent" ? familyName : undefined,
       });
       res.json(peer);
     } catch (error) {
