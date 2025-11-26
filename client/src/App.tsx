@@ -2475,7 +2475,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     const completedTasks = myTasks.filter((t: Task) => t.status === "approved");
 
     return (
-      <div className="max-w-4xl space-y-4">
+      <div className="max-w-4xl space-y-2">
         <motion.section 
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
