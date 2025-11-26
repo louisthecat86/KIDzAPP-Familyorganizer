@@ -1811,7 +1811,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
 
     return (
       <div className="max-w-2xl">
-        <h1 className="text-3xl font-bold mb-8">🗣️ Familienchat</h1>
+        <h1 className="text-3xl font-bold mb-8">Familienchat</h1>
         <Card className="border-border bg-gradient-to-br from-gray-900 to-black">
           <CardContent className="p-6">
             <div className="space-y-4">
@@ -3065,7 +3065,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
 
     return (
       <div className="max-w-2xl">
-        <h1 className="text-3xl font-bold mb-8">🗣️ Familienchat</h1>
+        <h1 className="text-3xl font-bold mb-8">Familienchat</h1>
         <Card className="border-border bg-gradient-to-br from-gray-900 to-black">
           <CardContent className="p-6">
             <div className="space-y-4">
