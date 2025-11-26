@@ -445,6 +445,7 @@ export default function App() {
                   onApprove={approveTask}
                   onDelete={handleDeleteTask}
                   onDeleteEvent={handleDeleteEvent}
+                  queryClient={queryClient}
                 />
               ) : (
                 <ChildDashboard 
@@ -457,6 +458,7 @@ export default function App() {
                   onAccept={acceptTask} 
                   onSubmit={submitProof}
                   onDeleteEvent={handleDeleteEvent}
+                  queryClient={queryClient}
                 />
               )}
             </motion.div>
@@ -926,7 +928,7 @@ function SettingsModal({ user, setUser, onClose }: any) {
   );
 }
 
-function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent }: any) {
+function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, queryClient }: any) {
   const [nwcConnectionString, setNwcConnectionString] = useState(user.nwcConnectionString || "");
   const [lnbitsUrl, setLnbitsUrl] = useState(user.lnbitsUrl || "");
   const [lnbitsAdminKey, setLnbitsAdminKey] = useState(user.lnbitsAdminKey || "");
@@ -1649,7 +1651,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   return null;
 }
 
-function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentView, onAccept, onSubmit, onDeleteEvent }: any) {
+function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentView, onAccept, onSubmit, onDeleteEvent, queryClient }: any) {
   const [showLink, setShowLink] = useState(false);
   const [parentConnectionId, setParentConnectionId] = useState("");
   const [isLinking, setIsLinking] = useState(false);
