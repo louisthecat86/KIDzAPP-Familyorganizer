@@ -88,15 +88,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async linkChildToParent(childId: number, parentConnectionId: string): Promise<Peer> {
-    // Get parent name from connectionId
-    const parent = await db.select().from(peers)
-      .where(and(eq(peers.connectionId, parentConnectionId), eq(peers.role, "parent")))
-      .limit(1);
-    
     const result = await db.update(peers)
       .set({ 
-        connectionId: parentConnectionId,
-        familyName: parent[0]?.name // Store parent name as familyName
+        connectionId: parentConnectionId
       })
       .where(eq(peers.id, childId))
       .returning();
