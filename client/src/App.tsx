@@ -34,7 +34,8 @@ import {
   Menu,
   ChevronDown,
   Home,
-  Users
+  Users,
+  MessageSquare
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -496,7 +497,7 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
     { id: "dashboard", label: user.role === "parent" ? "Dashboard" : "Mein Dashboard", icon: Home },
     { id: "tasks", label: user.role === "parent" ? "Aufgaben" : "Verfügbare Aufgaben", icon: CheckCircle },
     { id: "calendar", label: "Familienkalender", icon: Calendar },
-    { id: "chat", label: "🗣️ Familienchat", icon: Trophy },
+    { id: "chat", label: "Familienchat", icon: MessageSquare },
     { id: "leaderboard", label: "Bestenliste", icon: Trophy },
   ];
 
