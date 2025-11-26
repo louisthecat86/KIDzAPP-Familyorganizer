@@ -259,12 +259,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Create task (with or without escrow)
+      // Create task
       const task = await storage.createTask({
         ...data,
         status: "open",
-        paylink: invoice || undefined,
-        escrowLocked: escrowLocked,
       });
 
       // Record escrow lock transaction if applicable
@@ -422,8 +420,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         paymentHash = await parentLnbits.payInvoice(paymentRequest);
       } catch (error) {
         console.error("Payment error:", error);
-          return res.status(500).json({ error: "Failed to send withdrawal. Invalid Lightning address?" });
-        }
+        return res.status(500).json({ error: "Failed to send withdrawal. Invalid Lightning address?" });
       }
 
       // Deduct from balance
