@@ -890,6 +890,8 @@ function SettingsModal({ user, setUser, onClose }: any) {
 
 function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent }: any) {
   const [nwcConnectionString, setNwcConnectionString] = useState(user.nwcConnectionString || "");
+  const [lnbitsUrl, setLnbitsUrl] = useState(user.lnbitsUrl || "");
+  const [lnbitsAdminKey, setLnbitsAdminKey] = useState(user.lnbitsAdminKey || "");
   const { toast } = useToast();
 
   const setupWallet = async () => {
@@ -909,39 +911,109 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     }
   };
 
+  const setupLNbits = async () => {
+    if (!lnbitsUrl || !lnbitsAdminKey) return;
+    try {
+      const res = await fetch("/api/wallet/setup-lnbits", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ peerId: user.id, lnbitsUrl, lnbitsAdminKey }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setUser({ ...user, lnbitsUrl: data.lnbitsUrl, lnbitsAdminKey: data.lnbitsAdminKey });
+      toast({ title: "LNbits verbunden!", description: "LNbits Wallet ist jetzt aktiv" });
+    } catch (error) {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    }
+  };
+
   if (currentView === "nostr") {
     return (
       <div className="max-w-4xl">
-        <h1 className="text-3xl font-bold mb-8">Nostr Wallet Connect</h1>
-        <Card>
-          <CardHeader>
-            <CardTitle>NWC Wallet-Verbindung</CardTitle>
-            <CardDescription>Verbinde dein Lightning Wallet via Nostr Wallet Connect</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="nwc-settings">NWC Connection String</Label>
-              <Input 
-                id="nwc-settings"
-                placeholder="nostr+walletconnect://...?relay=...&secret=..."
-                value={nwcConnectionString}
-                onChange={(e) => setNwcConnectionString(e.target.value)}
-                className="font-mono text-xs"
-                data-testid="input-nwc-settings"
-              />
-              <p className="text-xs text-muted-foreground">
-                Status: {user.nwcConnectionString ? "✓ Verbunden" : "✗ Nicht verbunden"}
-              </p>
-            </div>
-            <Button 
-              onClick={setupWallet}
-              className="bg-primary hover:bg-primary/90"
-              data-testid="button-setup-wallet-settings"
-            >
-              Speichern
-            </Button>
-          </CardContent>
-        </Card>
+        <h1 className="text-3xl font-bold mb-8">Wallet-Einstellungen</h1>
+        <Tabs defaultValue="nwc" className="w-full">
+          <TabsList className="bg-secondary p-1 border border-border mb-6">
+            <TabsTrigger value="nwc">Nostr Wallet Connect</TabsTrigger>
+            <TabsTrigger value="lnbits">LNbits</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="nwc">
+            <Card>
+              <CardHeader>
+                <CardTitle>NWC Wallet-Verbindung</CardTitle>
+                <CardDescription>Verbinde dein Lightning Wallet via Nostr Wallet Connect</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nwc-settings">NWC Connection String</Label>
+                  <Input 
+                    id="nwc-settings"
+                    placeholder="nostr+walletconnect://...?relay=...&secret=..."
+                    value={nwcConnectionString}
+                    onChange={(e) => setNwcConnectionString(e.target.value)}
+                    className="font-mono text-xs"
+                    data-testid="input-nwc-settings"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Status: {user.nwcConnectionString ? "✓ Verbunden" : "✗ Nicht verbunden"}
+                  </p>
+                </div>
+                <Button 
+                  onClick={setupWallet}
+                  className="bg-primary hover:bg-primary/90"
+                  data-testid="button-setup-wallet-settings"
+                >
+                  Speichern
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="lnbits">
+            <Card>
+              <CardHeader>
+                <CardTitle>LNbits Wallet-Verbindung</CardTitle>
+                <CardDescription>Verbinde dein LNbits Wallet für Zahlungen</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="lnbits-url">LNbits Server URL</Label>
+                  <Input 
+                    id="lnbits-url"
+                    placeholder="https://lnbits.example.com"
+                    value={lnbitsUrl}
+                    onChange={(e) => setLnbitsUrl(e.target.value)}
+                    className="font-mono text-xs"
+                    data-testid="input-lnbits-url"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lnbits-key">LNbits Admin Key</Label>
+                  <Input 
+                    id="lnbits-key"
+                    placeholder="deine-admin-key..."
+                    type="password"
+                    value={lnbitsAdminKey}
+                    onChange={(e) => setLnbitsAdminKey(e.target.value)}
+                    className="font-mono text-xs"
+                    data-testid="input-lnbits-key"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Status: {user.lnbitsUrl ? "✓ Verbunden" : "✗ Nicht verbunden"}
+                  </p>
+                </div>
+                <Button 
+                  onClick={setupLNbits}
+                  className="bg-primary hover:bg-primary/90"
+                  data-testid="button-setup-lnbits-settings"
+                >
+                  Speichern
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     );
   }
