@@ -209,6 +209,7 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mode, setMode] = useState<"role-select" | "auth" | "app">("role-select");
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
+  const [layoutView, setLayoutView] = useState("two-column");
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -220,6 +221,8 @@ export default function App() {
         const parsed = JSON.parse(stored);
         setUser(parsed);
         setMode("app");
+        const savedLayout = localStorage.getItem(`layoutView_${parsed.id}`);
+        if (savedLayout) setLayoutView(savedLayout);
       } catch (e) {
         console.error("Failed to parse stored user", e);
       }
@@ -413,6 +416,8 @@ export default function App() {
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         onLogout={logout}
+        layoutView={layoutView}
+        setLayoutView={setLayoutView}
         side="right"
       />
       <main className="flex-1 overflow-auto relative">
@@ -452,6 +457,8 @@ export default function App() {
                   onDelete={handleDeleteTask}
                   onDeleteEvent={handleDeleteEvent}
                   queryClient={queryClient}
+                  layoutView={layoutView}
+                  setLayoutView={setLayoutView}
                 />
               ) : (
                 <ChildDashboard 
@@ -465,6 +472,8 @@ export default function App() {
                   onSubmit={submitProof}
                   onDeleteEvent={handleDeleteEvent}
                   queryClient={queryClient}
+                  layoutView={layoutView}
+                  setLayoutView={setLayoutView}
                 />
               )}
             </motion.div>
@@ -476,7 +485,7 @@ export default function App() {
   );
 }
 
-function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpen, onLogout }: any) {
+function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpen, onLogout, layoutView, setLayoutView }: any) {
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [showWalletSubmenu, setShowWalletSubmenu] = useState(false);
   const [activeSettingsTab, setActiveSettingsTab] = useState<"ansicht" | "wallet" | "peers" | null>(null);
@@ -499,7 +508,9 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
           user={user} 
           setUser={() => {}} 
           activeTab={activeSettingsTab}
-          onClose={() => setActiveSettingsTab(null)} 
+          onClose={() => setActiveSettingsTab(null)}
+          layoutView={layoutView}
+          setLayoutView={setLayoutView}
         />
       )}
       <motion.aside
@@ -1095,15 +1106,12 @@ function PeersContent({ user, setUser, queryClient }: any) {
   }
 }
 
-function SettingsModal({ user, setUser, activeTab, onClose }: any) {
+function SettingsModal({ user, setUser, activeTab, onClose, layoutView, setLayoutView }: any) {
   const queryClient = useQueryClient();
   const [editNwc, setEditNwc] = useState(user.nwcConnectionString || "");
   const [editLnbitsUrl, setEditLnbitsUrl] = useState(user.lnbitsUrl || "");
   const [editLnbitsAdminKey, setEditLnbitsAdminKey] = useState(user.lnbitsAdminKey || "");
   const [isSaving, setIsSaving] = useState(false);
-  const [layoutView, setLayoutView] = useState(() => {
-    return localStorage.getItem(`layoutView_${user.id}`) || "two-column";
-  });
   const { toast: useToastFn } = useToast();
 
   const saveNWC = async () => {
@@ -1148,7 +1156,9 @@ function SettingsModal({ user, setUser, activeTab, onClose }: any) {
 
   const handleLayoutChange = (layout: string) => {
     setLayoutView(layout);
-    localStorage.setItem(`layoutView_${user.id}`, layout);
+    if (user?.id) {
+      localStorage.setItem(`layoutView_${user.id}`, layout);
+    }
     useToastFn({ title: "Ansicht aktualisiert", description: `Dashboard wird jetzt ${layout === "one-column" ? "einreihig" : "zweireihig"} angezeigt` });
   };
 
@@ -1288,7 +1298,7 @@ function SettingsModal({ user, setUser, activeTab, onClose }: any) {
   );
 }
 
-function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, queryClient, layoutView }: any) {
+function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, queryClient, layoutView, setLayoutView }: any) {
   const [nwcConnectionString, setNwcConnectionString] = useState(user.nwcConnectionString || "");
   const [lnbitsUrl, setLnbitsUrl] = useState(user.lnbitsUrl || "");
   const [lnbitsAdminKey, setLnbitsAdminKey] = useState(user.lnbitsAdminKey || "");
@@ -2127,13 +2137,10 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   return null;
 }
 
-function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentView, onAccept, onSubmit, onDeleteEvent, queryClient }: any) {
+function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentView, onAccept, onSubmit, onDeleteEvent, queryClient, layoutView, setLayoutView }: any) {
   const [showLink, setShowLink] = useState(false);
   const [parentConnectionId, setParentConnectionId] = useState("");
   const [isLinking, setIsLinking] = useState(false);
-  const [layoutView, setLayoutView] = useState(() => {
-    return localStorage.getItem(`layoutView_${user.id}`) || "two-column";
-  });
   const { toast } = useToast();
 
   const myTasks = tasks.filter((t: Task) => t.assignedTo === user.id);
