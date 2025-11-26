@@ -1319,6 +1319,49 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     localStorage.setItem(`connectionCodeShown_${user.id}`, "true");
   };
 
+  const saveCardOrder = (newOrder: string[]) => {
+    setCardOrder(newOrder);
+    localStorage.setItem(`cardOrder_${user.id}`, JSON.stringify(newOrder));
+  };
+
+  const handleDragStart = (id: string) => {
+    setDraggedCard(id);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (targetId: string) => {
+    if (!draggedCard || draggedCard === targetId) {
+      setDraggedCard(null);
+      return;
+    }
+    const draggedIndex = cardOrder.indexOf(draggedCard);
+    const targetIndex = cardOrder.indexOf(targetId);
+    const newOrder = [...cardOrder];
+    newOrder.splice(draggedIndex, 1);
+    newOrder.splice(targetIndex, 0, draggedCard);
+    saveCardOrder(newOrder);
+    setDraggedCard(null);
+  };
+
+  const createDraggableCard = (cardId: string, content: React.ReactNode, delay: number) => (
+    <motion.div
+      key={cardId}
+      initial={{ y: 20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ delay }}
+      draggable
+      onDragStart={() => handleDragStart(cardId)}
+      onDragOver={handleDragOver}
+      onDrop={() => handleDrop(cardId)}
+      className={`cursor-move transition-opacity ${draggedCard === cardId ? "opacity-50" : ""}`}
+    >
+      {content}
+    </motion.div>
+  );
+
   const setupWallet = async () => {
     if (!nwcConnectionString) return;
     try {
@@ -1435,82 +1478,96 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         )}
         
         <div className={`grid ${layoutView === "one-column" ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
-          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-            <Card 
-              className="bg-gradient-to-br from-gray-900 to-black border border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
-              onClick={() => setCurrentView("tasks-open")}
-              data-testid="card-open-tasks"
-            >
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-primary">{openTasks.length}</div>
-                  <p className="text-sm text-muted-foreground mt-2">Offene Aufgaben</p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-          
-          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
-            <Card 
-              className="bg-gradient-to-br from-gray-900 to-black border border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
-              onClick={() => setCurrentView("tasks-pending")}
-              data-testid="card-submitted-tasks"
-            >
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-amber-500">{submittedTasks.length}</div>
-                  <p className="text-sm text-muted-foreground mt-2">Zur Bestätigung</p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-          
-          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
-            <Card 
-              className="bg-gradient-to-br from-gray-900 to-black border border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
-              onClick={() => setCurrentView("tasks-completed")}
-              data-testid="card-completed-tasks"
-            >
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-500">{completedTasks.length}</div>
-                  <p className="text-sm text-muted-foreground mt-2">Abgeschlossen</p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-          
-          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}>
-            <Card className="bg-gradient-to-br from-gray-900 to-black border border-border hover:from-gray-800 hover:to-gray-950 transition-colors">
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-primary flex items-center justify-center gap-1">
-                    📤 {(satsSpent || 0).toLocaleString()}
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-2">Ausgegeben an Kinder</p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
-            <Card className={`border-border bg-gradient-to-br from-gray-900 to-black ${walletBalance !== null ? "hover:from-gray-800 hover:to-gray-950" : "opacity-60"} transition-colors`}>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-primary flex items-center justify-center gap-1">
-                    {walletBalance !== null ? (
-                      <>
-                        ⚡ {(walletBalance / 1000).toLocaleString("de-DE", { maximumFractionDigits: 0 })} mSat
-                      </>
-                    ) : (
-                      "⚠️ ---"
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-2">{walletBalance !== null ? "LNbits Wallet" : "Wallet nicht verbunden"}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+          {cardOrder.map((cardId, index) => {
+            if (cardId === "tasks-open") {
+              return createDraggableCard(
+                cardId,
+                <Card 
+                  className="bg-gradient-to-br from-gray-900 to-black border border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors h-full"
+                  onClick={() => setCurrentView("tasks-open")}
+                  data-testid="card-open-tasks"
+                >
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-primary">{openTasks.length}</div>
+                      <p className="text-sm text-muted-foreground mt-2">Offene Aufgaben</p>
+                    </div>
+                  </CardContent>
+                </Card>,
+                index * 0.1
+              );
+            } else if (cardId === "tasks-pending") {
+              return createDraggableCard(
+                cardId,
+                <Card 
+                  className="bg-gradient-to-br from-gray-900 to-black border border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors h-full"
+                  onClick={() => setCurrentView("tasks-pending")}
+                  data-testid="card-submitted-tasks"
+                >
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-amber-500">{submittedTasks.length}</div>
+                      <p className="text-sm text-muted-foreground mt-2">Zur Bestätigung</p>
+                    </div>
+                  </CardContent>
+                </Card>,
+                index * 0.1
+              );
+            } else if (cardId === "tasks-completed") {
+              return createDraggableCard(
+                cardId,
+                <Card 
+                  className="bg-gradient-to-br from-gray-900 to-black border border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors h-full"
+                  onClick={() => setCurrentView("tasks-completed")}
+                  data-testid="card-completed-tasks"
+                >
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-green-500">{completedTasks.length}</div>
+                      <p className="text-sm text-muted-foreground mt-2">Abgeschlossen</p>
+                    </div>
+                  </CardContent>
+                </Card>,
+                index * 0.1
+              );
+            } else if (cardId === "sats-spent") {
+              return createDraggableCard(
+                cardId,
+                <Card className="bg-gradient-to-br from-gray-900 to-black border border-border hover:from-gray-800 hover:to-gray-950 transition-colors h-full">
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-primary flex items-center justify-center gap-1">
+                        📤 {(satsSpent || 0).toLocaleString()}
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-2">Ausgegeben an Kinder</p>
+                    </div>
+                  </CardContent>
+                </Card>,
+                index * 0.1
+              );
+            } else if (cardId === "wallet-balance") {
+              return createDraggableCard(
+                cardId,
+                <Card className={`border-border bg-gradient-to-br from-gray-900 to-black ${walletBalance !== null ? "hover:from-gray-800 hover:to-gray-950" : "opacity-60"} transition-colors h-full`}>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-primary flex items-center justify-center gap-1">
+                        {walletBalance !== null ? (
+                          <>
+                            ⚡ {(walletBalance / 1000).toLocaleString("de-DE", { maximumFractionDigits: 0 })} mSat
+                          </>
+                        ) : (
+                          "⚠️ ---"
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-2">{walletBalance !== null ? "LNbits Wallet" : "Wallet nicht verbunden"}</p>
+                    </div>
+                  </CardContent>
+                </Card>,
+                index * 0.1
+              );
+            }
+          })}
         </div>
 
         <div className="grid grid-cols-1 gap-4">
