@@ -481,10 +481,10 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
 
   return (
     <motion.aside
-      initial={{ x: -250 }}
-      animate={{ x: sidebarOpen ? 0 : -250 }}
+      initial={{ x: 250 }}
+      animate={{ x: sidebarOpen ? 0 : 250 }}
       transition={{ duration: 0.3 }}
-      className="fixed left-0 top-0 h-screen w-64 bg-card border-r border-border z-40 flex flex-col"
+      className="fixed right-0 top-0 h-screen w-64 bg-card border-l border-border z-40 flex flex-col"
     >
       <div className="p-4 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-2">
