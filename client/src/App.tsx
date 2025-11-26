@@ -1609,13 +1609,13 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
               <p className="text-xs text-muted-foreground">Kopiere diesen Link/Code und öffne ihn in deiner Lightning Wallet um deine Sats zu erhalten</p>
               {task.withdrawLink && (
                 <>
-                  <div className="bg-secondary p-3 rounded border border-border break-words word-break font-mono text-xs text-muted-foreground cursor-pointer hover:bg-secondary/80 transition overflow-x-auto max-w-full" onClick={() => handleCopy(task.withdrawLink)}>
+                  <div className="bg-secondary p-3 rounded border border-border break-words word-break font-mono text-xs text-muted-foreground cursor-pointer hover:bg-secondary/80 transition overflow-x-auto max-w-full" onClick={() => handleCopy(task.withdrawLink!)}>
                     {task.withdrawLink}
                   </div>
                   <div className="flex gap-2">
                     <Button 
                       size="sm"
-                      onClick={() => handleCopy(task.withdrawLink)}
+                      onClick={() => handleCopy(task.withdrawLink!)}
                       className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                       data-testid={`button-copy-withdraw-${task.id}`}
                     >
