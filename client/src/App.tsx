@@ -1027,7 +1027,11 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-            <Card className="bg-card/50 border-border">
+            <Card 
+              className="bg-card/50 border-border cursor-pointer hover:bg-card/70 transition-colors"
+              onClick={() => setCurrentView("tasks")}
+              data-testid="card-open-tasks"
+            >
               <CardContent className="pt-6">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-primary">{openTasks.length}</div>
@@ -1038,7 +1042,11 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           </motion.div>
           
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
-            <Card className="bg-card/50 border-border">
+            <Card 
+              className="bg-card/50 border-border cursor-pointer hover:bg-card/70 transition-colors"
+              onClick={() => setCurrentView("tasks")}
+              data-testid="card-submitted-tasks"
+            >
               <CardContent className="pt-6">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-amber-500">{submittedTasks.length}</div>
@@ -1049,7 +1057,11 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           </motion.div>
           
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
-            <Card className="bg-card/50 border-border">
+            <Card 
+              className="bg-card/50 border-border cursor-pointer hover:bg-card/70 transition-colors"
+              onClick={() => setCurrentView("tasks")}
+              data-testid="card-completed-tasks"
+            >
               <CardContent className="pt-6">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-green-500">{completedTasks.length}</div>
@@ -1085,7 +1097,12 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 </Card>
               ) : (
                 submittedTasks.slice(0, 3).map((task: Task) => (
-                  <Card key={task.id} className="border-border bg-card/50">
+                  <Card 
+                    key={task.id} 
+                    className="border-border bg-card/50 cursor-pointer hover:bg-card/70 transition-colors"
+                    onClick={() => setCurrentView("tasks")}
+                    data-testid={`card-pending-task-${task.id}`}
+                  >
                     <CardContent className="p-4">
                       <div className="flex justify-between items-start">
                         <div className="flex-1 min-w-0">
@@ -1111,7 +1128,12 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 </Card>
               ) : (
                 events.slice(0, 3).map((event: FamilyEvent) => (
-                  <Card key={event.id} className="border-border bg-card/50">
+                  <Card 
+                    key={event.id} 
+                    className="border-border bg-card/50 cursor-pointer hover:bg-card/70 transition-colors"
+                    onClick={() => setCurrentView("calendar")}
+                    data-testid={`card-dash-event-${event.id}`}
+                  >
                     <CardContent className="p-4">
                       <div className="flex justify-between items-start">
                         <div className="flex-1 min-w-0">
