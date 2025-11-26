@@ -1432,7 +1432,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         <div className={`grid ${layoutView === "one-column" ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
             <Card 
-              className="bg-card/50 border-border cursor-pointer hover:bg-card/70 transition-colors"
+              className="bg-gradient-to-br from-gray-900 to-black border border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
               onClick={() => setCurrentView("tasks-open")}
               data-testid="card-open-tasks"
             >
@@ -1447,7 +1447,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
             <Card 
-              className="bg-card/50 border-border cursor-pointer hover:bg-card/70 transition-colors"
+              className="bg-gradient-to-br from-gray-900 to-black border border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
               onClick={() => setCurrentView("tasks-pending")}
               data-testid="card-submitted-tasks"
             >
@@ -1462,7 +1462,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
             <Card 
-              className="bg-card/50 border-border cursor-pointer hover:bg-card/70 transition-colors"
+              className="bg-gradient-to-br from-gray-900 to-black border border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
               onClick={() => setCurrentView("tasks-completed")}
               data-testid="card-completed-tasks"
             >
@@ -1476,7 +1476,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           </motion.div>
           
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}>
-            <Card className="bg-card/50 border-border">
+            <Card className="bg-gradient-to-br from-gray-900 to-black border border-border hover:from-gray-800 hover:to-gray-950 transition-colors">
               <CardContent className="pt-6">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-primary flex items-center justify-center gap-1">
@@ -1489,7 +1489,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           </motion.div>
 
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
-            <Card className={`border-border ${walletBalance !== null ? "bg-card/50" : "bg-card/50 opacity-60"}`}>
+            <Card className={`border-border bg-gradient-to-br from-gray-900 to-black ${walletBalance !== null ? "hover:from-gray-800 hover:to-gray-950" : "opacity-60"} transition-colors`}>
               <CardContent className="pt-6">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-primary flex items-center justify-center gap-1">
@@ -1522,7 +1522,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 events.slice(0, 3).map((event: FamilyEvent) => (
                   <Card 
                     key={event.id} 
-                    className="border-border bg-card/50 cursor-pointer hover:bg-card/70 transition-colors"
+                    className="border-border bg-gradient-to-br from-gray-900 to-black cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
                     onClick={() => setCurrentView("calendar")}
                     data-testid={`card-dash-event-${event.id}`}
                   >
@@ -2516,7 +2516,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           <div className={`grid ${layoutView === "one-column" ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
               <Card 
-                className="bg-card/50 border-border cursor-pointer hover:bg-card/70 transition-colors"
+                className="bg-gradient-to-br from-gray-900 to-black border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
                 onClick={() => setCurrentView("tasks-my")}
                 data-testid="card-my-tasks"
               >
@@ -2531,7 +2531,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
             
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
               <Card 
-                className="bg-card/50 border-border cursor-pointer hover:bg-card/70 transition-colors"
+                className="bg-gradient-to-br from-gray-900 to-black border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
                 onClick={() => setCurrentView("tasks-pending")}
                 data-testid="card-pending-tasks"
               >
