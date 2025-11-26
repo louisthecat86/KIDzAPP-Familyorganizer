@@ -408,17 +408,15 @@ export default function App() {
         side="right"
       />
       <main className="flex-1 overflow-auto relative">
-        {!sidebarOpen && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setSidebarOpen(true)}
-            className="fixed right-4 top-4 z-30 md:hidden"
-            data-testid="button-open-sidebar"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setSidebarOpen(true)}
+          className="fixed right-4 top-4 z-30 md:hidden"
+          data-testid="button-open-sidebar"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
         <div className="px-4 py-8">
           <AnimatePresence mode="wait">
             <motion.div
@@ -492,7 +490,7 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
       initial={{ x: 250 }}
       animate={{ x: sidebarOpen ? 0 : 250 }}
       transition={{ duration: 0.3 }}
-      className="fixed right-0 top-0 h-screen w-64 bg-card border-l border-border z-40 flex flex-col"
+      className="fixed right-0 top-0 h-screen w-64 bg-card border-l border-border z-40 flex flex-col md:hidden"
     >
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between">
