@@ -497,16 +497,10 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
       transition={{ duration: 0.3 }}
       className="fixed right-0 top-0 h-screen w-64 bg-card border-l border-border z-40 flex flex-col md:hidden"
     >
-      <div className="p-4 border-b border-border">
+      <div className="p-4 border-b border-border space-y-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">
-              <Bitcoin className="h-5 w-5" />
-            </div>
-            <div className="flex-1">
-              <span className="text-lg font-bold block">{user.familyName || "Family"}</span>
-              <p className="text-xs text-muted-foreground">{user.role === "child" ? "Kind" : "Eltern"}</p>
-            </div>
+          <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+            <Bitcoin className="h-5 w-5" />
           </div>
           <Button
             variant="ghost"
@@ -517,6 +511,19 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
           >
             <X className="h-4 w-4" />
           </Button>
+        </div>
+        <div className="space-y-2">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Familie</p>
+          <h2 className="text-2xl font-bold">{user.familyName || "Family"}</h2>
+          <div className="flex items-center gap-2 pt-2">
+            <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm">
+              {user.name[0]}
+            </div>
+            <div>
+              <p className="text-sm font-medium">{user.name}</p>
+              <p className="text-xs text-muted-foreground capitalize">{user.role === "child" ? "Kind" : "Eltern"}</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -545,16 +552,7 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
         })}
       </nav>
 
-      <div className="p-4 border-t border-border space-y-2">
-        <div className="px-4 py-2 rounded-lg bg-secondary flex items-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm">
-            {user.name[0]}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">{user.name}</p>
-            <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
-          </div>
-        </div>
+      <div className="p-4 border-t border-border">
         <Button
           variant="outline"
           size="sm"
