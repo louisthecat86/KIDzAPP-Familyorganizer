@@ -553,16 +553,16 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
         <nav className="flex-1 overflow-y-auto p-4 space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = currentView === item.id || currentView === "calendar-create" || currentView === "calendar-view";
             
             // Calendar Dropdown
             if (item.id === "calendar") {
+              const isCalendarActive = currentView === "calendar-create" || currentView === "calendar-view";
               return (
                 <div key={item.id}>
                   <button
                     onClick={() => setShowCalendarSubmenu(!showCalendarSubmenu)}
                     className={`w-full px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${
-                      isActive
+                      isCalendarActive
                         ? "bg-primary text-primary-foreground"
                         : "text-muted-foreground hover:bg-secondary"
                     }`}
@@ -609,6 +609,7 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
               );
             }
             
+            const isActive = currentView === item.id;
             return (
               <button
                 key={item.id}
