@@ -2701,25 +2701,29 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         {tasks.length > 0 && (
           <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <Sparkles className="text-primary" /> Verfügbare Aufgaben
+              <Calendar className="text-primary" /> Familienkalender
             </h2>
-            <div className="grid gap-4 md:grid-cols-2">
-              {availableTasks.length === 0 ? (
-                <Card className="border-dashed border-border p-6 text-center md:col-span-2">
-                  <p className="text-muted-foreground text-sm">Keine Aufgaben verfügbar</p>
+            <div className="space-y-3">
+              {events.length === 0 ? (
+                <Card className="border-dashed border-border p-6 text-center">
+                  <p className="text-muted-foreground text-sm">Noch keine Termine geplant</p>
                 </Card>
               ) : (
-                availableTasks.slice(0, 4).map((task: Task) => (
-                  <Card key={task.id} className="border-border bg-card/50 cursor-pointer hover:bg-card/70 transition-colors" onClick={() => setCurrentView("tasks-open")}>
-                    <CardHeader>
+                events.slice(0, 5).map((event: FamilyEvent) => (
+                  <Card 
+                    key={event.id} 
+                    className="border-border bg-gradient-to-br from-gray-900 to-black cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
+                    onClick={() => setCurrentView("calendar")}
+                    data-testid={`card-dash-event-${event.id}`}
+                  >
+                    <CardContent className="p-4">
                       <div className="flex justify-between items-start">
-                        <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 border-transparent font-mono">
-                          {task.sats} sats
-                        </Badge>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-sm" data-testid={`text-dash-event-${event.id}`}>{event.title}</h4>
+                          {event.location && <p className="text-xs text-muted-foreground mt-1">📍 {event.location}</p>}
+                        </div>
                       </div>
-                      <CardTitle className="mt-2 text-sm">{task.title}</CardTitle>
-                      <CardDescription className="text-xs">{task.description}</CardDescription>
-                    </CardHeader>
+                    </CardContent>
                   </Card>
                 ))
               )}
