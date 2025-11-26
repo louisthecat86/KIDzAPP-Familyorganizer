@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertPeerSchema, insertTaskSchema } from "@shared/schema";
+import { insertPeerSchema, insertTaskSchema, insertFamilyEventSchema } from "@shared/schema";
 import { z } from "zod";
 import { LNBitsClient } from "./lnbits";
 import { NWCClient } from "./nwc";
@@ -369,6 +369,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Withdraw error:", error);
       res.status(500).json({ error: "Failed to process withdrawal" });
+    }
+  });
+
+  // Family Events
+  app.get("/api/events/:connectionId", async (req, res) => {
+    try {
+      const { connectionId } = req.params;
+      const events = await storage.getFamilyEvents(connectionId);
+      res.json(events);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch events" });
+    }
+  });
+
+  app.post("/api/events", async (req, res) => {
+    try {
+      const data = insertFamilyEventSchema.parse(req.body);
+      const event = await storage.createEvent(data);
+      res.json(event);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: error.errors });
+      } else {
+        console.error("Create event error:", error);
+        res.status(500).json({ error: "Failed to create event" });
+      }
+    }
+  });
+
+  app.patch("/api/events/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const event = await storage.getEvent(id);
+      if (!event) {
+        return res.status(404).json({ error: "Event not found" });
+      }
+      const updated = await storage.updateEvent(id, req.body);
+      res.json(updated);
+    } catch (error) {
+      console.error("Update event error:", error);
+      res.status(500).json({ error: "Failed to update event" });
+    }
+  });
+
+  app.delete("/api/events/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteEvent(id);
+      if (deleted) {
+        res.json({ success: true });
+      } else {
+        res.status(404).json({ error: "Event not found" });
+      }
+    } catch (error) {
+      console.error("Delete event error:", error);
+      res.status(500).json({ error: "Failed to delete event" });
     }
   });
 

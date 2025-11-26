@@ -28,7 +28,9 @@ import {
   Copy,
   ExternalLink,
   Trash2,
-  X
+  X,
+  Calendar,
+  MapPin
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -67,6 +69,19 @@ type Task = {
   escrowLocked?: boolean;
   paylink?: string;
   withdrawLink?: string;
+};
+
+type FamilyEvent = {
+  id: number;
+  connectionId: string;
+  createdBy: number;
+  title: string;
+  description?: string;
+  startDate: Date | string;
+  endDate?: Date | string;
+  location?: string;
+  color: string;
+  eventType: string;
 };
 
 // --- API Functions ---
@@ -156,10 +171,35 @@ async function deleteTask(id: number): Promise<void> {
   if (!res.ok) throw new Error("Failed to delete task");
 }
 
+async function fetchFamilyEvents(connectionId: string): Promise<FamilyEvent[]> {
+  const res = await fetch(`/api/events/${connectionId}`);
+  if (!res.ok) throw new Error("Failed to fetch events");
+  return res.json();
+}
+
+async function createEvent(event: Partial<FamilyEvent>): Promise<FamilyEvent> {
+  const res = await fetch("/api/events", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(event),
+  });
+  if (!res.ok) throw new Error("Failed to create event");
+  return res.json();
+}
+
+async function deleteEvent(id: number): Promise<void> {
+  const res = await fetch(`/api/events/${id}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error("Failed to delete event");
+}
+
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [newTask, setNewTask] = useState({ title: "", description: "", sats: 50 });
+  const [newEvent, setNewEvent] = useState({ title: "", description: "", location: "" });
+  const [currentView, setCurrentView] = useState<"tasks" | "calendar" | "profile">("tasks");
   const [mode, setMode] = useState<"role-select" | "auth" | "app">("role-select");
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   
@@ -182,6 +222,12 @@ export default function App() {
   const { data: tasks = [] } = useQuery({
     queryKey: ["tasks", user?.connectionId],
     queryFn: () => fetchTasks(user!.connectionId),
+    enabled: !!user?.connectionId,
+  });
+
+  const { data: events = [] } = useQuery({
+    queryKey: ["events", user?.connectionId],
+    queryFn: () => fetchFamilyEvents(user!.connectionId),
     enabled: !!user?.connectionId,
   });
 
@@ -211,6 +257,29 @@ export default function App() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       toast({ title: "Aufgabe gelöscht", description: "Die Aufgabe wurde erfolgreich gelöscht" });
+    },
+    onError: (error) => {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    }
+  });
+
+  const createEventMutation = useMutation({
+    mutationFn: createEvent,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+      setNewEvent({ title: "", description: "", location: "" });
+      toast({ title: "Termin erstellt", description: "Der Familienkalender wurde aktualisiert" });
+    },
+    onError: (error) => {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    }
+  });
+
+  const deleteEventMutation = useMutation({
+    mutationFn: deleteEvent,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+      toast({ title: "Termin gelöscht", description: "Der Termin wurde entfernt" });
     },
     onError: (error) => {
       toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
@@ -281,6 +350,29 @@ export default function App() {
     }
   };
 
+  const handleCreateEvent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newEvent.title || !user) return;
+    
+    const now = new Date();
+    createEventMutation.mutate({
+      connectionId: user.connectionId,
+      createdBy: user.id,
+      title: newEvent.title,
+      description: newEvent.description,
+      location: newEvent.location,
+      startDate: now,
+      color: "primary",
+      eventType: "appointment",
+    });
+  };
+
+  const handleDeleteEvent = (eventId: number) => {
+    if (window.confirm("Termin wirklich löschen?")) {
+      deleteEventMutation.mutate(eventId);
+    }
+  };
+
   if (mode === "role-select") {
     return <RoleSelectionPage onSelect={handleRoleSelect} />;
   }
@@ -297,15 +389,9 @@ export default function App() {
 
   if (!user) return null;
 
-  const openParentSettings = () => {
-    if (user?.role === "parent") {
-      // Settings werden im ParentDashboard gehandhabt
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-primary-foreground">
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main className="container mx-auto px-4 py-8 max-w-6xl">
         <AnimatePresence mode="wait">
           <motion.div
             key={user.role}
@@ -318,12 +404,19 @@ export default function App() {
               <ParentDashboardWithSettings
                 user={user}
                 setUser={setUser}
-                tasks={tasks} 
+                tasks={tasks}
+                events={events}
                 newTask={newTask} 
-                setNewTask={setNewTask} 
-                onCreate={handleCreateTask} 
+                setNewTask={setNewTask}
+                newEvent={newEvent}
+                setNewEvent={setNewEvent}
+                currentView={currentView}
+                setCurrentView={setCurrentView}
+                onCreate={handleCreateTask}
+                onCreateEvent={handleCreateEvent}
                 onApprove={approveTask}
                 onDelete={handleDeleteTask}
+                onDeleteEvent={handleDeleteEvent}
                 onLogout={logout}
               />
             ) : (
@@ -332,9 +425,13 @@ export default function App() {
                 <ChildDashboard 
                   user={user}
                   setUser={setUser}
-                  tasks={tasks} 
+                  tasks={tasks}
+                  events={events}
+                  currentView={currentView}
+                  setCurrentView={setCurrentView}
                   onAccept={acceptTask} 
                   onSubmit={submitProof}
+                  onDeleteEvent={handleDeleteEvent}
                 />
               </>
             )}
@@ -596,14 +693,47 @@ function NavBar({ user, onLogout, onSettings }: { user: User; onLogout: () => vo
   );
 }
 
-function ParentDashboardWithSettings({ user, setUser, tasks, newTask, setNewTask, onCreate, onApprove, onDelete, onLogout }: any) {
+function ParentDashboardWithSettings({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, onLogout }: any) {
   const [showSettings, setShowSettings] = useState(false);
   
   return (
     <>
       {showSettings && <SettingsModal user={user} setUser={setUser} onClose={() => setShowSettings(false)} />}
       <NavBar user={user} onLogout={onLogout} onSettings={() => setShowSettings(true)} />
-      <ParentDashboard user={user} setUser={setUser} tasks={tasks} newTask={newTask} setNewTask={setNewTask} onCreate={onCreate} onApprove={onApprove} onDelete={onDelete} />
+      <div className="mb-6 flex gap-2 flex-wrap">
+        <Button
+          variant={currentView === "calendar" ? "default" : "outline"}
+          onClick={() => setCurrentView("calendar")}
+          className="gap-2"
+          data-testid="button-view-calendar"
+        >
+          <Calendar className="h-4 w-4" /> Familienkalender
+        </Button>
+        <Button
+          variant={currentView === "tasks" ? "default" : "outline"}
+          onClick={() => setCurrentView("tasks")}
+          className="gap-2"
+          data-testid="button-view-tasks"
+        >
+          <Trophy className="h-4 w-4" /> Aufgaben
+        </Button>
+      </div>
+      <ParentDashboard 
+        user={user}
+        setUser={setUser}
+        tasks={tasks}
+        events={events}
+        newTask={newTask}
+        setNewTask={setNewTask}
+        newEvent={newEvent}
+        setNewEvent={setNewEvent}
+        currentView={currentView}
+        onCreate={onCreate}
+        onCreateEvent={onCreateEvent}
+        onApprove={onApprove}
+        onDelete={onDelete}
+        onDeleteEvent={onDeleteEvent}
+      />
     </>
   );
 }
@@ -685,7 +815,7 @@ function SettingsModal({ user, setUser, onClose }: any) {
   );
 }
 
-function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, onApprove, onDelete }: any) {
+function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent }: any) {
   const [nwcConnectionString, setNwcConnectionString] = useState(user.nwcConnectionString || "");
   const { toast } = useToast();
 
@@ -705,6 +835,108 @@ function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, 
       toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
     }
   };
+
+  if (currentView === "calendar") {
+    return (
+      <div className="space-y-8">
+        <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+          <Card className="border border-primary/20 shadow-[0_0_30px_-10px_rgba(247,147,26,0.15)] bg-card/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-primary">
+                <Plus className="h-5 w-5" /> Neuer Familientemin
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={onCreateEvent} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="event-title">Termin</Label>
+                  <Input 
+                    id="event-title"
+                    placeholder="z.B. Familienessen..." 
+                    value={newEvent.title}
+                    onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                    className="bg-secondary border-border"
+                    data-testid="input-event-title"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="event-description">Beschreibung</Label>
+                  <Input 
+                    id="event-description"
+                    placeholder="Details..." 
+                    value={newEvent.description}
+                    onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+                    className="bg-secondary border-border"
+                    data-testid="input-event-description"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="event-location" className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4" /> Ort (optional)
+                  </Label>
+                  <Input 
+                    id="event-location"
+                    placeholder="z.B. Zuhause..." 
+                    value={newEvent.location}
+                    onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
+                    className="bg-secondary border-border"
+                    data-testid="input-event-location"
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                  data-testid="button-create-event"
+                >
+                  Termin hinzufügen
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </motion.section>
+
+        <section>
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+            <Calendar className="text-primary" /> Familienkalender
+          </h2>
+          <div className="grid gap-4">
+            {events.length === 0 ? (
+              <Card className="border-dashed border-border p-8 text-center">
+                <p className="text-muted-foreground">Noch keine Termine geplant</p>
+              </Card>
+            ) : (
+              events.map((event: FamilyEvent) => (
+                <Card key={event.id} className="border-border bg-card/50 hover:border-primary/50 transition-colors">
+                  <CardContent className="p-5">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-lg" data-testid={`text-event-title-${event.id}`}>{event.title}</h3>
+                        {event.description && <p className="text-muted-foreground text-sm mt-1">{event.description}</p>}
+                        {event.location && (
+                          <p className="text-sm text-muted-foreground flex items-center gap-1 mt-2">
+                            <MapPin className="h-4 w-4" /> {event.location}
+                          </p>
+                        )}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onDeleteEvent(event.id)}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        data-testid={`button-delete-event-${event.id}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -882,7 +1114,7 @@ function ParentDashboard({ user, setUser, tasks, newTask, setNewTask, onCreate, 
   );
 }
 
-function ChildDashboard({ user, setUser, tasks, onAccept, onSubmit }: any) {
+function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentView, onAccept, onSubmit, onDeleteEvent }: any) {
   const [showLink, setShowLink] = useState(false);
   const [parentConnectionId, setParentConnectionId] = useState("");
   const [isLinking, setIsLinking] = useState(false);
@@ -942,8 +1174,67 @@ function ChildDashboard({ user, setUser, tasks, onAccept, onSubmit }: any) {
     }
   };
 
+  if (currentView === "calendar") {
+    return (
+      <div className="space-y-10">
+        <div className="mb-6 flex gap-2 flex-wrap">
+          <Button
+            variant="outline"
+            onClick={() => setCurrentView("tasks")}
+            className="gap-2"
+            data-testid="button-view-tasks-child"
+          >
+            <Trophy className="h-4 w-4" /> Aufgaben
+          </Button>
+        </div>
+
+        <section>
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+            <Calendar className="text-primary" /> Familienkalender
+          </h2>
+          <div className="grid gap-4">
+            {events.length === 0 ? (
+              <Card className="border-dashed border-border p-8 text-center">
+                <p className="text-muted-foreground">Noch keine Termine geplant</p>
+              </Card>
+            ) : (
+              events.map((event: FamilyEvent) => (
+                <Card key={event.id} className="border-border bg-card/50">
+                  <CardContent className="p-5">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-lg" data-testid={`text-event-title-child-${event.id}`}>{event.title}</h3>
+                        {event.description && <p className="text-muted-foreground text-sm mt-1">{event.description}</p>}
+                        {event.location && (
+                          <p className="text-sm text-muted-foreground flex items-center gap-1 mt-2">
+                            <MapPin className="h-4 w-4" /> {event.location}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-10">
+      <div className="mb-6 flex gap-2 flex-wrap">
+        <Button
+          variant="outline"
+          onClick={() => setCurrentView("calendar")}
+          className="gap-2"
+          data-testid="button-view-calendar-child"
+        >
+          <Calendar className="h-4 w-4" /> Familienkalender
+        </Button>
+      </div>
+
       <motion.section 
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}

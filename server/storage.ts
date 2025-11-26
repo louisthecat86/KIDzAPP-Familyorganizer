@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions } from "@shared/schema";
+import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
@@ -26,6 +26,13 @@ export interface IStorage {
   // Transaction operations
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   getTransactions(peerId: number): Promise<Transaction[]>;
+  
+  // Family Events operations
+  getFamilyEvents(connectionId: string): Promise<FamilyEvent[]>;
+  getEvent(id: number): Promise<FamilyEvent | undefined>;
+  createEvent(event: InsertFamilyEvent): Promise<FamilyEvent>;
+  updateEvent(id: number, event: Partial<FamilyEvent>): Promise<FamilyEvent | undefined>;
+  deleteEvent(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -145,6 +152,34 @@ export class DatabaseStorage implements IStorage {
   async getTransactions(peerId: number): Promise<Transaction[]> {
     return await db.select().from(transactions)
       .where(eq(transactions.toPeerId, peerId));
+  }
+  
+  // Family Events operations
+  async getFamilyEvents(connectionId: string): Promise<FamilyEvent[]> {
+    return await db.select().from(familyEvents).where(eq(familyEvents.connectionId, connectionId));
+  }
+
+  async getEvent(id: number): Promise<FamilyEvent | undefined> {
+    const result = await db.select().from(familyEvents).where(eq(familyEvents.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createEvent(insertEvent: InsertFamilyEvent): Promise<FamilyEvent> {
+    const result = await db.insert(familyEvents).values(insertEvent).returning();
+    return result[0];
+  }
+
+  async updateEvent(id: number, updates: Partial<FamilyEvent>): Promise<FamilyEvent | undefined> {
+    const result = await db.update(familyEvents)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(familyEvents.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteEvent(id: number): Promise<boolean> {
+    const result = await db.delete(familyEvents).where(eq(familyEvents.id, id));
+    return result.rowCount > 0;
   }
 }
 

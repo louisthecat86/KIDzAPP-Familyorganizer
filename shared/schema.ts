@@ -73,3 +73,28 @@ export const insertTransactionSchema = createInsertSchema(transactions).omit({
 
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
 export type Transaction = typeof transactions.$inferSelect;
+
+// Family Events/Appointments Table
+export const familyEvents = pgTable("family_events", {
+  id: serial("id").primaryKey(),
+  connectionId: text("connection_id").notNull(), // Family ID
+  createdBy: integer("created_by").notNull(), // Parent ID
+  title: text("title").notNull(),
+  description: text("description"),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date"),
+  location: text("location"),
+  color: text("color").default("primary"), // Event color for calendar
+  eventType: text("event_type").default("appointment"), // 'appointment', 'birthday', 'holiday', 'reminder'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertFamilyEventSchema = createInsertSchema(familyEvents).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertFamilyEvent = z.infer<typeof insertFamilyEventSchema>;
+export type FamilyEvent = typeof familyEvents.$inferSelect;
