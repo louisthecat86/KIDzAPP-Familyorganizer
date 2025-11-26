@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertPeerSchema, insertTaskSchema, insertFamilyEventSchema, insertEventRsvpSchema } from "@shared/schema";
+import { insertPeerSchema, insertTaskSchema, insertFamilyEventSchema, insertEventRsvpSchema, insertChatMessageSchema } from "@shared/schema";
 import { z } from "zod";
 import { LNBitsClient } from "./lnbits";
 import { NWCClient } from "./nwc";
@@ -626,6 +626,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Create RSVP error:", error);
       res.status(500).json({ error: "Failed to submit RSVP" });
+    }
+  });
+
+  // Get Chat Messages
+  app.get("/api/chat/:connectionId", async (req, res) => {
+    try {
+      const messages = await storage.getChatMessages(req.params.connectionId);
+      res.json(messages);
+    } catch (error) {
+      console.error("Get chat error:", error);
+      res.status(500).json({ error: "Failed to fetch messages" });
+    }
+  });
+
+  // Send Chat Message
+  app.post("/api/chat", async (req, res) => {
+    try {
+      const { connectionId, fromPeerId, message } = req.body;
+      
+      if (!connectionId || !fromPeerId || !message) {
+        return res.status(400).json({ error: "connectionId, fromPeerId, and message required" });
+      }
+
+      const newMessage = await storage.createChatMessage({
+        connectionId,
+        fromPeerId,
+        message,
+      });
+      res.json(newMessage);
+    } catch (error) {
+      console.error("Send chat error:", error);
+      res.status(500).json({ error: "Failed to send message" });
     }
   });
 

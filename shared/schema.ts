@@ -123,4 +123,21 @@ export const insertEventRsvpSchema = createInsertSchema(eventRsvps).omit({
 });
 
 export type InsertEventRsvp = z.infer<typeof insertEventRsvpSchema>;
+
+// Family Chat Messages Table
+export const chatMessages = pgTable("chat_messages", {
+  id: serial("id").primaryKey(),
+  connectionId: text("connection_id").notNull(), // Family ID
+  fromPeerId: integer("from_peer_id").notNull(), // Sender ID
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
+export type ChatMessage = typeof chatMessages.$inferSelect;
 export type EventRsvp = typeof eventRsvps.$inferSelect;

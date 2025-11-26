@@ -1,6 +1,6 @@
 import { db } from "./db";
-import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps } from "@shared/schema";
-import { eq, and } from "drizzle-orm";
+import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages } from "@shared/schema";
+import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
   // Peer operations
@@ -38,6 +38,10 @@ export interface IStorage {
   getRsvpsByEvent(eventId: number): Promise<EventRsvp[]>;
   getRsvpForUserEvent(peerId: number, eventId: number): Promise<EventRsvp | undefined>;
   createOrUpdateRsvp(peerId: number, eventId: number, response: string): Promise<EventRsvp>;
+
+  // Chat Message operations
+  getChatMessages(connectionId: string): Promise<(ChatMessage & { senderName: string })[]>;
+  createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -301,6 +305,28 @@ export class DatabaseStorage implements IStorage {
       }).returning();
       return result[0];
     }
+  }
+
+  // Chat Message operations
+  async getChatMessages(connectionId: string): Promise<(ChatMessage & { senderName: string })[]> {
+    const messages = await db.select({
+      id: chatMessages.id,
+      connectionId: chatMessages.connectionId,
+      fromPeerId: chatMessages.fromPeerId,
+      message: chatMessages.message,
+      createdAt: chatMessages.createdAt,
+      senderName: peers.name,
+    }).from(chatMessages)
+    .leftJoin(peers, eq(chatMessages.fromPeerId, peers.id))
+    .where(eq(chatMessages.connectionId, connectionId))
+    .orderBy(desc(chatMessages.createdAt))
+    .limit(50);
+    return messages.reverse();
+  }
+
+  async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
+    const result = await db.insert(chatMessages).values(message).returning();
+    return result[0];
   }
 }
 
