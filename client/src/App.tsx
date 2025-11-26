@@ -1680,6 +1680,10 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
   }
 
   if (currentView === "dashboard") {
+    const assignedTasks = myTasks.filter((t: Task) => t.status === "assigned");
+    const submittedTasks = myTasks.filter((t: Task) => t.status === "submitted");
+    const completedTasks = myTasks.filter((t: Task) => t.status === "approved");
+
     return (
       <div className="max-w-4xl space-y-10">
         <motion.section 
@@ -1718,97 +1722,228 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           </div>
         </motion.section>
 
-      {tasks.length === 0 && (
-        <Card className="border-primary/30 bg-primary/5 p-6">
-          <div className="flex gap-4">
-            <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-            <div>
-              <h3 className="font-bold mb-1">Noch nicht verbunden</h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                Verbinde dich mit deinen Eltern, um Aufgaben zu sehen
-              </p>
-              <Button 
-                size="sm"
-                onClick={() => setShowLink(true)}
-                className="bg-primary hover:bg-primary/90"
-                data-testid="button-link-parent"
+        {tasks.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+              <Card 
+                className="bg-card/50 border-border cursor-pointer hover:bg-card/70 transition-colors"
+                onClick={() => setCurrentView("tasks-my")}
+                data-testid="card-my-tasks"
               >
-                <LinkIcon className="h-4 w-4 mr-2" /> Mit Eltern verbinden
-              </Button>
-            </div>
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-primary">{assignedTasks.length}</div>
+                    <p className="text-sm text-muted-foreground mt-2">In Arbeit</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+            
+            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
+              <Card 
+                className="bg-card/50 border-border cursor-pointer hover:bg-card/70 transition-colors"
+                onClick={() => setCurrentView("tasks-pending")}
+                data-testid="card-pending-tasks"
+              >
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-amber-500">{submittedTasks.length}</div>
+                    <p className="text-sm text-muted-foreground mt-2">Zur Bestätigung</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+            
+            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
+              <Card 
+                className="bg-card/50 border-border cursor-pointer hover:bg-card/70 transition-colors"
+                onClick={() => setCurrentView("tasks-completed")}
+                data-testid="card-completed-tasks"
+              >
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-green-500">{completedTasks.length}</div>
+                    <p className="text-sm text-muted-foreground mt-2">Erledigt</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+            
+            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}>
+              <Card 
+                className="bg-card/50 border-border cursor-pointer hover:bg-card/70 transition-colors"
+                onClick={() => setCurrentView("tasks-open")}
+                data-testid="card-available-tasks"
+              >
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-blue-500">{availableTasks.length}</div>
+                    <p className="text-sm text-muted-foreground mt-2">Verfügbar</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
-        </Card>
-      )}
+        )}
 
-      {showLink && (
-        <Card className="border-primary/30 bg-primary/5 p-6">
-          <h3 className="font-bold mb-4">Mit Eltern verbinden</h3>
-          <div className="space-y-3">
-            <div>
-              <Label htmlFor="parent-code">Verbindungscode von Eltern</Label>
-              <Input 
-                id="parent-code"
-                placeholder="z.B. BTC-XYZ123"
-                value={parentConnectionId}
-                onChange={(e) => setParentConnectionId(e.target.value.toUpperCase())}
-                className="bg-secondary border-border font-mono text-center"
-                data-testid="input-parent-code"
-              />
-              <p className="text-xs text-muted-foreground mt-1">Frage deine Eltern nach dem Code!</p>
-            </div>
-            <div className="flex gap-2">
-              <Button 
-                onClick={handleLink}
-                disabled={!parentConnectionId || isLinking}
-                className="bg-primary hover:bg-primary/90"
-                data-testid="button-confirm-link"
-              >
-                {isLinking ? "Wird verbunden..." : "Verbinden"}
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={() => setShowLink(false)}
-                disabled={isLinking}
-                data-testid="button-cancel-link"
-              >
-                Abbrechen
-              </Button>
-            </div>
-          </div>
-        </Card>
-      )}
-
-
-      <section>
-        <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <Trophy className="text-primary" /> Meine Aufgaben
-        </h2>
-        <div className="grid gap-4">
-          {myTasks.map((task: Task) => (
-            <TaskCard key={task.id} task={task} variant="child">
-              {task.status === "assigned" && (
+        {tasks.length === 0 && (
+          <Card className="border-primary/30 bg-primary/5 p-6">
+            <div className="flex gap-4">
+              <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-bold mb-1">Noch nicht verbunden</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Verbinde dich mit deinen Eltern, um Aufgaben zu sehen
+                </p>
                 <Button 
-                  onClick={() => onSubmit(task.id)} 
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                  data-testid={`button-submit-task-${task.id}`}
+                  size="sm"
+                  onClick={() => setShowLink(true)}
+                  className="bg-primary hover:bg-primary/90"
+                  data-testid="button-link-parent"
                 >
-                  <Upload className="mr-2 h-4 w-4" /> Beweis senden
+                  <LinkIcon className="h-4 w-4 mr-2" /> Mit Eltern verbinden
                 </Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {showLink && (
+          <Card className="border-primary/30 bg-primary/5 p-6">
+            <h3 className="font-bold mb-4">Mit Eltern verbinden</h3>
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="parent-code">Verbindungscode von Eltern</Label>
+                <Input 
+                  id="parent-code"
+                  placeholder="z.B. BTC-XYZ123"
+                  value={parentConnectionId}
+                  onChange={(e) => setParentConnectionId(e.target.value.toUpperCase())}
+                  className="bg-secondary border-border font-mono text-center"
+                  data-testid="input-parent-code"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Frage deine Eltern nach dem Code!</p>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleLink}
+                  disabled={!parentConnectionId || isLinking}
+                  className="bg-primary hover:bg-primary/90"
+                  data-testid="button-confirm-link"
+                >
+                  {isLinking ? "Wird verbunden..." : "Verbinden"}
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowLink(false)}
+                  disabled={isLinking}
+                  data-testid="button-cancel-link"
+                >
+                  Abbrechen
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {tasks.length > 0 && (
+          <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
+            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+              <Sparkles className="text-primary" /> Verfügbare Aufgaben
+            </h2>
+            <div className="grid gap-4 md:grid-cols-2">
+              {availableTasks.length === 0 ? (
+                <Card className="border-dashed border-border p-6 text-center md:col-span-2">
+                  <p className="text-muted-foreground text-sm">Keine Aufgaben verfügbar</p>
+                </Card>
+              ) : (
+                availableTasks.slice(0, 4).map((task: Task) => (
+                  <Card key={task.id} className="border-border bg-card/50 cursor-pointer hover:bg-card/70 transition-colors" onClick={() => setCurrentView("tasks-open")}>
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 border-transparent font-mono">
+                          {task.sats} sats
+                        </Badge>
+                      </div>
+                      <CardTitle className="mt-2 text-sm">{task.title}</CardTitle>
+                      <CardDescription className="text-xs">{task.description}</CardDescription>
+                    </CardHeader>
+                  </Card>
+                ))
               )}
+            </div>
+          </motion.section>
+        )}
+      </div>
+    );
+  }
+
+  if (currentView === "tasks-my") {
+    return (
+      <div className="max-w-4xl">
+        <h1 className="text-3xl font-bold mb-8">In Arbeit</h1>
+        <div className="grid gap-4">
+          {myTasks.filter((t: Task) => t.status === "assigned").map((task: Task) => (
+            <TaskCard key={task.id} task={task} variant="child">
+              <Button 
+                onClick={() => onSubmit(task.id)} 
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                data-testid={`button-submit-task-${task.id}`}
+              >
+                <Upload className="mr-2 h-4 w-4" /> Beweis senden
+              </Button>
             </TaskCard>
           ))}
-          {myTasks.length === 0 && (
+          {myTasks.filter((t: Task) => t.status === "assigned").length === 0 && (
             <div className="text-center py-8 border border-dashed border-border rounded-lg text-muted-foreground">
-              Noch keine Aufgaben angenommen.
+              Keine Aufgaben in Arbeit
             </div>
           )}
         </div>
-      </section>
+      </div>
+    );
+  }
 
-      <section>
-        <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <Sparkles className="text-primary" /> Verfügbar
-        </h2>
+  if (currentView === "tasks-pending") {
+    return (
+      <div className="max-w-4xl">
+        <h1 className="text-3xl font-bold mb-8">Zur Bestätigung</h1>
+        <div className="grid gap-4">
+          {myTasks.filter((t: Task) => t.status === "submitted").map((task: Task) => (
+            <TaskCard key={task.id} task={task} variant="child" />
+          ))}
+          {myTasks.filter((t: Task) => t.status === "submitted").length === 0 && (
+            <div className="text-center py-8 border border-dashed border-border rounded-lg text-muted-foreground">
+              Keine Aufgaben zur Bestätigung
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (currentView === "tasks-completed") {
+    return (
+      <div className="max-w-4xl">
+        <h1 className="text-3xl font-bold mb-8">Erledigt</h1>
+        <div className="grid gap-4">
+          {myTasks.filter((t: Task) => t.status === "approved").map((task: Task) => (
+            <TaskCard key={task.id} task={task} variant="child" />
+          ))}
+          {myTasks.filter((t: Task) => t.status === "approved").length === 0 && (
+            <div className="text-center py-8 border border-dashed border-border rounded-lg text-muted-foreground">
+              Noch keine Aufgaben erledigt
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (currentView === "tasks-open") {
+    return (
+      <div className="max-w-4xl">
+        <h1 className="text-3xl font-bold mb-8">Verfügbare Aufgaben</h1>
         <div className="grid gap-4 md:grid-cols-2">
           {availableTasks.map((task: Task) => (
             <Card key={task.id} className="border-border bg-card hover:border-primary/50 transition-colors">
@@ -1833,8 +1968,12 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
               </CardFooter>
             </Card>
           ))}
+          {availableTasks.length === 0 && (
+            <div className="text-center py-8 border border-dashed border-border rounded-lg text-muted-foreground md:col-span-2">
+              Keine Aufgaben verfügbar
+            </div>
+          )}
         </div>
-      </section>
       </div>
     );
   }
