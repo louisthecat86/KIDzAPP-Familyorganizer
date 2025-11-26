@@ -504,7 +504,7 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
               <Bitcoin className="h-5 w-5" />
             </div>
             <div className="flex-1">
-              <span className="text-lg font-bold block">{user.role === "child" ? user.name : (user.familyName || "Family")}</span>
+              <span className="text-lg font-bold block">{user.familyName || "Family"}</span>
               <p className="text-xs text-muted-foreground">{user.role === "child" ? "Kind" : "Eltern"}</p>
             </div>
           </div>
