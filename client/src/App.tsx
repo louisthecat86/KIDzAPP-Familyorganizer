@@ -58,6 +58,7 @@ type User = {
   familyName?: string;
   balance?: number;
   lnbitsUrl?: string;
+  lightningAddress?: string;
 };
 
 type Task = {
@@ -1686,16 +1687,34 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           animate={{ scale: 1, opacity: 1 }}
           className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black border border-border p-8"
         >
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest mb-2">Wallet Balance</p>
-              <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-primary" data-testid="text-earned-sats">
-                {(user.balance || 0).toLocaleString()} <span className="text-2xl opacity-50 text-white">SATS</span>
-              </h2>
+          <div className="relative z-10 space-y-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="flex-1">
+                <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest mb-2">⚡ Verdiente Sats</p>
+                <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-primary" data-testid="text-earned-sats">
+                  {(user.balance || 0).toLocaleString()} <span className="text-2xl opacity-50 text-white">SATS</span>
+                </h2>
+                <p className="text-xs text-muted-foreground mt-2">Gesamt verdient durch erledigte Aufgaben</p>
+              </div>
+              <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center border border-primary/30 shadow-[0_0_20px_rgba(247,147,26,0.2)]">
+                <Bitcoin className="h-10 w-10 text-primary" />
+              </div>
             </div>
-            <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center border border-primary/30 shadow-[0_0_20px_rgba(247,147,26,0.2)]">
-              <Bitcoin className="h-10 w-10 text-primary" />
-            </div>
+
+            {user.lightningAddress && (
+              <div className="pt-4 border-t border-border/50">
+                <div className="flex items-start gap-3">
+                  <div className="h-8 w-8 bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-primary text-sm">⚡</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Lightning Adresse</p>
+                    <p className="text-sm font-mono text-primary break-all" data-testid="text-child-lightning-address">{user.lightningAddress}</p>
+                    <p className="text-xs text-muted-foreground mt-1">✓ Zahlungen werden direkt hierhin gesendet</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </motion.section>
 
