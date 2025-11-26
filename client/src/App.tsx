@@ -928,7 +928,8 @@ function ParentDashboardWithSettings({ user, setUser, currentView, onCreate, onC
   );
 }
 
-function PeersContent({ user, setUser, queryClient, toast }: any) {
+function PeersContent({ user, setUser, queryClient }: any) {
+  const { toast } = useToast();
   
   if (user.role === "parent") {
     // Parent view - show connected children
@@ -961,9 +962,13 @@ function PeersContent({ user, setUser, queryClient, toast }: any) {
       }
     };
 
-    const handleCopyConnectionId = () => {
-      navigator.clipboard.writeText(user.connectionId);
-      toast({ title: "Kopiert!", description: "Kopplungs-ID wurde kopiert" });
+    const handleCopyConnectionId = async () => {
+      try {
+        await navigator.clipboard.writeText(user.connectionId);
+        toast({ title: "Kopiert!", description: "Kopplungs-ID wurde in die Zwischenablage kopiert" });
+      } catch (error) {
+        toast({ title: "Fehler", description: "ID konnte nicht kopiert werden", variant: "destructive" });
+      }
     };
 
     return (
@@ -1252,7 +1257,7 @@ function SettingsModal({ user, setUser, activeTab, onClose }: any) {
 
           {/* PEERS TAB */}
           {activeTab === "peers" && (
-            <PeersContent user={user} setUser={setUser} queryClient={queryClient} toast={useToastFn} />
+            <PeersContent user={user} setUser={setUser} queryClient={queryClient} />
           )}
         </CardContent>
         
