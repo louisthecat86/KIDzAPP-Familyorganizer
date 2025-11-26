@@ -368,6 +368,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(404).json({ error: "Child or parent not found" });
         }
 
+        // Update child's balance IMMEDIATELY
+        const newBalance = (child.balance || 0) + task.sats;
+        await storage.updateBalance(child.id, newBalance);
+
         let paymentHash = "";
 
         // Try to send payment if both wallet and lightning address are configured
