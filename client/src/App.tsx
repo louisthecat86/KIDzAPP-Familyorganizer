@@ -2230,10 +2230,42 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
       return { emoji: "🌱", title: "Anfänger", color: "text-slate-400" };
     };
 
+    const levels = [
+      { emoji: "🌱", title: "Anfänger", tasks: "0 Aufgaben" },
+      { emoji: "✨", title: "Level 1 – Funkenstarter", tasks: "3 Aufgaben" },
+      { emoji: "🔍", title: "Level 2 – Aufgabenentdecker", tasks: "6 Aufgaben" },
+      { emoji: "🤝", title: "Level 3 – Familienhelfer", tasks: "9 Aufgaben" },
+      { emoji: "🚀", title: "Level 4 – Alltagsmeister", tasks: "12 Aufgaben" },
+      { emoji: "⚡", title: "Level 5 – Blitzbringer", tasks: "15 Aufgaben" },
+      { emoji: "🦸", title: "Level 6 – Superheld der Woche", tasks: "18 Aufgaben" },
+      { emoji: "🎯", title: "Level 7 – Aufgabenprofi", tasks: "21 Aufgaben" },
+      { emoji: "🏆", title: "Level 8 – Wochenchampion", tasks: "24 Aufgaben" },
+      { emoji: "⭐", title: "Level 9 – Familienheld", tasks: "27 Aufgaben" },
+      { emoji: "👑", title: "Level 10 – Großmeister der Blitze", tasks: "30 Aufgaben" },
+    ];
+
     return (
       <div className="max-w-4xl">
         <h1 className="text-3xl font-bold mb-2">🏆 Bestenliste</h1>
-        <p className="text-muted-foreground mb-6">Wer ist der beste Aufgabenerlediger in der Familie? (Jedes Level = 3 Aufgaben)</p>
+        <p className="text-muted-foreground mb-6">Wer ist der beste Aufgabenerlediger in der Familie?</p>
+        
+        {/* Level Legend */}
+        <Card className="mb-6 bg-primary/5 border border-primary/30">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">📋 Level-Übersicht</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+              {levels.map((level, idx) => (
+                <div key={idx} className="text-center p-2 rounded-lg bg-card/50 border border-border hover:border-primary/50 transition-colors">
+                  <div className="text-2xl mb-1">{level.emoji}</div>
+                  <p className="text-xs font-semibold line-clamp-2">{level.title}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{level.tasks}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
         
         {leaderboard.length === 0 ? (
           <Card className="border-dashed border-border p-8 text-center">
