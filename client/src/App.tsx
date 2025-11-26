@@ -349,93 +349,56 @@ export default function App() {
 function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-6 relative overflow-hidden">
-      {/* Dezentes Bitcoin Background */}
-      <motion.div 
-        className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.05 }}
-        transition={{ duration: 1 }}
-      >
-        <Bitcoin className="h-96 w-96 md:h-[600px] md:w-[600px] text-primary rotate-45" strokeWidth={0.5} />
-      </motion.div>
-
-      {/* Grid Background */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
       
-      {/* Welcome Text Animation */}
-      <div className="w-full flex flex-col items-center gap-8 px-4 sm:px-0">
-        {/* Header */}
-        <motion.div 
-          className="text-center"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-heading font-black text-primary mb-3">
-            Spark ⚡
-          </h1>
-          <p className="text-xl sm:text-2xl text-foreground font-bold">
-            Kids
-          </p>
-          <p className="text-base sm:text-lg text-foreground/70 mt-3 font-medium">
-            Wo Aufgaben zu Belohnungen werden
-          </p>
-        </motion.div>
-
-        {/* Role Selection */}
-        <motion.div 
-          className="w-full max-w-md grid grid-cols-2 gap-4 sm:gap-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          {/* Parent Card */}
-          <motion.button
-            whileHover={{ y: -8, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)" }}
-            onClick={() => onSelect("parent")}
-            data-testid="button-select-parent"
-            className="group flex flex-col items-center justify-center p-6 sm:p-8 rounded-2xl bg-white border-2 border-primary/20 hover:border-primary transition-all cursor-pointer"
-          >
-            <div className="h-16 sm:h-20 w-16 sm:w-20 bg-primary rounded-xl flex items-center justify-center mb-4 text-white group-hover:scale-110 transition-transform">
-              <UserIcon className="h-8 sm:h-10 w-8 sm:w-10" />
+      <Card className="w-full max-w-4xl z-10 border-border/50 bg-card/80 backdrop-blur-xl shadow-2xl">
+        <div className="flex flex-col md:grid md:grid-cols-2 gap-0">
+          <div className="flex p-4 sm:p-6 md:p-10 bg-gradient-to-br from-primary/10 to-background flex-col justify-center border-b md:border-b-0 md:border-r border-border/50">
+            <div className="h-12 md:h-16 w-12 md:w-16 bg-primary/20 rounded-2xl flex items-center justify-center mb-4 md:mb-6 text-primary">
+              <Bitcoin className="h-8 md:h-10 w-8 md:w-10" />
             </div>
-            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-1">Eltern</h3>
-            <p className="text-xs sm:text-sm text-foreground/60 text-center">Wallet & Aufgaben</p>
-          </motion.button>
-
-          {/* Kid Card */}
-          <motion.button
-            whileHover={{ y: -8, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)" }}
-            onClick={() => onSelect("child")}
-            data-testid="button-select-child"
-            className="group flex flex-col items-center justify-center p-6 sm:p-8 rounded-2xl bg-white border-2 border-secondary/20 hover:border-secondary transition-all cursor-pointer"
-          >
-            <div className="h-16 sm:h-20 w-16 sm:w-20 bg-secondary rounded-xl flex items-center justify-center mb-4 text-white group-hover:scale-110 transition-transform">
-              <Sparkles className="h-8 sm:h-10 w-8 sm:w-10" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-1">Kind</h3>
-            <p className="text-xs sm:text-sm text-foreground/60 text-center">Aufgaben & Sats</p>
-          </motion.button>
-        </motion.div>
-
-        {/* Info Box */}
-        <motion.div
-          className="w-full max-w-md bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl p-5 sm:p-6 border border-primary/10 text-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Bitcoin className="h-5 w-5 text-primary" />
-            <p className="text-sm sm:text-base font-semibold text-foreground">
-              Bitcoin-Chore-App für die Familie
+            <h1 className="text-2xl md:text-4xl font-heading font-bold mb-3 md:mb-4">Sats Earn</h1>
+            <p className="text-muted-foreground text-sm md:text-lg">
+              Die Bitcoin-App für die ganze Familie. Erledige Aufgaben, lerne Verantwortung und verdiene echte Sats.
             </p>
           </div>
-          <p className="text-xs sm:text-sm text-foreground/60">
-            Erledige Aufgaben und verdiene echte Sats
-          </p>
-        </motion.div>
-      </div>
+
+          <div className="p-4 sm:p-6 md:p-10 flex flex-col justify-center">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Wähle deine Rolle</h2>
+            <div className="grid gap-3 sm:gap-4">
+              <Button 
+                variant="outline" 
+                className="h-auto p-4 sm:p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
+                onClick={() => onSelect("parent")}
+                data-testid="button-select-parent"
+              >
+                <div className="mr-3 sm:mr-4 h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors flex-shrink-0">
+                  <UserIcon className="h-5 sm:h-6 w-5 sm:w-6" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-bold text-base sm:text-lg">Eltern</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Wallet verwalten & Aufgaben erstellen</p>
+                </div>
+              </Button>
+
+              <Button 
+                variant="outline" 
+                className="h-auto p-4 sm:p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
+                onClick={() => onSelect("child")}
+                data-testid="button-select-child"
+              >
+                <div className="mr-3 sm:mr-4 h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors flex-shrink-0">
+                  <Sparkles className="h-5 sm:h-6 w-5 sm:w-6" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-bold text-base sm:text-lg">Kind</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Aufgaben erledigen & Sats sammeln</p>
+                </div>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }
@@ -1246,13 +1209,13 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
               <p className="text-xs text-muted-foreground">Kopiere diesen Link/Code und öffne ihn in deiner Lightning Wallet um deine Sats zu erhalten</p>
               {task.withdrawLink && (
                 <>
-                  <div className="bg-secondary p-3 rounded border border-border break-words word-break font-mono text-xs text-muted-foreground cursor-pointer hover:bg-secondary/80 transition overflow-x-auto max-w-full" onClick={() => handleCopy(task.withdrawLink!)}>
+                  <div className="bg-secondary p-3 rounded border border-border break-words word-break font-mono text-xs text-muted-foreground cursor-pointer hover:bg-secondary/80 transition overflow-x-auto max-w-full" onClick={() => handleCopy(task.withdrawLink)}>
                     {task.withdrawLink}
                   </div>
                   <div className="flex gap-2">
                     <Button 
                       size="sm"
-                      onClick={() => handleCopy(task.withdrawLink!)}
+                      onClick={() => handleCopy(task.withdrawLink)}
                       className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                       data-testid={`button-copy-withdraw-${task.id}`}
                     >
