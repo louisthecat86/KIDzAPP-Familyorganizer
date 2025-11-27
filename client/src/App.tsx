@@ -751,68 +751,23 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
           <p className="text-base text-muted-foreground">Wo aus Aufgaben Belohnungen werden</p>
         </div>
 
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-12">
-          {/* Left Column - Features */}
-          <div className="space-y-8">
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {/* Left Column */}
+          <div className="space-y-6">
             <div>
-              <h3 className="text-2xl font-bold mb-6">Wie es funktioniert</h3>
-              <div className="space-y-4">
-                <div className="flex gap-4">
-                  <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 text-primary">
-                    <span className="text-lg font-bold">1</span>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-1">Eltern erstellen Aufgaben</h4>
-                    <p className="text-sm text-muted-foreground">Mit Bitcoin-Belohnungen in Sats</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 text-primary">
-                    <span className="text-lg font-bold">2</span>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-1">Kinder erledigen Aufgaben</h4>
-                    <p className="text-sm text-muted-foreground">Mit Foto-Beweis direkt vom Handy</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 text-primary">
-                    <span className="text-lg font-bold">3</span>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-1">Eltern bestätigen & zahlen</h4>
-                    <p className="text-sm text-muted-foreground">Lightning-Zahlungen direkt aufs Kinder-Wallet</p>
-                  </div>
-                </div>
+              <h3 className="text-2xl font-bold mb-4">So funktioniert's</h3>
+              <div className="space-y-3 text-muted-foreground">
+                <p>✓ Eltern erstellen Aufgaben mit Sats-Belohnung</p>
+                <p>✓ Kinder erledigen Aufgaben & laden Foto-Beweis hoch</p>
+                <p>✓ Eltern bestätigen & zahlen sofort aus</p>
+                <p>✓ Familienkalender, Chat & Verwaltung</p>
               </div>
-            </div>
-
-            <div className="pt-4 border-t border-border">
-              <h4 className="font-semibold mb-3">Features</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-center gap-2">
-                  <span className="text-primary">✓</span> Familie via QR-Code verbinden
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-primary">✓</span> Kalender & Ereignisse mit RSVP
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-primary">✓</span> Familienchat & Benachrichtigungen
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-primary">✓</span> Sicherheitsfragen für PIN-Schutz
-                </li>
-              </ul>
             </div>
           </div>
 
           {/* Right Column - Buttons */}
-          <div className="space-y-4">
-            <p className="text-muted-foreground mb-6">Wähle deine Rolle um zu starten:</p>
-            
+          <div className="space-y-3">
             <Button 
               variant="outline" 
               className="h-auto p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group w-full"
@@ -824,7 +779,7 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
               </div>
               <div className="min-w-0">
                 <h3 className="font-bold text-lg">Eltern</h3>
-                <p className="text-sm text-muted-foreground">Wallet verwalten & Aufgaben erstellen</p>
+                <p className="text-sm text-muted-foreground">Aufgaben & Wallet verwalten</p>
               </div>
             </Button>
 
@@ -839,7 +794,7 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
               </div>
               <div className="min-w-0">
                 <h3 className="font-bold text-lg">Kind</h3>
-                <p className="text-sm text-muted-foreground">Aufgaben erledigen & Sats sammeln</p>
+                <p className="text-sm text-muted-foreground">Aufgaben erledigen & Sats verdienen</p>
               </div>
             </Button>
           </div>
