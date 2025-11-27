@@ -932,8 +932,8 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
   if (!isLogin && role === "parent" && parentMode === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4">
-        <Card className="w-full max-w-lg border border-border bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl">
-          <CardHeader className="overflow-hidden">
+        <div className="w-full max-w-lg">
+          <div className="space-y-4 mb-8">
             <Button 
               variant="ghost" 
               size="sm" 
@@ -943,10 +943,12 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             >
               ← Zurück
             </Button>
-            <CardTitle className="text-2xl">Familie auswählen</CardTitle>
-            <CardDescription>Möchtest du eine neue Familie gründen oder einer bestehenden beitreten?</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
+            <div>
+              <h1 className="text-2xl font-bold mb-2">Familie auswählen</h1>
+              <p className="text-muted-foreground">Möchtest du eine neue Familie gründen oder einer bestehenden beitreten?</p>
+            </div>
+          </div>
+          <div className="space-y-3">
             <Button
               onClick={() => setParentMode("new")}
               variant="outline"
@@ -975,8 +977,8 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 <p className="text-xs text-muted-foreground">Beitreten mit Familie-ID</p>
               </div>
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
@@ -985,8 +987,8 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
   if (usePinReset && role === "parent" && isLogin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4">
-        <Card className="w-full max-w-lg border border-border bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl">
-          <CardHeader>
+        <div className="w-full max-w-lg">
+          <div className="space-y-6 mb-6">
             <Button 
               variant="ghost" 
               size="sm" 
@@ -995,10 +997,12 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             >
               ← Zurück
             </Button>
-            <CardTitle>PIN zurücksetzen</CardTitle>
-            <CardDescription>Beantworte deine Sicherheitsfrage um eine neue PIN zu setzen</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">PIN zurücksetzen</h2>
+              <p className="text-muted-foreground">Beantworte deine Sicherheitsfrage um eine neue PIN zu setzen</p>
+            </div>
+          </div>
+          <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="reset-name">Elternname</Label>
               <Input 
@@ -1035,8 +1039,8 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 data-testid="input-reset-pin"
               />
             </div>
-          </CardContent>
-          <CardFooter className="gap-2">
+          </div>
+          <div className="flex gap-2">
             <Button 
               variant="outline" 
               onClick={() => setUsePinReset(false)}
@@ -1053,16 +1057,16 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             >
               {isLoading ? "⏳ Wird verarbeitet..." : "PIN zurücksetzen"}
             </Button>
-          </CardFooter>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4">
-      <Card className="w-full max-w-lg border border-border bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl">
-        <CardHeader className="overflow-hidden">
+      <div className="w-full max-w-lg">
+        <div className="space-y-6 mb-6">
           <Button 
             variant="ghost" 
             size="sm" 
@@ -1078,15 +1082,17 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
           >
             ← Zurück
           </Button>
-          <CardTitle className="text-2xl">
-            {isLogin ? "Anmelden" : "Registrieren"}
-          </CardTitle>
-          <CardDescription>
-            {isLogin ? "Melde dich mit Name und PIN an" : "Erstelle einen Account mit Name und PIN"}
-          </CardDescription>
-        </CardHeader>
+          <div>
+            <h2 className="text-2xl font-bold mb-2">
+              {isLogin ? "Anmelden" : "Registrieren"}
+            </h2>
+            <p className="text-muted-foreground">
+              {isLogin ? "Melde dich mit Name und PIN an" : "Erstelle einen Account mit Name und PIN"}
+            </p>
+          </div>
+        </div>
 
-        <CardContent className="space-y-6">
+        <div className="space-y-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && role === "parent" && parentMode === "new" && (
               <div className="space-y-2">
@@ -1206,8 +1212,8 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               </Button>
             </div>
           </form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
