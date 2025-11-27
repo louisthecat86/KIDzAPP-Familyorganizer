@@ -1125,6 +1125,8 @@ function ParentDashboardWithSettings({ user, setUser, currentView, onCreate, onC
 
 function PeersContent({ user, setUser, queryClient }: any) {
   const { toast } = useToast();
+  const [resetPinChildId, setResetPinChildId] = useState<number | null>(null);
+  const [resetPinValue, setResetPinValue] = useState("");
   
   if (user.role === "parent") {
     // Parent view - show connected children
@@ -1153,6 +1155,28 @@ function PeersContent({ user, setUser, queryClient }: any) {
         if (!res.ok) throw new Error("Failed to unlink");
         queryClient.invalidateQueries({ queryKey: ["peers", user.connectionId] });
         toast({ title: "Trennung erfolgreich", description: `${childName} wurde von der Familie getrennt` });
+      } catch (error) {
+        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      }
+    };
+
+    const handleResetPin = async (childId: number) => {
+      if (!resetPinValue || resetPinValue.length !== 4 || !/^\d+$/.test(resetPinValue)) {
+        toast({ title: "Fehler", description: "PIN muss 4 Ziffern sein", variant: "destructive" });
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/peers/${childId}/reset-pin`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ parentId: user.id, newPin: resetPinValue }),
+        });
+        if (!res.ok) throw new Error("Failed to reset PIN");
+        setResetPinChildId(null);
+        setResetPinValue("");
+        queryClient.invalidateQueries({ queryKey: ["peers", user.connectionId] });
+        toast({ title: "Erfolg", description: "PIN wurde zurückgesetzt" });
       } catch (error) {
         toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
       }
@@ -1199,29 +1223,77 @@ function PeersContent({ user, setUser, queryClient }: any) {
               </div>
 
               {/* Kinder */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+              <div className="grid grid-cols-1 gap-3 pt-2">
                 {children.map((child: any) => (
-                  <div key={child.id} className="p-3 rounded-lg bg-secondary border border-border/50 flex items-center justify-between group hover:bg-secondary/80 transition-colors">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs flex-shrink-0">
-                        {child.name[0]}
+                  <div key={child.id} className="space-y-2">
+                    <div className="p-3 rounded-lg bg-secondary border border-border/50 flex items-center justify-between group hover:bg-secondary/80 transition-colors">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs flex-shrink-0">
+                          {child.name[0]}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-sm truncate">{child.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {child.lightningAddress ? `⚡ ${child.lightningAddress}` : "⚠️ Keine Adresse"}
+                          </p>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className="font-semibold text-sm truncate">{child.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {child.lightningAddress ? `⚡ ${child.lightningAddress}` : "⚠️ Keine Adresse"}
-                        </p>
+                      <div className="flex gap-1 flex-shrink-0">
+                        <Button 
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setResetPinChildId(child.id)}
+                          className="text-xs h-7"
+                          data-testid={`button-reset-pin-${child.id}`}
+                        >
+                          PIN
+                        </Button>
+                        <Button 
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleUnlinkChild(child.id, child.name)}
+                          className="text-destructive hover:text-destructive h-7 w-7"
+                          data-testid={`button-unlink-child-${child.id}`}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
-                    <Button 
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleUnlinkChild(child.id, child.name)}
-                      className="text-destructive hover:text-destructive h-8 w-8 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                      data-testid={`button-unlink-child-${child.id}`}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                    {resetPinChildId === child.id && (
+                      <div className="p-3 rounded-lg border-2 border-amber-500/50 bg-amber-500/10 space-y-2">
+                        <p className="text-xs font-semibold">Neue 4-stellige PIN für {child.name}:</p>
+                        <Input
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={4}
+                          placeholder="z.B. 1234"
+                          value={resetPinValue}
+                          onChange={(e) => setResetPinValue(e.target.value.replace(/\D/g, ''))}
+                          className="font-mono text-center text-sm"
+                          data-testid="input-new-child-pin"
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => handleResetPin(child.id)}
+                            className="flex-1 bg-primary hover:bg-primary/90 text-xs h-7"
+                            data-testid="button-confirm-reset-pin"
+                          >
+                            PIN ändern
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              setResetPinChildId(null);
+                              setResetPinValue("");
+                            }}
+                            variant="outline"
+                            className="flex-1 text-xs h-7"
+                            data-testid="button-cancel-reset-pin"
+                          >
+                            Abbrechen
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
