@@ -1,6 +1,6 @@
 // NWC (Nostr Wallet Connect) Integration for Bitcoin payments
 // Implements the Nostr Wallet Connect protocol for Lightning payments
-import { getEventHash, signEvent, generateSecretKey } from "nostr-tools";
+import { getEventHash, generateSecretKey } from "nostr-tools";
 
 export interface NWCResponse {
   result_type: string;
