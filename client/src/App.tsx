@@ -4158,12 +4158,13 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                 <p className="text-sm font-semibold">Aktive Taschengelder</p>
                 {allowances.map((allowance: any) => {
                   const child = children.find((c: any) => c.id === allowance.childId);
-                  const freqLabel = {
+                  const freqLabels: Record<string, string> = {
                     daily: "Täglich",
                     weekly: "Wöchentlich",
                     biweekly: "Zweiwöchentlich",
                     monthly: "Monatlich",
-                  }[allowance.frequency] || allowance.frequency;
+                  };
+                  const freqLabel = freqLabels[allowance.frequency as string] || allowance.frequency;
 
                   return (
                     <div
