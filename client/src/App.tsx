@@ -757,11 +757,24 @@ export default function App() {
 function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView, queryClient }: any) {
   const { toast } = useToast();
   const [isProcessingPayout, setIsProcessingPayout] = useState(false);
+  const [payoutTab, setPayoutTab] = useState<"plans" | "ad-hoc">("plans");
+  const [adHocChildId, setAdHocChildId] = useState<number | null>(null);
+  const [adHocSats, setAdHocSats] = useState("");
   
   const { data: childrenWithAllowances = [] } = useQuery({
     queryKey: ["children-with-allowances", user.id, user.connectionId],
     queryFn: async () => {
       const res = await fetch(`/api/parent/${user.id}/children-with-allowances/${user.connectionId}`);
+      if (!res.ok) throw new Error("Failed to fetch children");
+      return res.json();
+    },
+    enabled: user.role === "parent"
+  });
+
+  const { data: allChildren = [] } = useQuery({
+    queryKey: ["all-children", user.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/parent/${user.id}/children`);
       if (!res.ok) throw new Error("Failed to fetch children");
       return res.json();
     },
@@ -787,6 +800,36 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
     }
   };
 
+  const handleAdHocPayout = async () => {
+    if (!adHocChildId || !adHocSats) {
+      toast({ title: "Fehler", description: "Bitte Kind und Betrag auswählen", variant: "destructive" });
+      return;
+    }
+    
+    setIsProcessingPayout(true);
+    try {
+      const child = allChildren.find((c: any) => c.id === adHocChildId);
+      if (!child?.lightningAddress) {
+        throw new Error("Kind hat keine Lightning Adresse");
+      }
+
+      const res = await fetch(`/api/parent/${user.id}/payout-allowance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ childId: adHocChildId, sats: parseInt(adHocSats), allowanceId: null }),
+      });
+      if (!res.ok) throw new Error("Payout failed");
+      toast({ title: "Erfolg", description: `${adHocSats} Sats an ${child.name} gezahlt!` });
+      setAdHocChildId(null);
+      setAdHocSats("");
+      queryClient.invalidateQueries({ queryKey: ["children-with-allowances"] });
+    } catch (error) {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setIsProcessingPayout(false);
+    }
+  };
+
   return (
     <motion.div
       key="payout-view"
@@ -800,56 +843,121 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
           <Button variant="outline" onClick={() => setCurrentView("allowances")} className="gap-2" data-testid="button-back-to-dashboard">
             <ChevronLeft className="h-4 w-4" /> Zurück
           </Button>
-          <h1 className="text-3xl font-bold">💰 Taschengelder auszahlen</h1>
+          <h1 className="text-3xl font-bold">💰 Sats senden</h1>
         </div>
 
-        {childrenWithAllowances.length === 0 ? (
-          <Card>
-            <CardContent className="pt-6 text-center text-muted-foreground">
-              <p>Keine Kinder mit aktiven Taschengeldern vorhanden.</p>
-              <Button onClick={() => setCurrentView("allowances")} className="mt-4">
-                Taschengelder verwalten →
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-4">
-            {childrenWithAllowances.map((item: any) => (
-              <Card key={item.child.id}>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>{item.child.name}</span>
-                    <span className="text-xs bg-purple-500/30 px-3 py-1 rounded text-purple-300">
-                      ⚡ {item.child.lightningAddress || "Keine Adresse"}
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {item.allowances.map((allowance: any) => (
-                    <div key={allowance.id} className="p-3 rounded bg-secondary/30 flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold">{allowance.sats} Sats</p>
-                        <p className="text-xs text-muted-foreground">
-                          {allowance.frequency === "daily" ? "Täglich" : 
-                           allowance.frequency === "weekly" ? "Wöchentlich" :
-                           allowance.frequency === "biweekly" ? "Zweiwöchentlich" : "Monatlich"}
-                        </p>
+        <Card className="border-border bg-card/50">
+          <CardContent className="p-0">
+            <Tabs value={payoutTab} onValueChange={(val) => setPayoutTab(val as any)} className="w-full">
+              <TabsList className="w-full grid grid-cols-2 rounded-t-lg rounded-b-none bg-secondary/50 border-b border-border">
+                <TabsTrigger value="plans" data-testid="tab-scheduled-payouts">📅 Zahlpläne</TabsTrigger>
+                <TabsTrigger value="ad-hoc" data-testid="tab-ad-hoc-payment">⚡ Sofortzahlung</TabsTrigger>
+              </TabsList>
+
+              <div className="p-6">
+                {/* Scheduled Payouts */}
+                {payoutTab === "plans" && (
+                  <div className="space-y-4">
+                    {childrenWithAllowances.length === 0 ? (
+                      <div className="text-center py-8">
+                        <p className="text-muted-foreground mb-4">Keine Kinder mit aktiven Zahlplänen vorhanden.</p>
+                        <Button onClick={() => setCurrentView("allowances")} variant="outline">
+                          Zahlpläne verwalten →
+                        </Button>
                       </div>
-                      <Button
-                        onClick={() => handlePayout(allowance.id, item.child.id, allowance.sats)}
-                        disabled={!item.child.lightningAddress || isProcessingPayout}
-                        className="bg-green-600 hover:bg-green-700"
-                        data-testid={`button-payout-${allowance.id}`}
+                    ) : (
+                      childrenWithAllowances.map((item: any) => (
+                        <div key={item.child.id} className="border border-border rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold">
+                                {item.child.name[0]}
+                              </div>
+                              <div>
+                                <p className="font-semibold">{item.child.name}</p>
+                                <p className="text-xs text-muted-foreground">⚡ {item.child.lightningAddress || "Keine Adresse"}</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            {item.allowances.map((allowance: any) => (
+                              <div key={allowance.id} className="flex items-center justify-between p-3 bg-secondary/30 rounded">
+                                <div>
+                                  <p className="font-semibold text-primary">{allowance.sats} Sats</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {allowance.frequency === "daily" ? "Täglich" : 
+                                     allowance.frequency === "weekly" ? "Wöchentlich" :
+                                     allowance.frequency === "biweekly" ? "Zweiwöchentlich" : "Monatlich"}
+                                  </p>
+                                </div>
+                                <Button
+                                  onClick={() => handlePayout(allowance.id, item.child.id, allowance.sats)}
+                                  disabled={!item.child.lightningAddress || isProcessingPayout}
+                                  size="sm"
+                                  className="bg-green-600 hover:bg-green-700"
+                                  data-testid={`button-payout-${allowance.id}`}
+                                >
+                                  {isProcessingPayout ? "..." : "Zahlen"}
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+
+                {/* Ad-hoc Payment */}
+                {payoutTab === "ad-hoc" && (
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="adhoc-child" className="text-sm font-semibold mb-2 block">Kind auswählen</Label>
+                      <select
+                        id="adhoc-child"
+                        value={adHocChildId || ""}
+                        onChange={(e) => setAdHocChildId(e.target.value ? parseInt(e.target.value) : null)}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        data-testid="select-adhoc-child"
                       >
-                        {isProcessingPayout ? "Wird gezahlt..." : "Zahlen"}
-                      </Button>
+                        <option value="">-- Kind wählen --</option>
+                        {allChildren.map((child: any) => (
+                          <option key={child.id} value={child.id}>
+                            {child.name} {child.lightningAddress ? "✓" : "⚠️"}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-muted-foreground mt-1">⚠️ = Keine Lightning Adresse konfiguriert</p>
                     </div>
-                  ))}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+
+                    <div>
+                      <Label htmlFor="adhoc-sats" className="text-sm font-semibold mb-2 block">Betrag (Sats)</Label>
+                      <Input
+                        id="adhoc-sats"
+                        type="number"
+                        placeholder="z.B. 500"
+                        value={adHocSats}
+                        onChange={(e) => setAdHocSats(e.target.value)}
+                        data-testid="input-adhoc-sats"
+                        className="text-lg"
+                      />
+                    </div>
+
+                    <Button
+                      onClick={handleAdHocPayout}
+                      disabled={!adHocChildId || !adHocSats || isProcessingPayout}
+                      className="w-full bg-green-600 hover:bg-green-700"
+                      size="lg"
+                      data-testid="button-send-adhoc"
+                    >
+                      {isProcessingPayout ? "⏳ Wird gesendet..." : "💚 Jetzt senden"}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </Tabs>
+          </CardContent>
+        </Card>
       </div>
     </motion.div>
   );
