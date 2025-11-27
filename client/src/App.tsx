@@ -2576,7 +2576,6 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                   </div>
                 )}
               </div>
-              )}
 
               {/* LNbits Content */}
               {walletTab === "lnbits" && (
@@ -3638,32 +3637,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 <p className="text-xs text-muted-foreground bg-blue-500/10 border border-blue-500/30 rounded p-3">
                   💡 Dieser Code wird für die Verbindung mit deinen Kindern benötigt. Teile ihn sicher mit ihnen.
                 </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>NWC Wallet-Verbindung</CardTitle>
-                <CardDescription>Verbinde dein Lightning Wallet via Nostr Wallet Connect</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Input 
-                    placeholder="nostr+walletconnect://...?relay=...&secret=..."
-                    onChange={(e) => setNwcConnectionString(e.target.value)}
-                    className="font-mono text-xs"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                  </p>
-                </div>
-                <Button 
-                  onClick={setupWallet}
-                  className="bg-primary hover:bg-primary/90"
-                  data-testid="button-setup-wallet-settings"
-                >
-                  Speichern
-                </Button>
               </CardContent>
             </Card>
           </TabsContent>
