@@ -907,7 +907,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
         ? { id: response.id, name: response.name, role: response.role, connectionId: response.connectionId } as User
         : response as User;
 
-      if (typeof response === 'object' && 'recoveryCodes' in response && response.recoveryCodes) {
+      if (typeof response === 'object' && 'recoveryCodes' in response && response.recoveryCodes && Array.isArray(response.recoveryCodes)) {
         setRecoveryCodes(response.recoveryCodes);
         setShowRecoveryCodes(true);
         return;
@@ -1234,6 +1234,18 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               >
                 {isLoading ? "Wird verarbeitet..." : isLogin ? "Anmelden" : "Registrieren"}
               </Button>
+              {isLogin && role === "parent" && (
+                <Button 
+                  type="button"
+                  variant="ghost"
+                  className="w-full text-sm"
+                  onClick={() => setUseRecoveryCode(true)}
+                  disabled={isLoading}
+                  data-testid="button-forgot-pin"
+                >
+                  🔑 PIN vergessen?
+                </Button>
+              )}
               <Button 
                 type="button"
                 variant="outline"
