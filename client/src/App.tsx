@@ -2492,13 +2492,12 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <div 
             onClick={() => setCurrentView("allowances")}
             data-testid="card-active-allowances"
-            className="w-full p-6 bg-purple-900 border-2 border-purple-500 rounded-lg cursor-pointer hover:bg-purple-800"
+            className="p-4 bg-purple-900/50 border border-purple-500/50 rounded cursor-pointer hover:bg-purple-800/50"
           >
-            <div className="text-center text-white">
-              <div className="text-6xl mb-2">💰</div>
-              <div className="text-4xl font-bold text-yellow-300">{allowances?.length ?? 0}</div>
-              <div className="text-lg mt-3">TASCHENGELDER</div>
-              <div className="text-sm text-gray-300 mt-1">Klick zum Verwalten →</div>
+            <div className="text-center">
+              <div className="text-2xl mb-1">💰</div>
+              <div className="text-xl font-bold text-purple-300">{allowances?.length ?? 0}</div>
+              <div className="text-xs text-muted-foreground mt-1">Taschengelder</div>
             </div>
           </div>
         )}
