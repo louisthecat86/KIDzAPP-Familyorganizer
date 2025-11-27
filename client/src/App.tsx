@@ -613,8 +613,244 @@ export default function App() {
           </AnimatePresence>
         </div>
       </main>
+      {/* Allowances Management View */}
+      {currentView === "allowances" && user.role === "parent" && (
+        <motion.div
+          key="allowances-view"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="px-4 py-8 max-w-4xl space-y-6">
+            <div className="flex items-center gap-3 mb-8">
+              <Button variant="outline" onClick={() => setCurrentView("dashboard")} className="gap-2" data-testid="button-back-to-dashboard">
+                <ChevronLeft className="h-4 w-4" /> Zurück
+              </Button>
+              <h1 className="text-3xl font-bold">💰 Taschengeld-Verwaltung</h1>
+            </div>
+
+            <Card className="border-2 border-primary/40 bg-primary/5">
+              <CardHeader>
+                <CardTitle>Neues Taschengeld hinzufügen</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="allowance-child">Kind</Label>
+                  <select
+                    id="allowance-child"
+                    value={allowanceChildId || ""}
+                    onChange={(e) => setAllowanceChildId(e.target.value ? parseInt(e.target.value) : null)}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    data-testid="select-allowance-child"
+                  >
+                    <option value="">-- Kind wählen --</option>
+                    {parentChildren.map((child: any) => (
+                      <option key={child.id} value={child.id}>{child.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <Label htmlFor="allowance-sats">Betrag (Sats)</Label>
+                  <Input
+                    id="allowance-sats"
+                    type="number"
+                    placeholder="z.B. 100"
+                    value={allowanceSats}
+                    onChange={(e) => setAllowanceSats(e.target.value)}
+                    data-testid="input-allowance-sats"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="allowance-freq">Turnus</Label>
+                  <select
+                    id="allowance-freq"
+                    value={allowanceFrequency}
+                    onChange={(e) => setAllowanceFrequency(e.target.value)}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    data-testid="select-allowance-frequency"
+                  >
+                    <option value="daily">Täglich</option>
+                    <option value="weekly">Wöchentlich</option>
+                    <option value="biweekly">Zweiwöchentlich</option>
+                    <option value="monthly">Monatlich</option>
+                  </select>
+                </div>
+
+                <Button
+                  onClick={handleCreateAllowance}
+                  disabled={!allowanceChildId || !allowanceSats || isCreatingAllowance}
+                  className="w-full bg-primary hover:bg-primary/90"
+                  data-testid="button-create-allowance"
+                >
+                  {isCreatingAllowance ? "Wird gespeichert..." : "Hinzufügen"}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {allowances.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Aktive Taschengelder ({allowances.length})</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {allowances.map((allowance: any) => {
+                    const child = parentChildren.find((c: any) => c.id === allowance.childId);
+                    const freqLabels: Record<string, string> = {
+                      daily: "Täglich",
+                      weekly: "Wöchentlich",
+                      biweekly: "Zweiwöchentlich",
+                      monthly: "Monatlich",
+                    };
+                    const freqLabel = freqLabels[allowance.frequency as string] || allowance.frequency;
+
+                    return (
+                      <div
+                        key={allowance.id}
+                        className="p-4 rounded-lg border border-border bg-secondary/30 flex items-center justify-between"
+                        data-testid={`card-allowance-${allowance.id}`}
+                      >
+                        <div>
+                          <p className="font-semibold">{child?.name || "Unbekannt"}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {allowance.sats} Sats {freqLabel}
+                          </p>
+                        </div>
+                        <Button
+                          onClick={() => handleDeleteAllowance(allowance.id)}
+                          variant="outline"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          data-testid={`button-delete-allowance-${allowance.id}`}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Allowance Payout View */}
+      {currentView === "allowance-payout" && user.role === "parent" && (
+        <AllowancePayoutView
+          user={user}
+          allowances={allowances}
+          parentChildren={parentChildren}
+          setCurrentView={setCurrentView}
+          queryClient={queryClient}
+        />
+      )}
+
       <Toaster />
     </div>
+  );
+}
+
+function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView, queryClient }: any) {
+  const { toast } = useToast();
+  const [isProcessingPayout, setIsProcessingPayout] = useState(false);
+  
+  const { data: childrenWithAllowances = [] } = useQuery({
+    queryKey: ["children-with-allowances", user.id, user.connectionId],
+    queryFn: async () => {
+      const res = await fetch(`/api/parent/${user.id}/children-with-allowances/${user.connectionId}`);
+      if (!res.ok) throw new Error("Failed to fetch children");
+      return res.json();
+    },
+    enabled: user.role === "parent"
+  });
+
+  const handlePayout = async (allowanceId: number, childId: number, sats: number) => {
+    setIsProcessingPayout(true);
+    try {
+      const res = await fetch(`/api/parent/${user.id}/payout-allowance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ allowanceId, childId, sats }),
+      });
+      if (!res.ok) throw new Error("Payout failed");
+      const childName = childrenWithAllowances.find((c: any) => c.child.id === childId)?.child.name || "Kind";
+      toast({ title: "Erfolg", description: `${sats} Sats an ${childName} gezahlt!` });
+      queryClient.invalidateQueries({ queryKey: ["children-with-allowances"] });
+    } catch (error) {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setIsProcessingPayout(false);
+    }
+  };
+
+  return (
+    <motion.div
+      key="payout-view"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="px-4 py-8 max-w-4xl space-y-6">
+        <div className="flex items-center gap-3 mb-8">
+          <Button variant="outline" onClick={() => setCurrentView("allowances")} className="gap-2" data-testid="button-back-to-dashboard">
+            <ChevronLeft className="h-4 w-4" /> Zurück
+          </Button>
+          <h1 className="text-3xl font-bold">💰 Taschengelder auszahlen</h1>
+        </div>
+
+        {childrenWithAllowances.length === 0 ? (
+          <Card>
+            <CardContent className="pt-6 text-center text-muted-foreground">
+              <p>Keine Kinder mit aktiven Taschengeldern vorhanden.</p>
+              <Button onClick={() => setCurrentView("allowances")} className="mt-4">
+                Taschengelder verwalten →
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {childrenWithAllowances.map((item: any) => (
+              <Card key={item.child.id}>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>{item.child.name}</span>
+                    <span className="text-xs bg-purple-500/30 px-3 py-1 rounded text-purple-300">
+                      ⚡ {item.child.lightningAddress || "Keine Adresse"}
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {item.allowances.map((allowance: any) => (
+                    <div key={allowance.id} className="p-3 rounded bg-secondary/30 flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold">{allowance.sats} Sats</p>
+                        <p className="text-xs text-muted-foreground">
+                          {allowance.frequency === "daily" ? "Täglich" : 
+                           allowance.frequency === "weekly" ? "Wöchentlich" :
+                           allowance.frequency === "biweekly" ? "Zweiwöchentlich" : "Monatlich"}
+                        </p>
+                      </div>
+                      <Button
+                        onClick={() => handlePayout(allowance.id, item.child.id, allowance.sats)}
+                        disabled={!item.child.lightningAddress || isProcessingPayout}
+                        className="bg-green-600 hover:bg-green-700"
+                        data-testid={`button-payout-${allowance.id}`}
+                      >
+                        {isProcessingPayout ? "Wird gezahlt..." : "Zahlen"}
+                      </Button>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </motion.div>
   );
 }
 
@@ -4114,216 +4350,6 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
               </CardContent>
             </Card>
           </>
-        )}
-      </div>
-    );
-  }
-
-  if (currentView === "allowance-payout" && user.role === "parent") {
-    const { data: childrenWithAllowances = [] } = useQuery({
-      queryKey: ["children-with-allowances", user.id, user.connectionId],
-      queryFn: async () => {
-        const res = await fetch(`/api/parent/${user.id}/children-with-allowances/${user.connectionId}`);
-        if (!res.ok) throw new Error("Failed to fetch children");
-        return res.json();
-      },
-      enabled: user.role === "parent"
-    });
-
-    const [payoutChildId, setPayoutChildId] = useState<number | null>(null);
-    const [isProcessingPayout, setIsProcessingPayout] = useState(false);
-
-    const handlePayout = async (allowanceId: number, childId: number, sats: number) => {
-      setIsProcessingPayout(true);
-      try {
-        const res = await fetch(`/api/parent/${user.id}/payout-allowance`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ allowanceId, childId, sats }),
-        });
-        if (!res.ok) throw new Error("Payout failed");
-        toast({ title: "Erfolg", description: `${sats} Sats an ${payoutChildId ? childrenWithAllowances.find((c: any) => c.child.id === payoutChildId)?.child.name : ''} gezahlt!` });
-        queryClient.invalidateQueries({ queryKey: ["children-with-allowances"] });
-        setPayoutChildId(null);
-      } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
-      } finally {
-        setIsProcessingPayout(false);
-      }
-    };
-
-    return (
-      <div className="max-w-4xl space-y-6">
-        <div className="flex items-center gap-3 mb-8">
-          <Button variant="outline" onClick={() => setCurrentView("allowances")} className="gap-2" data-testid="button-back-to-dashboard">
-            <ChevronLeft className="h-4 w-4" /> Zurück
-          </Button>
-          <h1 className="text-3xl font-bold">💰 Taschengelder auszahlen</h1>
-        </div>
-
-        {childrenWithAllowances.length === 0 ? (
-          <Card>
-            <CardContent className="pt-6 text-center text-muted-foreground">
-              <p>Keine Kinder mit aktiven Taschengeldern vorhanden.</p>
-              <Button onClick={() => setCurrentView("allowances")} className="mt-4">
-                Taschengelder verwalten →
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-4">
-            {childrenWithAllowances.map((item: any) => (
-              <Card key={item.child.id}>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>{item.child.name}</span>
-                    <span className="text-xs bg-purple-500/30 px-3 py-1 rounded text-purple-300">
-                      ⚡ {item.child.lightningAddress || "Keine Adresse"}
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {item.allowances.map((allowance: any) => (
-                    <div key={allowance.id} className="p-3 rounded bg-secondary/30 flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold">{allowance.sats} Sats</p>
-                        <p className="text-xs text-muted-foreground">
-                          {allowance.frequency === "daily" ? "Täglich" : 
-                           allowance.frequency === "weekly" ? "Wöchentlich" :
-                           allowance.frequency === "biweekly" ? "Zweiwöchentlich" : "Monatlich"}
-                        </p>
-                      </div>
-                      <Button
-                        onClick={() => handlePayout(allowance.id, item.child.id, allowance.sats)}
-                        disabled={!item.child.lightningAddress || isProcessingPayout}
-                        className="bg-green-600 hover:bg-green-700"
-                        data-testid={`button-payout-${allowance.id}`}
-                      >
-                        {isProcessingPayout ? "Wird gezahlt..." : "Zahlen"}
-                      </Button>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  if (currentView === "allowances" && user.role === "parent") {
-    return (
-      <div className="max-w-4xl space-y-6">
-        <div className="flex items-center gap-3 mb-8">
-          <Button variant="outline" onClick={() => setCurrentView("dashboard")} className="gap-2" data-testid="button-back-to-dashboard">
-            <ChevronLeft className="h-4 w-4" /> Zurück
-          </Button>
-          <h1 className="text-3xl font-bold">💰 Taschengeld-Verwaltung</h1>
-        </div>
-
-        <Card className="border-2 border-primary/40 bg-primary/5">
-          <CardHeader>
-            <CardTitle>Neues Taschengeld hinzufügen</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="allowance-child">Kind</Label>
-              <select
-                id="allowance-child"
-                value={allowanceChildId || ""}
-                onChange={(e) => setAllowanceChildId(e.target.value ? parseInt(e.target.value) : null)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                data-testid="select-allowance-child"
-              >
-                <option value="">-- Kind wählen --</option>
-                {parentChildren.map((child: any) => (
-                  <option key={child.id} value={child.id}>{child.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <Label htmlFor="allowance-sats">Betrag (Sats)</Label>
-              <Input
-                id="allowance-sats"
-                type="number"
-                placeholder="z.B. 100"
-                value={allowanceSats}
-                onChange={(e) => setAllowanceSats(e.target.value)}
-                data-testid="input-allowance-sats"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="allowance-freq">Turnus</Label>
-              <select
-                id="allowance-freq"
-                value={allowanceFrequency}
-                onChange={(e) => setAllowanceFrequency(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                data-testid="select-allowance-frequency"
-              >
-                <option value="daily">Täglich</option>
-                <option value="weekly">Wöchentlich</option>
-                <option value="biweekly">Zweiwöchentlich</option>
-                <option value="monthly">Monatlich</option>
-              </select>
-            </div>
-
-            <Button
-              onClick={handleCreateAllowance}
-              disabled={!allowanceChildId || !allowanceSats || isCreatingAllowance}
-              className="w-full bg-primary hover:bg-primary/90"
-              data-testid="button-create-allowance"
-            >
-              {isCreatingAllowance ? "Wird gespeichert..." : "Hinzufügen"}
-            </Button>
-          </CardContent>
-        </Card>
-
-        {allowances.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Aktive Taschengelder ({allowances.length})</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {allowances.map((allowance: any) => {
-                const child = parentChildren.find((c: any) => c.id === allowance.childId);
-                const freqLabels: Record<string, string> = {
-                  daily: "Täglich",
-                  weekly: "Wöchentlich",
-                  biweekly: "Zweiwöchentlich",
-                  monthly: "Monatlich",
-                };
-                const freqLabel = freqLabels[allowance.frequency as string] || allowance.frequency;
-
-                return (
-                  <div
-                    key={allowance.id}
-                    className="p-4 rounded-lg border border-border bg-secondary/30 flex items-center justify-between"
-                    data-testid={`card-allowance-${allowance.id}`}
-                  >
-                    <div>
-                      <p className="font-semibold">{child?.name || "Unbekannt"}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {allowance.sats} Sats {freqLabel}
-                      </p>
-                    </div>
-                    <Button
-                      onClick={() => handleDeleteAllowance(allowance.id)}
-                      variant="outline"
-                      size="sm"
-                      className="text-destructive hover:text-destructive"
-                      data-testid={`button-delete-allowance-${allowance.id}`}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                );
-              })}
-            </CardContent>
-          </Card>
         )}
       </div>
     );
