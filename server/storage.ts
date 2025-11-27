@@ -396,6 +396,41 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  // Allowance operations
+  async getAllowances(connectionId: string): Promise<Allowance[]> {
+    return await db.select().from(allowances).where(eq(allowances.connectionId, connectionId));
+  }
+
+  async getAllowancesByChild(childId: number): Promise<Allowance[]> {
+    return await db.select().from(allowances).where(eq(allowances.childId, childId));
+  }
+
+  async createAllowance(allowance: InsertAllowance): Promise<Allowance> {
+    const result = await db.insert(allowances).values(allowance).returning();
+    return result[0];
+  }
+
+  async updateAllowance(id: number, allowance: Partial<Allowance>): Promise<Allowance | undefined> {
+    const result = await db.update(allowances)
+      .set({ ...allowance, updatedAt: new Date() })
+      .where(eq(allowances.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteAllowance(id: number): Promise<boolean> {
+    const result = await db.delete(allowances).where(eq(allowances.id, id));
+    return result.rowCount > 0;
+  }
+
+  async getLastPaymentDate(allowanceId: number): Promise<Date | null> {
+    const result = await db.select({ lastPaidDate: allowances.lastPaidDate })
+      .from(allowances)
+      .where(eq(allowances.id, allowanceId))
+      .limit(1);
+    return result[0]?.lastPaidDate || null;
+  }
+
 }
 
 export const storage = new DatabaseStorage();

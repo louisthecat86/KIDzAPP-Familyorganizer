@@ -930,6 +930,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get Allowances for family
+  app.get("/api/allowances/:connectionId", async (req, res) => {
+    try {
+      const allowances = await storage.getAllowances(req.params.connectionId);
+      res.json(allowances);
+    } catch (error) {
+      console.error("Get allowances error:", error);
+      res.status(500).json({ error: "Failed to fetch allowances" });
+    }
+  });
+
+  // Create Allowance
+  app.post("/api/allowances", async (req, res) => {
+    try {
+      const { parentId, childId, connectionId, sats, frequency } = req.body;
+      
+      if (!parentId || !childId || !connectionId || !sats || !frequency) {
+        return res.status(400).json({ error: "parentId, childId, connectionId, sats, frequency required" });
+      }
+
+      if (!["daily", "weekly", "biweekly", "monthly"].includes(frequency)) {
+        return res.status(400).json({ error: "frequency must be: daily, weekly, biweekly, or monthly" });
+      }
+
+      const allowance = await storage.createAllowance({
+        parentId,
+        childId,
+        connectionId,
+        sats,
+        frequency,
+        isActive: true,
+      } as any);
+      res.json(allowance);
+    } catch (error) {
+      console.error("Create allowance error:", error);
+      res.status(500).json({ error: "Failed to create allowance" });
+    }
+  });
+
+  // Update Allowance
+  app.post("/api/allowances/:id", async (req, res) => {
+    try {
+      const allowanceId = parseInt(req.params.id);
+      const { sats, frequency, isActive } = req.body;
+
+      const allowance = await storage.updateAllowance(allowanceId, {
+        sats,
+        frequency,
+        isActive,
+      } as any);
+      
+      if (!allowance) {
+        return res.status(404).json({ error: "Allowance not found" });
+      }
+      res.json(allowance);
+    } catch (error) {
+      console.error("Update allowance error:", error);
+      res.status(500).json({ error: "Failed to update allowance" });
+    }
+  });
+
+  // Delete Allowance
+  app.delete("/api/allowances/:id", async (req, res) => {
+    try {
+      const allowanceId = parseInt(req.params.id);
+      const success = await storage.deleteAllowance(allowanceId);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Allowance not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete allowance error:", error);
+      res.status(500).json({ error: "Failed to delete allowance" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

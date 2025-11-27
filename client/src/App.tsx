@@ -3957,70 +3957,85 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         <h1 className="text-3xl font-bold mb-8">Einstellungen</h1>
         
         {children.length > 0 && (
-          <Card className="border-2 border-primary/40 bg-primary/5">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                👶 Kinder-Verwaltung
-              </CardTitle>
-              <CardDescription>Verwalte PINs deiner Kinder</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {children.map((child: any) => (
-                  <div key={child.id} className="p-3 rounded-lg border border-border bg-secondary/30 flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold">{child.name}</p>
-                      <p className="text-xs text-muted-foreground">PIN: ••••</p>
-                    </div>
-                    <Button
-                      onClick={() => setResetPinChildId(child.id)}
-                      variant="outline"
-                      size="sm"
-                      data-testid={`button-reset-pin-${child.id}`}
-                    >
-                      PIN zurücksetzen
-                    </Button>
-                  </div>
-                ))}
-
-                {resetPinChildId && (
-                  <div className="p-4 rounded-lg border-2 border-amber-500/50 bg-amber-500/10 space-y-3">
-                    <p className="text-sm font-semibold">Neue 4-stellige PIN eingeben:</p>
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={4}
-                      placeholder="z.B. 1234"
-                      value={resetPinValue}
-                      onChange={(e) => setResetPinValue(e.target.value.replace(/\D/g, ''))}
-                      className="font-mono text-center text-lg"
-                      data-testid="input-new-child-pin"
-                    />
-                    <div className="flex gap-2">
+          <>
+            <Card className="border-2 border-primary/40 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  👶 Kinder-Verwaltung
+                </CardTitle>
+                <CardDescription>Verwalte PINs deiner Kinder</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {children.map((child: any) => (
+                    <div key={child.id} className="p-3 rounded-lg border border-border bg-secondary/30 flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold">{child.name}</p>
+                        <p className="text-xs text-muted-foreground">PIN: ••••</p>
+                      </div>
                       <Button
-                        onClick={() => handleResetPin(resetPinChildId)}
-                        className="flex-1 bg-primary hover:bg-primary/90"
-                        data-testid="button-confirm-reset-pin"
-                      >
-                        PIN ändern
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setResetPinChildId(null);
-                          setResetPinValue("");
-                        }}
+                        onClick={() => setResetPinChildId(child.id)}
                         variant="outline"
-                        className="flex-1"
-                        data-testid="button-cancel-reset-pin"
+                        size="sm"
+                        data-testid={`button-reset-pin-${child.id}`}
                       >
-                        Abbrechen
+                        PIN zurücksetzen
                       </Button>
                     </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  ))}
+
+                  {resetPinChildId && (
+                    <div className="p-4 rounded-lg border-2 border-amber-500/50 bg-amber-500/10 space-y-3">
+                      <p className="text-sm font-semibold">Neue 4-stellige PIN eingeben:</p>
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={4}
+                        placeholder="z.B. 1234"
+                        value={resetPinValue}
+                        onChange={(e) => setResetPinValue(e.target.value.replace(/\D/g, ''))}
+                        className="font-mono text-center text-lg"
+                        data-testid="input-new-child-pin"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => handleResetPin(resetPinChildId)}
+                          className="flex-1 bg-primary hover:bg-primary/90"
+                          data-testid="button-confirm-reset-pin"
+                        >
+                          PIN ändern
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setResetPinChildId(null);
+                            setResetPinValue("");
+                          }}
+                          variant="outline"
+                          className="flex-1"
+                          data-testid="button-cancel-reset-pin"
+                        >
+                          Abbrechen
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-primary/40 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  💰 Taschengeld-Verwaltung
+                </CardTitle>
+                <CardDescription>Richte regelmäßige Zahlungen für deine Kinder ein</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">Taschengeld-Feature kommt bald 🚀</p>
+                <p className="text-xs text-muted-foreground">Definiere Beträge und Turnusse (täglich, wöchentlich, monatlich) für automatische Zahlungen an deine Kinder</p>
+              </CardContent>
+            </Card>
+          </>
         )}
 
         <Card className="border-2 border-primary/40 bg-primary/5">
