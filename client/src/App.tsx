@@ -631,17 +631,6 @@ export default function App() {
               <h1 className="text-3xl font-bold">💰 Taschengeld-Verwaltung</h1>
             </div>
 
-            <div className="flex gap-3 mb-6">
-              <Button 
-                onClick={() => setCurrentView("allowance-payout")}
-                className="flex-1 bg-green-600 hover:bg-green-700"
-                size="lg"
-                data-testid="button-goto-payout"
-              >
-                💰 Sats senden →
-              </Button>
-            </div>
-
             <Card className="border-2 border-primary/40 bg-primary/5">
               <CardHeader>
                 <CardTitle>Neues Taschengeld hinzufügen</CardTitle>
@@ -2938,14 +2927,14 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         
         {user.role === "parent" && (
           <div 
-            onClick={() => setCurrentView("allowances")}
+            onClick={() => setCurrentView("allowance-payout")}
             data-testid="card-active-allowances"
             className="p-4 bg-purple-900/50 border border-purple-500/50 rounded cursor-pointer hover:bg-purple-800/50"
           >
             <div className="text-center">
               <div className="text-2xl mb-1">💰</div>
-              <div className="text-xl font-bold text-purple-300">{allowances?.length ?? 0}</div>
-              <div className="text-xs text-muted-foreground mt-1">Taschengelder</div>
+              <div className="text-xl font-bold text-purple-300">Sats senden</div>
+              <div className="text-xs text-muted-foreground mt-1">Zahlungen & Terminzahlungen</div>
             </div>
           </div>
         )}
