@@ -1619,6 +1619,35 @@ function SettingsModal({ user, setUser, activeTab, onClose, layoutView, setLayou
     }
   };
 
+  const testLNbits = async () => {
+    if (!editLnbitsUrl || !editLnbitsAdminKey) return;
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/wallet/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lnbitsUrl: editLnbitsUrl, lnbitsAdminKey: editLnbitsAdminKey }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        useToastFn({ 
+          title: "✓ Verbindung erfolgreich!", 
+          description: `Funktioniert mit: ${data.workingEndpoint}` 
+        });
+      } else {
+        useToastFn({ 
+          title: "Verbindung fehlgeschlagen", 
+          description: data.error, 
+          variant: "destructive" 
+        });
+      }
+    } catch (error) {
+      useToastFn({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const saveLNbits = async () => {
     if (!editLnbitsUrl || !editLnbitsAdminKey) return;
     setIsSaving(true);
@@ -1746,6 +1775,16 @@ function SettingsModal({ user, setUser, activeTab, onClose, layoutView, setLayou
                   />
                   <p className="text-xs text-muted-foreground">Status: {user.lnbitsUrl ? "✓ Verbunden" : "✗ Nicht verbunden"}</p>
                 </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={testLNbits}
+                  disabled={isSaving || !editLnbitsUrl || !editLnbitsAdminKey}
+                  data-testid="button-test-lnbits"
+                >
+                  🧪 Verbindung testen
+                </Button>
               </TabsContent>
             </Tabs>
           )}
