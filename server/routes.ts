@@ -7,6 +7,7 @@ import { LNBitsClient } from "./lnbits";
 import { NWCClient } from "./nwc";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
+import cron from "node-cron";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Test LNBits connection - with multiple endpoint attempts
@@ -1094,6 +1095,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Instant payout error:", error);
       res.status(500).json({ error: String(error) });
+    }
+  });
+
+  // Helper function to check if payout is due
+  function isPayoutDue(lastPaidDate: Date | null, frequency: string): boolean {
+    if (!lastPaidDate) return true; // First time, always due
+    
+    const now = new Date();
+    const lastPaid = new Date(lastPaidDate);
+    const diffMs = now.getTime() - lastPaid.getTime();
+    const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+    switch (frequency) {
+      case "daily":
+        return diffDays >= 1;
+      case "weekly":
+        return diffDays >= 7;
+      case "biweekly":
+        return diffDays >= 14;
+      case "monthly":
+        return diffDays >= 30;
+      default:
+        return false;
+    }
+  }
+
+  // Helper function to process a single allowance payout
+  async function processAllowancePayout(allowance: any) {
+    try {
+      const parent = await storage.getPeer(allowance.parentId);
+      const child = await storage.getPeer(allowance.childId);
+
+      if (!parent || !parent.lnbitsUrl || !parent.lnbitsAdminKey) {
+        console.error(`Parent ${allowance.parentId} not configured with LNBits`);
+        return;
+      }
+
+      if (!child || !child.lightningAddress) {
+        console.error(`Child ${allowance.childId} has no Lightning address`);
+        return;
+      }
+
+      const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+      const paymentHash = await lnbits.payToLightningAddress(
+        allowance.sats,
+        child.lightningAddress,
+        `Automatisches Taschengeld für ${child.name}`
+      );
+
+      // Update allowance lastPaidDate
+      await storage.updateAllowance(allowance.id, { lastPaidDate: new Date() });
+      console.log(`[Allowance Scheduler] Paid ${allowance.sats} sats to ${child.name} (${paymentHash})`);
+    } catch (error) {
+      console.error(`[Allowance Scheduler] Error processing allowance ${allowance.id}:`, error);
+    }
+  }
+
+  // Start automatic allowance payout scheduler (runs every minute)
+  cron.schedule("* * * * *", async () => {
+    try {
+      // Get all active allowances
+      const allPeers = await db.select().from(peers);
+      const connectionIds = [...new Set(allPeers.map((p: any) => p.connectionId))];
+
+      for (const connectionId of connectionIds) {
+        const allowances = await storage.getAllowances(connectionId);
+        
+        for (const allowance of allowances) {
+          if (!allowance.isActive) continue;
+
+          if (isPayoutDue(allowance.lastPaidDate, allowance.frequency)) {
+            console.log(`[Allowance Scheduler] Processing payout for allowance ${allowance.id}`);
+            await processAllowancePayout(allowance);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("[Allowance Scheduler] Error:", error);
     }
   });
 
