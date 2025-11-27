@@ -4366,24 +4366,20 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
 
 
         {user.role === "parent" && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
-                <Card 
-                  className="bg-gradient-to-br from-gray-900 to-black border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
-                  onClick={() => setCurrentView("allowances")}
-                  data-testid="card-active-allowances"
-                >
-                  <CardContent className="pt-6">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-purple-500">{allowances.length}</div>
-                      <p className="text-sm text-muted-foreground mt-2">💰 Taschengelder</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </div>
-          </div>
+          <Card 
+            className="bg-gradient-to-br from-purple-900/50 to-black border border-purple-500/30 cursor-pointer hover:from-purple-800/50 hover:to-black/80 transition-all mb-4"
+            onClick={() => setCurrentView("allowances")}
+            data-testid="card-active-allowances"
+          >
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <div className="text-4xl font-bold text-purple-400 mb-2">💰</div>
+                <div className="text-3xl font-bold text-purple-500">{allowances?.length || 0}</div>
+                <p className="text-sm text-muted-foreground mt-2">Taschengelder</p>
+                <p className="text-xs text-muted-foreground mt-1">Klick zum Verwalten</p>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {connectedParents.length > 0 && (
