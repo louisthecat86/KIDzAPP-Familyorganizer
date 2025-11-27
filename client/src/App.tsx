@@ -3899,6 +3899,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
 
     return (
       <div className="max-w-4xl space-y-2">
+        <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
         <motion.section 
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -3912,9 +3913,6 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                   {(user.balance || 0).toLocaleString()} <span className="text-2xl opacity-50 text-white">SATS</span>
                 </h2>
                 <p className="text-xs text-muted-foreground mt-2">Gesamt verdient durch erledigte Aufgaben</p>
-              </div>
-              <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center border border-primary/30 shadow-[0_0_20px_rgba(247,147,26,0.2)]">
-                <Bitcoin className="h-10 w-10 text-primary" />
               </div>
             </div>
 
