@@ -16,6 +16,7 @@ export interface IStorage {
   updatePeerNWC(peerId: number, nwcConnectionString: string): Promise<Peer>;
   updateBalance(peerId: number, sats: number): Promise<Peer>;
   updatePeerPin(peerId: number, newPin: string): Promise<Peer>;
+  updatePeerFamilyName(peerId: number, familyName: string): Promise<Peer>;
   updateChildLightningAddress(peerId: number, lightningAddress: string): Promise<Peer>;
   getSatsSpentByChild(parentId: number, connectionId: string): Promise<Array<{ childId: number; childName: string; satSpent: number }>>;
   
@@ -174,6 +175,14 @@ export class DatabaseStorage implements IStorage {
   async updatePeerPin(peerId: number, newPin: string): Promise<Peer> {
     const result = await db.update(peers)
       .set({ pin: newPin })
+      .where(eq(peers.id, peerId))
+      .returning();
+    return result[0];
+  }
+
+  async updatePeerFamilyName(peerId: number, familyName: string): Promise<Peer> {
+    const result = await db.update(peers)
+      .set({ familyName })
       .where(eq(peers.id, peerId))
       .returning();
     return result[0];

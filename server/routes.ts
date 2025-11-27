@@ -204,6 +204,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update family name
+  app.post("/api/peers/:peerId/family-name", async (req, res) => {
+    try {
+      const { peerId } = req.params;
+      const { familyName } = req.body;
+
+      if (!familyName || !familyName.trim()) {
+        return res.status(400).json({ error: "Familienname erforderlich" });
+      }
+
+      const peer = await storage.getPeer(parseInt(peerId));
+      if (!peer) {
+        return res.status(404).json({ error: "Benutzer nicht gefunden" });
+      }
+
+      // If parent, update all connected children too
+      if (peer.role === "parent") {
+        const connectionId = peer.connectionId;
+        const peers_result = await db.select().from(peers).where(eq(peers.connectionId, connectionId));
+        for (const child of peers_result) {
+          if (child.role === "child") {
+            await storage.updatePeerFamilyName(child.id, familyName.trim());
+          }
+        }
+      }
+
+      const updated = await storage.updatePeerFamilyName(parseInt(peerId), familyName.trim());
+      res.json({ success: true, peer: updated });
+    } catch (error) {
+      console.error("Family name update error:", error);
+      res.status(500).json({ error: "Familienname-Update fehlgeschlagen" });
+    }
+  });
+
   // Setup NWC wallet
   app.post("/api/wallet/setup", async (req, res) => {
     try {

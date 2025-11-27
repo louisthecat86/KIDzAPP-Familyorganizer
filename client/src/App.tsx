@@ -1732,6 +1732,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
   const [editNwc, setEditNwc] = useState(user.nwcConnectionString || "");
   const [editLnbitsUrl, setEditLnbitsUrl] = useState(user.lnbitsUrl || "");
   const [editLnbitsAdminKey, setEditLnbitsAdminKey] = useState(user.lnbitsAdminKey || "");
+  const [editFamilyName, setEditFamilyName] = useState(user.familyName || "");
   const [showAdminKey, setShowAdminKey] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { toast: useToastFn } = useToast();
@@ -1741,6 +1742,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
     setEditNwc(user.nwcConnectionString || "");
     setEditLnbitsUrl(user.lnbitsUrl || "");
     setEditLnbitsAdminKey(user.lnbitsAdminKey || "");
+    setEditFamilyName(user.familyName || "");
     setShowAdminKey(false);
   }, [user]);
 
@@ -1884,7 +1886,48 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
         <CardContent className="space-y-6">
           {/* ANSICHT TAB */}
           {activeTab === "ansicht" && (
-            <div className="space-y-3">
+            <div className="space-y-6">
+              {user.role === "parent" && (
+                <div className="space-y-2 pb-4 border-b border-border">
+                  <Label htmlFor="family-name" className="text-sm font-semibold">Familienname</Label>
+                  <Input 
+                    id="family-name"
+                    value={editFamilyName}
+                    onChange={(e) => setEditFamilyName(e.target.value)}
+                    placeholder="z.B. Familie Müller"
+                    className="bg-secondary/50 border-border"
+                    data-testid="input-family-name"
+                  />
+                  <Button 
+                    type="button"
+                    size="sm"
+                    onClick={async () => {
+                      if (!editFamilyName.trim()) return;
+                      setIsSaving(true);
+                      try {
+                        const res = await fetch(`/api/peers/${user.id}/family-name`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ familyName: editFamilyName.trim() }),
+                        });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error);
+                        setUser({ ...user, familyName: editFamilyName.trim() });
+                        useToastFn({ title: "✅ Familienname aktualisiert!", duration: 2000 });
+                      } catch (error) {
+                        useToastFn({ title: "❌ Fehler", description: (error as Error).message, variant: "destructive" });
+                      } finally {
+                        setIsSaving(false);
+                      }
+                    }}
+                    disabled={!editFamilyName.trim() || isSaving}
+                    className="w-full"
+                    data-testid="button-save-family-name"
+                  >
+                    {isSaving ? "Wird gespeichert..." : "Speichern"}
+                  </Button>
+                </div>
+              )}
               <Label>Dashboard Ansicht</Label>
               <div className="space-y-2">
                 <Button
