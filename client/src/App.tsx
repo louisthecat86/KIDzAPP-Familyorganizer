@@ -2196,8 +2196,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     const submittedTasks = tasks.filter((t: Task) => t.status === "submitted");
     const completedTasks = tasks.filter((t: Task) => t.status === "approved");
     
-    // Filter für zukünftige Events
-    const futureEvents = events.filter((e: FamilyEvent) => new Date(e.startDate) > new Date()).sort((a: FamilyEvent, b: FamilyEvent) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+    // Filter für zukünftige Events (nur zukünftige werden angezeigt)
+    const upcomingEvents = events.filter((e: FamilyEvent) => new Date(e.startDate) > new Date()).sort((a: FamilyEvent, b: FamilyEvent) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
     
     const { data: satsSpent = 0 } = useQuery({
       queryKey: ["sats-spent", user.id, user.connectionId],
@@ -2354,13 +2354,13 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <Card className="bg-gradient-to-br from-gray-900 to-black border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors h-full" onClick={() => setCurrentView("calendar-view")} data-testid="card-calendar">
               <CardContent className="p-6">
                 <h3 className="text-base font-bold mb-3 flex items-center gap-1">
-                  <Calendar className="h-4 w-4 text-primary" /> Kalender ({futureEvents.length})
+                  <Calendar className="h-4 w-4 text-primary" /> Kalender ({upcomingEvents.length})
                 </h3>
-                {futureEvents.length === 0 ? (
+                {upcomingEvents.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">Noch keine Termine geplant</p>
                 ) : (
                   <div className="space-y-2">
-                    {futureEvents.slice(0, 3).map((event: FamilyEvent) => (
+                    {upcomingEvents.slice(0, 3).map((event: FamilyEvent) => (
                       <div key={event.id} className="text-sm border-l-2 border-primary/30 pl-3 py-1">
                         <p className="font-semibold text-xs" data-testid={`text-dash-event-${event.id}`}>{event.title}</p>
                         <p className="text-xs text-muted-foreground">📅 {new Date(event.startDate).toLocaleDateString("de-DE", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
