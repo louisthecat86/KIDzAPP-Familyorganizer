@@ -54,6 +54,9 @@ export interface IStorage {
   updateAllowance(id: number, allowance: Partial<Allowance>): Promise<Allowance | undefined>;
   deleteAllowance(id: number): Promise<boolean>;
   getLastPaymentDate(allowanceId: number): Promise<Date | null>;
+
+  // Get children for parent
+  getChildrenForParent(parentId: number): Promise<Peer[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -429,6 +432,22 @@ export class DatabaseStorage implements IStorage {
       .where(eq(allowances.id, allowanceId))
       .limit(1);
     return result[0]?.lastPaidDate || null;
+  }
+
+  async getChildrenForParent(parentId: number): Promise<Peer[]> {
+    const parent = await db.select().from(peers).where(eq(peers.id, parentId)).limit(1);
+    if (!parent[0]) return [];
+    
+    const parentConnectionId = parent[0].connectionId;
+    
+    // Find all children with the same connectionId
+    const children = await db.select().from(peers)
+      .where(and(
+        eq(peers.connectionId, parentConnectionId),
+        eq(peers.role, "child")
+      ));
+    
+    return children;
   }
 
   async getChildrenWithAllowances(parentId: number, connectionId: string): Promise<Array<{

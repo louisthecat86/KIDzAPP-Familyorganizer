@@ -1007,6 +1007,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all children for a parent
+  app.get("/api/parent/:id/children", async (req, res) => {
+    try {
+      const parentId = parseInt(req.params.id);
+      const children = await storage.getChildrenForParent(parentId);
+      res.json(children);
+    } catch (error) {
+      console.error("Get children error:", error);
+      res.status(500).json({ error: "Failed to fetch children" });
+    }
+  });
+
   // Get children with active allowances
   app.get("/api/parent/:id/children-with-allowances/:connectionId", async (req, res) => {
     try {
