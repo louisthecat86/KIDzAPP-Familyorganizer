@@ -879,11 +879,21 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
         </div>
 
         {/* Payment Method Selection */}
-        {payoutTab !== null && user.lnbitsUrl && (
+        {payoutTab !== null && (
           <div className="flex gap-2 mb-4 bg-secondary/30 p-3 rounded-lg">
-            <div className="text-sm font-semibold">
-              💳 LNbits Wallet aktiv
-            </div>
+            <label className="flex items-center gap-2 cursor-pointer" data-testid="label-payment-method">
+              <input 
+                type="radio" 
+                name="paymentMethod" 
+                value="lnbits" 
+                checked={paymentMethod === "lnbits"}
+                disabled={!user.lnbitsUrl}
+                data-testid="radio-payment-lnbits"
+              />
+              <span className={`text-sm font-semibold ${!user.lnbitsUrl ? "opacity-50" : ""}`}>
+                💳 LNbits {!user.lnbitsUrl && "(nicht konfiguriert)"}
+              </span>
+            </label>
           </div>
         )}
 
@@ -1480,8 +1490,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             role === "parent" ? favoriteColor : undefined
           );
       
-      const user = typeof response === 'object'
-        : response as User;
+      const user = response as User;
 
       
       console.log("Erfolg:", user);
@@ -2935,6 +2944,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       refetchInterval: 5000
     });
 
+    const { data: walletBalance = null } = useQuery({
       queryKey: ["wallet-balance", user.id],
       queryFn: async () => {
         const res = await fetch(`/api/parent/${user.id}/wallet-balance`);
