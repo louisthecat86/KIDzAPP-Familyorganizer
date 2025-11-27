@@ -538,7 +538,7 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
       {activeSettingsTab && (
         <SettingsModal 
           user={user} 
-          setUser={() => {}} 
+          setUser={setUser}
           activeTab={activeSettingsTab}
           walletTab={walletTab}
           setWalletTab={setWalletTab}
