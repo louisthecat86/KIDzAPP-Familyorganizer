@@ -3926,9 +3926,25 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
       refetchInterval: 5000
     });
 
+    const { data: allowances = [] } = useQuery({
+      queryKey: ["allowances", user.connectionId],
+      queryFn: async () => {
+        const res = await fetch(`/api/allowances/${user.connectionId}`);
+        if (!res.ok) throw new Error("Failed to fetch allowances");
+        return res.json();
+      },
+      refetchInterval: 5000
+    });
+
     const children = connectedPeers.filter((p: any) => p.role === "child");
     const [resetPinChildId, setResetPinChildId] = useState<number | null>(null);
     const [resetPinValue, setResetPinValue] = useState("");
+    
+    // Taschengeld States
+    const [allowanceChildId, setAllowanceChildId] = useState<number | null>(null);
+    const [allowanceSats, setAllowanceSats] = useState("");
+    const [allowanceFrequency, setAllowanceFrequency] = useState("weekly");
+    const [isCreatingAllowance, setIsCreatingAllowance] = useState(false);
 
     const handleResetPin = async (childId: number) => {
       if (!resetPinValue || resetPinValue.length !== 4 || !/^\d+$/.test(resetPinValue)) {
@@ -3947,6 +3963,51 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         setResetPinValue("");
         queryClient.invalidateQueries({ queryKey: ["peers"] });
         toast({ title: "Erfolg", description: "PIN wurde zurückgesetzt" });
+      } catch (error) {
+        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      }
+    };
+
+    const handleCreateAllowance = async () => {
+      if (!allowanceChildId || !allowanceSats) {
+        toast({ title: "Fehler", description: "Kind und Betrag erforderlich", variant: "destructive" });
+        return;
+      }
+
+      setIsCreatingAllowance(true);
+      try {
+        const res = await fetch("/api/allowances", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            parentId: user.id,
+            childId: allowanceChildId,
+            connectionId: user.connectionId,
+            sats: parseInt(allowanceSats),
+            frequency: allowanceFrequency,
+          }),
+        });
+        if (!res.ok) throw new Error("Failed to create allowance");
+        setAllowanceChildId(null);
+        setAllowanceSats("");
+        setAllowanceFrequency("weekly");
+        queryClient.invalidateQueries({ queryKey: ["allowances"] });
+        toast({ title: "Erfolg", description: "Taschengeld eingerichtet!" });
+      } catch (error) {
+        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      } finally {
+        setIsCreatingAllowance(false);
+      }
+    };
+
+    const handleDeleteAllowance = async (allowanceId: number) => {
+      if (!window.confirm("Taschengeld wirklich löschen?")) return;
+
+      try {
+        const res = await fetch(`/api/allowances/${allowanceId}`, { method: "DELETE" });
+        if (!res.ok) throw new Error("Failed to delete allowance");
+        queryClient.invalidateQueries({ queryKey: ["allowances"] });
+        toast({ title: "Erfolg", description: "Taschengeld gelöscht" });
       } catch (error) {
         toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
       }
@@ -4030,9 +4091,106 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                 </CardTitle>
                 <CardDescription>Richte regelmäßige Zahlungen für deine Kinder ein</CardDescription>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">Taschengeld-Feature kommt bald 🚀</p>
-                <p className="text-xs text-muted-foreground">Definiere Beträge und Turnusse (täglich, wöchentlich, monatlich) für automatische Zahlungen an deine Kinder</p>
+              <CardContent className="space-y-4">
+                {/* Taschengeld erstellen Form */}
+                <div className="p-4 rounded-lg border border-border bg-secondary/30 space-y-3">
+                  <p className="text-sm font-semibold">Neues Taschengeld hinzufügen</p>
+                  
+                  <div>
+                    <Label htmlFor="allowance-child">Kind</Label>
+                    <select
+                      id="allowance-child"
+                      value={allowanceChildId || ""}
+                      onChange={(e) => setAllowanceChildId(e.target.value ? parseInt(e.target.value) : null)}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      data-testid="select-allowance-child"
+                    >
+                      <option value="">-- Kind wählen --</option>
+                      {children.map((child: any) => (
+                        <option key={child.id} value={child.id}>{child.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="allowance-sats">Betrag (Sats)</Label>
+                    <Input
+                      id="allowance-sats"
+                      type="number"
+                      placeholder="z.B. 100"
+                      value={allowanceSats}
+                      onChange={(e) => setAllowanceSats(e.target.value)}
+                      data-testid="input-allowance-sats"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="allowance-freq">Turnus</Label>
+                    <select
+                      id="allowance-freq"
+                      value={allowanceFrequency}
+                      onChange={(e) => setAllowanceFrequency(e.target.value)}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      data-testid="select-allowance-frequency"
+                    >
+                      <option value="daily">Täglich</option>
+                      <option value="weekly">Wöchentlich</option>
+                      <option value="biweekly">Zweiwöchentlich</option>
+                      <option value="monthly">Monatlich</option>
+                    </select>
+                  </div>
+
+                  <Button
+                    onClick={handleCreateAllowance}
+                    disabled={!allowanceChildId || !allowanceSats || isCreatingAllowance}
+                    className="w-full bg-primary hover:bg-primary/90"
+                    data-testid="button-create-allowance"
+                  >
+                    {isCreatingAllowance ? "Wird gespeichert..." : "Hinzufügen"}
+                  </Button>
+                </div>
+
+                {/* Taschengeld Liste */}
+                {allowances.length > 0 ? (
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold">Aktive Taschengelder</p>
+                    {allowances.map((allowance: any) => {
+                      const child = children.find((c: any) => c.id === allowance.childId);
+                      const freqLabel = {
+                        daily: "Täglich",
+                        weekly: "Wöchentlich",
+                        biweekly: "Zweiwöchentlich",
+                        monthly: "Monatlich",
+                      }[allowance.frequency] || allowance.frequency;
+
+                      return (
+                        <div
+                          key={allowance.id}
+                          className="p-3 rounded-lg border border-border bg-secondary/30 flex items-center justify-between"
+                          data-testid={`card-allowance-${allowance.id}`}
+                        >
+                          <div>
+                            <p className="font-semibold">{child?.name || "Unbekannt"}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {allowance.sats} Sats {freqLabel}
+                            </p>
+                          </div>
+                          <Button
+                            onClick={() => handleDeleteAllowance(allowance.id)}
+                            variant="outline"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            data-testid={`button-delete-allowance-${allowance.id}`}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground text-center py-2">Noch keine Taschengelder eingerichtet</p>
+                )}
               </CardContent>
             </Card>
           </>
