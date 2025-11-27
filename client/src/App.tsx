@@ -5223,10 +5223,12 @@ function BitcoinValueWidget({ sats }: { sats: number }) {
   const currentValueEur = btcAmount * btcPrice.eur;
   const savingsValueEur = currentValueEur * (1 + interestRate / 100);
 
-  // Simulate 12 months growth
+  // Simulate 12 months growth with compound interest
   const bitcoinGrowth = currentValueEur * 0.5; // 50% growth over 12 months (example)
-  const annualInterestRate = interestRate * 12; // Convert monthly to annual
-  const savingsGrowth = (currentValueEur * annualInterestRate) / 100; // Annual growth based on interest rate
+  const monthlyRate = interestRate / 100; // Convert percentage to decimal
+  const savingsValueAfter12Months = currentValueEur * Math.pow(1 + monthlyRate, 12); // Compound interest formula
+  const savingsGrowth = savingsValueAfter12Months - currentValueEur; // Actual growth with compound interest
+  const annualInterestRate = interestRate * 12; // For display
 
   return (
     <div className="pt-4 border-t border-border/50">
@@ -5360,6 +5362,14 @@ function BitcoinValueWidget({ sats }: { sats: number }) {
             <div className="text-xs">
               <p className="font-bold text-green-400 mb-1">Langfristig lohnt sich Sparen!</p>
               <p className="text-muted-foreground">Wenn du lange Zeit Sats sparst, kann der Wert stark wachsen - besser als im Sparbuch!</p>
+            </div>
+          </div>
+
+          <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg p-3 flex gap-2">
+            <span className="text-lg flex-shrink-0">🎁</span>
+            <div className="text-xs">
+              <p className="font-bold text-cyan-400 mb-1">Zinseszins Zauberei!</p>
+              <p className="text-muted-foreground">Die Zinsen verdienen selbst wieder Zinsen! Mit {interestRate.toFixed(2)}% Zins pro Monat wachsen deine Sats immer schneller. 🚀</p>
             </div>
           </div>
 
