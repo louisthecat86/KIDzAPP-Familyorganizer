@@ -234,6 +234,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete LNbits wallet connection
+  app.delete("/api/wallet/lnbits", async (req, res) => {
+    try {
+      const { peerId } = req.body;
+      
+      if (!peerId) {
+        return res.status(400).json({ error: "peerId erforderlich" });
+      }
+
+      const peer = await storage.updatePeerWallet(peerId, "", "");
+      console.log("LNbits wallet deleted successfully for peer:", peerId);
+      res.json({ success: true, peer });
+    } catch (error) {
+      console.error("LNbits wallet delete error:", error);
+      res.status(500).json({ error: "Fehler beim Löschen der Wallet-Verbindung" });
+    }
+  });
+
   // Setup LNbits wallet for Parent
   app.post("/api/wallet/setup-lnbits", async (req, res) => {
     try {

@@ -1679,15 +1679,43 @@ function SettingsModal({ user, setUser, activeTab, onClose, layoutView, setLayou
         duration: 5000
       });
       
-      // Keep modal open for a moment to show success
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      onClose();
+      // Clear input fields and show connected status
+      setEditLnbitsUrl("");
+      setEditLnbitsAdminKey("");
     } catch (error) {
       useToastFn({ 
         title: "❌ Fehler beim Speichern", 
         description: (error as Error).message, 
         variant: "destructive",
         duration: 5000
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const deleteLNbits = async () => {
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/wallet/lnbits", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ peerId: user.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setUser({ ...user, lnbitsUrl: undefined, lnbitsAdminKey: undefined });
+      
+      useToastFn({ 
+        title: "❌ LNbits Verbindung getrennt", 
+        description: "Die Wallet-Verbindung wurde entfernt",
+        duration: 3000
+      });
+    } catch (error) {
+      useToastFn({ 
+        title: "Fehler", 
+        description: (error as Error).message, 
+        variant: "destructive" 
       });
     } finally {
       setIsSaving(false);
@@ -1777,53 +1805,99 @@ function SettingsModal({ user, setUser, activeTab, onClose, layoutView, setLayou
               </TabsContent>
 
               <TabsContent value="lnbits" className="space-y-4 mt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="lnbits-url">LNbits URL</Label>
-                  <Input 
-                    id="lnbits-url"
-                    placeholder="https://lnbits.example.com"
-                    value={editLnbitsUrl}
-                    onChange={(e) => setEditLnbitsUrl(e.target.value)}
-                    className="bg-secondary border-border text-sm"
-                    data-testid="input-lnbits-url"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lnbits-key">LNbits Admin Key</Label>
-                  <div className="relative">
-                    <Input 
-                      id="lnbits-key"
-                      type={showAdminKey ? "text" : "password"}
-                      placeholder="Admin key..."
-                      value={editLnbitsAdminKey}
-                      onChange={(e) => setEditLnbitsAdminKey(e.target.value)}
-                      className="bg-secondary border-border font-mono text-xs pr-10"
-                      autoComplete="off"
-                      data-testid="input-lnbits-key"
-                    />
+                {user.lnbitsUrl ? (
+                  // Connected state - show wallet card
+                  <div className="space-y-3">
+                    <div className="border border-green-500/30 bg-green-500/5 rounded-lg p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">🟢 LNbits Wallet verbunden</p>
+                          <p className="text-sm font-mono break-all">{user.lnbitsUrl}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="relative">
+                        <div className="bg-secondary rounded border border-border p-2 pr-10">
+                          <p className="text-xs font-mono text-center">
+                            {showAdminKey ? user.lnbitsAdminKey : "•".repeat(Math.min(user.lnbitsAdminKey?.length || 32, 32))}
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-2 hover:bg-transparent text-sm"
+                          onClick={() => setShowAdminKey(!showAdminKey)}
+                          data-testid="button-toggle-admin-key-visibility"
+                        >
+                          {showAdminKey ? "🙈" : "👁️"}
+                        </Button>
+                      </div>
+                      
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="w-full text-xs"
+                        onClick={deleteLNbits}
+                        disabled={isSaving}
+                        data-testid="button-disconnect-lnbits"
+                      >
+                        🔌 Verbindung trennen
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  // Disconnected state - show input fields
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="lnbits-url">LNbits URL</Label>
+                      <Input 
+                        id="lnbits-url"
+                        placeholder="https://lnbits.example.com"
+                        value={editLnbitsUrl}
+                        onChange={(e) => setEditLnbitsUrl(e.target.value)}
+                        className="bg-secondary border-border text-sm"
+                        data-testid="input-lnbits-url"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lnbits-key">LNbits Admin Key</Label>
+                      <div className="relative">
+                        <Input 
+                          id="lnbits-key"
+                          type={showAdminKey ? "text" : "password"}
+                          placeholder="Admin key..."
+                          value={editLnbitsAdminKey}
+                          onChange={(e) => setEditLnbitsAdminKey(e.target.value)}
+                          className="bg-secondary border-border font-mono text-xs pr-10"
+                          autoComplete="off"
+                          data-testid="input-lnbits-key"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-2 hover:bg-transparent text-sm"
+                          onClick={() => setShowAdminKey(!showAdminKey)}
+                          data-testid="button-toggle-admin-key-visibility"
+                        >
+                          {showAdminKey ? "🙈" : "👁️"}
+                        </Button>
+                      </div>
+                    </div>
                     <Button
                       type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-2 hover:bg-transparent text-sm"
-                      onClick={() => setShowAdminKey(!showAdminKey)}
-                      data-testid="button-toggle-admin-key-visibility"
+                      variant="outline"
+                      className="w-full"
+                      onClick={testLNbits}
+                      disabled={isSaving || !editLnbitsUrl || !editLnbitsAdminKey}
+                      data-testid="button-test-lnbits"
                     >
-                      {showAdminKey ? "🙈" : "👁️"}
+                      🧪 Verbindung testen
                     </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground">Status: {user.lnbitsUrl ? "✓ Verbunden" : "✗ Nicht verbunden"}</p>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={testLNbits}
-                  disabled={isSaving || !editLnbitsUrl || !editLnbitsAdminKey}
-                  data-testid="button-test-lnbits"
-                >
-                  🧪 Verbindung testen
-                </Button>
+                )}
               </TabsContent>
             </Tabs>
           )}
@@ -1842,7 +1916,7 @@ function SettingsModal({ user, setUser, activeTab, onClose, layoutView, setLayou
           >
             Schließen
           </Button>
-          {activeTab === "wallet" && (
+          {activeTab === "wallet" && !user.lnbitsUrl && (
             <Button 
               onClick={() => {
                 if (editNwc && !editLnbitsUrl) saveNWC();
