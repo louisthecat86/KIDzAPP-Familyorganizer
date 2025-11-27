@@ -87,6 +87,37 @@ export function PhotoUpload({ taskId, onUploadSuccess, disabled = false }: Photo
     }
   };
 
+  const compressImage = (imageData: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = imageData;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        // Resize if image is too large (max 1280px)
+        const maxSize = 1280;
+        if (width > maxSize || height > maxSize) {
+          const ratio = Math.min(maxSize / width, maxSize / height);
+          width *= ratio;
+          height *= ratio;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          // Compress with 60% quality
+          resolve(canvas.toDataURL("image/jpeg", 0.6));
+        } else {
+          resolve(imageData);
+        }
+      };
+    });
+  };
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -95,10 +126,13 @@ export function PhotoUpload({ taskId, onUploadSuccess, disabled = false }: Photo
     reader.onload = async (event) => {
       const imageData = event.target?.result as string;
       try {
+        // Compress the image
+        const compressedData = await compressImage(imageData);
+        
         const res = await fetch(`/api/tasks/${taskId}/proof`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ proof: imageData }),
+          body: JSON.stringify({ proof: compressedData }),
         });
 
         if (!res.ok) throw new Error("Upload fehlgeschlagen");
