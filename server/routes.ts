@@ -251,36 +251,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Normalize URL (remove trailing slash)
       const normalizedUrl = lnbitsUrl.replace(/\/$/, "");
 
-      // Test LNbits connection by creating a test invoice
+      // Test LNbits connection by checking wallet endpoint
       try {
-        const lnbits = new LNBitsClient(normalizedUrl, lnbitsAdminKey);
-        console.log("Testing LNbits connection with URL:", normalizedUrl);
-        await lnbits.createInvoice(1, "Test connection");
-        console.log("LNbits connection test successful!");
-      } catch (error) {
-        console.error("LNbits connection test failed:", error);
-        const errorMsg = (error as Error).message;
+        console.log("Testing LNbits wallet connection with URL:", normalizedUrl);
         
-        // Provide helpful error messages
-        if (errorMsg.includes("404")) {
-          return res.status(400).json({ 
-            error: "LNbits URL nicht erreichbar (404). Überprüfe die URL und dass die Instanz online ist." 
-          });
-        } else if (errorMsg.includes("401") || errorMsg.includes("403")) {
-          return res.status(400).json({ 
-            error: "Admin Key ungültig. Überprüfe deinen LNbits Admin API Key." 
-          });
-        } else if (errorMsg.includes("ECONNREFUSED") || errorMsg.includes("ENOTFOUND")) {
-          return res.status(400).json({ 
-            error: "Server nicht erreichbar. Überprüfe die LNbits URL und deine Internetverbindung." 
-          });
+        // Try multiple endpoints to check wallet
+        const walletEndpoints = [
+          `${normalizedUrl}/api/v1/wallet`,
+          `${normalizedUrl}/wallet`,
+        ];
+        
+        let walletConnected = false;
+        
+        for (const endpoint of walletEndpoints) {
+          try {
+            const response = await fetch(endpoint, {
+              headers: {
+                "X-Api-Key": lnbitsAdminKey,
+              },
+            });
+            
+            if (response.ok) {
+              console.log("LNbits wallet connection successful with endpoint:", endpoint);
+              walletConnected = true;
+              break;
+            }
+          } catch (e) {
+            // Try next endpoint
+          }
         }
         
-        return res.status(400).json({ error: `LNbits Fehler: ${errorMsg}` });
+        if (!walletConnected) {
+          return res.status(400).json({ 
+            error: "Wallet nicht erreichbar. Überprüfe URL und Admin API Key." 
+          });
+        }
+      } catch (error) {
+        console.error("LNbits wallet test failed:", error);
+        return res.status(400).json({ error: `LNbits Fehler: ${(error as Error).message}` });
       }
 
       // Save LNbits credentials
       const peer = await storage.updatePeerWallet(peerId, normalizedUrl, lnbitsAdminKey);
+      console.log("LNbits wallet saved successfully for peer:", peerId);
       res.json(peer);
     } catch (error) {
       console.error("LNbits wallet setup error:", error);
