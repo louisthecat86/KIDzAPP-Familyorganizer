@@ -914,13 +914,14 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             role === "parent" && parentMode === "join" ? trimmedJoinParentId : undefined
           );
       
-      // Check if parent registration returned recovery code
-      const user = typeof response === 'object' && 'recoveryCode' in response 
+      // Extract user object (ignore hashed recovery code from DB)
+      const user = typeof response === 'object'
         ? { id: response.id, name: response.name, role: response.role, connectionId: response.connectionId } as User
         : response as User;
 
-      if (typeof response === 'object' && 'recoveryCode' in response && response.recoveryCode && typeof response.recoveryCode === 'string') {
-        setRecoveryCodes([response.recoveryCode]);
+      // Only show recovery code modal if there's a NEW recovery code (after registration/PIN reset)
+      if (typeof response === 'object' && 'newRecoveryCode' in response && response.newRecoveryCode && typeof response.newRecoveryCode === 'string') {
+        setRecoveryCodes([response.newRecoveryCode]);
         setShowRecoveryCodes(true);
         return;
       }
