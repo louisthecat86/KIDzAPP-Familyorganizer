@@ -463,7 +463,7 @@ export default function App() {
           variant="ghost"
           size="icon"
           onClick={() => setSidebarOpen(true)}
-          className="fixed right-4 top-4 z-30"
+          className="fixed right-4 top-4 z-50"
           data-testid="button-open-sidebar"
         >
           <Menu className="h-5 w-5" />
@@ -576,7 +576,8 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
         initial={{ x: 250 }}
         animate={{ x: sidebarOpen ? 0 : 250 }}
         transition={{ duration: 0.3 }}
-        className="fixed right-0 top-0 h-screen w-64 bg-gradient-to-b from-gray-900 to-black border-l border-border z-40 flex flex-col md:hidden"
+        className="fixed right-0 top-0 h-screen w-64 bg-gradient-to-b from-gray-900 to-black border-l border-border z-40 flex flex-col pointer-events-none"
+        style={{ pointerEvents: sidebarOpen ? "auto" : "none" }}
       >
         <div className="p-4 border-b border-border space-y-3">
           <div className="flex items-center justify-between">
