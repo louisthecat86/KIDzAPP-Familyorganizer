@@ -38,6 +38,7 @@ import {
   MessageSquare
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { PhotoUpload } from "@/components/PhotoUpload";
 
 type Peer = {
   id: number;
@@ -3285,19 +3286,21 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
   }
 
   if (currentView === "tasks-my") {
+    const handlePhotoUploadSuccess = (proof: string) => {
+      queryClient.invalidateQueries({ queryKey: ["tasks", user.connectionId] });
+    };
+
     return (
       <div className="max-w-4xl">
         <h1 className="text-3xl font-bold mb-8">In Arbeit</h1>
         <div className="grid gap-4">
           {myTasks.filter((t: Task) => t.status === "assigned").map((task: Task) => (
             <TaskCard key={task.id} task={task} variant="child">
-              <Button 
-                onClick={() => onSubmit(task.id)} 
-                className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                data-testid={`button-submit-task-${task.id}`}
-              >
-                <Upload className="mr-2 h-4 w-4" /> Beweis senden
-              </Button>
+              <PhotoUpload 
+                taskId={task.id}
+                onUploadSuccess={handlePhotoUploadSuccess}
+                disabled={false}
+              />
             </TaskCard>
           ))}
           {myTasks.filter((t: Task) => t.status === "assigned").length === 0 && (
