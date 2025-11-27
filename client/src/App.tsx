@@ -4381,6 +4381,9 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     const children = connectedPeers.filter((p: any) => p.role === "child");
     const [resetPinChildId, setResetPinChildId] = useState<number | null>(null);
     const [resetPinValue, setResetPinValue] = useState("");
+    const [editLnbitsUrl, setEditLnbitsUrl] = useState(user.lnbitsUrl || "");
+    const [editLnbitsAdminKey, setEditLnbitsAdminKey] = useState(user.lnbitsAdminKey || "");
+    const [showAdminKey, setShowAdminKey] = useState(false);
 
     const handleResetPin = async (childId: number) => {
       if (!resetPinValue || resetPinValue.length !== 4 || !/^\d+$/.test(resetPinValue)) {
@@ -4404,9 +4407,104 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
       }
     };
 
+    const handleSaveLnbits = async () => {
+      if (!editLnbitsUrl || !editLnbitsAdminKey) {
+        toast({ title: "Fehler", description: "URL und Admin-Schlüssel erforderlich", variant: "destructive" });
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/wallet/setup-parent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ peerId: user.id, lnbitsUrl: editLnbitsUrl, lnbitsAdminKey: editLnbitsAdminKey }),
+        });
+        if (!res.ok) throw new Error("Failed to save LNbits configuration");
+        const data = await res.json();
+        setUser(data);
+        toast({ title: "Erfolg", description: "LNbits-Konto verbunden!" });
+      } catch (error) {
+        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      }
+    };
+
     return (
       <div className="max-w-4xl space-y-6">
         <h1 className="text-3xl font-bold mb-8">Einstellungen</h1>
+        
+        <Card className="border-2 border-primary/40 bg-primary/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              ⚡ LNbits Verbindung
+            </CardTitle>
+            <CardDescription>Verbinde dein LNbits-Konto um Aufgaben mit Satoshi-Belohnungen zu erstellen</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {user.lnbitsUrl ? (
+              <div className="space-y-3">
+                <div className="p-3 rounded-lg border border-green-500/30 bg-green-500/10">
+                  <p className="text-sm font-semibold text-green-300">✓ LNbits verbunden</p>
+                  <p className="text-sm text-muted-foreground mt-1">URL: <span className="text-sm font-mono break-all">{user.lnbitsUrl}</span></p>
+                </div>
+                <Button
+                  onClick={() => {
+                    setUser({ ...user, lnbitsUrl: undefined, lnbitsAdminKey: undefined });
+                    fetch("/api/wallet/disconnect", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ peerId: user.id }) });
+                    toast({ title: "Getrennt", description: "LNbits-Verbindung wurde entfernt" });
+                  }}
+                  variant="destructive"
+                  size="sm"
+                  data-testid="button-disconnect-lnbits"
+                >
+                  Trennen
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="lnbits-url">LNbits Instanz URL</Label>
+                  <Input 
+                    id="lnbits-url"
+                    placeholder="z.B. https://lnbits.example.com"
+                    value={editLnbitsUrl}
+                    onChange={(e) => setEditLnbitsUrl(e.target.value)}
+                    className="font-mono text-xs"
+                    data-testid="input-lnbits-url"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lnbits-key">Admin-Schlüssel</Label>
+                  <div className="flex gap-2">
+                    <Input 
+                      id="lnbits-key"
+                      placeholder="Admin-Schlüssel"
+                      type={showAdminKey ? "text" : "password"}
+                      value={editLnbitsAdminKey}
+                      onChange={(e) => setEditLnbitsAdminKey(e.target.value)}
+                      className="font-mono text-xs"
+                      data-testid="input-lnbits-admin-key"
+                    />
+                    <Button
+                      onClick={() => setShowAdminKey(!showAdminKey)}
+                      variant="outline"
+                      size="icon"
+                      data-testid="button-toggle-admin-key"
+                    >
+                      {showAdminKey ? "🙈" : "👁️"}
+                    </Button>
+                  </div>
+                </div>
+                <Button 
+                  onClick={handleSaveLnbits}
+                  className="w-full bg-primary hover:bg-primary/90"
+                  data-testid="button-save-lnbits"
+                >
+                  LNbits verbinden
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
         
         {children.length > 0 && (
           <>
