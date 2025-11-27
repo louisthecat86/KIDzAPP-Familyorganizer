@@ -27,6 +27,9 @@ export const insertPeerSchema = createInsertSchema(peers).omit({
   id: true,
   createdAt: true,
   balance: true,
+}).extend({
+  securityQuestion: z.string().optional(),
+  securityAnswer: z.string().optional(),
 });
 
 export type InsertPeer = z.infer<typeof insertPeerSchema>;
