@@ -745,8 +745,8 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4 sm:p-6 relative overflow-hidden flex items-center justify-center">
       <div className="w-full max-w-5xl z-10">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl sm:text-5xl font-heading font-bold mb-2">Spark ⚡ Kids</h1>
+        <div className="text-center mb-16">
+          <h1 className="text-5xl sm:text-7xl font-heading font-bold mb-4 bg-gradient-to-r from-primary via-primary to-yellow-500 bg-clip-text text-transparent">Spark ⚡ Kids</h1>
           <h2 className="text-lg sm:text-xl font-semibold text-muted-foreground mb-1">der Familienorganizer</h2>
           <p className="text-base text-muted-foreground">Wo aus Aufgaben Belohnungen werden</p>
         </div>
