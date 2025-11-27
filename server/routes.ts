@@ -214,7 +214,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { peerId, lnbitsUrl, lnbitsAdminKey } = req.body;
       
       if (!peerId || !lnbitsUrl || !lnbitsAdminKey) {
-        return res.status(400).json({ error: "peerId, lnbitsUrl, and lnbitsAdminKey required" });
+        return res.status(400).json({ error: "peerId, lnbitsUrl, and lnbitsAdminKey erforderlich" });
+      }
+
+      // Validate URL format
+      if (!lnbitsUrl.startsWith("http://") && !lnbitsUrl.startsWith("https://")) {
+        return res.status(400).json({ error: "LNbits URL muss mit http:// oder https:// beginnen" });
       }
 
       // Normalize URL (remove trailing slash)
@@ -223,10 +228,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Test LNbits connection by creating a test invoice
       try {
         const lnbits = new LNBitsClient(normalizedUrl, lnbitsAdminKey);
+        console.log("Testing LNbits connection with URL:", normalizedUrl);
         await lnbits.createInvoice(1, "Test connection");
+        console.log("LNbits connection test successful!");
       } catch (error) {
         console.error("LNbits connection test failed:", error);
-        return res.status(400).json({ error: `LNbits connection failed: ${error}` });
+        const errorMsg = (error as Error).message;
+        
+        // Provide helpful error messages
+        if (errorMsg.includes("404")) {
+          return res.status(400).json({ 
+            error: "LNbits URL nicht erreichbar (404). Überprüfe die URL und dass die Instanz online ist." 
+          });
+        } else if (errorMsg.includes("401") || errorMsg.includes("403")) {
+          return res.status(400).json({ 
+            error: "Admin Key ungültig. Überprüfe deinen LNbits Admin API Key." 
+          });
+        } else if (errorMsg.includes("ECONNREFUSED") || errorMsg.includes("ENOTFOUND")) {
+          return res.status(400).json({ 
+            error: "Server nicht erreichbar. Überprüfe die LNbits URL und deine Internetverbindung." 
+          });
+        }
+        
+        return res.status(400).json({ error: `LNbits Fehler: ${errorMsg}` });
       }
 
       // Save LNbits credentials
@@ -234,7 +258,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(peer);
     } catch (error) {
       console.error("LNbits wallet setup error:", error);
-      res.status(500).json({ error: "Failed to setup LNbits wallet" });
+      res.status(500).json({ error: "Wallet-Setup fehlgeschlagen: " + (error as Error).message });
     }
   });
 
