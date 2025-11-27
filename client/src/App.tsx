@@ -4170,9 +4170,9 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
 
     const handleSendMessage = async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!newMessage.trim() || isLoading) return;
+      if (!newMessage.trim() || isLoadingMessage) return;
 
-      setIsLoading(true);
+      setIsLoadingMessage(true);
       try {
         await fetch("/api/chat", {
           method: "POST",
@@ -4193,7 +4193,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
       } catch (error) {
         toast({ title: "Fehler", description: "Nachricht konnte nicht gesendet werden", variant: "destructive" });
       } finally {
-        setIsLoading(false);
+        setIsLoadingMessage(false);
       }
     };
 
@@ -4232,13 +4232,13 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Nachricht eingeben..."
-                  disabled={isLoading}
+                  disabled={isLoadingMessage}
                   className="flex-1"
                   data-testid="input-chat-message"
                 />
                 <Button
                   type="submit"
-                  disabled={!newMessage.trim() || isLoading}
+                  disabled={!newMessage.trim() || isLoadingMessage}
                   className="bg-primary hover:bg-primary/90"
                   data-testid="button-send-message"
                 >
