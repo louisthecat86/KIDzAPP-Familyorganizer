@@ -3692,9 +3692,37 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   }
 
   if (currentView === "tasks") {
+    const isLnbitsConfigured = user.lnbitsUrl && user.lnbitsAdminKey;
     const availableBalance = displayBalance !== null ? displayBalance / 1000 : 0;
     const isBalanceInsufficient = displayBalance !== null && availableBalance < newTask.sats;
     const balancePercentage = displayBalance !== null && newTask.sats > 0 ? (availableBalance / newTask.sats) * 100 : 100;
+
+    if (!isLnbitsConfigured) {
+      return (
+        <div className="space-y-8">
+          <h1 className="text-3xl font-bold mb-8">Neue Aufgabe erstellen</h1>
+          <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+            <Card className="border-2 border-amber-500/40 bg-amber-500/5 shadow-lg overflow-hidden">
+              <CardContent className="pt-8">
+                <div className="text-center space-y-4">
+                  <div className="text-4xl">⚡</div>
+                  <h2 className="text-xl font-bold text-amber-300">LNbits Verbindung erforderlich</h2>
+                  <p className="text-sm text-amber-200/80 max-w-md mx-auto">
+                    Um Aufgaben mit Satoshi-Belohnungen zu erstellen, musst du zuerst dein LNbits-Konto verbinden.
+                  </p>
+                  <Button 
+                    onClick={() => setCurrentView("settings")}
+                    className="mt-4 bg-primary hover:bg-primary/90"
+                  >
+                    📱 Zu Einstellungen
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.section>
+        </div>
+      );
+    }
 
     return (
       <div className="space-y-8">

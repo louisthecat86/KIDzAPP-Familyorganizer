@@ -498,27 +498,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let invoice = "";
       let escrowLocked = false;
 
-      // Validate reward against LNbits balance
-      if (parent.lnbitsUrl && parent.lnbitsAdminKey) {
-        try {
-          const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
-          const balance = await lnbits.getBalance();
-          
-          if (balance < data.sats) {
-            return res.status(400).json({ 
-              error: `Unzureichende Balance. Benötigt: ${data.sats} Sats, verfügbar: ${balance} Sats` 
-            });
-          }
+      // LNbits must be configured
+      if (!parent.lnbitsUrl || !parent.lnbitsAdminKey) {
+        return res.status(400).json({ 
+          error: "LNbits ist nicht konfiguriert. Bitte verbinde dein LNbits-Konto in den Einstellungen." 
+        });
+      }
 
-          // Create escrow invoice if balance is sufficient
-          invoice = await lnbits.createPaylink(data.sats, `Task: ${data.title}`);
-          escrowLocked = true;
-        } catch (error) {
-          if ((error as any).message?.includes("Unzureichende")) {
-            throw error;
-          }
-          console.warn("LNbits operation failed, creating task without escrow:", error);
+      // Validate reward against LNbits balance
+      try {
+        const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+        const balance = await lnbits.getBalance();
+        
+        if (balance < data.sats) {
+          return res.status(400).json({ 
+            error: `Unzureichende Balance. Benötigt: ${data.sats} Sats, verfügbar: ${balance} Sats` 
+          });
         }
+
+        // Create escrow invoice if balance is sufficient
+        invoice = await lnbits.createPaylink(data.sats, `Task: ${data.title}`);
+        escrowLocked = true;
+      } catch (error) {
+        if ((error as any).message?.includes("Unzureichende") || (error as any).message?.includes("nicht konfiguriert")) {
+          throw error;
+        }
+        console.warn("LNbits operation failed:", error);
+        return res.status(400).json({ error: "LNbits-Verbindung fehlgeschlagen. Überprüfe deine Einstellungen." });
       }
 
       // Create task
