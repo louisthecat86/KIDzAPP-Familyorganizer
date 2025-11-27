@@ -919,9 +919,15 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
         ? { id: response.id, name: response.name, role: response.role, connectionId: response.connectionId } as User
         : response as User;
 
-      // Only show recovery code modal if there's a NEW recovery code (after registration/PIN reset)
-      if (typeof response === 'object' && 'newRecoveryCode' in response && response.newRecoveryCode && typeof response.newRecoveryCode === 'string') {
-        setRecoveryCodes([response.newRecoveryCode]);
+      // Show recovery code modal if there's a recovery code (registration or PIN reset)
+      const recoveryCodeToShow = (typeof response === 'object' && response.recoveryCode && typeof response.recoveryCode === 'string')
+        ? response.recoveryCode
+        : (typeof response === 'object' && response.newRecoveryCode && typeof response.newRecoveryCode === 'string')
+        ? response.newRecoveryCode
+        : null;
+      
+      if (recoveryCodeToShow) {
+        setRecoveryCodes([recoveryCodeToShow]);
         setShowRecoveryCodes(true);
         return;
       }
