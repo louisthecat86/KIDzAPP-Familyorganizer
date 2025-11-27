@@ -1673,7 +1673,9 @@ function PeersContent({ user, setUser, queryClient }: any) {
       refetchInterval: 2000
     });
 
-    const parent = connectedPeers.find((p: any) => p.role === "parent");
+    const parent = connectedPeers
+      .filter((p: any) => p.role === "parent")
+      .sort((a: any, b: any) => a.id - b.id)[0];
 
     const handleUnlink = async () => {
       if (!window.confirm("Möchtest du dich wirklich von dieser Familie trennen?")) return;
@@ -3837,7 +3839,9 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
       refetchInterval: 2000
     });
 
-    const parent = connectedPeers.find((p: any) => p.role === "parent");
+    const parent = connectedPeers
+      .filter((p: any) => p.role === "parent")
+      .sort((a: any, b: any) => a.id - b.id)[0];
 
     const handleUnlink = async () => {
       if (!window.confirm("Möchtest du dich wirklich von dieser Familie trennen?")) return;
