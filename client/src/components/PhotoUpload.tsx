@@ -184,22 +184,13 @@ export function PhotoUpload({ taskId, onUploadSuccess, disabled = false }: Photo
   return (
     <div className="flex gap-2 w-full" data-testid="photo-upload-buttons">
       <Button
-        onClick={startCamera}
-        variant="outline"
-        className="flex-1"
-        disabled={disabled}
-        data-testid="button-start-camera"
-      >
-        <Camera className="h-4 w-4 mr-2" /> Kamera
-      </Button>
-      <Button
         onClick={() => fileInputRef.current?.click()}
         variant="outline"
-        className="flex-1"
+        className="w-full"
         disabled={disabled}
         data-testid="button-upload-file"
       >
-        <Upload className="h-4 w-4 mr-2" /> Datei
+        <Upload className="h-4 w-4 mr-2" /> Foto hochladen
       </Button>
       <input
         ref={fileInputRef}
