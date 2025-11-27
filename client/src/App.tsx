@@ -893,6 +893,15 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
       });
       return;
     }
+
+    if (!isLogin && role === "parent" && !securityAnswer) {
+      toast({
+        title: "Fehler",
+        description: "Bitte gib deine Lieblingsfarbe ein",
+        variant: "destructive"
+      });
+      return;
+    }
     
     setIsLoading(true);
     try {
@@ -904,7 +913,9 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             role, 
             trimmedPin, 
             role === "parent" && parentMode === "new" ? trimmedFamilyName : undefined,
-            role === "parent" && parentMode === "join" ? trimmedJoinParentId : undefined
+            role === "parent" && parentMode === "join" ? trimmedJoinParentId : undefined,
+            role === "parent" ? securityQuestion : undefined,
+            role === "parent" ? securityAnswer : undefined
           );
       
       // Extract user object (ignore hashed recovery code from DB)
