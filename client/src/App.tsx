@@ -4007,18 +4007,19 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                   <h3 className="text-sm font-bold mb-2 flex items-center gap-1">
                     <Calendar className="h-4 w-4 text-primary" /> Kalender
                   </h3>
-                  <div className="flex flex-col items-center gap-2">
+                  <div className="w-full space-y-2">
                     <style>{`
                       .rdp-child {
-                        --rdp-cell-size: 32px;
+                        --rdp-cell-size: 24px;
                         --rdp-accent-color: rgb(59, 130, 246);
                         --rdp-background-color: rgba(59, 130, 246, 0.1);
-                        margin: 0;
+                        margin: 0 auto;
+                        display: block;
                       }
                       .rdp-child .rdp-head_cell {
                         color: rgb(156, 163, 175);
                         font-weight: 600;
-                        font-size: 0.6rem;
+                        font-size: 0.55rem;
                       }
                       .rdp-child .rdp-cell {
                         color: rgb(156, 163, 175);
@@ -4027,7 +4028,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                       .rdp-child .rdp-day {
                         color: rgb(209, 213, 219);
                         border-radius: 2px;
-                        font-size: 0.7rem;
+                        font-size: 0.6rem;
                       }
                       .rdp-child .rdp-day_selected {
                         background-color: rgb(59, 130, 246);
@@ -4040,19 +4041,19 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                       .rdp-child .rdp-caption {
                         color: rgb(229, 231, 235);
                         font-weight: 600;
-                        margin-bottom: 0.5rem;
-                        font-size: 0.75rem;
+                        margin-bottom: 0.25rem;
+                        font-size: 0.65rem;
                       }
                       .rdp-child .rdp-nav {
-                        gap: 2px;
+                        gap: 1px;
                       }
                       .rdp-child .rdp-nav_button {
-                        width: 20px;
-                        height: 20px;
+                        width: 16px;
+                        height: 16px;
                         padding: 0;
                       }
                     `}</style>
-                    <div className="rdp-child">
+                    <div className="rdp-child w-full flex justify-center">
                       <DayPicker
                         mode="single"
                         selected={selectedDate}
@@ -4081,7 +4082,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                       <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase">
                         {selectedDate.toLocaleDateString("de-DE", { day: "numeric", month: "short", year: "numeric" })}
                       </p>
-                      <div className="space-y-1 max-h-32 overflow-y-auto">
+                      <div className="space-y-1 max-h-28 overflow-y-auto">
                         {events
                           .filter(e => new Date(e.startDate).toDateString() === selectedDate.toDateString())
                           .map((event: FamilyEvent) => (
