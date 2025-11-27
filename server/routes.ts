@@ -51,9 +51,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Generate Recovery Code (single code)
+  // Generate Recovery Code (single code - format: XXXX-XXXX)
   const generateRecoveryCode = (): string => {
-    return Math.random().toString(36).substring(2, 10).toUpperCase();
+    const block1 = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    const block2 = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    return `${block1}-${block2}`;
   };
 
   // Peer Registration

@@ -366,8 +366,10 @@ export class DatabaseStorage implements IStorage {
       throw new Error("Invalid recovery code");
     }
 
-    // Update PIN and generate new recovery code
-    const newRecoveryCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+    // Update PIN and generate new recovery code (format: XXXX-XXXX)
+    const block1 = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    const block2 = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    const newRecoveryCode = `${block1}-${block2}`;
     const newHashedCode = crypto.createHash('sha256').update(newRecoveryCode).digest('hex');
     
     const result = await db.update(peers)
