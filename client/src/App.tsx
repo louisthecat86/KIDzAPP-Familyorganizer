@@ -847,12 +847,12 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
         </div>
 
         {payoutTab === null ? (
-          <div className="flex flex-col items-center justify-center gap-4 py-8">
+          <div className="flex flex-col items-center justify-center gap-8 py-8">
             <h2 className="text-2xl font-bold text-center">Was möchtest du tun?</h2>
-            <div className="w-full max-w-sm space-y-3">
+            <div className="flex flex-col gap-3 w-80">
               <Button 
                 onClick={() => setPayoutTab("plans")}
-                className="w-full h-28 text-lg bg-blue-600 hover:bg-blue-700"
+                className="h-32 text-lg bg-blue-600 hover:bg-blue-700"
                 data-testid="button-choose-scheduled"
               >
                 <div className="flex flex-col items-center gap-3">
@@ -862,7 +862,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
               </Button>
               <Button 
                 onClick={() => setPayoutTab("instant")}
-                className="w-full h-28 text-lg bg-green-600 hover:bg-green-700"
+                className="h-32 text-lg bg-green-600 hover:bg-green-700"
                 data-testid="button-choose-instant"
               >
                 <div className="flex flex-col items-center gap-3">
