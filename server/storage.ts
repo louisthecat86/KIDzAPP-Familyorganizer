@@ -15,6 +15,7 @@ export interface IStorage {
   updatePeerWallet(peerId: number, lnbitsUrl: string, lnbitsAdminKey: string): Promise<Peer>;
   updatePeerNWC(peerId: number, nwcConnectionString: string): Promise<Peer>;
   updateBalance(peerId: number, sats: number): Promise<Peer>;
+  updatePeerPin(peerId: number, newPin: string): Promise<Peer>;
   
   // Task operations
   getTasks(connectionId: string): Promise<Task[]>;
@@ -163,6 +164,14 @@ export class DatabaseStorage implements IStorage {
   async updateBalance(peerId: number, sats: number): Promise<Peer> {
     const result = await db.update(peers)
       .set({ balance: sats })
+      .where(eq(peers.id, peerId))
+      .returning();
+    return result[0];
+  }
+
+  async updatePeerPin(peerId: number, newPin: string): Promise<Peer> {
+    const result = await db.update(peers)
+      .set({ pin: newPin })
       .where(eq(peers.id, peerId))
       .returning();
     return result[0];

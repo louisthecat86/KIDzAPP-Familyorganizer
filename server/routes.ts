@@ -485,6 +485,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Parent: Reset child PIN
+  app.post("/api/peers/:childId/reset-pin", async (req, res) => {
+    try {
+      const { childId } = req.params;
+      const { parentId, newPin } = req.body;
+
+      if (!parentId || !newPin || newPin.length !== 4 || !/^\d+$/.test(newPin)) {
+        return res.status(400).json({ error: "Valid 4-digit PIN required" });
+      }
+
+      const child = await storage.getPeer(parseInt(childId));
+      if (!child || child.role !== "child") {
+        return res.status(404).json({ error: "Child not found" });
+      }
+
+      const parent = await storage.getPeer(parentId);
+      if (!parent || parent.role !== "parent") {
+        return res.status(403).json({ error: "Only parents can reset child PINs" });
+      }
+
+      // Verify parent is in same family
+      if (child.connectionId !== parent.connectionId) {
+        return res.status(403).json({ error: "Parent and child must be in same family" });
+      }
+
+      const updatedChild = await storage.updatePeerPin(parseInt(childId), newPin);
+      res.json({ success: true, child: updatedChild });
+    } catch (error) {
+      console.error("Reset PIN error:", error);
+      res.status(500).json({ error: "Failed to reset PIN" });
+    }
+  });
+
   // Upload proof photo for task
   app.post("/api/tasks/:id/proof", async (req, res) => {
     try {
