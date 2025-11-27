@@ -3692,6 +3692,21 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   }
 
   if (currentView === "tasks") {
+    const handleTaskFormSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      
+      if (displayBalance !== null && displayBalance < newTask.sats) {
+        toast({ 
+          title: "Unzureichende Balance", 
+          description: `Du hast nur ${displayBalance} Sats, benötigst aber ${newTask.sats} Sats für diese Aufgabe`,
+          variant: "destructive" 
+        });
+        return;
+      }
+      
+      onCreate(e);
+    };
+
     return (
       <div className="space-y-8">
         <h1 className="text-3xl font-bold mb-8">Neue Aufgabe erstellen</h1>
@@ -3704,7 +3719,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={onCreate} className="flex flex-col md:flex-row gap-4 items-end">
+              <form onSubmit={handleTaskFormSubmit} className="flex flex-col md:flex-row gap-4 items-end">
                 <div className="space-y-2 flex-grow w-full">
                   <Label htmlFor="title">Was ist zu tun?</Label>
                   <Input 
