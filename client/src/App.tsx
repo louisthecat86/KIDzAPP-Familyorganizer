@@ -686,36 +686,46 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                   📐 Ansicht
                 </button>
 
-                {/* Wallet Einstellung mit Submenü */}
-                <div>
+                {/* Wallet Einstellung - Parent or Child */}
+                {user.role === "parent" ? (
+                  <div>
+                    <button
+                      onClick={() => setShowWalletSubmenu(!showWalletSubmenu)}
+                      className="w-full px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary transition-colors text-left flex items-center justify-between"
+                      data-testid="submenu-wallet"
+                    >
+                      <span>💰 Wallet Einstellung</span>
+                      <ChevronDown className={`h-3 w-3 transition-transform ${showWalletSubmenu ? "rotate-180" : ""}`} />
+                    </button>
+                    
+                    {showWalletSubmenu && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-6 mt-1 space-y-1">
+                        <button
+                          onClick={() => { setWalletTab("lnbits"); handleSettingsClick("wallet"); setSidebarOpen(false); }}
+                          className="w-full px-4 py-2 rounded-lg text-xs text-muted-foreground hover:bg-secondary transition-colors text-left"
+                          data-testid="submenu-wallet-lnbits"
+                        >
+                          ⚡ LNbits Anbindung
+                        </button>
+                        <button
+                          onClick={() => { setWalletTab("nwc"); handleSettingsClick("wallet"); setSidebarOpen(false); }}
+                          className="w-full px-4 py-2 rounded-lg text-xs text-muted-foreground hover:bg-secondary transition-colors text-left"
+                          data-testid="submenu-wallet-nwc"
+                        >
+                          🔌 NWC Einstellungen
+                        </button>
+                      </motion.div>
+                    )}
+                  </div>
+                ) : (
                   <button
-                    onClick={() => setShowWalletSubmenu(!showWalletSubmenu)}
-                    className="w-full px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary transition-colors text-left flex items-center justify-between"
-                    data-testid="submenu-wallet"
+                    onClick={() => { handleSettingsClick("wallet"); setSidebarOpen(false); }}
+                    className="w-full px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary transition-colors text-left"
+                    data-testid="submenu-wallet-child"
                   >
-                    <span>💰 Wallet Einstellung</span>
-                    <ChevronDown className={`h-3 w-3 transition-transform ${showWalletSubmenu ? "rotate-180" : ""}`} />
+                    💰 Wallet Einstellung
                   </button>
-                  
-                  {showWalletSubmenu && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-6 mt-1 space-y-1">
-                      <button
-                        onClick={() => { setWalletTab("lnbits"); handleSettingsClick("wallet"); setSidebarOpen(false); }}
-                        className="w-full px-4 py-2 rounded-lg text-xs text-muted-foreground hover:bg-secondary transition-colors text-left"
-                        data-testid="submenu-wallet-lnbits"
-                      >
-                        ⚡ LNbits Anbindung
-                      </button>
-                      <button
-                        onClick={() => { setWalletTab("nwc"); handleSettingsClick("wallet"); setSidebarOpen(false); }}
-                        className="w-full px-4 py-2 rounded-lg text-xs text-muted-foreground hover:bg-secondary transition-colors text-left"
-                        data-testid="submenu-wallet-nwc"
-                      >
-                        🔌 NWC Einstellungen
-                      </button>
-                    </motion.div>
-                  )}
-                </div>
+                )}
 
                 {/* Peers */}
                 <button
