@@ -4089,6 +4089,123 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     );
   }
 
+  if (currentView === "allowances" && user.role === "parent") {
+    return (
+      <div className="max-w-4xl space-y-6">
+        <div className="flex items-center gap-3 mb-8">
+          <Button variant="outline" onClick={() => setCurrentView("dashboard")} className="gap-2" data-testid="button-back-to-dashboard">
+            <ChevronLeft className="h-4 w-4" /> Zurück
+          </Button>
+          <h1 className="text-3xl font-bold">💰 Taschengeld-Verwaltung</h1>
+        </div>
+
+        <Card className="border-2 border-primary/40 bg-primary/5">
+          <CardHeader>
+            <CardTitle>Neues Taschengeld hinzufügen</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="allowance-child">Kind</Label>
+              <select
+                id="allowance-child"
+                value={allowanceChildId || ""}
+                onChange={(e) => setAllowanceChildId(e.target.value ? parseInt(e.target.value) : null)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                data-testid="select-allowance-child"
+              >
+                <option value="">-- Kind wählen --</option>
+                {parentChildren.map((child: any) => (
+                  <option key={child.id} value={child.id}>{child.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <Label htmlFor="allowance-sats">Betrag (Sats)</Label>
+              <Input
+                id="allowance-sats"
+                type="number"
+                placeholder="z.B. 100"
+                value={allowanceSats}
+                onChange={(e) => setAllowanceSats(e.target.value)}
+                data-testid="input-allowance-sats"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="allowance-freq">Turnus</Label>
+              <select
+                id="allowance-freq"
+                value={allowanceFrequency}
+                onChange={(e) => setAllowanceFrequency(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                data-testid="select-allowance-frequency"
+              >
+                <option value="daily">Täglich</option>
+                <option value="weekly">Wöchentlich</option>
+                <option value="biweekly">Zweiwöchentlich</option>
+                <option value="monthly">Monatlich</option>
+              </select>
+            </div>
+
+            <Button
+              onClick={handleCreateAllowance}
+              disabled={!allowanceChildId || !allowanceSats || isCreatingAllowance}
+              className="w-full bg-primary hover:bg-primary/90"
+              data-testid="button-create-allowance"
+            >
+              {isCreatingAllowance ? "Wird gespeichert..." : "Hinzufügen"}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {allowances.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Aktive Taschengelder ({allowances.length})</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {allowances.map((allowance: any) => {
+                const child = parentChildren.find((c: any) => c.id === allowance.childId);
+                const freqLabels: Record<string, string> = {
+                  daily: "Täglich",
+                  weekly: "Wöchentlich",
+                  biweekly: "Zweiwöchentlich",
+                  monthly: "Monatlich",
+                };
+                const freqLabel = freqLabels[allowance.frequency as string] || allowance.frequency;
+
+                return (
+                  <div
+                    key={allowance.id}
+                    className="p-4 rounded-lg border border-border bg-secondary/30 flex items-center justify-between"
+                    data-testid={`card-allowance-${allowance.id}`}
+                  >
+                    <div>
+                      <p className="font-semibold">{child?.name || "Unbekannt"}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {allowance.sats} Sats {freqLabel}
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => handleDeleteAllowance(allowance.id)}
+                      variant="outline"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      data-testid={`button-delete-allowance-${allowance.id}`}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  }
+
   if (currentView === "settings" && user.role === "child") {
     return (
       <div className="max-w-4xl">
@@ -4247,118 +4364,6 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           </div>
         </motion.section>
 
-        {user.role === "parent" && (
-          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}>
-            <Card className="border-2 border-primary/40 bg-primary/5">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  💰 Taschengeld-Verwaltung
-                </CardTitle>
-                <CardDescription>Richte regelmäßige Zahlungen für deine Kinder ein</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 rounded-lg border border-border bg-secondary/30 space-y-3">
-                  <p className="text-sm font-semibold">Neues Taschengeld hinzufügen</p>
-                  
-                  <div>
-                    <Label htmlFor="allowance-child">Kind</Label>
-                    <select
-                      id="allowance-child"
-                      value={allowanceChildId || ""}
-                      onChange={(e) => setAllowanceChildId(e.target.value ? parseInt(e.target.value) : null)}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      data-testid="select-allowance-child"
-                    >
-                      <option value="">-- Kind wählen --</option>
-                      {parentChildren.map((child: any) => (
-                        <option key={child.id} value={child.id}>{child.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="allowance-sats">Betrag (Sats)</Label>
-                    <Input
-                      id="allowance-sats"
-                      type="number"
-                      placeholder="z.B. 100"
-                      value={allowanceSats}
-                      onChange={(e) => setAllowanceSats(e.target.value)}
-                      data-testid="input-allowance-sats"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="allowance-freq">Turnus</Label>
-                    <select
-                      id="allowance-freq"
-                      value={allowanceFrequency}
-                      onChange={(e) => setAllowanceFrequency(e.target.value)}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      data-testid="select-allowance-frequency"
-                    >
-                      <option value="daily">Täglich</option>
-                      <option value="weekly">Wöchentlich</option>
-                      <option value="biweekly">Zweiwöchentlich</option>
-                      <option value="monthly">Monatlich</option>
-                    </select>
-                  </div>
-
-                  <Button
-                    onClick={handleCreateAllowance}
-                    disabled={!allowanceChildId || !allowanceSats || isCreatingAllowance}
-                    className="w-full bg-primary hover:bg-primary/90"
-                    data-testid="button-create-allowance"
-                  >
-                    {isCreatingAllowance ? "Wird gespeichert..." : "Hinzufügen"}
-                  </Button>
-                </div>
-
-                {allowances.length > 0 ? (
-                  <div className="space-y-2">
-                    <p className="text-sm font-semibold">Aktive Taschengelder</p>
-                    {allowances.map((allowance: any) => {
-                      const child = parentChildren.find((c: any) => c.id === allowance.childId);
-                      const freqLabels: Record<string, string> = {
-                        daily: "Täglich",
-                        weekly: "Wöchentlich",
-                        biweekly: "Zweiwöchentlich",
-                        monthly: "Monatlich",
-                      };
-                      const freqLabel = freqLabels[allowance.frequency as string] || allowance.frequency;
-
-                      return (
-                        <div
-                          key={allowance.id}
-                          className="p-3 rounded-lg border border-border bg-secondary/30 flex items-center justify-between"
-                          data-testid={`card-allowance-${allowance.id}`}
-                        >
-                          <div>
-                            <p className="font-semibold">{child?.name || "Unbekannt"}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {allowance.sats} Sats {freqLabel}
-                            </p>
-                          </div>
-                          <Button
-                            onClick={() => handleDeleteAllowance(allowance.id)}
-                            variant="outline"
-                            size="sm"
-                            className="text-destructive hover:text-destructive"
-                            data-testid={`button-delete-allowance-${allowance.id}`}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground text-center py-2">Noch keine Taschengelder eingerichtet</p>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
 
         {connectedParents.length > 0 && (
           <div className="space-y-4">
@@ -4422,6 +4427,23 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                 </CardContent>
               </Card>
             </motion.div>
+            
+            {user.role === "parent" && (
+              <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
+                <Card 
+                  className="bg-gradient-to-br from-gray-900 to-black border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
+                  onClick={() => setCurrentView("allowances")}
+                  data-testid="card-active-allowances"
+                >
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-purple-500">{allowances.length}</div>
+                      <p className="text-sm text-muted-foreground mt-2">💰 Taschengelder</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
             </div>
 
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
