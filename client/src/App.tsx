@@ -1784,13 +1784,10 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
 
           {/* WALLET TAB */}
           {activeTab === "wallet" && (
-            <Tabs defaultValue={walletTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="nwc" data-testid="tab-nwc">NWC</TabsTrigger>
-                <TabsTrigger value="lnbits" data-testid="tab-lnbits">LNbits</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="nwc" className="space-y-4 mt-4">
+            <div className="w-full space-y-4">
+              {/* NWC Content */}
+              {walletTab === "nwc" && (
+              <div className="space-y-4 mt-4">
                 {user.nwcConnectionString ? (
                   // Connected state
                   <div className="border border-green-500/30 bg-green-500/5 rounded-lg p-4 space-y-3">
@@ -1851,9 +1848,12 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                     </Button>
                   </div>
                 )}
-              </TabsContent>
+              </div>
+              )}
 
-              <TabsContent value="lnbits" className="space-y-4 mt-4">
+              {/* LNbits Content */}
+              {walletTab === "lnbits" && (
+              <div className="space-y-4 mt-4">
                 {user.lnbitsUrl ? (
                   // Connected state - show wallet card
                   <div className="space-y-3">
@@ -1957,8 +1957,9 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                     </Button>
                   </div>
                 )}
-              </TabsContent>
-            </Tabs>
+              </div>
+              )}
+            </div>
           )}
 
           {/* PEERS TAB */}
