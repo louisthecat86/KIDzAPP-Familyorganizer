@@ -758,6 +758,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
   const { toast } = useToast();
   const [isProcessingPayout, setIsProcessingPayout] = useState(false);
   const [payoutTab, setPayoutTab] = useState<"plans" | "instant" | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"lnbits" | "nwc">(user.lnbitsUrl ? "lnbits" : "nwc");
   const [adHocChildId, setAdHocChildId] = useState<number | null>(null);
   const [adHocSats, setAdHocSats] = useState("");
   const [adHocMessage, setAdHocMessage] = useState("");
@@ -877,6 +878,40 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
           </Button>
           <h1 className="text-3xl font-bold">💰 Taschengeld</h1>
         </div>
+
+        {/* Payment Method Selection */}
+        {payoutTab !== null && (
+          <div className="flex gap-2 mb-4 bg-secondary/30 p-3 rounded-lg">
+            <label className="flex items-center gap-2 cursor-pointer" data-testid="label-payment-method">
+              <input 
+                type="radio" 
+                name="paymentMethod" 
+                value="lnbits" 
+                checked={paymentMethod === "lnbits"}
+                onChange={(e) => setPaymentMethod(e.target.value as "lnbits" | "nwc")}
+                disabled={!user.lnbitsUrl}
+                data-testid="radio-payment-lnbits"
+              />
+              <span className={`text-sm font-semibold ${!user.lnbitsUrl ? "opacity-50" : ""}`}>
+                💳 LNbits {!user.lnbitsUrl && "(nicht konfiguriert)"}
+              </span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input 
+                type="radio" 
+                name="paymentMethod" 
+                value="nwc" 
+                checked={paymentMethod === "nwc"}
+                onChange={(e) => setPaymentMethod(e.target.value as "lnbits" | "nwc")}
+                disabled={!user.nwcConnectionString}
+                data-testid="radio-payment-nwc"
+              />
+              <span className={`text-sm font-semibold ${!user.nwcConnectionString ? "opacity-50" : ""}`}>
+                🔌 NWC {!user.nwcConnectionString && "(nicht konfiguriert)"}
+              </span>
+            </label>
+          </div>
+        )}
 
         {payoutTab === null ? (
           <div className="flex flex-col items-center justify-center gap-8 py-8 w-full">
