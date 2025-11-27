@@ -2461,6 +2461,17 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       refetchInterval: 10000
     });
 
+    const { data: allowances = [] } = useQuery({
+      queryKey: ["allowances", user.connectionId],
+      queryFn: async () => {
+        const res = await fetch(`/api/allowances/${user.connectionId}`);
+        if (!res.ok) throw new Error("Failed to fetch allowances");
+        return res.json();
+      },
+      refetchInterval: 5000,
+      enabled: user.role === "parent"
+    });
+
     const handleShowSpendingStats = async () => {
       try {
         const res = await fetch(`/api/parent/${user.id}/spending-by-child/${user.connectionId}`);
