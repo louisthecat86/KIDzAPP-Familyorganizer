@@ -44,9 +44,8 @@ export interface IStorage {
   getChatMessages(connectionId: string): Promise<(ChatMessage & { senderName: string })[]>;
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
 
-  // Recovery Code operations (parent only)
-  updatePeerRecoveryCode(peerId: number, recoveryCode: string): Promise<Peer>;
-  validateAndResetPin(parentName: string, recoveryCode: string, newPin: string): Promise<Peer>;
+  // PIN Reset via Security Question (parent only)
+  resetPinWithSecurityAnswer(parentName: string, securityAnswer: string, newPin: string): Promise<Peer>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -342,45 +341,28 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  // Recovery Code operations (parent only)
-  async updatePeerRecoveryCode(peerId: number, recoveryCode: string): Promise<Peer> {
+  // PIN Reset via Security Question (parent only)
+  async resetPinWithSecurityAnswer(parentName: string, securityAnswer: string, newPin: string): Promise<Peer> {
     const crypto = await import('crypto');
-    const hashedCode = crypto.createHash('sha256').update(recoveryCode).digest('hex');
-    const result = await db.update(peers)
-      .set({ recoveryCode: hashedCode })
-      .where(eq(peers.id, peerId))
-      .returning();
-    return result[0];
-  }
-
-  async validateAndResetPin(parentName: string, recoveryCode: string, newPin: string): Promise<Peer> {
-    const crypto = await import('crypto');
-    const trimmedCode = recoveryCode.trim();
-    const hashedCode = crypto.createHash('sha256').update(trimmedCode).digest('hex');
     const peer = await this.getPeerByName(parentName);
     
     if (!peer || peer.role !== "parent") {
-      throw new Error("Parent account not found");
+      throw new Error("Elternteil nicht gefunden");
     }
 
-    if (!peer.recoveryCode || peer.recoveryCode !== hashedCode) {
-      console.error("Recovery code mismatch:", { stored: peer.recoveryCode?.substring(0, 8), provided: hashedCode.substring(0, 8) });
-      throw new Error("Invalid recovery code");
-    }
-
-    // Update PIN and generate new recovery code (format: XXXX-XXXX)
-    const block1 = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    const block2 = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    const newRecoveryCode = `${block1}-${block2}`;
-    const newHashedCode = crypto.createHash('sha256').update(newRecoveryCode).digest('hex');
+    const hashedAnswer = crypto.createHash('sha256').update(securityAnswer.toLowerCase().trim()).digest('hex');
     
+    if (!peer.securityAnswer || peer.securityAnswer !== hashedAnswer) {
+      throw new Error("Antwort auf Sicherheitsfrage ist falsch");
+    }
+
+    // Update PIN
     const result = await db.update(peers)
-      .set({ pin: newPin, recoveryCode: newHashedCode })
+      .set({ pin: newPin })
       .where(eq(peers.id, peer.id))
       .returning();
     
-    // Return with plaintext recovery code for display
-    return { ...result[0], recoveryCode: newRecoveryCode } as any;
+    return result[0];
   }
 }
 

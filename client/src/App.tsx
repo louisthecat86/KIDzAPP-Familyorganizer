@@ -807,13 +807,12 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
   const [familyName, setFamilyName] = useState("");
   const [joinParentId, setJoinParentId] = useState("");
   const [pin, setPin] = useState("");
-  const [recoveryCode, setRecoveryCode] = useState("");
+  const [securityQuestion, setSecurityQuestion] = useState("lieblings_farbe");
+  const [securityAnswer, setSecurityAnswer] = useState("");
   const [isLogin, setIsLogin] = useState(true);
-  const [useRecoveryCode, setUseRecoveryCode] = useState(false);
+  const [usePinReset, setUsePinReset] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [parentMode, setParentMode] = useState<"new" | "join" | null>(null);
-  const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
-  const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -824,12 +823,12 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
     const trimmedFamilyName = familyName.trim();
     const trimmedJoinParentId = joinParentId.trim();
     
-    // Recovery code login for parent
-    if (useRecoveryCode && role === "parent") {
-      if (!trimmedName || !recoveryCode || !trimmedPin || trimmedPin.length !== 4) {
+    // PIN Reset via Security Question for parent
+    if (usePinReset && role === "parent") {
+      if (!trimmedName || !securityAnswer || !trimmedPin || trimmedPin.length !== 4) {
         toast({
           title: "Fehler",
-          description: "Bitte fülle Name, Recovery Code und neue 4-stellige PIN aus",
+          description: "Bitte fülle Name, Antwort und neue 4-stellige PIN aus",
           variant: "destructive"
         });
         return;
@@ -837,31 +836,25 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
 
       setIsLoading(true);
       try {
-        const res = await fetch("/api/peers/reset-pin-recovery", {
+        const res = await fetch("/api/peers/reset-pin", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: trimmedName, role: "parent", recoveryCode: recoveryCode.trim(), newPin: trimmedPin })
+          body: JSON.stringify({ name: trimmedName, role: "parent", securityAnswer: securityAnswer.trim(), newPin: trimmedPin })
         });
         if (!res.ok) {
           const error = await res.json();
-          throw new Error(error.error || "Recovery code invalid");
+          throw new Error(error.error || "PIN Reset fehlgeschlagen");
         }
-        const data = await res.json();
         
         toast({
-          title: "PIN zurückgesetzt! 🎉",
-          description: "Neuer Recovery Code generiert"
+          title: "PIN zurückgesetzt! ✅",
+          description: "Du kannst dich jetzt mit der neuen PIN anmelden"
         });
         
-        // Zeige neuen Recovery Code an
-        if (data.newRecoveryCode) {
-          setRecoveryCodes([data.newRecoveryCode]);
-          setShowRecoveryCodes(true);
-        }
-        
-        setUseRecoveryCode(false);
-        setRecoveryCode("");
+        setUsePinReset(false);
+        setSecurityAnswer("");
         setPin("");
+        setIsLogin(true);
       } catch (error) {
         toast({
           title: "Fehler",
@@ -951,74 +944,6 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
     }
   };
 
-  // Recovery Code Display Modal
-  if (showRecoveryCodes && recoveryCodes.length > 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4">
-        <Card className="w-full max-w-lg border-2 border-amber-500/50 bg-gradient-to-br from-gray-900 to-black">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-amber-500">
-              🔑 Dein Recovery Code
-            </CardTitle>
-            <CardDescription>Speichere diesen Code sicher - du brauchst ihn um deine PIN zurückzusetzen</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
-              <p className="text-xs text-muted-foreground mb-3">Dein 1 Recovery Code (verwende ihn zum PIN-Reset):</p>
-              <code className="p-3 bg-secondary rounded text-lg font-mono text-primary text-center block">{recoveryCodes[0]}</code>
-            </div>
-            <p className="text-xs text-muted-foreground">💡 Speichere diesen Code an einem SICHEREN ORT - du kannst ihn später nicht mehr abrufen!</p>
-          </CardContent>
-          <CardFooter className="gap-2">
-            <Button 
-              onClick={() => {
-                navigator.clipboard.writeText(recoveryCodes[0]);
-                toast({ title: "Kopiert!", description: "Code in Zwischenablage kopiert" });
-              }}
-              variant="outline"
-              data-testid="button-copy-recovery-code"
-            >
-              <Copy className="h-4 w-4 mr-2" /> Kopieren
-            </Button>
-            <Button 
-              onClick={() => {
-                const codeText = `Spark Kids Recovery Code\n\n${recoveryCodes[0]}\n\nVerwende diesen Code zum PIN-Reset!`;
-                const blob = new Blob([codeText], { type: 'text/plain' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'recovery-code.txt';
-                a.click();
-              }}
-              variant="outline"
-              data-testid="button-download-recovery-code"
-            >
-              📥 Herunterladen
-            </Button>
-            <Button 
-              onClick={() => {
-                setShowRecoveryCodes(false);
-                // If coming from registration (isLogin was false), complete
-                // If coming from PIN reset (useRecoveryCode was true), go back to login
-                if (useRecoveryCode) {
-                  setUseRecoveryCode(false);
-                  setRecoveryCode("");
-                  setPin("");
-                  setIsLogin(true);
-                } else {
-                  onComplete({ id: 0, name, role: "parent", connectionId: "" });
-                }
-              }}
-              className="flex-1 bg-primary hover:bg-primary/90"
-              data-testid="button-done-recovery-code"
-            >
-              Verstanden ✓
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    );
-  }
 
   // Wenn Parent registriert sich und muss Modus wählen
   if (!isLogin && role === "parent" && parentMode === null) {
@@ -1073,8 +998,8 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
     );
   }
 
-  // Recovery code login screen for parent
-  if (useRecoveryCode && role === "parent" && isLogin) {
+  // PIN Reset screen for parent (via security question)
+  if (usePinReset && role === "parent" && isLogin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4">
         <Card className="w-full max-w-lg border border-border bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl">
@@ -1082,41 +1007,41 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={() => setUseRecoveryCode(false)}
+              onClick={() => setUsePinReset(false)}
               className="w-fit mb-2 -ml-2 text-muted-foreground"
             >
               ← Zurück
             </Button>
-            <CardTitle>PIN mit Recovery Code zurücksetzen</CardTitle>
-            <CardDescription>Gib einen deiner Recovery Codes ein um eine neue PIN zu setzen</CardDescription>
+            <CardTitle>PIN zurücksetzen</CardTitle>
+            <CardDescription>Beantworte deine Sicherheitsfrage um eine neue PIN zu setzen</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="recovery-name">Elternname</Label>
+              <Label htmlFor="reset-name">Elternname</Label>
               <Input 
-                id="recovery-name"
+                id="reset-name"
                 value={name} 
                 onChange={(e) => setName(e.target.value)}
                 placeholder="z.B. Marco"
                 disabled={isLoading}
-                data-testid="input-recovery-name"
+                data-testid="input-reset-name"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="recovery-code">Recovery Code</Label>
+              <Label htmlFor="reset-answer">Deine Sicherheitsfrage: Deine Lieblingsfarbe?</Label>
               <Input 
-                id="recovery-code"
-                value={recoveryCode} 
-                onChange={(e) => setRecoveryCode(e.target.value)}
-                placeholder="z.B. 1234-5678"
+                id="reset-answer"
+                value={securityAnswer} 
+                onChange={(e) => setSecurityAnswer(e.target.value)}
+                placeholder="z.B. Blau"
                 disabled={isLoading}
-                data-testid="input-recovery-code"
+                data-testid="input-reset-answer"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="recovery-pin">Neue 4-stellige PIN</Label>
+              <Label htmlFor="reset-pin">Neue 4-stellige PIN</Label>
               <Input 
-                id="recovery-pin"
+                id="reset-pin"
                 type="text"
                 inputMode="numeric"
                 maxLength={4}
@@ -1124,16 +1049,16 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
                 placeholder="z.B. 5678"
                 disabled={isLoading}
-                data-testid="input-recovery-pin"
+                data-testid="input-reset-pin"
               />
             </div>
           </CardContent>
           <CardFooter className="gap-2">
             <Button 
               variant="outline" 
-              onClick={() => setUseRecoveryCode(false)}
+              onClick={() => setUsePinReset(false)}
               disabled={isLoading}
-              data-testid="button-cancel-recovery"
+              data-testid="button-cancel-reset"
             >
               Abbrechen
             </Button>
@@ -1141,7 +1066,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               onClick={handleSubmit}
               disabled={isLoading}
               className="flex-1"
-              data-testid="button-submit-recovery"
+              data-testid="button-submit-reset"
             >
               {isLoading ? "⏳ Wird verarbeitet..." : "PIN zurücksetzen"}
             </Button>

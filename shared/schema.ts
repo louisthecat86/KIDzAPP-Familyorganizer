@@ -16,7 +16,8 @@ export const peers = pgTable("peers", {
   lnbitsUrl: text("lnbits_url"), // LNBits instance URL (parent)
   lnbitsAdminKey: text("lnbits_admin_key"), // LNBits admin key (parent)
   lightningAddress: text("lightning_address"), // Lightning address for child (receives sats directly)
-  recoveryCode: text("recovery_code"), // Single recovery code for parent PIN recovery (hashed)
+  securityQuestion: text("security_question"), // Security question for parent PIN recovery
+  securityAnswer: text("security_answer"), // Hashed answer to security question
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => ({
   uniqueNamePin: sql`unique (name, pin)`,

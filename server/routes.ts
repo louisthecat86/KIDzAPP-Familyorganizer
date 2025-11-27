@@ -134,26 +134,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Reset parent PIN using recovery code
-  app.post("/api/peers/reset-pin-recovery", async (req, res) => {
+  // Reset parent PIN using security question
+  app.post("/api/peers/reset-pin", async (req, res) => {
     try {
-      const { name, role, recoveryCode, newPin } = req.body;
+      const { name, role, securityAnswer, newPin } = req.body;
 
       if (role !== "parent") {
-        return res.status(400).json({ error: "Recovery codes only for parent accounts" });
+        return res.status(400).json({ error: "PIN Reset nur für Eltern" });
       }
 
-      if (!name || !recoveryCode || !newPin || newPin.length !== 4) {
-        return res.status(400).json({ error: "Name, recovery code, and 4-digit PIN required" });
+      if (!name || !securityAnswer || !newPin || newPin.length !== 4) {
+        return res.status(400).json({ error: "Name, Antwort und 4-stellige PIN erforderlich" });
       }
 
-      // Validate and reset PIN, generates new recovery code
-      const updated = await storage.validateAndResetPin(name, recoveryCode, newPin);
-      res.json({ success: true, message: "PIN reset successfully", peer: updated, newRecoveryCode: (updated as any).recoveryCode });
+      // Validate and reset PIN
+      const updated = await storage.resetPinWithSecurityAnswer(name, securityAnswer, newPin);
+      res.json({ success: true, message: "PIN erfolgreich zurückgesetzt", peer: updated });
     } catch (error) {
-      console.error("Recovery PIN reset error:", error);
+      console.error("PIN Reset error:", error);
       const message = (error as Error).message;
-      res.status(400).json({ error: message || "Failed to reset PIN" });
+      res.status(400).json({ error: message || "PIN Reset fehlgeschlagen" });
+    }
+  });
+
+  // Get security question for parent
+  app.get("/api/peers/:name/security-question", async (req, res) => {
+    try {
+      const peer = await storage.getPeerByName(req.params.name);
+      if (!peer || peer.role !== "parent") {
+        return res.status(404).json({ error: "Elternteil nicht gefunden" });
+      }
+      res.json({ securityQuestion: peer.securityQuestion });
+    } catch (error) {
+      res.status(500).json({ error: "Fehler beim Abrufen der Sicherheitsfrage" });
     }
   });
 
