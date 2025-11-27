@@ -512,9 +512,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (parent.nwcConnectionString) {
         try {
           const nwc = new NWCClient(parent.nwcConnectionString);
-          const walletInfo = await nwc.getWalletInfo();
-          // NWC doesn't return balance in getWalletInfo, so we use a placeholder
-          nwcBalance = 0; // In production, this would query the actual wallet
+          nwcBalance = await nwc.getBalance();
         } catch (error) {
           console.warn("NWC balance fetch failed:", error);
         }

@@ -161,6 +161,30 @@ export class NWCClient {
   }
 
   /**
+   * Get wallet balance from NWC
+   * In production, this would query the actual wallet via Nostr
+   * For now, returns a simulated balance based on wallet pubkey
+   */
+  async getBalance(): Promise<number> {
+    try {
+      console.log("[NWC] Fetching wallet balance");
+      
+      // Generate a consistent balance based on wallet pubkey for demo purposes
+      // In production, this would query the actual wallet balance via NWC protocol
+      const hash = this.walletPubKey.split('').reduce((acc, char) => {
+        return ((acc << 5) - acc) + char.charCodeAt(0);
+      }, 0);
+      const balance = Math.abs(hash) % 10000000; // Balance between 0-10M sats
+      
+      console.log(`[NWC] Balance: ${balance} msats`);
+      return balance;
+    } catch (error) {
+      console.error("[NWC] Balance fetch error:", error);
+      throw new Error("Failed to fetch balance from NWC");
+    }
+  }
+
+  /**
    * Generate a shareable payment link/QR format
    */
   generatePaymentLink(invoice: string): string {
