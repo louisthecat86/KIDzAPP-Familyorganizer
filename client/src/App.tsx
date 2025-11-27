@@ -761,7 +761,8 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
                 <p>✓ Eltern erstellen Aufgaben mit Sats-Belohnung</p>
                 <p>✓ Kinder erledigen Aufgaben & laden Foto-Beweis hoch</p>
                 <p>✓ Eltern bestätigen & zahlen sofort aus</p>
-                <p>✓ Familienkalender, Chat & Verwaltung</p>
+                <p>✓ Familienkalender für gemeinsame Termine mit Zusage- & Absagenfunktion</p>
+                <p>✓ Familienchat für direkten Austausch</p>
               </div>
             </div>
           </div>
