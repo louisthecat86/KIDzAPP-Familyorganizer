@@ -3692,20 +3692,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   }
 
   if (currentView === "tasks") {
-    const handleTaskFormSubmit = (e: React.FormEvent) => {
-      e.preventDefault();
-      
-      if (displayBalance !== null && displayBalance < newTask.sats) {
-        toast({ 
-          title: "Unzureichende Balance", 
-          description: `Du hast nur ${displayBalance} Sats, benötigst aber ${newTask.sats} Sats für diese Aufgabe`,
-          variant: "destructive" 
-        });
-        return;
-      }
-      
-      onCreate(e);
-    };
+    const isBalanceInsufficient = displayBalance !== null && displayBalance < newTask.sats;
+    const balancePercentage = displayBalance !== null && newTask.sats > 0 ? (displayBalance / newTask.sats) * 100 : 100;
 
     return (
       <div className="space-y-8">
@@ -3719,8 +3707,13 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleTaskFormSubmit} className="flex flex-col md:flex-row gap-4 items-end">
-                <div className="space-y-2 flex-grow w-full">
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                if (!isBalanceInsufficient) {
+                  onCreate(e);
+                }
+              }} className="space-y-4">
+                <div className="space-y-2">
                   <Label htmlFor="title">Was ist zu tun?</Label>
                   <Input 
                     id="title"
@@ -3732,27 +3725,56 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     data-testid="input-task-title"
                   />
                 </div>
-                <div className="space-y-2 w-full md:w-48">
-                  <Label htmlFor="sats" className="flex items-center gap-1">
-                    <Bitcoin className="h-4 w-4 text-primary" /> Belohnung
-                  </Label>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="sats" className="flex items-center gap-1">
+                      <Bitcoin className="h-4 w-4 text-primary" /> Belohnung
+                    </Label>
+                    <span className={`text-xs font-semibold ${isBalanceInsufficient ? "text-red-400" : "text-emerald-400"}`}>
+                      ⚡ {displayBalance !== null ? displayBalance.toLocaleString() : "---"} Sats verfügbar
+                    </span>
+                  </div>
                   <Input 
                     id="sats"
                     type="number" 
                     placeholder="50" 
                     value={newTask.sats}
                     onChange={(e) => setNewTask({ ...newTask, sats: parseInt(e.target.value) || 0 })}
-                    className="font-mono bg-secondary border-border focus:border-primary"
+                    className={`font-mono bg-secondary focus:border-primary transition-colors ${
+                      isBalanceInsufficient 
+                        ? "border-red-500/50 focus:border-red-500" 
+                        : "border-border"
+                    }`}
                     autoComplete="off"
                     data-testid="input-task-sats"
                   />
+                  {isBalanceInsufficient && displayBalance !== null && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -5 }} 
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg"
+                    >
+                      <span className="text-red-400 text-lg">⚠️</span>
+                      <div className="flex-1">
+                        <p className="text-xs font-semibold text-red-300">Unzureichende Balance</p>
+                        <p className="text-xs text-red-200/70">Du benötigst {newTask.sats - displayBalance} Sats mehr</p>
+                      </div>
+                    </motion.div>
+                  )}
                 </div>
+
                 <Button 
                   type="submit" 
-                  className="w-full md:w-auto bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
+                  disabled={isBalanceInsufficient}
+                  className={`w-full font-bold transition-all ${
+                    isBalanceInsufficient
+                      ? "bg-gray-600 text-gray-300 cursor-not-allowed opacity-50"
+                      : "bg-primary text-primary-foreground hover:bg-primary/90"
+                  }`}
                   data-testid="button-create-task"
                 >
-                  Erstellen
+                  {isBalanceInsufficient ? "Unzureichende Balance" : "Erstellen"}
                 </Button>
               </form>
             </CardContent>
