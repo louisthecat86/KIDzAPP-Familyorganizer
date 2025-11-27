@@ -3010,7 +3010,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         <div className="text-3xl font-bold text-primary flex items-center justify-center gap-1">
                           {displayBalance !== null ? (
                             <>
-                              ⚡ {(displayBalance / 1000).toLocaleString("de-DE", { maximumFractionDigits: 0 })} Sat
+                              ⚡ {displayBalance.toLocaleString("de-DE")} Sats
                             </>
                           ) : (
                             "⚠️ ---"
