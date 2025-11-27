@@ -1174,6 +1174,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
 
+  // Get current BTC price
+  app.get("/api/btc-price", async (req, res) => {
+    try {
+      const response = await fetch(
+        "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,eur&include_market_cap=true"
+      );
+      const data = await response.json();
+      if (data.bitcoin) {
+        return res.json({
+          usd: data.bitcoin.usd,
+          eur: data.bitcoin.eur,
+          timestamp: new Date().toISOString()
+        });
+      }
+      throw new Error("Invalid price data");
+    } catch (error) {
+      console.error("Error fetching BTC price:", error);
+      res.status(500).json({ error: "Failed to fetch BTC price" });
+    }
+  });
+
   // Start automatic allowance payout scheduler (runs every minute)
   cron.schedule("* * * * *", async () => {
     try {

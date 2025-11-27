@@ -4806,6 +4806,8 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
               </div>
             </div>
 
+            <BitcoinValueWidget sats={user.balance || 0} />
+
             {user.lightningAddress && (
               <div className="pt-4 border-t border-border/50">
                 <div className="flex items-start gap-3">
@@ -5192,6 +5194,72 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
   }
 
   return null;
+}
+
+function BitcoinValueWidget({ sats }: { sats: number }) {
+  const [btcPrice, setBtcPrice] = useState<{ usd: number; eur: number } | null>(null);
+  const [valueInUsd, setValueInUsd] = useState(0);
+  const [valueInEur, setValueInEur] = useState(0);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+
+  useEffect(() => {
+    const fetchPrice = async () => {
+      try {
+        const res = await fetch("/api/btc-price");
+        const data = await res.json();
+        setBtcPrice(data);
+        setLastUpdate(new Date());
+        
+        // Calculate values: 1 BTC = 100,000,000 sats
+        const btcAmount = sats / 100_000_000;
+        setValueInUsd(btcAmount * data.usd);
+        setValueInEur(btcAmount * data.eur);
+      } catch (error) {
+        console.error("Failed to fetch BTC price:", error);
+      }
+    };
+
+    fetchPrice();
+    const interval = setInterval(fetchPrice, 30000); // Update every 30 seconds
+    return () => clearInterval(interval);
+  }, [sats]);
+
+  if (!btcPrice) {
+    return null;
+  }
+
+  return (
+    <div className="pt-4 border-t border-border/50">
+      <div className="space-y-4">
+        <div className="flex items-start gap-3">
+          <div className="h-8 w-8 bg-yellow-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+            <span className="text-yellow-500 text-sm">💰</span>
+          </div>
+          <div className="flex-1">
+            <p className="text-xs text-muted-foreground uppercase tracking-widest mb-3">Bitcoin Wertzuwachs</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-lg p-3">
+                <p className="text-xs text-muted-foreground mb-1">Wert in USD</p>
+                <p className="text-lg font-mono font-bold text-yellow-400" data-testid="text-sats-usd-value">
+                  ${valueInUsd.toFixed(2)}
+                </p>
+              </div>
+              <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-lg p-3">
+                <p className="text-xs text-muted-foreground mb-1">Wert in EUR</p>
+                <p className="text-lg font-mono font-bold text-yellow-400" data-testid="text-sats-eur-value">
+                  €{valueInEur.toFixed(2)}
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+              💡 Sparen lohnt sich! Bitcoin: ${btcPrice.usd.toLocaleString()} | €{btcPrice.eur.toLocaleString()}
+              {lastUpdate && <span className="ml-auto">aktualisiert vor {Math.round((Date.now() - lastUpdate.getTime()) / 1000)}s</span>}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function TaskCard({ task, children, variant }: { task: Task; children?: React.ReactNode; variant: "parent" | "child" }) {
