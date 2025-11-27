@@ -1788,19 +1788,66 @@ function SettingsModal({ user, setUser, activeTab, onClose, layoutView, setLayou
               </TabsList>
 
               <TabsContent value="nwc" className="space-y-4 mt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="nwc-string">NWC Connection String</Label>
-                  <Input 
-                    id="nwc-string"
-                    placeholder="nostr+walletconnect://...?relay=...&secret=..."
-                    value={editNwc}
-                    onChange={(e) => setEditNwc(e.target.value)}
-                    className="bg-secondary border-border font-mono text-xs"
-                    autoComplete="off"
-                    data-testid="input-nwc"
-                  />
-                  <p className="text-xs text-muted-foreground">Status: {user.nwcConnectionString ? "✓ Verbunden" : "✗ Nicht verbunden"}</p>
-                </div>
+                {user.nwcConnectionString ? (
+                  // Connected state
+                  <div className="border border-green-500/30 bg-green-500/5 rounded-lg p-4 space-y-3">
+                    <p className="text-xs text-muted-foreground mb-1">🟢 NWC Wallet verbunden</p>
+                    <div className="bg-secondary rounded border border-border p-2 text-xs font-mono overflow-auto max-h-20">
+                      {user.nwcConnectionString}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="w-full text-xs"
+                      onClick={async () => {
+                        try {
+                          const res = await fetch("/api/wallet/setup", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ peerId: user.id, nwcConnectionString: "" }),
+                          });
+                          if (res.ok) {
+                            setUser({ ...user, nwcConnectionString: undefined });
+                            useToastFn({ title: "❌ NWC Verbindung getrennt", duration: 3000 });
+                          }
+                        } catch (error) {
+                          useToastFn({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+                        }
+                      }}
+                      disabled={isSaving}
+                      data-testid="button-disconnect-nwc"
+                    >
+                      🔌 Verbindung trennen
+                    </Button>
+                  </div>
+                ) : (
+                  // Disconnected state
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="nwc-string">NWC Connection String</Label>
+                      <Input 
+                        id="nwc-string"
+                        placeholder="nostr+walletconnect://...?relay=...&secret=..."
+                        value={editNwc}
+                        onChange={(e) => setEditNwc(e.target.value)}
+                        className="bg-secondary border-border font-mono text-xs"
+                        autoComplete="off"
+                        data-testid="input-nwc"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="default"
+                      className="w-full"
+                      onClick={saveNWC}
+                      disabled={isSaving || !editNwc}
+                      data-testid="button-save-nwc"
+                    >
+                      {isSaving ? "⏳ Speichern..." : "💾 Speichern"}
+                    </Button>
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="lnbits" className="space-y-4 mt-4">
@@ -1895,6 +1942,16 @@ function SettingsModal({ user, setUser, activeTab, onClose, layoutView, setLayou
                     >
                       🧪 Verbindung testen
                     </Button>
+                    <Button
+                      type="button"
+                      variant="default"
+                      className="w-full"
+                      onClick={saveLNbits}
+                      disabled={isSaving || !editLnbitsUrl || !editLnbitsAdminKey}
+                      data-testid="button-save-lnbits"
+                    >
+                      {isSaving ? "⏳ Speichern..." : "💾 Speichern"}
+                    </Button>
                   </div>
                 )}
               </TabsContent>
@@ -1915,19 +1972,6 @@ function SettingsModal({ user, setUser, activeTab, onClose, layoutView, setLayou
           >
             Schließen
           </Button>
-          {activeTab === "wallet" && !user.lnbitsUrl && (
-            <Button 
-              onClick={() => {
-                if (editNwc && !editLnbitsUrl) saveNWC();
-                else if (editLnbitsUrl && editLnbitsAdminKey) saveLNbits();
-              }}
-              disabled={isSaving || (!editNwc && (!editLnbitsUrl || !editLnbitsAdminKey))}
-              className="bg-primary hover:bg-primary/90"
-              data-testid="button-save-wallet"
-            >
-              {isSaving ? "⏳ Speichern..." : "💾 Speichern"}
-            </Button>
-          )}
         </CardFooter>
       </Card>
     </div>
