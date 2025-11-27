@@ -2821,6 +2821,18 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     }
   };
 
+  const { data: walletBalance = null } = useQuery({
+    queryKey: ["wallet-balance", user.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/parent/${user.id}/wallet-balance`);
+      if (!res.ok) throw new Error("Failed to fetch wallet balance");
+      return res.json();
+    },
+    refetchInterval: 10000
+  });
+
+  const displayBalance = walletBalance?.lnbitsBalance;
+
   if (currentView === "dashboard") {
     const openTasks = tasks.filter((t: Task) => t.status === "open" || t.status === "assigned");
     const submittedTasks = tasks.filter((t: Task) => t.status === "submitted");
@@ -2839,18 +2851,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       },
       refetchInterval: 5000
     });
-
-    const { data: walletBalance = null } = useQuery({
-      queryKey: ["wallet-balance", user.id],
-      queryFn: async () => {
-        const res = await fetch(`/api/parent/${user.id}/wallet-balance`);
-        if (!res.ok) throw new Error("Failed to fetch wallet balance");
-        return res.json();
-      },
-      refetchInterval: 10000
-    });
-
-    const displayBalance = walletBalance?.lnbitsBalance;
 
     const handleShowSpendingStats = async () => {
       try {
