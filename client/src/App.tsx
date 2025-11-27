@@ -2783,7 +2783,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   </div>
                   <Button 
                     onClick={setupLNbits}
-                    className="bg-primary hover:bg-primary/90"
+                    disabled={!lnbitsUrl || !lnbitsAdminKey}
+                    className="bg-primary hover:bg-primary/90 w-full"
                     data-testid="button-setup-lnbits-settings"
                   >
                     Speichern
