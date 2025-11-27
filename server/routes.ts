@@ -1066,6 +1066,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Instant payout to child
+  app.post("/api/parent/:id/payout-instant", async (req, res) => {
+    try {
+      const parentId = parseInt(req.params.id);
+      const { childId, sats, message } = req.body;
+
+      if (!childId || !sats) {
+        return res.status(400).json({ error: "childId and sats required" });
+      }
+
+      const parent = await storage.getPeer(parentId);
+      if (!parent || !parent.lnbitsUrl || !parent.lnbitsAdminKey) {
+        return res.status(400).json({ error: "Parent LNBits not configured" });
+      }
+
+      const child = await storage.getPeer(childId);
+      if (!child || !child.lightningAddress) {
+        return res.status(400).json({ error: "Child Lightning address not set" });
+      }
+
+      const memo = message || `Sofortzahlung für ${child.name}`;
+      const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+      const paymentHash = await lnbits.payToLightningAddress(sats, child.lightningAddress, memo);
+
+      res.json({ success: true, paymentHash });
+    } catch (error) {
+      console.error("Instant payout error:", error);
+      res.status(500).json({ error: String(error) });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

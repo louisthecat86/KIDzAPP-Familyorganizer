@@ -760,6 +760,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
   const [payoutTab, setPayoutTab] = useState<"plans" | "instant" | null>(null);
   const [adHocChildId, setAdHocChildId] = useState<number | null>(null);
   const [adHocSats, setAdHocSats] = useState("");
+  const [adHocMessage, setAdHocMessage] = useState("");
   
   const { data: childrenWithAllowances = [] } = useQuery({
     queryKey: ["children-with-allowances", user.id, user.connectionId],
@@ -813,15 +814,23 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
         throw new Error("Kind hat keine Lightning Adresse");
       }
 
-      const res = await fetch(`/api/parent/${user.id}/payout-allowance`, {
+      const res = await fetch(`/api/parent/${user.id}/payout-instant`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ childId: adHocChildId, sats: parseInt(adHocSats), allowanceId: null }),
+        body: JSON.stringify({ 
+          childId: adHocChildId, 
+          sats: parseInt(adHocSats), 
+          message: adHocMessage || undefined 
+        }),
       });
-      if (!res.ok) throw new Error("Payout failed");
-      toast({ title: "Erfolg", description: `${adHocSats} Sats an ${child.name} gezahlt!` });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Zahlung fehlgeschlagen");
+      }
+      toast({ title: "Erfolg", description: `${adHocSats} Sats an ${child.name} gesendet!` });
       setAdHocChildId(null);
       setAdHocSats("");
+      setAdHocMessage("");
       queryClient.invalidateQueries({ queryKey: ["children-with-allowances"] });
     } catch (error) {
       toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
@@ -928,7 +937,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
             )}
 
             {payoutTab === "instant" && (
-              <div className="space-y-4">
+              <div className="space-y-4 max-w-md mx-auto w-full">
                 <div>
                   <Label htmlFor="adhoc-child" className="text-sm font-semibold mb-2 block">Kind auswählen</Label>
                   <select
@@ -958,6 +967,19 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
                     onChange={(e) => setAdHocSats(e.target.value)}
                     data-testid="input-adhoc-sats"
                     className="text-lg"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="adhoc-message" className="text-sm font-semibold mb-2 block">Nachricht (optional)</Label>
+                  <Input
+                    id="adhoc-message"
+                    type="text"
+                    placeholder="z.B. Taschengeld extra"
+                    value={adHocMessage}
+                    onChange={(e) => setAdHocMessage(e.target.value)}
+                    data-testid="input-adhoc-message"
+                    className="text-sm"
                   />
                 </div>
 
