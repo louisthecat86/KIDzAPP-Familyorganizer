@@ -352,14 +352,21 @@ export class NWCClient {
    * Get a realistic simulated balance for demo purposes
    */
   private getSimulatedBalance(): number {
-    // Generate consistent balance based on wallet pubkey
-    const hash = this.walletPubKey.split('').reduce((acc, char) => {
+    // Generate realistic balance based on wallet pubkey + current time
+    // This creates variation while keeping it consistent per session
+    const pubkeyHash = this.walletPubKey.split('').reduce((acc, char) => {
       return ((acc << 5) - acc) + char.charCodeAt(0);
     }, 0);
     
-    // Generate balance between 100k-1M sats for demo
-    const balance = (Math.abs(hash) % 900000) + 100000;
-    console.log(`[NWC] Using simulated balance: ${balance} msats`);
+    // Use time bucketing to vary balance slightly but not too much
+    const timeBucket = Math.floor(Date.now() / 60000); // Changes every minute
+    const combined = pubkeyHash * 31 + timeBucket;
+    
+    // Generate realistic balance: between 250k and 2M sats
+    const base = Math.abs(combined) % 1750000;
+    const balance = base + 250000;
+    
+    console.log(`[NWC] Using simulated balance: ${balance} msats (pubkey: ${this.walletPubKey.substring(0, 8)}...)`);
     return balance;
   }
 
