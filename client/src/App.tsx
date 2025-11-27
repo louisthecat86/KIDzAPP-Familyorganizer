@@ -773,7 +773,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
   });
 
   // Refetch when tab changes to "plans"
-  React.useEffect(() => {
+  useEffect(() => {
     if (payoutTab === "plans") {
       refetchAllowances();
     }
