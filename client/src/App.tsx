@@ -894,7 +894,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
       return;
     }
 
-    if (!isLogin && role === "parent" && !securityAnswer) {
+    if (!isLogin && role === "parent" && !securityAnswer.trim()) {
       toast({
         title: "Fehler",
         description: "Bitte gib deine Lieblingsfarbe ein",
