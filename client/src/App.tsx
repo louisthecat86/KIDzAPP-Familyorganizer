@@ -762,7 +762,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
   const [adHocSats, setAdHocSats] = useState("");
   const [adHocMessage, setAdHocMessage] = useState("");
   
-  const { data: childrenWithAllowances = [] } = useQuery({
+  const { data: childrenWithAllowances = [], refetch: refetchAllowances } = useQuery({
     queryKey: ["children-with-allowances", user.id, user.connectionId],
     queryFn: async () => {
       const res = await fetch(`/api/parent/${user.id}/children-with-allowances/${user.connectionId}`);
@@ -771,6 +771,13 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
     },
     enabled: user.role === "parent"
   });
+
+  // Refetch when tab changes to "plans"
+  React.useEffect(() => {
+    if (payoutTab === "plans") {
+      refetchAllowances();
+    }
+  }, [payoutTab, refetchAllowances]);
 
   const { data: allChildren = [] } = useQuery({
     queryKey: ["all-children", user.id],
