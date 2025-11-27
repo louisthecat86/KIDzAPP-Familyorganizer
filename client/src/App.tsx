@@ -902,13 +902,13 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             role === "parent" && parentMode === "join" ? trimmedJoinParentId : undefined
           );
       
-      // Check if parent registration returned recovery codes
-      const user = typeof response === 'object' && 'recoveryCodes' in response 
+      // Check if parent registration returned recovery code
+      const user = typeof response === 'object' && 'recoveryCode' in response 
         ? { id: response.id, name: response.name, role: response.role, connectionId: response.connectionId } as User
         : response as User;
 
-      if (typeof response === 'object' && 'recoveryCodes' in response && response.recoveryCodes && Array.isArray(response.recoveryCodes)) {
-        setRecoveryCodes(response.recoveryCodes);
+      if (typeof response === 'object' && 'recoveryCode' in response && response.recoveryCode && typeof response.recoveryCode === 'string') {
+        setRecoveryCodes([response.recoveryCode]);
         setShowRecoveryCodes(true);
         return;
       }
@@ -932,52 +932,47 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
     }
   };
 
-  // Recovery Codes Display Modal
+  // Recovery Code Display Modal
   if (showRecoveryCodes && recoveryCodes.length > 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4">
-        <Card className="w-full max-w-2xl border-2 border-amber-500/50 bg-gradient-to-br from-gray-900 to-black">
+        <Card className="w-full max-w-lg border-2 border-amber-500/50 bg-gradient-to-br from-gray-900 to-black">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-amber-500">
-              🔑 Recovery Codes - WICHTIG!
+              🔑 Dein Recovery Code
             </CardTitle>
-            <CardDescription>Speichere diese Codes sicher - du brauchst sie um deine PIN zurückzusetzen</CardDescription>
+            <CardDescription>Speichere diesen Code sicher - du brauchst ihn um deine PIN zurückzusetzen</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
-              <p className="text-sm text-muted-foreground mb-3">Deine 10 Recovery Codes (jeden Code nur 1x verwendbar):</p>
-              <div className="grid grid-cols-2 gap-2">
-                {recoveryCodes.map((code, i) => (
-                  <code key={i} className="p-2 bg-secondary rounded text-sm font-mono text-primary text-center">{code}</code>
-                ))}
-              </div>
+              <p className="text-xs text-muted-foreground mb-3">Dein 1 Recovery Code (verwende ihn zum PIN-Reset):</p>
+              <code className="p-3 bg-secondary rounded text-lg font-mono text-primary text-center block">{recoveryCodes[0]}</code>
             </div>
-            <p className="text-xs text-muted-foreground">💡 Tipp: Drucke oder speichere diese Codes an einem sicheren Ort!</p>
+            <p className="text-xs text-muted-foreground">💡 Speichere diesen Code an einem SICHEREN ORT - du kannst ihn später nicht mehr abrufen!</p>
           </CardContent>
           <CardFooter className="gap-2">
             <Button 
               onClick={() => {
-                const codesText = recoveryCodes.join('\n');
-                navigator.clipboard.writeText(codesText);
-                toast({ title: "Kopiert!", description: "Codes in Zwischenablage kopiert" });
+                navigator.clipboard.writeText(recoveryCodes[0]);
+                toast({ title: "Kopiert!", description: "Code in Zwischenablage kopiert" });
               }}
               variant="outline"
-              data-testid="button-copy-recovery-codes"
+              data-testid="button-copy-recovery-code"
             >
               <Copy className="h-4 w-4 mr-2" /> Kopieren
             </Button>
             <Button 
               onClick={() => {
-                const codesText = `Spark Kids Recovery Codes\n\n${recoveryCodes.join('\n')}\n\nJeden Code nur einmal verwenden!`;
-                const blob = new Blob([codesText], { type: 'text/plain' });
+                const codeText = `Spark Kids Recovery Code\n\n${recoveryCodes[0]}\n\nVerwende diesen Code zum PIN-Reset!`;
+                const blob = new Blob([codeText], { type: 'text/plain' });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'recovery-codes.txt';
+                a.download = 'recovery-code.txt';
                 a.click();
               }}
               variant="outline"
-              data-testid="button-download-recovery-codes"
+              data-testid="button-download-recovery-code"
             >
               📥 Herunterladen
             </Button>
@@ -987,7 +982,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 onComplete({ id: 0, name, role: "parent", connectionId: "" });
               }}
               className="flex-1 bg-primary hover:bg-primary/90"
-              data-testid="button-done-recovery-codes"
+              data-testid="button-done-recovery-code"
             >
               Verstanden ✓
             </Button>

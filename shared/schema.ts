@@ -16,6 +16,7 @@ export const peers = pgTable("peers", {
   lnbitsUrl: text("lnbits_url"), // LNBits instance URL (parent)
   lnbitsAdminKey: text("lnbits_admin_key"), // LNBits admin key (parent)
   lightningAddress: text("lightning_address"), // Lightning address for child (receives sats directly)
+  recoveryCode: text("recovery_code"), // Single recovery code for parent PIN recovery (hashed)
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => ({
   uniqueNamePin: sql`unique (name, pin)`,
@@ -141,21 +142,3 @@ export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type EventRsvp = typeof eventRsvps.$inferSelect;
-
-// Recovery Codes Table (only for parent accounts)
-export const recoveryCodes = pgTable("recovery_codes", {
-  id: serial("id").primaryKey(),
-  peerId: integer("peer_id").notNull(), // Parent ID only
-  code: text("code").notNull(), // Hashed code
-  used: boolean("used").default(false).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-export const insertRecoveryCodeSchema = createInsertSchema(recoveryCodes).omit({
-  id: true,
-  createdAt: true,
-  used: true,
-});
-
-export type InsertRecoveryCode = z.infer<typeof insertRecoveryCodeSchema>;
-export type RecoveryCode = typeof recoveryCodes.$inferSelect;

@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type RecoveryCode, type InsertRecoveryCode, recoveryCodes } from "@shared/schema";
+import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages } from "@shared/schema";
 import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
@@ -45,9 +45,8 @@ export interface IStorage {
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
 
   // Recovery Code operations (parent only)
-  createRecoveryCodes(peerId: number, codes: string[]): Promise<RecoveryCode[]>;
-  validateRecoveryCode(peerId: number, code: string): Promise<boolean>;
-  getRecoveryCodesByParent(peerId: number): Promise<RecoveryCode[]>;
+  updatePeerRecoveryCode(peerId: number, recoveryCode: string): Promise<Peer>;
+  validateAndResetPin(parentName: string, recoveryCode: string, newPin: string): Promise<Peer>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -344,35 +343,40 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Recovery Code operations (parent only)
-  async createRecoveryCodes(peerId: number, codes: string[]): Promise<RecoveryCode[]> {
+  async updatePeerRecoveryCode(peerId: number, recoveryCode: string): Promise<Peer> {
     const crypto = await import('crypto');
-    const hashedCodes = codes.map(code => ({
-      peerId,
-      code: crypto.createHash('sha256').update(code).digest('hex'),
-    }));
-    const result = await db.insert(recoveryCodes).values(hashedCodes).returning();
-    return result;
+    const hashedCode = crypto.createHash('sha256').update(recoveryCode).digest('hex');
+    const result = await db.update(peers)
+      .set({ recoveryCode: hashedCode })
+      .where(eq(peers.id, peerId))
+      .returning();
+    return result[0];
   }
 
-  async validateRecoveryCode(peerId: number, code: string): Promise<boolean> {
+  async validateAndResetPin(parentName: string, recoveryCode: string, newPin: string): Promise<Peer> {
     const crypto = await import('crypto');
-    const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
-    const result = await db.select().from(recoveryCodes)
-      .where(and(eq(recoveryCodes.peerId, peerId), eq(recoveryCodes.code, hashedCode), eq(recoveryCodes.used, false)))
-      .limit(1);
+    const hashedCode = crypto.createHash('sha256').update(recoveryCode).digest('hex');
+    const peer = await this.getPeerByName(parentName);
     
-    if (result.length > 0) {
-      // Mark code as used
-      await db.update(recoveryCodes)
-        .set({ used: true })
-        .where(eq(recoveryCodes.id, result[0].id));
-      return true;
+    if (!peer || peer.role !== "parent") {
+      throw new Error("Parent account not found");
     }
-    return false;
-  }
 
-  async getRecoveryCodesByParent(peerId: number): Promise<RecoveryCode[]> {
-    return await db.select().from(recoveryCodes).where(eq(recoveryCodes.peerId, peerId));
+    if (!peer.recoveryCode || peer.recoveryCode !== hashedCode) {
+      throw new Error("Invalid recovery code");
+    }
+
+    // Update PIN and generate new recovery code
+    const newRecoveryCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const newHashedCode = crypto.createHash('sha256').update(newRecoveryCode).digest('hex');
+    
+    const result = await db.update(peers)
+      .set({ pin: newPin, recoveryCode: newHashedCode })
+      .where(eq(peers.id, peer.id))
+      .returning();
+    
+    // Return with plaintext recovery code for display
+    return { ...result[0], recoveryCode: newRecoveryCode } as any;
   }
 }
 
