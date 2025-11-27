@@ -4083,118 +4083,118 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                 </div>
               </CardContent>
             </Card>
-
-            <Card className="border-2 border-primary/40 bg-primary/5">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  💰 Taschengeld-Verwaltung
-                </CardTitle>
-                <CardDescription>Richte regelmäßige Zahlungen für deine Kinder ein</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Taschengeld erstellen Form */}
-                <div className="p-4 rounded-lg border border-border bg-secondary/30 space-y-3">
-                  <p className="text-sm font-semibold">Neues Taschengeld hinzufügen</p>
-                  
-                  <div>
-                    <Label htmlFor="allowance-child">Kind</Label>
-                    <select
-                      id="allowance-child"
-                      value={allowanceChildId || ""}
-                      onChange={(e) => setAllowanceChildId(e.target.value ? parseInt(e.target.value) : null)}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      data-testid="select-allowance-child"
-                    >
-                      <option value="">-- Kind wählen --</option>
-                      {children.map((child: any) => (
-                        <option key={child.id} value={child.id}>{child.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="allowance-sats">Betrag (Sats)</Label>
-                    <Input
-                      id="allowance-sats"
-                      type="number"
-                      placeholder="z.B. 100"
-                      value={allowanceSats}
-                      onChange={(e) => setAllowanceSats(e.target.value)}
-                      data-testid="input-allowance-sats"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="allowance-freq">Turnus</Label>
-                    <select
-                      id="allowance-freq"
-                      value={allowanceFrequency}
-                      onChange={(e) => setAllowanceFrequency(e.target.value)}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      data-testid="select-allowance-frequency"
-                    >
-                      <option value="daily">Täglich</option>
-                      <option value="weekly">Wöchentlich</option>
-                      <option value="biweekly">Zweiwöchentlich</option>
-                      <option value="monthly">Monatlich</option>
-                    </select>
-                  </div>
-
-                  <Button
-                    onClick={handleCreateAllowance}
-                    disabled={!allowanceChildId || !allowanceSats || isCreatingAllowance}
-                    className="w-full bg-primary hover:bg-primary/90"
-                    data-testid="button-create-allowance"
-                  >
-                    {isCreatingAllowance ? "Wird gespeichert..." : "Hinzufügen"}
-                  </Button>
-                </div>
-
-                {/* Taschengeld Liste */}
-                {allowances.length > 0 ? (
-                  <div className="space-y-2">
-                    <p className="text-sm font-semibold">Aktive Taschengelder</p>
-                    {allowances.map((allowance: any) => {
-                      const child = children.find((c: any) => c.id === allowance.childId);
-                      const freqLabel = {
-                        daily: "Täglich",
-                        weekly: "Wöchentlich",
-                        biweekly: "Zweiwöchentlich",
-                        monthly: "Monatlich",
-                      }[allowance.frequency] || allowance.frequency;
-
-                      return (
-                        <div
-                          key={allowance.id}
-                          className="p-3 rounded-lg border border-border bg-secondary/30 flex items-center justify-between"
-                          data-testid={`card-allowance-${allowance.id}`}
-                        >
-                          <div>
-                            <p className="font-semibold">{child?.name || "Unbekannt"}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {allowance.sats} Sats {freqLabel}
-                            </p>
-                          </div>
-                          <Button
-                            onClick={() => handleDeleteAllowance(allowance.id)}
-                            variant="outline"
-                            size="sm"
-                            className="text-destructive hover:text-destructive"
-                            data-testid={`button-delete-allowance-${allowance.id}`}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground text-center py-2">Noch keine Taschengelder eingerichtet</p>
-                )}
-              </CardContent>
-            </Card>
           </>
         )}
+
+        <Card className="border-2 border-primary/40 bg-primary/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              💰 Taschengeld-Verwaltung
+            </CardTitle>
+            <CardDescription>Richte regelmäßige Zahlungen für deine Kinder ein</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Taschengeld erstellen Form */}
+            <div className="p-4 rounded-lg border border-border bg-secondary/30 space-y-3">
+              <p className="text-sm font-semibold">Neues Taschengeld hinzufügen</p>
+              
+              <div>
+                <Label htmlFor="allowance-child">Kind</Label>
+                <select
+                  id="allowance-child"
+                  value={allowanceChildId || ""}
+                  onChange={(e) => setAllowanceChildId(e.target.value ? parseInt(e.target.value) : null)}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  data-testid="select-allowance-child"
+                >
+                  <option value="">-- Kind wählen --</option>
+                  {children.map((child: any) => (
+                    <option key={child.id} value={child.id}>{child.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <Label htmlFor="allowance-sats">Betrag (Sats)</Label>
+                <Input
+                  id="allowance-sats"
+                  type="number"
+                  placeholder="z.B. 100"
+                  value={allowanceSats}
+                  onChange={(e) => setAllowanceSats(e.target.value)}
+                  data-testid="input-allowance-sats"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="allowance-freq">Turnus</Label>
+                <select
+                  id="allowance-freq"
+                  value={allowanceFrequency}
+                  onChange={(e) => setAllowanceFrequency(e.target.value)}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  data-testid="select-allowance-frequency"
+                >
+                  <option value="daily">Täglich</option>
+                  <option value="weekly">Wöchentlich</option>
+                  <option value="biweekly">Zweiwöchentlich</option>
+                  <option value="monthly">Monatlich</option>
+                </select>
+              </div>
+
+              <Button
+                onClick={handleCreateAllowance}
+                disabled={!allowanceChildId || !allowanceSats || isCreatingAllowance}
+                className="w-full bg-primary hover:bg-primary/90"
+                data-testid="button-create-allowance"
+              >
+                {isCreatingAllowance ? "Wird gespeichert..." : "Hinzufügen"}
+              </Button>
+            </div>
+
+            {/* Taschengeld Liste */}
+            {allowances.length > 0 ? (
+              <div className="space-y-2">
+                <p className="text-sm font-semibold">Aktive Taschengelder</p>
+                {allowances.map((allowance: any) => {
+                  const child = children.find((c: any) => c.id === allowance.childId);
+                  const freqLabel = {
+                    daily: "Täglich",
+                    weekly: "Wöchentlich",
+                    biweekly: "Zweiwöchentlich",
+                    monthly: "Monatlich",
+                  }[allowance.frequency] || allowance.frequency;
+
+                  return (
+                    <div
+                      key={allowance.id}
+                      className="p-3 rounded-lg border border-border bg-secondary/30 flex items-center justify-between"
+                      data-testid={`card-allowance-${allowance.id}`}
+                    >
+                      <div>
+                        <p className="font-semibold">{child?.name || "Unbekannt"}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {allowance.sats} Sats {freqLabel}
+                        </p>
+                      </div>
+                      <Button
+                        onClick={() => handleDeleteAllowance(allowance.id)}
+                        variant="outline"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                        data-testid={`button-delete-allowance-${allowance.id}`}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground text-center py-2">Noch keine Taschengelder eingerichtet</p>
+            )}
+          </CardContent>
+        </Card>
 
         <Card className="border-2 border-primary/40 bg-primary/5">
           <CardHeader>
