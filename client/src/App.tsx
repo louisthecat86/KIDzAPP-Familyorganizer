@@ -550,8 +550,8 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
       >
         <div className="p-4 border-b border-border space-y-3">
           <div className="flex items-center justify-between">
-            <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
-              <Bitcoin className="h-5 w-5" />
+            <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary text-lg">
+              ⚡
             </div>
             <Button
               variant="ghost"
