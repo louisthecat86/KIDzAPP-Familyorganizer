@@ -44,9 +44,6 @@ export interface IStorage {
   // Chat Message operations
   getChatMessages(connectionId: string): Promise<(ChatMessage & { senderName: string })[]>;
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
-
-  // PIN Reset via Security Question (parent only)
-  resetPinWithSecurityAnswer(parentName: string, securityAnswer: string, newPin: string): Promise<Peer>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -266,13 +263,25 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createEvent(insertEvent: InsertFamilyEvent): Promise<FamilyEvent> {
-    const result = await db.insert(familyEvents).values([insertEvent]).returning();
+    const eventData = {
+      ...insertEvent,
+      startDate: insertEvent.startDate instanceof Date ? insertEvent.startDate : new Date(insertEvent.startDate as string),
+      endDate: insertEvent.endDate instanceof Date ? insertEvent.endDate : (insertEvent.endDate ? new Date(insertEvent.endDate as string) : undefined),
+    };
+    const result = await db.insert(familyEvents).values([eventData]).returning();
     return result[0];
   }
 
   async updateEvent(id: number, updates: Partial<FamilyEvent>): Promise<FamilyEvent | undefined> {
+    const updateData: any = { ...updates, updatedAt: new Date() };
+    if (updateData.startDate && !(updateData.startDate instanceof Date)) {
+      updateData.startDate = new Date(updateData.startDate);
+    }
+    if (updateData.endDate && !(updateData.endDate instanceof Date)) {
+      updateData.endDate = new Date(updateData.endDate);
+    }
     const result = await db.update(familyEvents)
-      .set({ ...updates, updatedAt: new Date() })
+      .set(updateData)
       .where(eq(familyEvents.id, id))
       .returning();
     return result[0];
@@ -342,29 +351,6 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  // PIN Reset via Security Question (parent only)
-  async resetPinWithSecurityAnswer(parentName: string, securityAnswer: string, newPin: string): Promise<Peer> {
-    const crypto = await import('crypto');
-    const peer = await this.getPeerByName(parentName);
-    
-    if (!peer || peer.role !== "parent") {
-      throw new Error("Elternteil nicht gefunden");
-    }
-
-    const hashedAnswer = crypto.createHash('sha256').update(securityAnswer.toLowerCase().trim()).digest('hex');
-    
-    if (!peer.securityAnswer || peer.securityAnswer !== hashedAnswer) {
-      throw new Error("Antwort auf Sicherheitsfrage ist falsch");
-    }
-
-    // Update PIN
-    const result = await db.update(peers)
-      .set({ pin: newPin })
-      .where(eq(peers.id, peer.id))
-      .returning();
-    
-    return result[0];
-  }
 }
 
 export const storage = new DatabaseStorage();

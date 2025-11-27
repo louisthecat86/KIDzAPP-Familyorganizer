@@ -841,10 +841,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
   const [familyName, setFamilyName] = useState("");
   const [joinParentId, setJoinParentId] = useState("");
   const [pin, setPin] = useState("");
-  const [securityQuestion, setSecurityQuestion] = useState("lieblings_farbe");
-  const [securityAnswer, setSecurityAnswer] = useState("");
   const [isLogin, setIsLogin] = useState(true);
-  const [usePinReset, setUsePinReset] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [parentMode, setParentMode] = useState<"new" | "join" | null>(null);
   const { toast } = useToast();
@@ -856,50 +853,6 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
     const trimmedPin = pin.trim();
     const trimmedFamilyName = familyName.trim();
     const trimmedJoinParentId = joinParentId.trim();
-    
-    // PIN Reset via Security Question for parent
-    if (usePinReset && role === "parent") {
-      if (!trimmedName || !securityAnswer || !trimmedPin || trimmedPin.length !== 4) {
-        toast({
-          title: "Fehler",
-          description: "Bitte fülle Name, Antwort und neue 4-stellige PIN aus",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      setIsLoading(true);
-      try {
-        const res = await fetch("/api/peers/reset-pin", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: trimmedName, role: "parent", securityAnswer: securityAnswer.trim(), newPin: trimmedPin })
-        });
-        if (!res.ok) {
-          const error = await res.json();
-          throw new Error(error.error || "PIN Reset fehlgeschlagen");
-        }
-        
-        toast({
-          title: "PIN zurückgesetzt! ✅",
-          description: "Du kannst dich jetzt mit der neuen PIN anmelden"
-        });
-        
-        setUsePinReset(false);
-        setSecurityAnswer("");
-        setPin("");
-        setIsLogin(true);
-      } catch (error) {
-        toast({
-          title: "Fehler",
-          description: (error as Error).message,
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-      return;
-    }
     
     if (!trimmedName || !trimmedPin || trimmedPin.length !== 4) {
       toast({
@@ -927,15 +880,6 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
       });
       return;
     }
-
-    if (!isLogin && role === "parent" && !securityAnswer.trim()) {
-      toast({
-        title: "Fehler",
-        description: "Bitte gib deine Lieblingsfarbe ein",
-        variant: "destructive"
-      });
-      return;
-    }
     
     setIsLoading(true);
     try {
@@ -947,12 +891,9 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             role, 
             trimmedPin, 
             role === "parent" && parentMode === "new" ? trimmedFamilyName : undefined,
-            role === "parent" && parentMode === "join" ? trimmedJoinParentId : undefined,
-            role === "parent" ? securityQuestion : undefined,
-            role === "parent" ? securityAnswer : undefined
+            role === "parent" && parentMode === "join" ? trimmedJoinParentId : undefined
           );
       
-      // Extract user object (ignore hashed recovery code from DB)
       const user = typeof response === 'object'
         ? { id: response.id, name: response.name, role: response.role, connectionId: response.connectionId } as User
         : response as User;
@@ -1026,86 +967,6 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 <p className="font-semibold text-sm">Familie beitreten</p>
                 <p className="text-xs text-muted-foreground">Beitreten mit Familie-ID</p>
               </div>
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // PIN Reset screen for parent (via security question)
-  if (usePinReset && role === "parent" && isLogin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4">
-        <div className="w-full max-w-lg">
-          <div className="space-y-6 mb-6">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setUsePinReset(false)}
-              className="w-fit mb-2 -ml-2 text-muted-foreground"
-            >
-              ← Zurück
-            </Button>
-            <div>
-              <h2 className="text-2xl font-bold mb-2">PIN zurücksetzen</h2>
-              <p className="text-muted-foreground">Beantworte deine Sicherheitsfrage um eine neue PIN zu setzen</p>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="reset-name">Elternname</Label>
-              <Input 
-                id="reset-name"
-                value={name} 
-                onChange={(e) => setName(e.target.value)}
-                placeholder="z.B. Marco"
-                disabled={isLoading}
-                data-testid="input-reset-name"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="reset-answer">Deine Sicherheitsfrage: Deine Lieblingsfarbe?</Label>
-              <Input 
-                id="reset-answer"
-                value={securityAnswer} 
-                onChange={(e) => setSecurityAnswer(e.target.value)}
-                placeholder="z.B. Blau"
-                disabled={isLoading}
-                data-testid="input-reset-answer"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="reset-pin">Neue 4-stellige PIN</Label>
-              <Input 
-                id="reset-pin"
-                type="text"
-                inputMode="numeric"
-                maxLength={4}
-                value={pin} 
-                onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-                placeholder="z.B. 5678"
-                disabled={isLoading}
-                data-testid="input-reset-pin"
-              />
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setUsePinReset(false)}
-              disabled={isLoading}
-              data-testid="button-cancel-reset"
-            >
-              Abbrechen
-            </Button>
-            <Button 
-              onClick={handleSubmit}
-              disabled={isLoading}
-              className="flex-1"
-              data-testid="button-submit-reset"
-            >
-              {isLoading ? "⏳ Wird verarbeitet..." : "PIN zurücksetzen"}
             </Button>
           </div>
         </div>
@@ -1210,23 +1071,6 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               </p>
             </div>
 
-            {!isLogin && role === "parent" && (
-              <div className="space-y-2">
-                <Label htmlFor="security-question">Lieblingsfarbe (für PIN-Reset)</Label>
-                <Input 
-                  id="security-question"
-                  value={securityAnswer}
-                  onChange={(e) => setSecurityAnswer(e.target.value)}
-                  placeholder="z.B. Blau"
-                  className="bg-sky-500/10 border-sky-500/40 focus:border-sky-400 focus:bg-sky-500/20 text-foreground placeholder:text-sky-300/50"
-                  disabled={isLoading}
-                  autoComplete="off"
-                  data-testid="input-security-answer"
-                />
-                <p className="text-xs text-muted-foreground">Speichere diese Antwort sicher - du brauchst sie um deine PIN zurückzusetzen!</p>
-              </div>
-            )}
-
             <Separator />
 
             <div className="space-y-2">
@@ -1238,18 +1082,6 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               >
                 {isLoading ? "Wird verarbeitet..." : isLogin ? "Anmelden" : "Registrieren"}
               </Button>
-              {isLogin && role === "parent" && (
-                <Button 
-                  type="button"
-                  variant="ghost"
-                  className="w-full text-sm"
-                  onClick={() => setUsePinReset(true)}
-                  disabled={isLoading}
-                  data-testid="button-forgot-pin"
-                >
-                  🔑 PIN vergessen?
-                </Button>
-              )}
               <Button 
                 type="button"
                 variant="outline"
@@ -1339,6 +1171,10 @@ function PeersContent({ user, setUser, queryClient }: any) {
   const { toast } = useToast();
   const [resetPinChildId, setResetPinChildId] = useState<number | null>(null);
   const [resetPinValue, setResetPinValue] = useState("");
+  const [showParentPinChange, setShowParentPinChange] = useState(false);
+  const [oldParentPin, setOldParentPin] = useState("");
+  const [newParentPin, setNewParentPin] = useState("");
+  const [isSavingPin, setIsSavingPin] = useState(false);
   
   if (user.role === "parent") {
     // Parent view - show connected children
@@ -1538,6 +1374,96 @@ function PeersContent({ user, setUser, queryClient }: any) {
             </Button>
           </div>
           <p className="text-xs text-muted-foreground mt-2">Teile diese ID mit deinen Kindern, um sie mit der Familie zu verbinden</p>
+        </div>
+
+        {/* PIN Change Section for Parent */}
+        <div className="space-y-3">
+          <Button
+            variant="outline"
+            onClick={() => setShowParentPinChange(!showParentPinChange)}
+            className="w-full text-sm"
+            data-testid="button-toggle-parent-pin-change"
+          >
+            {showParentPinChange ? "PIN-Änderung abbrechen" : "🔑 Meine PIN ändern"}
+          </Button>
+          
+          {showParentPinChange && (
+            <div className="p-3 rounded-lg border-2 border-amber-500/50 bg-amber-500/10 space-y-2">
+              <div className="space-y-2">
+                <Label htmlFor="old-pin">Alte PIN</Label>
+                <Input
+                  id="old-pin"
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={4}
+                  placeholder="••••"
+                  value={oldParentPin}
+                  onChange={(e) => setOldParentPin(e.target.value.replace(/\D/g, ''))}
+                  className="font-mono text-center text-sm"
+                  data-testid="input-old-parent-pin"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-pin">Neue PIN (4 Ziffern)</Label>
+                <Input
+                  id="new-pin"
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={4}
+                  placeholder="••••"
+                  value={newParentPin}
+                  onChange={(e) => setNewParentPin(e.target.value.replace(/\D/g, ''))}
+                  className="font-mono text-center text-sm"
+                  data-testid="input-new-parent-pin"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={async () => {
+                    if (!oldParentPin || !newParentPin || newParentPin.length !== 4) {
+                      toast({ title: "Fehler", description: "Bitte fülle beide PIN-Felder aus (4 Ziffern)", variant: "destructive" });
+                      return;
+                    }
+                    setIsSavingPin(true);
+                    try {
+                      const res = await fetch(`/api/peers/${user.id}/change-pin`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ oldPin: oldParentPin, newPin: newParentPin }),
+                      });
+                      if (!res.ok) throw new Error("PIN-Änderung fehlgeschlagen");
+                      setShowParentPinChange(false);
+                      setOldParentPin("");
+                      setNewParentPin("");
+                      toast({ title: "✅ Erfolg", description: "Deine PIN wurde geändert" });
+                    } catch (error) {
+                      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+                    } finally {
+                      setIsSavingPin(false);
+                    }
+                  }}
+                  className="flex-1 bg-primary hover:bg-primary/90 text-xs h-7"
+                  disabled={isSavingPin}
+                  data-testid="button-confirm-parent-pin-change"
+                >
+                  {isSavingPin ? "⏳ Wird gespeichert..." : "💾 PIN ändern"}
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowParentPinChange(false);
+                    setOldParentPin("");
+                    setNewParentPin("");
+                  }}
+                  variant="outline"
+                  className="flex-1 text-xs h-7"
+                  disabled={isSavingPin}
+                  data-testid="button-cancel-parent-pin-change"
+                >
+                  Abbrechen
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );

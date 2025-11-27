@@ -77,25 +77,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Generate Recovery Code (single code - format: XXXX-XXXX)
-  const generateRecoveryCode = (): string => {
-    const block1 = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    const block2 = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    return `${block1}-${block2}`;
-  };
-
   // Peer Registration
   app.post("/api/peers/register", async (req, res) => {
     try {
-      const { name, role, pin, familyName, joinParentConnectionId, securityQuestion, securityAnswer } = req.body;
+      const { name, role, pin, familyName, joinParentConnectionId } = req.body;
       
       if (!name || !role || !pin) {
         return res.status(400).json({ error: "Name, role, and pin required" });
-      }
-
-      // For parent: require security question and answer
-      if (role === "parent" && (!securityQuestion || !securityAnswer)) {
-        return res.status(400).json({ error: "Sicherheitsfrage und Antwort erforderlich" });
       }
 
       let connectionId = joinParentConnectionId;
@@ -119,21 +107,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         connectionId = `BTC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       }
 
-      // Hash security answer
-      let hashedAnswer: string | undefined;
-      if (role === "parent" && securityAnswer) {
-        const crypto = await import('crypto');
-        hashedAnswer = crypto.createHash('sha256').update(securityAnswer.toLowerCase().trim()).digest('hex');
-      }
-
       const peer = await storage.createPeer({
         name,
         role,
         pin,
         connectionId: connectionId || `BTC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
         familyName: role === "parent" ? familyNameToUse : undefined,
-        securityQuestion: role === "parent" ? securityQuestion : undefined,
-        securityAnswer: role === "parent" ? hashedAnswer : undefined,
       } as any);
 
       res.json(peer);
@@ -167,39 +146,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Reset parent PIN using security question
-  app.post("/api/peers/reset-pin", async (req, res) => {
+  // Change parent's own PIN
+  app.post("/api/peers/:peerId/change-pin", async (req, res) => {
     try {
-      const { name, role, securityAnswer, newPin } = req.body;
+      const { peerId } = req.params;
+      const { oldPin, newPin } = req.body;
 
-      if (role !== "parent") {
-        return res.status(400).json({ error: "PIN Reset nur für Eltern" });
+      if (!oldPin || !newPin || newPin.length !== 4 || !/^\d+$/.test(newPin)) {
+        return res.status(400).json({ error: "Alte PIN und neue 4-stellige PIN erforderlich" });
       }
 
-      if (!name || !securityAnswer || !newPin || newPin.length !== 4) {
-        return res.status(400).json({ error: "Name, Antwort und 4-stellige PIN erforderlich" });
-      }
-
-      // Validate and reset PIN
-      const updated = await storage.resetPinWithSecurityAnswer(name, securityAnswer, newPin);
-      res.json({ success: true, message: "PIN erfolgreich zurückgesetzt", peer: updated });
-    } catch (error) {
-      console.error("PIN Reset error:", error);
-      const message = (error as Error).message;
-      res.status(400).json({ error: message || "PIN Reset fehlgeschlagen" });
-    }
-  });
-
-  // Get security question for parent
-  app.get("/api/peers/:name/security-question", async (req, res) => {
-    try {
-      const peer = await storage.getPeerByName(req.params.name);
-      if (!peer || peer.role !== "parent") {
+      // Verify old PIN
+      const peer = await storage.getPeer(parseInt(peerId));
+      if (!peer) {
         return res.status(404).json({ error: "Elternteil nicht gefunden" });
       }
-      res.json({ securityQuestion: peer.securityQuestion });
+
+      if (peer.pin !== oldPin) {
+        return res.status(400).json({ error: "Alte PIN ist falsch" });
+      }
+
+      // Update PIN
+      const updated = await storage.updatePeerPin(parseInt(peerId), newPin);
+      res.json({ success: true, message: "PIN erfolgreich geändert", peer: updated });
     } catch (error) {
-      res.status(500).json({ error: "Fehler beim Abrufen der Sicherheitsfrage" });
+      console.error("PIN change error:", error);
+      res.status(500).json({ error: "PIN-Änderung fehlgeschlagen" });
     }
   });
 
