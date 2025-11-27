@@ -4119,6 +4119,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     const assignedTasks = myTasks.filter((t: Task) => t.status === "assigned");
     const submittedTasks = myTasks.filter((t: Task) => t.status === "submitted");
     const completedTasks = myTasks.filter((t: Task) => t.status === "approved");
+    const connectedParents = connectedPeers.filter((p: any) => p.role === "parent");
 
     return (
       <div className="max-w-4xl space-y-2">
@@ -4156,7 +4157,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           </div>
         </motion.section>
 
-        {(tasks.length > 0 || availableTasks.length > 0) && (
+        {connectedParents.length > 0 && (
           <div className="space-y-4">
             <div className={`grid ${layoutView === "one-column" ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
@@ -4357,7 +4358,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           </div>
         )}
 
-        {tasks.length === 0 && (
+        {connectedParents.length === 0 && (
           <Card className="border-primary/30 bg-primary/5 p-6 -mt-2">
             <div className="flex gap-4">
               <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
