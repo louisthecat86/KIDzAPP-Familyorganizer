@@ -525,6 +525,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Debug NWC connection
+  app.get("/api/parent/:peerId/nwc-debug", async (req, res) => {
+    try {
+      const { peerId } = req.params;
+      const parent = await storage.getPeer(parseInt(peerId));
+      
+      if (!parent) {
+        return res.status(404).json({ error: "Parent not found" });
+      }
+
+      if (!parent.nwcConnectionString) {
+        return res.status(400).json({ error: "NWC not configured" });
+      }
+
+      const nwc = new NWCClient(parent.nwcConnectionString);
+      
+      // Test connection
+      const connected = await nwc.testConnection();
+      
+      // Get wallet info
+      const walletInfo = await nwc.getWalletInfo();
+      
+      // Get balance
+      const balance = await nwc.getBalance();
+      
+      res.json({
+        nwcConnectionString: parent.nwcConnectionString,
+        connected,
+        walletInfo,
+        balance,
+      });
+    } catch (error) {
+      console.error("NWC debug error:", error);
+      res.status(500).json({ error: String(error) });
+    }
+  });
+
   // Create a new task (with optional escrow via wallet)
   app.post("/api/tasks", async (req, res) => {
     try {
