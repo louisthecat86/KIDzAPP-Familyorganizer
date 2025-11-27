@@ -1782,15 +1782,11 @@ function SettingsModal({ user, setUser, activeTab, onClose, layoutView, setLayou
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="absolute right-0 top-0 h-full px-2 hover:bg-transparent"
+                      className="absolute right-0 top-0 h-full px-2 hover:bg-transparent text-sm"
                       onClick={() => setShowAdminKey(!showAdminKey)}
                       data-testid="button-toggle-admin-key-visibility"
                     >
-                      {showAdminKey ? (
-                        <EyeOff className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-muted-foreground" />
-                      )}
+                      {showAdminKey ? "🙈" : "👁️"}
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground">Status: {user.lnbitsUrl ? "✓ Verbunden" : "✗ Nicht verbunden"}</p>
