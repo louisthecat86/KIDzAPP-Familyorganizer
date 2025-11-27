@@ -2490,7 +2490,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         
         {user.role === "parent" && (
           <div 
-            onClick={() => setCurrentView("allowance-payout")}
+            onClick={() => setCurrentView("allowances")}
             data-testid="card-active-allowances"
             className="p-4 bg-purple-900/50 border border-purple-500/50 rounded cursor-pointer hover:bg-purple-800/50"
           >
