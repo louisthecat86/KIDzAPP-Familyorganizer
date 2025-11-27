@@ -1796,20 +1796,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           </motion.div>
         )}
         
-        {/* Kinder verwalten Card */}
-        <Card 
-          className="bg-gradient-to-br from-purple-900 to-purple-950 border border-purple-500/30 cursor-pointer hover:from-purple-800 hover:to-purple-900 transition-colors"
-          onClick={() => setCurrentView("settings")}
-          data-testid="card-manage-children"
-        >
-          <CardHeader className="flex flex-row items-start justify-between pb-3">
-            <CardTitle className="text-lg">👶 Kinder verwalten</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">PIN zurücksetzen, Verwaltung</p>
-          </CardContent>
-        </Card>
-
         <div className={`grid ${layoutView === "one-column" ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
           {cardOrder.map((cardId, index) => {
             if (cardId === "tasks-open") {
