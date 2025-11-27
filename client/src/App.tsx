@@ -3711,10 +3711,13 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     Um Aufgaben mit Satoshi-Belohnungen zu erstellen, musst du zuerst dein LNbits-Konto verbinden.
                   </p>
                   <Button 
-                    onClick={() => setCurrentView("settings")}
+                    onClick={() => {
+                      setCurrentView("settings");
+                    }}
+                    data-testid="button-open-lnbits-settings"
                     className="mt-4 bg-primary hover:bg-primary/90"
                   >
-                    📱 Zu Einstellungen
+                    📱 Zu LNbits Einstellungen
                   </Button>
                 </div>
               </CardContent>
