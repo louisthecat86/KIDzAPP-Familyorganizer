@@ -52,20 +52,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Peer Registration
   app.post("/api/peers/register", async (req, res) => {
     try {
-      const { name, role, pin, familyName } = req.body;
+      const { name, role, pin, familyName, joinParentConnectionId } = req.body;
       
       if (!name || !role || !pin) {
         return res.status(400).json({ error: "Name, role, and pin required" });
       }
 
-      const connectionId = `BTC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      let connectionId = joinParentConnectionId;
+      let familyNameToUse = familyName;
+
+      // Wenn Parent einer Familie beitreten möchte
+      if (role === "parent" && joinParentConnectionId) {
+        // Verifiziere dass die Familie existiert
+        const existingParent = await db.select().from(peers)
+          .where(and(eq(peers.connectionId, joinParentConnectionId), eq(peers.role, "parent")))
+          .limit(1);
+        
+        if (!existingParent || existingParent.length === 0) {
+          return res.status(404).json({ error: "Familie mit dieser ID nicht gefunden" });
+        }
+        
+        // Übernehme Familiennamen vom existierenden Parent
+        familyNameToUse = existingParent[0].familyName;
+      } else {
+        // Neue Familie erstellen
+        connectionId = `BTC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      }
 
       const peer = await storage.createPeer({
         name,
         role,
         pin,
-        connectionId,
-        familyName: familyName && role === "parent" ? familyName : undefined,
+        connectionId: connectionId || `BTC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+        familyName: role === "parent" ? familyNameToUse : undefined,
       });
       res.json(peer);
     } catch (error) {

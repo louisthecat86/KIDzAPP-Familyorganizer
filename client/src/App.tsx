@@ -114,11 +114,11 @@ function getMessageColor(senderName: string): string {
 }
 
 // --- API Functions ---
-async function registerUser(name: string, role: UserRole, pin: string, familyName?: string): Promise<User> {
+async function registerUser(name: string, role: UserRole, pin: string, familyName?: string, joinParentConnectionId?: string): Promise<User> {
   const res = await fetch("/api/peers/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, role, pin, familyName }),
+    body: JSON.stringify({ name, role, pin, familyName, joinParentConnectionId }),
   });
   const data = await res.json();
   if (!res.ok) {
@@ -796,9 +796,11 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
 function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (user: User) => void; onBack: () => void }) {
   const [name, setName] = useState("");
   const [familyName, setFamilyName] = useState("");
+  const [joinParentId, setJoinParentId] = useState("");
   const [pin, setPin] = useState("");
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [parentMode, setParentMode] = useState<"new" | "join" | null>(null);
   const { toast } = useToast();
 
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -807,6 +809,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
     const trimmedName = name.trim();
     const trimmedPin = pin.trim();
     const trimmedFamilyName = familyName.trim();
+    const trimmedJoinParentId = joinParentId.trim();
     
     if (!trimmedName || !trimmedPin || trimmedPin.length !== 4) {
       toast({
@@ -817,10 +820,19 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
       return;
     }
 
-    if (!isLogin && role === "parent" && !trimmedFamilyName) {
+    if (!isLogin && role === "parent" && parentMode === "new" && !trimmedFamilyName) {
       toast({
         title: "Fehler",
         description: "Bitte gib den Familiennamen ein",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!isLogin && role === "parent" && parentMode === "join" && !trimmedJoinParentId) {
+      toast({
+        title: "Fehler",
+        description: "Bitte gib die Familien-ID des anderen Elternteils ein",
         variant: "destructive"
       });
       return;
@@ -831,11 +843,16 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
       console.log("Versuche", isLogin ? "Login" : "Registrierung", { name: trimmedName, role, pin: trimmedPin });
       const user = isLogin 
         ? await loginUser(trimmedName, role, trimmedPin)
-        : await registerUser(trimmedName, role, trimmedPin, role === "parent" ? trimmedFamilyName : undefined);
+        : await registerUser(
+            trimmedName, 
+            role, 
+            trimmedPin, 
+            role === "parent" && parentMode === "new" ? trimmedFamilyName : undefined,
+            role === "parent" && parentMode === "join" ? trimmedJoinParentId : undefined
+          );
       
       console.log("Erfolg:", user);
       
-      // Sowohl bei Registrierung als auch Login: Direkt zum Dashboard
       toast({
         title: isLogin ? "Willkommen!" : "Account erstellt! 🎉",
         description: isLogin ? "Du bist angemeldet" : "Viel Spaß beim Geldverdienen!"
@@ -853,6 +870,58 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
     }
   };
 
+  // Wenn Parent registriert sich und muss Modus wählen
+  if (!isLogin && role === "parent" && parentMode === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4">
+        <Card className="w-full max-w-lg border-border/50 bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl">
+          <CardHeader>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onBack} 
+              className="w-fit mb-2 -ml-2 text-muted-foreground"
+              data-testid="button-back"
+            >
+              ← Zurück
+            </Button>
+            <CardTitle className="text-2xl">Familie auswählen</CardTitle>
+            <CardDescription>Möchtest du eine neue Familie gründen oder einer bestehenden beitreten?</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button
+              onClick={() => setParentMode("new")}
+              className="w-full h-auto p-4 justify-start text-left hover:bg-primary/10"
+              data-testid="button-create-new-family"
+            >
+              <div className="mr-3 h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <Plus className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-bold">Neue Familie gründen</p>
+                <p className="text-xs text-muted-foreground">Erstelle eine neue Familie und verwalte sie</p>
+              </div>
+            </Button>
+            <Button
+              onClick={() => setParentMode("join")}
+              variant="outline"
+              className="w-full h-auto p-4 justify-start text-left hover:border-primary hover:bg-primary/5"
+              data-testid="button-join-family"
+            >
+              <div className="mr-3 h-10 w-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                <Users className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-bold">Familie beitreten</p>
+                <p className="text-xs text-muted-foreground">Tritt einer bestehenden Familie bei mit einer ID</p>
+              </div>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4">
       <Card className="w-full max-w-lg border-border/50 bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl">
@@ -860,7 +929,13 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={onBack} 
+            onClick={() => {
+              if (!isLogin && role === "parent") {
+                setParentMode(null);
+              } else {
+                onBack();
+              }
+            }}
             className="w-fit mb-2 -ml-2 text-muted-foreground"
             data-testid="button-back"
           >
@@ -876,7 +951,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
 
         <CardContent className="space-y-6">
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && role === "parent" && (
+            {!isLogin && role === "parent" && parentMode === "new" && (
               <div className="space-y-2">
                 <Label htmlFor="familyName">Familienname</Label>
                 <Input 
@@ -886,8 +961,25 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                   className="bg-sky-500/10 border-sky-500/40 focus:border-sky-400 focus:bg-sky-500/20 text-foreground placeholder:text-sky-300/50"
                   disabled={isLoading}
                   autoComplete="off"
+                  placeholder="z.B. Familie Müller"
                   data-testid="input-family-name"
                 />
+              </div>
+            )}
+            {!isLogin && role === "parent" && parentMode === "join" && (
+              <div className="space-y-2">
+                <Label htmlFor="joinParentId">Familien-ID</Label>
+                <Input 
+                  id="joinParentId"
+                  value={joinParentId}
+                  onChange={(e) => setJoinParentId(e.target.value.toUpperCase())}
+                  className="bg-sky-500/10 border-sky-500/40 focus:border-sky-400 focus:bg-sky-500/20 text-foreground placeholder:text-sky-300/50 font-mono text-center"
+                  disabled={isLoading}
+                  autoComplete="off"
+                  placeholder="z.B. BTC-ABC123"
+                  data-testid="input-join-parent-id"
+                />
+                <p className="text-xs text-muted-foreground">Frag das andere Elternteil nach der Familie-ID</p>
               </div>
             )}
             <div className="space-y-2">
