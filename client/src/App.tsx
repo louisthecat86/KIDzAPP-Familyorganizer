@@ -575,6 +575,17 @@ export default function App() {
                   setNewMessage={setNewMessage}
                   isLoadingMessage={isLoadingMessage}
                   setIsLoadingMessage={setIsLoadingMessage}
+                  allowances={allowances}
+                  parentChildren={parentChildren}
+                  allowanceChildId={allowanceChildId}
+                  setAllowanceChildId={setAllowanceChildId}
+                  allowanceSats={allowanceSats}
+                  setAllowanceSats={setAllowanceSats}
+                  allowanceFrequency={allowanceFrequency}
+                  setAllowanceFrequency={setAllowanceFrequency}
+                  isCreatingAllowance={isCreatingAllowance}
+                  handleCreateAllowance={handleCreateAllowance}
+                  handleDeleteAllowance={handleDeleteAllowance}
                 />
               ) : (
                 <ChildDashboard 
@@ -2381,7 +2392,7 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
   );
 }
 
-function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, queryClient, layoutView, setLayoutView, showSpendingStats, setShowSpendingStats, spendingStats, setSpendingStats, messages, setMessages, newMessage, setNewMessage, isLoadingMessage, setIsLoadingMessage }: any) {
+function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, queryClient, layoutView, setLayoutView, showSpendingStats, setShowSpendingStats, spendingStats, setSpendingStats, messages, setMessages, newMessage, setNewMessage, isLoadingMessage, setIsLoadingMessage, allowances, parentChildren, allowanceChildId, setAllowanceChildId, allowanceSats, setAllowanceSats, allowanceFrequency, setAllowanceFrequency, isCreatingAllowance, handleCreateAllowance, handleDeleteAllowance }: any) {
   const { toast } = useToast();
   const [nwcConnectionString, setNwcConnectionString] = useState(user.nwcConnectionString || "");
   const [lnbitsUrl, setLnbitsUrl] = useState(user.lnbitsUrl || "");
@@ -4006,25 +4017,9 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
       refetchInterval: 5000
     });
 
-    const { data: allowances = [] } = useQuery({
-      queryKey: ["allowances", user.connectionId],
-      queryFn: async () => {
-        const res = await fetch(`/api/allowances/${user.connectionId}`);
-        if (!res.ok) throw new Error("Failed to fetch allowances");
-        return res.json();
-      },
-      refetchInterval: 5000
-    });
-
     const children = connectedPeers.filter((p: any) => p.role === "child");
     const [resetPinChildId, setResetPinChildId] = useState<number | null>(null);
     const [resetPinValue, setResetPinValue] = useState("");
-    
-    // Taschengeld States
-    const [allowanceChildId, setAllowanceChildId] = useState<number | null>(null);
-    const [allowanceSats, setAllowanceSats] = useState("");
-    const [allowanceFrequency, setAllowanceFrequency] = useState("weekly");
-    const [isCreatingAllowance, setIsCreatingAllowance] = useState(false);
 
     const handleResetPin = async (childId: number) => {
       if (!resetPinValue || resetPinValue.length !== 4 || !/^\d+$/.test(resetPinValue)) {
@@ -4043,51 +4038,6 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         setResetPinValue("");
         queryClient.invalidateQueries({ queryKey: ["peers"] });
         toast({ title: "Erfolg", description: "PIN wurde zurückgesetzt" });
-      } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
-      }
-    };
-
-    const handleCreateAllowance = async () => {
-      if (!allowanceChildId || !allowanceSats) {
-        toast({ title: "Fehler", description: "Kind und Betrag erforderlich", variant: "destructive" });
-        return;
-      }
-
-      setIsCreatingAllowance(true);
-      try {
-        const res = await fetch("/api/allowances", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            parentId: user.id,
-            childId: allowanceChildId,
-            connectionId: user.connectionId,
-            sats: parseInt(allowanceSats),
-            frequency: allowanceFrequency,
-          }),
-        });
-        if (!res.ok) throw new Error("Failed to create allowance");
-        setAllowanceChildId(null);
-        setAllowanceSats("");
-        setAllowanceFrequency("weekly");
-        queryClient.invalidateQueries({ queryKey: ["allowances"] });
-        toast({ title: "Erfolg", description: "Taschengeld eingerichtet!" });
-      } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
-      } finally {
-        setIsCreatingAllowance(false);
-      }
-    };
-
-    const handleDeleteAllowance = async (allowanceId: number) => {
-      if (!window.confirm("Taschengeld wirklich löschen?")) return;
-
-      try {
-        const res = await fetch(`/api/allowances/${allowanceId}`, { method: "DELETE" });
-        if (!res.ok) throw new Error("Failed to delete allowance");
-        queryClient.invalidateQueries({ queryKey: ["allowances"] });
-        toast({ title: "Erfolg", description: "Taschengeld gelöscht" });
       } catch (error) {
         toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
       }
