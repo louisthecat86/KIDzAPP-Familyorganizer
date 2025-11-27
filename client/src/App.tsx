@@ -746,9 +746,6 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
       <Card className="w-full max-w-2xl z-10 border border-border bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl shadow-2xl">
         <div className="p-6 sm:p-10 overflow-hidden">
           <div className="text-center mb-8">
-            <div className="h-12 w-12 bg-primary/20 rounded-2xl flex items-center justify-center mb-4 text-primary shadow-[0_0_25px_rgba(14,165,233,0.3)] mx-auto">
-              <Bitcoin className="h-6 w-6" />
-            </div>
             <h1 className="text-3xl sm:text-4xl font-heading font-bold mb-2">Spark ⚡ Kids</h1>
             <h2 className="text-base sm:text-lg font-semibold text-muted-foreground mb-1">der Familienorganizer</h2>
             <p className="text-sm text-muted-foreground">Wo aus Aufgaben Belohnungen werden</p>
