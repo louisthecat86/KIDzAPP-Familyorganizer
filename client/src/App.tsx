@@ -740,8 +740,8 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
 function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4 sm:p-6 relative overflow-hidden">
-      <Card className="w-full max-w-2xl z-10 border border-border bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl shadow-2xl rounded-lg">
-        <div className="p-6 sm:p-10">
+      <Card className="w-full max-w-2xl z-10 border border-border bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl shadow-2xl">
+        <div className="p-6 sm:p-10 overflow-hidden">
           <div className="text-center mb-8">
             <div className="h-12 w-12 bg-primary/20 rounded-2xl flex items-center justify-center mb-4 text-primary shadow-[0_0_25px_rgba(14,165,233,0.3)] mx-auto">
               <Bitcoin className="h-6 w-6" />
@@ -869,8 +869,8 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
   if (!isLogin && role === "parent" && parentMode === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4">
-        <Card className="w-full max-w-lg border border-border bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl rounded-lg">
-          <CardHeader>
+        <Card className="w-full max-w-lg border border-border bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl">
+          <CardHeader className="overflow-hidden">
             <Button 
               variant="ghost" 
               size="sm" 
@@ -920,8 +920,8 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4">
-      <Card className="w-full max-w-lg border border-border bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl rounded-lg">
-        <CardHeader>
+      <Card className="w-full max-w-lg border border-border bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl">
+        <CardHeader className="overflow-hidden">
           <Button 
             variant="ghost" 
             size="sm" 
