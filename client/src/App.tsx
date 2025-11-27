@@ -740,7 +740,7 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
 function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4 sm:p-6 relative overflow-hidden">
-      <Card className="w-full max-w-2xl z-10 border-border/50 bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl shadow-2xl">
+      <Card className="w-full max-w-2xl z-10 border border-border bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl shadow-2xl rounded-lg">
         <div className="p-6 sm:p-10">
           <div className="text-center mb-8">
             <div className="h-12 w-12 bg-primary/20 rounded-2xl flex items-center justify-center mb-4 text-primary shadow-[0_0_25px_rgba(14,165,233,0.3)] mx-auto">
@@ -869,7 +869,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
   if (!isLogin && role === "parent" && parentMode === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4">
-        <Card className="w-full max-w-lg border-border/50 bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl">
+        <Card className="w-full max-w-lg border border-border bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl rounded-lg">
           <CardHeader>
             <Button 
               variant="ghost" 
@@ -886,6 +886,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
           <CardContent className="space-y-3">
             <Button
               onClick={() => setParentMode("new")}
+              variant="outline"
               className="w-full h-auto px-4 py-3 justify-start text-left"
               data-testid="button-create-new-family"
             >
@@ -919,7 +920,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4">
-      <Card className="w-full max-w-lg border-border/50 bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl">
+      <Card className="w-full max-w-lg border border-border bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl rounded-lg">
         <CardHeader>
           <Button 
             variant="ghost" 
