@@ -9,7 +9,7 @@ import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Test LNBits connection
+  // Test LNBits connection - with multiple endpoint attempts
   app.post("/api/wallet/test", async (req, res) => {
     try {
       const { lnbitsUrl, lnbitsAdminKey } = req.body;
@@ -18,33 +18,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "lnbitsUrl and lnbitsAdminKey required" });
       }
 
-      // Test invoice creation
-      const response = await fetch(`${lnbitsUrl}/api/v1/invoices`, {
-        method: "POST",
-        headers: {
-          "X-Api-Key": lnbitsAdminKey,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amount: 1,
-          memo: "Test invoice",
-          out: false,
-        }),
-      });
+      const normalizedUrl = lnbitsUrl.replace(/\/$/, "");
+      const attempts = [];
 
-      const data = await response.json();
-      
-      if (!response.ok) {
-        return res.status(response.status).json({ 
-          error: `LNBits API error: ${response.status}`,
-          details: data 
-        });
+      // Try different endpoints
+      const endpoints = [
+        `${normalizedUrl}/api/v1/invoices`,
+        `${normalizedUrl}/invoices`,
+        `${normalizedUrl}/api/v1/wallet`,
+        `${normalizedUrl}/wallet`,
+      ];
+
+      for (const endpoint of endpoints) {
+        try {
+          console.log(`Testing endpoint: ${endpoint}`);
+          const response = await fetch(endpoint, {
+            method: endpoint.includes("wallet") ? "GET" : "POST",
+            headers: {
+              "X-Api-Key": lnbitsAdminKey,
+              "Content-Type": "application/json",
+            },
+            body: endpoint.includes("wallet") ? undefined : JSON.stringify({
+              amount: 1,
+              memo: "Test invoice",
+              out: false,
+            }),
+          });
+
+          attempts.push({
+            endpoint,
+            status: response.status,
+            ok: response.ok,
+            responseText: response.ok ? "OK" : await response.text(),
+          });
+
+          if (response.ok) {
+            return res.json({ 
+              success: true, 
+              message: "LNBits verbunden!",
+              workingEndpoint: endpoint,
+              attempts,
+            });
+          }
+        } catch (e) {
+          attempts.push({
+            endpoint,
+            error: String(e),
+          });
+        }
       }
 
-      res.json({ 
-        success: true, 
-        message: "LNBits wallet is working",
-        invoice: data
+      return res.status(400).json({ 
+        error: "Keine gültigen LNbits-Endpunkte gefunden. Überprüfe URL und Admin Key.",
+        attempts,
       });
     } catch (error) {
       res.status(500).json({ error: String(error) });
