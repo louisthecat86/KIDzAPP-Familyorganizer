@@ -16,6 +16,7 @@ export interface IStorage {
   updatePeerNWC(peerId: number, nwcConnectionString: string): Promise<Peer>;
   updateBalance(peerId: number, sats: number): Promise<Peer>;
   updatePeerPin(peerId: number, newPin: string): Promise<Peer>;
+  updateChildLightningAddress(peerId: number, lightningAddress: string): Promise<Peer>;
   
   // Task operations
   getTasks(connectionId: string): Promise<Task[]>;
