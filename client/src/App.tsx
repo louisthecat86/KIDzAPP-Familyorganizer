@@ -67,6 +67,8 @@ type User = {
   familyName?: string;
   balance?: number;
   lnbitsUrl?: string;
+  lnbitsAdminKey?: string;
+  nwcConnectionString?: string;
   lightningAddress?: string;
   favoriteColor?: string;
 };
