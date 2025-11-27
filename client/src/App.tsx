@@ -892,13 +892,19 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
         ) : (
           <>
             {payoutTab === "plans" && (
-              <div className="space-y-4">
+              <div className="space-y-4 w-full">
+                <div className="text-center">
+                  <Button 
+                    onClick={() => setCurrentView("allowances")}
+                    className="bg-blue-600 hover:bg-blue-700"
+                    data-testid="button-create-new-allowance"
+                  >
+                    + Neue Terminzahlung erstellen
+                  </Button>
+                </div>
                 {childrenWithAllowances.length === 0 ? (
                   <div className="text-center py-8">
                     <p className="text-muted-foreground mb-4">Keine Kinder mit aktiven Zahlplänen vorhanden.</p>
-                    <Button onClick={() => setCurrentView("allowances")} variant="outline">
-                      Zahlpläne verwalten →
-                    </Button>
                   </div>
                 ) : (
                   childrenWithAllowances.map((item: any) => (
