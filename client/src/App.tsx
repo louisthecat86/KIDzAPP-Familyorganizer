@@ -69,7 +69,6 @@ type User = {
   balance?: number;
   lnbitsUrl?: string;
   lnbitsAdminKey?: string;
-  nwcConnectionString?: string;
   lightningAddress?: string;
   favoriteColor?: string;
 };
@@ -758,7 +757,6 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
   const { toast } = useToast();
   const [isProcessingPayout, setIsProcessingPayout] = useState(false);
   const [payoutTab, setPayoutTab] = useState<"plans" | "instant" | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<"lnbits" | "nwc">(user.lnbitsUrl ? "lnbits" : "nwc");
   const [adHocChildId, setAdHocChildId] = useState<number | null>(null);
   const [adHocSats, setAdHocSats] = useState("");
   const [adHocMessage, setAdHocMessage] = useState("");
@@ -889,7 +887,6 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
                 name="paymentMethod" 
                 value="lnbits" 
                 checked={paymentMethod === "lnbits"}
-                onChange={(e) => setPaymentMethod(e.target.value as "lnbits" | "nwc")}
                 disabled={!user.lnbitsUrl}
                 data-testid="radio-payment-lnbits"
               />
@@ -901,14 +898,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
               <input 
                 type="radio" 
                 name="paymentMethod" 
-                value="nwc" 
-                checked={paymentMethod === "nwc"}
-                onChange={(e) => setPaymentMethod(e.target.value as "lnbits" | "nwc")}
-                disabled={!user.nwcConnectionString}
-                data-testid="radio-payment-nwc"
               />
-              <span className={`text-sm font-semibold ${!user.nwcConnectionString ? "opacity-50" : ""}`}>
-                🔌 NWC {!user.nwcConnectionString && "(nicht konfiguriert)"}
               </span>
             </label>
           </div>
@@ -1080,7 +1070,6 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
   const [showWalletSubmenu, setShowWalletSubmenu] = useState(false);
   const [showCalendarSubmenu, setShowCalendarSubmenu] = useState(false);
   const [activeSettingsTab, setActiveSettingsTab] = useState<"ansicht" | "wallet" | "peers" | null>(null);
-  const [walletTab, setWalletTab] = useState<"nwc" | "lnbits">("nwc");
   
   const menuItems = [
     { id: "dashboard", label: user.role === "parent" ? "Dashboard" : "Mein Dashboard", icon: Home },
@@ -1269,9 +1258,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                           ⚡ LNbits Anbindung
                         </button>
                         <button
-                          onClick={() => { setWalletTab("nwc"); handleSettingsClick("wallet"); setSidebarOpen(false); }}
                           className="w-full px-4 py-2 rounded-lg text-xs text-muted-foreground hover:bg-secondary transition-colors text-left"
-                          data-testid="submenu-wallet-nwc"
                         >
                           🔌 NWC Einstellungen
                         </button>
@@ -1511,7 +1498,6 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
           );
       
       const user = typeof response === 'object'
-        ? { id: response.id, name: response.name, role: response.role, connectionId: response.connectionId, balance: response.balance, lnbitsUrl: response.lnbitsUrl, lnbitsAdminKey: response.lnbitsAdminKey, nwcConnectionString: response.nwcConnectionString, lightningAddress: response.lightningAddress } as User
         : response as User;
 
       
@@ -2265,7 +2251,6 @@ function PeersContent({ user, setUser, queryClient }: any) {
 
 function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onClose, layoutView, setLayoutView }: any) {
   const queryClient = useQueryClient();
-  const [editNwc, setEditNwc] = useState(user.nwcConnectionString || "");
   const [editLnbitsUrl, setEditLnbitsUrl] = useState(user.lnbitsUrl || "");
   const [editLnbitsAdminKey, setEditLnbitsAdminKey] = useState(user.lnbitsAdminKey || "");
   const [editFamilyName, setEditFamilyName] = useState(user.familyName || "");
@@ -2275,7 +2260,6 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
 
   // Sync state with user changes
   useEffect(() => {
-    setEditNwc(user.nwcConnectionString || "");
     setEditLnbitsUrl(user.lnbitsUrl || "");
     setEditLnbitsAdminKey(user.lnbitsAdminKey || "");
     setEditFamilyName(user.familyName || "");
@@ -2289,11 +2273,9 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
       const res = await fetch("/api/wallet/setup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ peerId: user.id, nwcConnectionString: editNwc }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setUser({ ...user, nwcConnectionString: editNwc });
       useToastFn({ title: "NWC gespeichert!", description: "Nostr Wallet Connect ist jetzt aktiv" });
     } catch (error) {
       useToastFn({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
@@ -2549,14 +2531,11 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                 // For parents: show NWC and LNbits tabs
                 <>
                   {/* NWC Content */}
-                  {walletTab === "nwc" && (
                   <div className="space-y-4 mt-4">
-                {user.nwcConnectionString ? (
                   // Connected state
                   <div className="border border-green-500/30 bg-green-500/5 rounded-lg p-4 space-y-3">
                     <p className="text-xs text-muted-foreground mb-1">🟢 NWC Wallet verbunden</p>
                     <div className="bg-secondary rounded border border-border p-2 text-xs font-mono overflow-auto max-h-20">
-                      {user.nwcConnectionString}
                     </div>
                     <Button
                       type="button"
@@ -2568,10 +2547,8 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                           const res = await fetch("/api/wallet/setup", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ peerId: user.id, nwcConnectionString: "" }),
                           });
                           if (res.ok) {
-                            setUser({ ...user, nwcConnectionString: undefined });
                             useToastFn({ title: "❌ NWC Verbindung getrennt", duration: 3000 });
                           }
                         } catch (error) {
@@ -2579,7 +2556,6 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                         }
                       }}
                       disabled={isSaving}
-                      data-testid="button-disconnect-nwc"
                     >
                       🔌 Verbindung trennen
                     </Button>
@@ -2588,15 +2564,12 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                   // Disconnected state
                   <div className="space-y-3">
                     <div className="space-y-2">
-                      <Label htmlFor="nwc-string">NWC Connection String</Label>
                       <Input 
-                        id="nwc-string"
                         placeholder="nostr+walletconnect://...?relay=...&secret=..."
                         value={editNwc}
                         onChange={(e) => setEditNwc(e.target.value)}
                         className="bg-secondary border-border font-mono text-xs"
                         autoComplete="off"
-                        data-testid="input-nwc"
                       />
                     </div>
                     <Button
@@ -2605,7 +2578,6 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                       className="w-full"
                       onClick={saveNWC}
                       disabled={isSaving || !editNwc}
-                      data-testid="button-save-nwc"
                     >
                       {isSaving ? "⏳ Speichern..." : "💾 Speichern"}
                     </Button>
@@ -2851,7 +2823,6 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
 
 function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, queryClient, layoutView, setLayoutView, showSpendingStats, setShowSpendingStats, spendingStats, setSpendingStats, messages, setMessages, newMessage, setNewMessage, isLoadingMessage, setIsLoadingMessage, allowances, parentChildren, allowanceChildId, setAllowanceChildId, allowanceSats, setAllowanceSats, allowanceFrequency, setAllowanceFrequency, isCreatingAllowance, handleCreateAllowance, handleDeleteAllowance }: any) {
   const { toast } = useToast();
-  const [nwcConnectionString, setNwcConnectionString] = useState(user.nwcConnectionString || "");
   const [lnbitsUrl, setLnbitsUrl] = useState(user.lnbitsUrl || "");
   const [lnbitsAdminKey, setLnbitsAdminKey] = useState(user.lnbitsAdminKey || "");
   const [lightningAddress, setLightningAddress] = useState(user.lightningAddress || "");
@@ -2865,7 +2836,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   });
   const [draggedCard, setDraggedCard] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [selectedWallet, setSelectedWallet] = useState<"lnbits" | "nwc">(user.lnbitsUrl ? "lnbits" : "nwc");
 
   const hideConnectionCode = () => {
     setShowConnectionCode(false);
@@ -2916,16 +2886,13 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   );
 
   const setupWallet = async () => {
-    if (!nwcConnectionString) return;
     try {
       const res = await fetch("/api/wallet/setup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ peerId: user.id, nwcConnectionString }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setUser({ ...user, nwcConnectionString: data.nwcConnectionString });
       toast({ title: "Wallet verbunden!", description: "Nostr Wallet Connect ist jetzt aktiv" });
     } catch (error) {
       toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
@@ -2985,7 +2952,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       refetchInterval: 5000
     });
 
-    const { data: walletBalances = { lnbitsBalance: null, nwcBalance: null } } = useQuery({
       queryKey: ["wallet-balance", user.id],
       queryFn: async () => {
         const res = await fetch(`/api/parent/${user.id}/wallet-balance`);
@@ -2995,7 +2961,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       refetchInterval: 10000
     });
 
-    const displayBalance = selectedWallet === "lnbits" ? walletBalances.lnbitsBalance : walletBalances.nwcBalance;
 
     const handleShowSpendingStats = async () => {
       try {
@@ -3158,7 +3123,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                             name="walletMethod" 
                             value="lnbits" 
                             checked={selectedWallet === "lnbits"}
-                            onChange={(e) => setSelectedWallet(e.target.value as "lnbits" | "nwc")}
                             disabled={!user.lnbitsUrl}
                             className="cursor-pointer"
                           />
@@ -3168,9 +3132,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                           <input 
                             type="radio" 
                             name="walletMethod" 
-                            value="nwc" 
-                            checked={selectedWallet === "nwc"}
-                            onChange={(e) => setSelectedWallet(e.target.value as "lnbits" | "nwc")}
                             className="cursor-pointer"
                           />
                           <span>🔌 NWC</span>
@@ -3665,7 +3626,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         <Tabs defaultValue="verbindung" className="w-full">
           <TabsList className="bg-secondary p-1 border border-border mb-6">
             <TabsTrigger value="verbindung">Verbindung</TabsTrigger>
-            <TabsTrigger value="nwc">Nostr Wallet Connect</TabsTrigger>
             <TabsTrigger value="lnbits">LNbits</TabsTrigger>
           </TabsList>
 
@@ -3689,7 +3649,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             </Card>
           </TabsContent>
 
-          <TabsContent value="nwc">
             <Card>
               <CardHeader>
                 <CardTitle>NWC Wallet-Verbindung</CardTitle>
@@ -3697,17 +3656,12 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="nwc-settings">NWC Connection String</Label>
                   <Input 
-                    id="nwc-settings"
                     placeholder="nostr+walletconnect://...?relay=...&secret=..."
-                    value={nwcConnectionString}
                     onChange={(e) => setNwcConnectionString(e.target.value)}
                     className="font-mono text-xs"
-                    data-testid="input-nwc-settings"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Status: {user.nwcConnectionString ? "✓ Verbunden" : "✗ Nicht verbunden"}
                   </p>
                 </div>
                 <Button 

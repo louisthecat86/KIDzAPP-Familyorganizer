@@ -4,7 +4,6 @@ import { storage } from "./storage";
 import { insertPeerSchema, insertTaskSchema, insertFamilyEventSchema, insertEventRsvpSchema, insertChatMessageSchema, peers } from "@shared/schema";
 import { z } from "zod";
 import { LNBitsClient } from "./lnbits";
-import { NWCClient } from "./nwc";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 import cron from "node-cron";
@@ -239,36 +238,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Setup NWC wallet
-  app.post("/api/wallet/setup", async (req, res) => {
-    try {
-      const { peerId, nwcConnectionString } = req.body;
-      
-      if (!peerId || !nwcConnectionString) {
-        return res.status(400).json({ error: "peerId and nwcConnectionString required" });
-      }
-
-      // Validate NWC connection string
-      if (!NWCClient.validateConnectionString(nwcConnectionString)) {
-        return res.status(400).json({ error: "Invalid NWC connection string. Must be: nostr+walletconnect://pubkey?relay=...&secret=..." });
-      }
-
-      // Test NWC connection
-      try {
-        const nwc = new NWCClient(nwcConnectionString);
-        await nwc.getWalletInfo();
-      } catch (error) {
-        return res.status(400).json({ error: `NWC connection failed: ${error}` });
-      }
-
-      // Save NWC credentials
-      const peer = await storage.updatePeerNWC(peerId, nwcConnectionString);
-      res.json(peer);
-    } catch (error) {
-      console.error("Wallet setup error:", error);
-      res.status(500).json({ error: "Failed to setup wallet" });
-    }
-  });
 
   // Delete LNbits wallet connection
   app.delete("/api/wallet/lnbits", async (req, res) => {
@@ -485,7 +454,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get parent wallet balances (LNbits + NWC)
+  // Get parent wallet balances (LNbits only)
   app.get("/api/parent/:peerId/wallet-balance", async (req, res) => {
     try {
       const { peerId } = req.params;
@@ -496,7 +465,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       let lnbitsBalance = null;
-      let nwcBalance = null;
 
       // Try to get LNbits balance
       if (parent.lnbitsUrl && parent.lnbitsAdminKey) {
@@ -508,103 +476,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Try to get NWC balance
-      if (parent.nwcConnectionString) {
-        try {
-          const nwc = new NWCClient(parent.nwcConnectionString);
-          nwcBalance = await nwc.getBalance();
-        } catch (error) {
-          console.warn("NWC balance fetch failed:", error);
-        }
-      }
-
-      res.json({ lnbitsBalance, nwcBalance });
+      res.json({ lnbitsBalance });
     } catch (error) {
       console.error("Wallet balance error:", error);
       res.status(500).json({ error: "Failed to fetch wallet balance" });
-    }
-  });
-
-  // Set NWC balance manually (for testing/verification)
-  app.post("/api/parent/:peerId/nwc-balance", async (req, res) => {
-    try {
-      const { peerId } = req.params;
-      const { balance } = req.body;
-      
-      if (balance === undefined || typeof balance !== "number" || balance < 0) {
-        return res.status(400).json({ error: "Valid balance number required" });
-      }
-
-      const parent = await storage.getPeer(parseInt(peerId));
-      if (!parent) {
-        return res.status(404).json({ error: "Parent not found" });
-      }
-
-      // Update balance in database
-      const updated = await db.update(peers)
-        .set({ nwcBalance: balance })
-        .where(eq(peers.id, parseInt(peerId)))
-        .returning();
-      
-      console.log(`[NWC] Balance set to ${balance} msats for parent ${peerId}`);
-      res.json({ success: true, balance, parent: updated[0] });
-    } catch (error) {
-      console.error("Set NWC balance error:", error);
-      res.status(500).json({ error: String(error) });
-    }
-  });
-
-  // Get NWC balance from database
-  app.get("/api/parent/:peerId/nwc-balance", async (req, res) => {
-    try {
-      const { peerId } = req.params;
-      const parent = await storage.getPeer(parseInt(peerId));
-      
-      if (!parent) {
-        return res.status(404).json({ error: "Parent not found" });
-      }
-
-      res.json({ balance: parent.nwcBalance || 0 });
-    } catch (error) {
-      console.error("Get NWC balance error:", error);
-      res.status(500).json({ error: String(error) });
-    }
-  });
-
-  // Debug NWC connection
-  app.get("/api/parent/:peerId/nwc-debug", async (req, res) => {
-    try {
-      const { peerId } = req.params;
-      const parent = await storage.getPeer(parseInt(peerId));
-      
-      if (!parent) {
-        return res.status(404).json({ error: "Parent not found" });
-      }
-
-      if (!parent.nwcConnectionString) {
-        return res.status(400).json({ error: "NWC not configured" });
-      }
-
-      const nwc = new NWCClient(parent.nwcConnectionString);
-      
-      // Test connection
-      const connected = await nwc.testConnection();
-      
-      // Get wallet info
-      const walletInfo = await nwc.getWalletInfo();
-      
-      // Get balance
-      const balance = await nwc.getBalance();
-      
-      res.json({
-        nwcConnectionString: parent.nwcConnectionString,
-        connected,
-        walletInfo,
-        balance,
-      });
-    } catch (error) {
-      console.error("NWC debug error:", error);
-      res.status(500).json({ error: String(error) });
     }
   });
 
