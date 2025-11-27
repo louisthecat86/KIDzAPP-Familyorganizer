@@ -61,10 +61,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Peer Registration
   app.post("/api/peers/register", async (req, res) => {
     try {
-      const { name, role, pin, familyName, joinParentConnectionId } = req.body;
+      const { name, role, pin, familyName, joinParentConnectionId, securityQuestion, securityAnswer } = req.body;
       
       if (!name || !role || !pin) {
         return res.status(400).json({ error: "Name, role, and pin required" });
+      }
+
+      // For parent: require security question and answer
+      if (role === "parent" && (!securityQuestion || !securityAnswer)) {
+        return res.status(400).json({ error: "Sicherheitsfrage und Antwort erforderlich" });
       }
 
       let connectionId = joinParentConnectionId;
@@ -88,22 +93,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         connectionId = `BTC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       }
 
+      // Hash security answer
+      let hashedAnswer: string | undefined;
+      if (role === "parent" && securityAnswer) {
+        const crypto = await import('crypto');
+        hashedAnswer = crypto.createHash('sha256').update(securityAnswer.toLowerCase().trim()).digest('hex');
+      }
+
       const peer = await storage.createPeer({
         name,
         role,
         pin,
         connectionId: connectionId || `BTC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
         familyName: role === "parent" ? familyNameToUse : undefined,
-      });
+        securityQuestion: role === "parent" ? securityQuestion : undefined,
+        securityAnswer: role === "parent" ? hashedAnswer : undefined,
+      } as any);
 
-      // Generate recovery code for parent accounts
-      let recoveryCode: string | undefined;
-      if (role === "parent") {
-        recoveryCode = generateRecoveryCode();
-        await storage.updatePeerRecoveryCode(peer.id, recoveryCode);
-      }
-
-      res.json({ ...peer, recoveryCode: role === "parent" ? recoveryCode : undefined });
+      res.json(peer);
     } catch (error) {
       if ((error as any).message?.includes("unique constraint")) {
         return res.status(400).json({ error: "Name und PIN Kombination existiert bereits" });

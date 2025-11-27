@@ -912,24 +912,12 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
         ? { id: response.id, name: response.name, role: response.role, connectionId: response.connectionId } as User
         : response as User;
 
-      // Show recovery code modal if there's a recovery code (registration or PIN reset)
-      const recoveryCodeToShow = (typeof response === 'object' && (response as any).recoveryCode && typeof (response as any).recoveryCode === 'string')
-        ? (response as any).recoveryCode
-        : (typeof response === 'object' && (response as any).newRecoveryCode && typeof (response as any).newRecoveryCode === 'string')
-        ? (response as any).newRecoveryCode
-        : null;
-      
-      if (recoveryCodeToShow) {
-        setRecoveryCodes([recoveryCodeToShow]);
-        setShowRecoveryCodes(true);
-        return;
-      }
       
       console.log("Erfolg:", user);
       
       toast({
-        title: isLogin ? "Willkommen!" : "Account erstellt! 🎉",
-        description: isLogin ? "Du bist angemeldet" : "Viel Spaß beim Geldverdienen!"
+        title: isLogin ? "Willkommen!" : "Account erstellt! ✅",
+        description: isLogin ? "Du bist angemeldet" : "Dein Account wurde erstellt!"
       });
       onComplete(user);
     } catch (error) {
@@ -1171,6 +1159,23 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               </p>
             </div>
 
+            {!isLogin && role === "parent" && (
+              <div className="space-y-2">
+                <Label htmlFor="security-question">Lieblingsfarbe (für PIN-Reset)</Label>
+                <Input 
+                  id="security-question"
+                  value={securityAnswer}
+                  onChange={(e) => setSecurityAnswer(e.target.value)}
+                  placeholder="z.B. Blau"
+                  className="bg-sky-500/10 border-sky-500/40 focus:border-sky-400 focus:bg-sky-500/20 text-foreground placeholder:text-sky-300/50"
+                  disabled={isLoading}
+                  autoComplete="off"
+                  data-testid="input-security-answer"
+                />
+                <p className="text-xs text-muted-foreground">Speichere diese Antwort sicher - du brauchst sie um deine PIN zurückzusetzen!</p>
+              </div>
+            )}
+
             <Separator />
 
             <div className="space-y-2">
@@ -1187,7 +1192,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                   type="button"
                   variant="ghost"
                   className="w-full text-sm"
-                  onClick={() => setUseRecoveryCode(true)}
+                  onClick={() => setUsePinReset(true)}
                   disabled={isLoading}
                   data-testid="button-forgot-pin"
                 >
