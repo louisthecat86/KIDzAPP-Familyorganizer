@@ -1206,36 +1206,43 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
 
       {showForgotPin && (
         <Dialog open={showForgotPin} onOpenChange={setShowForgotPin}>
-          <DialogContent className="sm:max-w-[400px]">
-            <DialogHeader>
-              <DialogTitle>PIN zurücksetzen</DialogTitle>
+          <DialogContent className="sm:max-w-[450px] border-border bg-gradient-to-br from-gray-900 to-black shadow-2xl">
+            <DialogHeader className="border-b border-border pb-4">
+              <DialogTitle className="text-2xl font-bold flex items-center gap-3">
+                <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">
+                  <span className="text-base">🔑</span>
+                </div>
+                PIN zurücksetzen
+              </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-5 pt-4">
               <div className="space-y-2">
-                <Label htmlFor="forgot-name">Name</Label>
+                <Label htmlFor="forgot-name" className="text-sm font-semibold">Name</Label>
                 <Input 
                   id="forgot-name"
                   value={forgotPinName}
                   onChange={(e) => setForgotPinName(e.target.value)}
-                  className="bg-secondary border-border"
+                  className="bg-secondary/50 border-border focus:border-primary"
                   disabled={isForgotLoading}
+                  placeholder="Gib deinen Namen ein"
                   data-testid="input-forgot-pin-name"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="forgot-color">Lieblingsfarbe</Label>
+                <Label htmlFor="forgot-color" className="text-sm font-semibold">Lieblingsfarbe</Label>
                 <Input 
                   id="forgot-color"
                   placeholder="z.B. Blau"
                   value={forgotPinColor}
                   onChange={(e) => setForgotPinColor(e.target.value)}
-                  className="bg-secondary border-border"
+                  className="bg-secondary/50 border-border focus:border-primary"
                   disabled={isForgotLoading}
                   data-testid="input-forgot-pin-color"
                 />
+                <p className="text-xs text-muted-foreground">Die Farbe, die du bei der Registrierung angegeben hast</p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="forgot-new-pin">Neue PIN</Label>
+                <Label htmlFor="forgot-new-pin" className="text-sm font-semibold">Neue PIN</Label>
                 <Input 
                   id="forgot-new-pin"
                   type="password"
@@ -1245,27 +1252,32 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                     const val = e.target.value.replace(/\D/g, "").slice(0, 4);
                     setForgotPinNewPin(val);
                   }}
-                  className="bg-secondary border-border font-mono text-center tracking-widest"
+                  className="bg-secondary/50 border-border font-mono text-center tracking-widest focus:border-primary text-lg"
                   disabled={isForgotLoading}
                   maxLength={4}
                   data-testid="input-forgot-pin-new"
                 />
-                <p className="text-xs text-muted-foreground">{forgotPinNewPin.length}/4 Ziffern</p>
+                <div className="flex justify-between items-center">
+                  <p className="text-xs text-muted-foreground">4-stellige Zahlencode</p>
+                  <p className={`text-xs font-medium ${forgotPinNewPin.length === 4 ? "text-green-500" : "text-muted-foreground"}`}>
+                    {forgotPinNewPin.length}/4
+                  </p>
+                </div>
               </div>
-              <div className="flex gap-2 pt-4">
+              <div className="flex gap-3 pt-6 border-t border-border">
                 <Button 
                   onClick={handleForgotPin}
                   disabled={isForgotLoading || !forgotPinName.trim() || !forgotPinColor.trim() || forgotPinNewPin.length !== 4}
-                  className="flex-1"
+                  className="flex-1 bg-primary hover:bg-primary/90 font-semibold"
                   data-testid="button-confirm-forgot-pin"
                 >
-                  {isForgotLoading ? "Wird verarbeitet..." : "PIN zurücksetzen"}
+                  {isForgotLoading ? "⏳ Wird verarbeitet..." : "✓ PIN zurücksetzen"}
                 </Button>
                 <Button 
                   variant="outline"
                   onClick={() => setShowForgotPin(false)}
                   disabled={isForgotLoading}
-                  className="flex-1"
+                  className="flex-1 border-border hover:bg-secondary/50"
                   data-testid="button-cancel-forgot-pin"
                 >
                   Abbrechen
