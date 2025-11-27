@@ -4351,39 +4351,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     );
   }
 
-  // Default tasks view
-  return (
-    <div className="max-w-4xl space-y-10">
-      <h1 className="text-3xl font-bold">Verfügbare Aufgaben</h1>
-      <section>
-        <div className="grid gap-4 md:grid-cols-2">
-          {availableTasks.map((task: Task) => (
-            <Card key={task.id} className="border-border bg-card hover:border-primary/50 transition-colors">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 border-transparent font-mono">
-                    {task.sats} sats
-                  </Badge>
-                </div>
-                <CardTitle className="mt-2">{task.title}</CardTitle>
-                <CardDescription>{task.description}</CardDescription>
-              </CardHeader>
-              <CardFooter>
-                <Button 
-                  onClick={() => onAccept(task.id)} 
-                  variant="outline" 
-                  className="w-full hover:border-primary hover:text-primary"
-                  data-testid={`button-accept-task-${task.id}`}
-                >
-                  Annehmen
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      </section>
-    </div>
-  );
+  return null;
 }
 
 function TaskCard({ task, children, variant }: { task: Task; children?: React.ReactNode; variant: "parent" | "child" }) {
