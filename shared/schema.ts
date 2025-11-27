@@ -145,3 +145,27 @@ export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type EventRsvp = typeof eventRsvps.$inferSelect;
+
+// Allowances (Taschengeld) Table
+export const allowances = pgTable("allowances", {
+  id: serial("id").primaryKey(),
+  parentId: integer("parent_id").notNull(), // Parent ID
+  childId: integer("child_id").notNull(), // Child ID
+  connectionId: text("connection_id").notNull(), // Family ID
+  sats: integer("sats").notNull(), // Amount in sats
+  frequency: text("frequency").notNull(), // 'daily', 'weekly', 'biweekly', 'monthly'
+  lastPaidDate: timestamp("last_paid_date"), // Last payment date
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertAllowanceSchema = createInsertSchema(allowances).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastPaidDate: true,
+});
+
+export type InsertAllowance = z.infer<typeof insertAllowanceSchema>;
+export type Allowance = typeof allowances.$inferSelect;

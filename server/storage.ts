@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages } from "@shared/schema";
+import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances } from "@shared/schema";
 import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
@@ -46,6 +46,14 @@ export interface IStorage {
   // Chat Message operations
   getChatMessages(connectionId: string): Promise<(ChatMessage & { senderName: string })[]>;
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
+
+  // Allowance operations
+  getAllowances(connectionId: string): Promise<Allowance[]>;
+  getAllowancesByChild(childId: number): Promise<Allowance[]>;
+  createAllowance(allowance: InsertAllowance): Promise<Allowance>;
+  updateAllowance(id: number, allowance: Partial<Allowance>): Promise<Allowance | undefined>;
+  deleteAllowance(id: number): Promise<boolean>;
+  getLastPaymentDate(allowanceId: number): Promise<Date | null>;
 }
 
 export class DatabaseStorage implements IStorage {
