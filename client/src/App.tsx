@@ -808,6 +808,21 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
     }
   };
 
+  const handleDeleteAllowance = async (allowanceId: number) => {
+    if (!confirm("Bist du sicher, dass du diese Terminzahlung löschen möchtest?")) return;
+    
+    try {
+      const res = await fetch(`/api/allowances/${allowanceId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete allowance");
+      toast({ title: "Erfolg", description: "Terminzahlung gelöscht!" });
+      refetchAllowances();
+    } catch (error) {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    }
+  };
+
   const handleAdHocPayout = async () => {
     if (!adHocChildId || !adHocSats) {
       toast({ title: "Fehler", description: "Bitte Kind und Betrag auswählen", variant: "destructive" });
@@ -931,15 +946,25 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
                                  allowance.frequency === "biweekly" ? "Zweiwöchentlich" : "Monatlich"}
                               </p>
                             </div>
-                            <Button
-                              onClick={() => handlePayout(allowance.id, item.child.id, allowance.sats)}
-                              disabled={!item.child.lightningAddress || isProcessingPayout}
-                              size="sm"
-                              className="bg-green-600 hover:bg-green-700"
-                              data-testid={`button-payout-${allowance.id}`}
-                            >
-                              {isProcessingPayout ? "..." : "Zahlen"}
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() => handlePayout(allowance.id, item.child.id, allowance.sats)}
+                                disabled={!item.child.lightningAddress || isProcessingPayout}
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700"
+                                data-testid={`button-payout-${allowance.id}`}
+                              >
+                                {isProcessingPayout ? "..." : "Zahlen"}
+                              </Button>
+                              <Button
+                                onClick={() => handleDeleteAllowance(allowance.id)}
+                                size="sm"
+                                variant="destructive"
+                                data-testid={`button-delete-allowance-${allowance.id}`}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
                         ))}
                       </div>
