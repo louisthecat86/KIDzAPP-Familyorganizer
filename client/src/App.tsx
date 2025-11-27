@@ -796,7 +796,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
       const res = await fetch(`/api/parent/${user.id}/payout-allowance`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ allowanceId, childId, sats }),
+        body: JSON.stringify({ allowanceId, childId, sats, paymentMethod }),
       });
       if (!res.ok) throw new Error("Payout failed");
       const childName = childrenWithAllowances.find((c: any) => c.child.id === childId)?.child.name || "Kind";
@@ -843,7 +843,8 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
         body: JSON.stringify({ 
           childId: adHocChildId, 
           sats: parseInt(adHocSats), 
-          message: adHocMessage || undefined 
+          message: adHocMessage || undefined,
+          paymentMethod 
         }),
       });
       if (!res.ok) {

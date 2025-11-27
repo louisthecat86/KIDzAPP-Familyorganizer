@@ -1050,7 +1050,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/parent/:id/payout-allowance", async (req, res) => {
     try {
       const parentId = parseInt(req.params.id);
-      const { allowanceId, childId, sats } = req.body;
+      const { allowanceId, childId, sats, paymentMethod } = req.body;
 
       if (!allowanceId || !childId || !sats) {
         return res.status(400).json({ error: "allowanceId, childId, sats required" });
@@ -1068,13 +1068,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       let paymentHash: string;
 
-      // Try LNbits first, fall back to NWC
-      if (parent.lnbitsUrl && parent.lnbitsAdminKey) {
+      // Use selected payment method if specified
+      if (paymentMethod === "nwc" && parent.nwcConnectionString) {
+        console.log("[Payout] Using NWC for allowance payment");
+        const nwc = new NWCClient(parent.nwcConnectionString);
+        paymentHash = await nwc.payToLightningAddress(sats, child.lightningAddress, `Taschengeld für ${child.name}`);
+      } else if (paymentMethod === "lnbits" && parent.lnbitsUrl && parent.lnbitsAdminKey) {
         console.log("[Payout] Using LNbits for allowance payment");
         const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
         paymentHash = await lnbits.payToLightningAddress(sats, child.lightningAddress, `Taschengeld für ${child.name}`);
+      } else if (parent.lnbitsUrl && parent.lnbitsAdminKey) {
+        console.log("[Payout] Fallback: Using LNbits for allowance payment");
+        const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+        paymentHash = await lnbits.payToLightningAddress(sats, child.lightningAddress, `Taschengeld für ${child.name}`);
       } else if (parent.nwcConnectionString) {
-        console.log("[Payout] Using NWC for allowance payment");
+        console.log("[Payout] Fallback: Using NWC for allowance payment");
         const nwc = new NWCClient(parent.nwcConnectionString);
         paymentHash = await nwc.payToLightningAddress(sats, child.lightningAddress, `Taschengeld für ${child.name}`);
       } else {
@@ -1095,7 +1103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/parent/:id/payout-instant", async (req, res) => {
     try {
       const parentId = parseInt(req.params.id);
-      const { childId, sats, message } = req.body;
+      const { childId, sats, message, paymentMethod } = req.body;
 
       if (!childId || !sats) {
         return res.status(400).json({ error: "childId and sats required" });
@@ -1114,13 +1122,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const memo = message || `Sofortzahlung für ${child.name}`;
       let paymentHash: string;
 
-      // Try LNbits first, fall back to NWC
-      if (parent.lnbitsUrl && parent.lnbitsAdminKey) {
+      // Use selected payment method if specified
+      if (paymentMethod === "nwc" && parent.nwcConnectionString) {
+        console.log("[Payout] Using NWC for instant payment");
+        const nwc = new NWCClient(parent.nwcConnectionString);
+        paymentHash = await nwc.payToLightningAddress(sats, child.lightningAddress, memo);
+      } else if (paymentMethod === "lnbits" && parent.lnbitsUrl && parent.lnbitsAdminKey) {
         console.log("[Payout] Using LNbits for instant payment");
         const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
         paymentHash = await lnbits.payToLightningAddress(sats, child.lightningAddress, memo);
+      } else if (parent.lnbitsUrl && parent.lnbitsAdminKey) {
+        console.log("[Payout] Fallback: Using LNbits for instant payment");
+        const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+        paymentHash = await lnbits.payToLightningAddress(sats, child.lightningAddress, memo);
       } else if (parent.nwcConnectionString) {
-        console.log("[Payout] Using NWC for instant payment");
+        console.log("[Payout] Fallback: Using NWC for instant payment");
         const nwc = new NWCClient(parent.nwcConnectionString);
         paymentHash = await nwc.payToLightningAddress(sats, child.lightningAddress, memo);
       } else {
