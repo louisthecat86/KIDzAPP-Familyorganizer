@@ -36,7 +36,9 @@ import {
   ChevronDown,
   Home,
   Users,
-  MessageSquare
+  MessageSquare,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PhotoUpload } from "@/components/PhotoUpload";
@@ -1596,6 +1598,7 @@ function SettingsModal({ user, setUser, activeTab, onClose, layoutView, setLayou
   const [editNwc, setEditNwc] = useState(user.nwcConnectionString || "");
   const [editLnbitsUrl, setEditLnbitsUrl] = useState(user.lnbitsUrl || "");
   const [editLnbitsAdminKey, setEditLnbitsAdminKey] = useState(user.lnbitsAdminKey || "");
+  const [showAdminKey, setShowAdminKey] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { toast: useToastFn } = useToast();
 
@@ -1764,15 +1767,32 @@ function SettingsModal({ user, setUser, activeTab, onClose, layoutView, setLayou
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lnbits-key">LNbits Admin Key</Label>
-                  <Input 
-                    id="lnbits-key"
-                    placeholder="Admin key..."
-                    value={editLnbitsAdminKey}
-                    onChange={(e) => setEditLnbitsAdminKey(e.target.value)}
-                    className="bg-secondary border-border font-mono text-xs"
-                    autoComplete="off"
-                    data-testid="input-lnbits-key"
-                  />
+                  <div className="relative">
+                    <Input 
+                      id="lnbits-key"
+                      type={showAdminKey ? "text" : "password"}
+                      placeholder="Admin key..."
+                      value={editLnbitsAdminKey}
+                      onChange={(e) => setEditLnbitsAdminKey(e.target.value)}
+                      className="bg-secondary border-border font-mono text-xs pr-10"
+                      autoComplete="off"
+                      data-testid="input-lnbits-key"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-2 hover:bg-transparent"
+                      onClick={() => setShowAdminKey(!showAdminKey)}
+                      data-testid="button-toggle-admin-key-visibility"
+                    >
+                      {showAdminKey ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
                   <p className="text-xs text-muted-foreground">Status: {user.lnbitsUrl ? "✓ Verbunden" : "✗ Nicht verbunden"}</p>
                 </div>
                 <Button
