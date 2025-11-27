@@ -2669,6 +2669,34 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             </Card>
           </motion.div>
         </div>
+
+        <Dialog open={showSpendingStats} onOpenChange={setShowSpendingStats}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Ausgaben pro Kind</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              {spendingStats.length === 0 ? (
+                <p className="text-muted-foreground text-center py-6">Keine Ausgaben erfasst</p>
+              ) : (
+                spendingStats.map((stat) => (
+                  <div key={stat.childId} className="p-3 rounded-lg border border-border bg-secondary/30 flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold">{stat.childName}</p>
+                      <p className="text-xs text-muted-foreground">Sats bezahlt</p>
+                    </div>
+                    <p className="text-lg font-mono font-bold text-primary">{stat.satSpent.toLocaleString()}</p>
+                  </div>
+                ))
+              )}
+              {spendingStats.length > 0 && (
+                <div className="pt-3 border-t border-border mt-3">
+                  <p className="text-sm text-muted-foreground">Gesamt: <span className="text-primary font-bold">{spendingStats.reduce((sum, s) => sum + s.satSpent, 0).toLocaleString()} SATS</span></p>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -4219,34 +4247,6 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
             </div>
           </Card>
         )}
-
-        <Dialog open={showSpendingStats} onOpenChange={setShowSpendingStats}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Ausgaben pro Kind</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-3">
-              {spendingStats.length === 0 ? (
-                <p className="text-muted-foreground text-center py-6">Keine Ausgaben erfasst</p>
-              ) : (
-                spendingStats.map((stat) => (
-                  <div key={stat.childId} className="p-3 rounded-lg border border-border bg-secondary/30 flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold">{stat.childName}</p>
-                      <p className="text-xs text-muted-foreground">Sats bezahlt</p>
-                    </div>
-                    <p className="text-lg font-mono font-bold text-primary">{stat.satSpent.toLocaleString()}</p>
-                  </div>
-                ))
-              )}
-              {spendingStats.length > 0 && (
-                <div className="pt-3 border-t border-border mt-3">
-                  <p className="text-sm text-muted-foreground">Gesamt: <span className="text-primary font-bold">{spendingStats.reduce((sum, s) => sum + s.satSpent, 0).toLocaleString()} SATS</span></p>
-                </div>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
 
       </div>
     );
