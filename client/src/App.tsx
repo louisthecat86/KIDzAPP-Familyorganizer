@@ -494,6 +494,10 @@ export default function App() {
                   queryClient={queryClient}
                   layoutView={layoutView}
                   setLayoutView={setLayoutView}
+                  showSpendingStats={showSpendingStats}
+                  setShowSpendingStats={setShowSpendingStats}
+                  spendingStats={spendingStats}
+                  setSpendingStats={setSpendingStats}
                 />
               ) : (
                 <ChildDashboard 
@@ -2236,7 +2240,7 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
   );
 }
 
-function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, queryClient, layoutView, setLayoutView }: any) {
+function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, queryClient, layoutView, setLayoutView, showSpendingStats, setShowSpendingStats, spendingStats, setSpendingStats }: any) {
   const [nwcConnectionString, setNwcConnectionString] = useState(user.nwcConnectionString || "");
   const [lnbitsUrl, setLnbitsUrl] = useState(user.lnbitsUrl || "");
   const [lnbitsAdminKey, setLnbitsAdminKey] = useState(user.lnbitsAdminKey || "");
