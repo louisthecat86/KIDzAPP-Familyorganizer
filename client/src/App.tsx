@@ -241,6 +241,8 @@ export default function App() {
   const [mode, setMode] = useState<"role-select" | "auth" | "app">("role-select");
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [layoutView, setLayoutView] = useState("two-column");
+  const [showSpendingStats, setShowSpendingStats] = useState(false);
+  const [spendingStats, setSpendingStats] = useState<Array<{ childId: number; childName: string; satSpent: number }>>([]);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -2379,6 +2381,18 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       },
       refetchInterval: 10000
     });
+
+    const handleShowSpendingStats = async () => {
+      try {
+        const res = await fetch(`/api/parent/${user.id}/spending-by-child/${user.connectionId}`);
+        if (!res.ok) throw new Error("Failed to fetch spending stats");
+        const data = await res.json();
+        setSpendingStats(data);
+        setShowSpendingStats(true);
+      } catch (error) {
+        toast({ title: "Fehler", description: "Ausgaben-Statistik konnte nicht geladen werden", variant: "destructive" });
+      }
+    };
     
     return (
       <div className="space-y-4">
@@ -2420,7 +2434,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         <motion.section 
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black border border-border p-8"
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black border border-border p-8 cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
+          onClick={handleShowSpendingStats}
         >
           <div className="relative z-10">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -2429,7 +2444,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-primary" data-testid="text-sats-spent">
                   {(satsSpent || 0).toLocaleString()} <span className="text-2xl opacity-50 text-white">SATS</span>
                 </h2>
-                <p className="text-xs text-muted-foreground mt-2">Gesamt an Kinder gezahlt</p>
+                <p className="text-xs text-muted-foreground mt-2">Klick zum Anzeigen der Aufschlüsselung pro Kind</p>
               </div>
             </div>
           </div>
@@ -4197,6 +4212,34 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
             </div>
           </Card>
         )}
+
+        <Dialog open={showSpendingStats} onOpenChange={setShowSpendingStats}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Ausgaben pro Kind</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              {spendingStats.length === 0 ? (
+                <p className="text-muted-foreground text-center py-6">Keine Ausgaben erfasst</p>
+              ) : (
+                spendingStats.map((stat) => (
+                  <div key={stat.childId} className="p-3 rounded-lg border border-border bg-secondary/30 flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold">{stat.childName}</p>
+                      <p className="text-xs text-muted-foreground">Sats bezahlt</p>
+                    </div>
+                    <p className="text-lg font-mono font-bold text-primary">{stat.satSpent.toLocaleString()}</p>
+                  </div>
+                ))
+              )}
+              {spendingStats.length > 0 && (
+                <div className="pt-3 border-t border-border mt-3">
+                  <p className="text-sm text-muted-foreground">Gesamt: <span className="text-primary font-bold">{spendingStats.reduce((sum, s) => sum + s.satSpent, 0).toLocaleString()} SATS</span></p>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
 
       </div>
     );

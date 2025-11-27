@@ -17,6 +17,7 @@ export interface IStorage {
   updateBalance(peerId: number, sats: number): Promise<Peer>;
   updatePeerPin(peerId: number, newPin: string): Promise<Peer>;
   updateChildLightningAddress(peerId: number, lightningAddress: string): Promise<Peer>;
+  getSatsSpentByChild(parentId: number, connectionId: string): Promise<Array<{ childId: number; childName: string; satSpent: number }>>;
   
   // Task operations
   getTasks(connectionId: string): Promise<Task[]>;
@@ -296,6 +297,33 @@ export class DatabaseStorage implements IStorage {
     const result = await db.select().from(tasks)
       .where(and(eq(tasks.createdBy, peerId), eq(tasks.connectionId, connectionId)));
     return result.reduce((sum, t) => sum + t.sats, 0);
+  }
+
+  async getSatsSpentByChild(parentId: number, connectionId: string): Promise<Array<{ childId: number; childName: string; satSpent: number }>> {
+    const children = await db.select().from(peers)
+      .where(and(eq(peers.connectionId, connectionId), eq(peers.role, "child")));
+    
+    const result = [];
+    for (const child of children) {
+      const childTasks = await db.select().from(tasks)
+        .where(and(
+          eq(tasks.createdBy, parentId),
+          eq(tasks.connectionId, connectionId),
+          eq(tasks.assignedTo, child.id),
+          eq(tasks.status, "approved")
+        ));
+      
+      const satSpent = childTasks.reduce((sum, t) => sum + t.sats, 0);
+      if (satSpent > 0) {
+        result.push({
+          childId: child.id,
+          childName: child.name,
+          satSpent
+        });
+      }
+    }
+    
+    return result.sort((a, b) => b.satSpent - a.satSpent);
   }
 
   // Event RSVP operations

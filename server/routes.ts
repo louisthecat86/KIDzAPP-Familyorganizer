@@ -414,6 +414,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get spending breakdown by child
+  app.get("/api/parent/:parentId/spending-by-child/:connectionId", async (req, res) => {
+    try {
+      const { parentId, connectionId } = req.params;
+      const spending = await storage.getSatsSpentByChild(parseInt(parentId), connectionId);
+      res.json(spending);
+    } catch (error) {
+      console.error("Spending breakdown error:", error);
+      res.status(500).json({ error: "Failed to fetch spending breakdown" });
+    }
+  });
+
   // Get leaderboard for a family
   app.get("/api/leaderboard/:connectionId", async (req, res) => {
     try {
