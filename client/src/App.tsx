@@ -1676,12 +1676,11 @@ function SettingsModal({ user, setUser, activeTab, onClose, layoutView, setLayou
       useToastFn({ 
         title: "✅ LNbits erfolgreich gespeichert!", 
         description: `URL: ${editLnbitsUrl}`,
-        duration: 5000
+        duration: 3000
       });
       
-      // Clear input fields and show connected status
-      setEditLnbitsUrl("");
-      setEditLnbitsAdminKey("");
+      // Close modal after 1 second so user can see toast
+      setTimeout(() => onClose(), 1500);
     } catch (error) {
       useToastFn({ 
         title: "❌ Fehler beim Speichern", 
