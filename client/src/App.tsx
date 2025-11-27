@@ -2923,14 +2923,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <Card className="border border-primary/20 shadow-[0_0_30px_-10px_rgba(247,147,26,0.15)] bg-card/50 overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-accent to-primary" />
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-primary" data-testid="text-create-task">
-                  <Plus className="h-5 w-5" /> Neue Aufgabe erstellen
-                </CardTitle>
-                <Badge variant="secondary" className="bg-primary/10 text-primary">
-                  <Bitcoin className="h-3 w-3 mr-1" /> {(user.balance || 0).toLocaleString()} sats
-                </Badge>
-              </div>
+              <CardTitle className="flex items-center gap-2 text-primary" data-testid="text-create-task">
+                <Plus className="h-5 w-5" /> Neue Aufgabe erstellen
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={onCreate} className="flex flex-col md:flex-row gap-4 items-end">
