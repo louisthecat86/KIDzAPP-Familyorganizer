@@ -2341,7 +2341,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       <div className="text-3xl font-bold text-primary flex items-center justify-center gap-1">
                         {walletBalance !== null ? (
                           <>
-                            ⚡ {(walletBalance / 1000).toLocaleString("de-DE", { maximumFractionDigits: 0 })} mSat
+                            ⚡ {(walletBalance / 1000).toLocaleString("de-DE", { maximumFractionDigits: 0 })} Sat
                           </>
                         ) : (
                           "⚠️ ---"
