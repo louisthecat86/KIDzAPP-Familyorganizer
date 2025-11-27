@@ -3712,10 +3712,11 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   </p>
                   <Button 
                     onClick={() => {
+                      console.log("Button clicked - setCurrentView('wallet-settings')");
                       setCurrentView("wallet-settings");
                     }}
                     data-testid="button-open-lnbits-settings"
-                    className="mt-4 bg-primary hover:bg-primary/90"
+                    className="mt-4 bg-primary hover:bg-primary/90 cursor-pointer"
                   >
                     📱 Zu LNbits Einstellungen
                   </Button>
