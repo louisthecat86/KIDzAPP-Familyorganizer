@@ -1786,9 +1786,62 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
           {/* WALLET TAB */}
           {activeTab === "wallet" && (
             <div className="w-full space-y-4">
-              {/* NWC Content */}
-              {walletTab === "nwc" && (
-              <div className="space-y-4 mt-4">
+              {user.role === "child" ? (
+                // For children: only Lightning Address
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="lightning-address">Lightning Adresse</Label>
+                    <Input 
+                      id="lightning-address"
+                      placeholder="name@example.com"
+                      value={editLnbitsUrl || ""}
+                      onChange={(e) => setEditLnbitsUrl(e.target.value)}
+                      className="font-mono text-xs"
+                      data-testid="input-lightning-address"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Format: name@domain.com
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Status: {user.lightningAddress ? "✓ Konfiguriert" : "✗ Nicht konfiguriert"}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="default"
+                    className="w-full"
+                    onClick={async () => {
+                      if (!editLnbitsUrl) return;
+                      setIsSaving(true);
+                      try {
+                        const res = await fetch("/api/wallet/setup-child-address", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ peerId: user.id, lightningAddress: editLnbitsUrl }),
+                        });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error);
+                        setUser({ ...user, lightningAddress: editLnbitsUrl });
+                        useToastFn({ title: "✅ Lightning Adresse gespeichert!", duration: 3000 });
+                        setTimeout(() => onClose(), 1500);
+                      } catch (error) {
+                        useToastFn({ title: "❌ Fehler", description: (error as Error).message, variant: "destructive" });
+                      } finally {
+                        setIsSaving(false);
+                      }
+                    }}
+                    disabled={isSaving || !editLnbitsUrl}
+                    data-testid="button-save-lightning-address"
+                  >
+                    {isSaving ? "⏳ Speichern..." : "💾 Speichern"}
+                  </Button>
+                </div>
+              ) : (
+                // For parents: show NWC and LNbits tabs
+                <>
+                  {/* NWC Content */}
+                  {walletTab === "nwc" && (
+                  <div className="space-y-4 mt-4">
                 {user.nwcConnectionString ? (
                   // Connected state
                   <div className="border border-green-500/30 bg-green-500/5 rounded-lg p-4 space-y-3">
@@ -1959,6 +2012,8 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                   </div>
                 )}
               </div>
+              )}
+                </>
               )}
             </div>
           )}
