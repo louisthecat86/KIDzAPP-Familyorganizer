@@ -4007,83 +4007,81 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                   <h3 className="text-sm font-bold mb-2 flex items-center gap-1">
                     <Calendar className="h-4 w-4 text-primary" /> Kalender
                   </h3>
-                  <div className="space-y-2">
-                    <div>
-                      <style>{`
-                        .rdp-child {
-                          --rdp-cell-size: 32px;
-                          --rdp-accent-color: rgb(59, 130, 246);
-                          --rdp-background-color: rgba(59, 130, 246, 0.1);
-                          margin: 0;
-                        }
-                        .rdp-child .rdp-head_cell {
-                          color: rgb(156, 163, 175);
-                          font-weight: 600;
-                          font-size: 0.6rem;
-                        }
-                        .rdp-child .rdp-cell {
-                          color: rgb(156, 163, 175);
-                          padding: 0;
-                        }
-                        .rdp-child .rdp-day {
-                          color: rgb(209, 213, 219);
-                          border-radius: 2px;
-                          font-size: 0.7rem;
-                        }
-                        .rdp-child .rdp-day_selected {
-                          background-color: rgb(59, 130, 246);
-                          color: white;
-                        }
-                        .rdp-child .rdp-day_today {
-                          color: rgb(59, 130, 246);
-                          font-weight: bold;
-                        }
-                        .rdp-child .rdp-caption {
-                          color: rgb(229, 231, 235);
-                          font-weight: 600;
-                          margin-bottom: 0.5rem;
-                          font-size: 0.75rem;
-                        }
-                        .rdp-child .rdp-nav {
-                          gap: 2px;
-                        }
-                        .rdp-child .rdp-nav_button {
-                          width: 20px;
-                          height: 20px;
-                          padding: 0;
-                        }
-                      `}</style>
-                      <div className="rdp-child">
-                        <DayPicker
-                          mode="single"
-                          selected={selectedDate}
-                          onSelect={(date) => date && setSelectedDate(date)}
-                          locale={{
-                            months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
-                            weekdays: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
-                            weekdaysShort: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"]
-                          }}
-                          modifiers={{
-                            hasEvent: (date) => events.some(e => {
-                              const eventDate = new Date(e.startDate);
-                              return eventDate.toDateString() === date.toDateString();
-                            })
-                          }}
-                          modifiersStyles={{
-                            hasEvent: {
-                              backgroundColor: "rgba(59, 130, 246, 0.2)",
-                              fontWeight: "bold"
-                            }
-                          }}
-                        />
-                      </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <style>{`
+                      .rdp-child {
+                        --rdp-cell-size: 32px;
+                        --rdp-accent-color: rgb(59, 130, 246);
+                        --rdp-background-color: rgba(59, 130, 246, 0.1);
+                        margin: 0;
+                      }
+                      .rdp-child .rdp-head_cell {
+                        color: rgb(156, 163, 175);
+                        font-weight: 600;
+                        font-size: 0.6rem;
+                      }
+                      .rdp-child .rdp-cell {
+                        color: rgb(156, 163, 175);
+                        padding: 0;
+                      }
+                      .rdp-child .rdp-day {
+                        color: rgb(209, 213, 219);
+                        border-radius: 2px;
+                        font-size: 0.7rem;
+                      }
+                      .rdp-child .rdp-day_selected {
+                        background-color: rgb(59, 130, 246);
+                        color: white;
+                      }
+                      .rdp-child .rdp-day_today {
+                        color: rgb(59, 130, 246);
+                        font-weight: bold;
+                      }
+                      .rdp-child .rdp-caption {
+                        color: rgb(229, 231, 235);
+                        font-weight: 600;
+                        margin-bottom: 0.5rem;
+                        font-size: 0.75rem;
+                      }
+                      .rdp-child .rdp-nav {
+                        gap: 2px;
+                      }
+                      .rdp-child .rdp-nav_button {
+                        width: 20px;
+                        height: 20px;
+                        padding: 0;
+                      }
+                    `}</style>
+                    <div className="rdp-child">
+                      <DayPicker
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={(date) => date && setSelectedDate(date)}
+                        locale={{
+                          months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
+                          weekdays: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
+                          weekdaysShort: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"]
+                        }}
+                        modifiers={{
+                          hasEvent: (date) => events.some(e => {
+                            const eventDate = new Date(e.startDate);
+                            return eventDate.toDateString() === date.toDateString();
+                          })
+                        }}
+                        modifiersStyles={{
+                          hasEvent: {
+                            backgroundColor: "rgba(59, 130, 246, 0.2)",
+                            fontWeight: "bold"
+                          }
+                        }}
+                      />
                     </div>
                     
-                    <div>
-                      <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase truncate">
+                    <div className="w-full">
+                      <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase">
                         {selectedDate.toLocaleDateString("de-DE", { day: "numeric", month: "short", year: "numeric" })}
                       </p>
-                      <div className="space-y-1 max-h-40 overflow-y-auto">
+                      <div className="space-y-1 max-h-32 overflow-y-auto">
                         {events
                           .filter(e => new Date(e.startDate).toDateString() === selectedDate.toDateString())
                           .map((event: FamilyEvent) => (
