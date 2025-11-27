@@ -2417,6 +2417,20 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           </motion.div>
         )}
         
+        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+          <Card className="bg-gradient-to-br from-gray-900 to-black border border-border hover:from-gray-800 hover:to-gray-950 transition-colors" data-testid="card-sats-spent">
+            <CardContent className="p-6">
+              <div className="text-center">
+                <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest mb-2">📤 Ausgegeben</p>
+                <h2 className="text-4xl font-mono font-bold text-primary mb-1" data-testid="text-sats-spent">
+                  {(satsSpent || 0).toLocaleString()}
+                </h2>
+                <p className="text-sm text-muted-foreground">An Kinder gezahlt</p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+        
         <div className={`grid ${layoutView === "one-column" ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
           {cardOrder.map((cardId, index) => {
             if (cardId === "tasks-open") {
@@ -2465,25 +2479,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     <div className="text-center">
                       <div className="text-3xl font-bold text-green-500">{completedTasks.length}</div>
                       <p className="text-sm text-muted-foreground mt-2">Abgeschlossen</p>
-                    </div>
-                  </CardContent>
-                </Card>,
-                index * 0.1
-              );
-            } else if (cardId === "sats-spent") {
-              return createDraggableCard(
-                cardId,
-                <Card className="bg-gradient-to-br from-gray-900 to-black border border-border hover:from-gray-800 hover:to-gray-950 transition-colors h-full">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center border border-primary/30 flex-shrink-0">
-                        <span className="text-primary text-lg">📤</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest mb-1">Ausgegeben</p>
-                        <h3 className="text-2xl font-mono font-bold text-primary" data-testid="text-sats-spent">{(satsSpent || 0).toLocaleString()}</h3>
-                        <p className="text-xs text-muted-foreground mt-1">An Kinder gezahlt</p>
-                      </div>
                     </div>
                   </CardContent>
                 </Card>,
