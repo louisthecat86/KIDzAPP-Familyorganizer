@@ -2983,16 +2983,19 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       refetchInterval: 5000
     });
 
-    const { data: walletBalance = null } = useQuery({
+    const [selectedWallet, setSelectedWallet] = useState<"lnbits" | "nwc">(user.lnbitsUrl ? "lnbits" : "nwc");
+
+    const { data: walletBalances = { lnbitsBalance: null, nwcBalance: null } } = useQuery({
       queryKey: ["wallet-balance", user.id],
       queryFn: async () => {
         const res = await fetch(`/api/parent/${user.id}/wallet-balance`);
         if (!res.ok) throw new Error("Failed to fetch wallet balance");
-        const data = await res.json();
-        return data.walletBalance;
+        return res.json();
       },
       refetchInterval: 10000
     });
+
+    const displayBalance = selectedWallet === "lnbits" ? walletBalances.lnbitsBalance : walletBalances.nwcBalance;
 
     const handleShowSpendingStats = async () => {
       try {
@@ -3145,19 +3148,47 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             } else if (cardId === "wallet-balance") {
               return createDraggableCard(
                 cardId,
-                <Card className={`border-border bg-gradient-to-br from-gray-900 to-black ${walletBalance !== null ? "hover:from-gray-800 hover:to-gray-950" : "opacity-60"} transition-colors h-full`}>
+                <Card className={`border-border bg-gradient-to-br from-gray-900 to-black ${displayBalance !== null ? "hover:from-gray-800 hover:to-gray-950" : "opacity-60"} transition-colors h-full`}>
                   <CardContent className="pt-6">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-primary flex items-center justify-center gap-1">
-                        {walletBalance !== null ? (
-                          <>
-                            ⚡ {(walletBalance / 1000).toLocaleString("de-DE", { maximumFractionDigits: 0 })} Sat
-                          </>
-                        ) : (
-                          "⚠️ ---"
-                        )}
+                    <div className="space-y-4">
+                      <div className="flex gap-2 justify-center text-xs">
+                        <label className="flex items-center gap-1 cursor-pointer" data-testid="label-wallet-lnbits">
+                          <input 
+                            type="radio" 
+                            name="walletMethod" 
+                            value="lnbits" 
+                            checked={selectedWallet === "lnbits"}
+                            onChange={(e) => setSelectedWallet(e.target.value as "lnbits" | "nwc")}
+                            disabled={!user.lnbitsUrl}
+                            className="cursor-pointer"
+                          />
+                          <span className={!user.lnbitsUrl ? "opacity-50" : ""}>💳 LNbits</span>
+                        </label>
+                        <label className="flex items-center gap-1 cursor-pointer">
+                          <input 
+                            type="radio" 
+                            name="walletMethod" 
+                            value="nwc" 
+                            checked={selectedWallet === "nwc"}
+                            onChange={(e) => setSelectedWallet(e.target.value as "lnbits" | "nwc")}
+                            disabled={!user.nwcConnectionString}
+                            className="cursor-pointer"
+                          />
+                          <span className={!user.nwcConnectionString ? "opacity-50" : ""}>🔌 NWC</span>
+                        </label>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-2">{walletBalance !== null ? "LNbits Wallet" : "Wallet nicht verbunden"}</p>
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-primary flex items-center justify-center gap-1">
+                          {displayBalance !== null ? (
+                            <>
+                              ⚡ {(displayBalance / 1000).toLocaleString("de-DE", { maximumFractionDigits: 0 })} Sat
+                            </>
+                          ) : (
+                            "⚠️ ---"
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-2">{selectedWallet === "lnbits" ? "LNbits Wallet" : "NWC Wallet"}</p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>,
