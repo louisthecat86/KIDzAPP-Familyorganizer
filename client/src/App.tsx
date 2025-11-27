@@ -1250,11 +1250,6 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                         >
                           ⚡ LNbits Anbindung
                         </button>
-                        <button
-                          className="w-full px-4 py-2 rounded-lg text-xs text-muted-foreground hover:bg-secondary transition-colors text-left"
-                        >
-                          🔌 NWC Einstellungen
-                        </button>
                       </motion.div>
                     )}
                   </div>
@@ -2258,23 +2253,6 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
     setShowAdminKey(false);
   }, [user]);
 
-  const saveNWC = async () => {
-    if (!editNwc) return;
-    setIsSaving(true);
-    try {
-      const res = await fetch("/api/wallet/setup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      useToastFn({ title: "NWC gespeichert!", description: "Nostr Wallet Connect ist jetzt aktiv" });
-    } catch (error) {
-      useToastFn({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const testLNbits = async () => {
     if (!editLnbitsUrl || !editLnbitsAdminKey) return;
@@ -2520,66 +2498,9 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                   </Button>
                 </div>
               ) : (
-                // For parents: show NWC and LNbits tabs
                 <>
-                  {/* NWC Content */}
+                  {walletTab === "lnbits" && (
                   <div className="space-y-4 mt-4">
-                  // Connected state
-                  <div className="border border-green-500/30 bg-green-500/5 rounded-lg p-4 space-y-3">
-                    <p className="text-xs text-muted-foreground mb-1">🟢 NWC Wallet verbunden</p>
-                    <div className="bg-secondary rounded border border-border p-2 text-xs font-mono overflow-auto max-h-20">
-                    </div>
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      className="w-full text-xs"
-                      onClick={async () => {
-                        try {
-                          const res = await fetch("/api/wallet/setup", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                          });
-                          if (res.ok) {
-                            useToastFn({ title: "❌ NWC Verbindung getrennt", duration: 3000 });
-                          }
-                        } catch (error) {
-                          useToastFn({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
-                        }
-                      }}
-                      disabled={isSaving}
-                    >
-                      🔌 Verbindung trennen
-                    </Button>
-                  </div>
-                ) : (
-                  // Disconnected state
-                  <div className="space-y-3">
-                    <div className="space-y-2">
-                      <Input 
-                        placeholder="nostr+walletconnect://...?relay=...&secret=..."
-                        value={editNwc}
-                        onChange={(e) => setEditNwc(e.target.value)}
-                        className="bg-secondary border-border font-mono text-xs"
-                        autoComplete="off"
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      variant="default"
-                      className="w-full"
-                      onClick={saveNWC}
-                      disabled={isSaving || !editNwc}
-                    >
-                      {isSaving ? "⏳ Speichern..." : "💾 Speichern"}
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {/* LNbits Content */}
-              {walletTab === "lnbits" && (
-              <div className="space-y-4 mt-4">
                 {user.lnbitsUrl ? (
                   // Connected state - show wallet card
                   <div className="space-y-3">
@@ -2682,9 +2603,9 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                       {isSaving ? "⏳ Speichern..." : "💾 Speichern"}
                     </Button>
                   </div>
-                )}
-              </div>
-              )}
+                    )}
+                  </div>
+                  )}
                 </>
               )}
             </div>
@@ -2876,19 +2797,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     </motion.div>
   );
 
-  const setupWallet = async () => {
-    try {
-      const res = await fetch("/api/wallet/setup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      toast({ title: "Wallet verbunden!", description: "Nostr Wallet Connect ist jetzt aktiv" });
-    } catch (error) {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
-    }
-  };
 
   const setupLNbits = async () => {
     if (!lnbitsUrl || !lnbitsAdminKey) return;
@@ -3120,14 +3028,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                           />
                           <span className={!user.lnbitsUrl ? "opacity-50" : ""}>💳 LNbits</span>
                         </label>
-                        <label className="flex items-center gap-1 cursor-pointer">
-                          <input 
-                            type="radio" 
-                            name="walletMethod" 
-                            className="cursor-pointer"
-                          />
-                          <span>🔌 NWC</span>
-                        </label>
                       </div>
                       <div className="text-center">
                         <div className="text-3xl font-bold text-primary flex items-center justify-center gap-1">
@@ -3139,7 +3039,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                             "⚠️ ---"
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground mt-2">{selectedWallet === "lnbits" ? "LNbits Wallet" : "NWC Wallet"}</p>
+                        <p className="text-sm text-muted-foreground mt-2">LNbits Wallet</p>
                       </div>
                     </div>
                   </CardContent>
