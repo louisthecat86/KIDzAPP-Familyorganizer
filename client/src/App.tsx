@@ -2417,19 +2417,23 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           </motion.div>
         )}
         
-        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-          <Card className="bg-gradient-to-br from-gray-900 to-black border border-border hover:from-gray-800 hover:to-gray-950 transition-colors" data-testid="card-sats-spent">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest mb-2">📤 Ausgegeben</p>
-                <h2 className="text-4xl font-mono font-bold text-primary mb-1" data-testid="text-sats-spent">
-                  {(satsSpent || 0).toLocaleString()}
+        <motion.section 
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black border border-border p-8"
+        >
+          <div className="relative z-10">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="flex-1">
+                <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest mb-2">💰 Ausgegeben</p>
+                <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-primary" data-testid="text-sats-spent">
+                  {(satsSpent || 0).toLocaleString()} <span className="text-2xl opacity-50 text-white">SATS</span>
                 </h2>
-                <p className="text-sm text-muted-foreground">An Kinder gezahlt</p>
+                <p className="text-xs text-muted-foreground mt-2">Gesamt an Kinder gezahlt</p>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+            </div>
+          </div>
+        </motion.section>
         
         <div className={`grid ${layoutView === "one-column" ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
           {cardOrder.map((cardId, index) => {
