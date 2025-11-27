@@ -2350,84 +2350,25 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             }
           })}
           
-          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }} className="md:col-span-2">
-            <Card className="bg-gradient-to-br from-gray-900 to-black border-border hover:from-gray-800 hover:to-gray-950 transition-colors h-full" data-testid="card-calendar">
+          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
+            <Card className="bg-gradient-to-br from-gray-900 to-black border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors h-full" onClick={() => setCurrentView("calendar-view")} data-testid="card-calendar">
               <CardContent className="p-6">
-                <h3 className="text-base font-bold mb-4 flex items-center gap-1">
-                  <Calendar className="h-4 w-4 text-primary" /> Kalender & Termine
+                <h3 className="text-base font-bold mb-3 flex items-center gap-1">
+                  <Calendar className="h-4 w-4 text-primary" /> Kalender ({futureEvents.length})
                 </h3>
                 {futureEvents.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-6">Noch keine Termine geplant</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">Noch keine Termine geplant</p>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {/* Mini Kalender */}
-                    <div className="sm:col-span-1">
-                      <div className="bg-secondary/50 rounded-lg p-3 border border-border/50">
-                        <div className="text-xs font-semibold text-muted-foreground text-center mb-2 uppercase">
-                          {new Date().toLocaleDateString("de-DE", { month: "long", year: "numeric" })}
-                        </div>
-                        <div className="grid grid-cols-7 gap-1">
-                          {["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"].map((day) => (
-                            <div key={day} className="text-xs text-muted-foreground text-center font-semibold p-1">
-                              {day}
-                            </div>
-                          ))}
-                          {Array.from({ length: 31 }).map((_, i) => {
-                            const date = new Date(new Date().getFullYear(), new Date().getMonth(), i + 1);
-                            if (date.getMonth() !== new Date().getMonth()) return null;
-                            const isToday = date.toDateString() === new Date().toDateString();
-                            const hasEvent = futureEvents.some((e: FamilyEvent) => new Date(e.startDate).toDateString() === date.toDateString());
-                            return (
-                              <div
-                                key={i}
-                                className={`text-xs p-1 rounded text-center font-medium cursor-pointer ${
-                                  isToday ? "bg-primary text-primary-foreground" : hasEvent ? "bg-primary/30 text-primary" : "text-muted-foreground"
-                                }`}
-                              >
-                                {i + 1}
-                              </div>
-                            );
-                          })}
-                        </div>
+                  <div className="space-y-2">
+                    {futureEvents.slice(0, 3).map((event: FamilyEvent) => (
+                      <div key={event.id} className="text-sm border-l-2 border-primary/30 pl-3 py-1">
+                        <p className="font-semibold text-xs" data-testid={`text-dash-event-${event.id}`}>{event.title}</p>
+                        <p className="text-xs text-muted-foreground">📅 {new Date(event.startDate).toLocaleDateString("de-DE", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
+                        {event.location && <p className="text-xs text-muted-foreground">📍 {event.location}</p>}
                       </div>
-                    </div>
-
-                    {/* Bevorstehende Termine */}
-                    <div className="sm:col-span-2 space-y-2 max-h-48 overflow-y-auto">
-                      <div className="text-xs font-semibold text-muted-foreground uppercase mb-2">Bevorstehende Termine</div>
-                      {futureEvents.slice(0, 5).map((event: FamilyEvent) => (
-                        <div
-                          key={event.id}
-                          onClick={() => setCurrentView("calendar-view")}
-                          className="p-2 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 cursor-pointer transition-colors"
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-xs text-primary truncate" data-testid={`text-dash-event-${event.id}`}>
-                                {event.title}
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                📅 {new Date(event.startDate).toLocaleDateString("de-DE", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                              </p>
-                              {event.location && <p className="text-xs text-muted-foreground">📍 {event.location}</p>}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                      {futureEvents.length > 5 && (
-                        <p className="text-xs text-muted-foreground text-center pt-2 italic">+{futureEvents.length - 5} weitere Termine...</p>
-                      )}
-                    </div>
+                    ))}
                   </div>
                 )}
-                <Button
-                  variant="outline"
-                  className="w-full mt-4 text-xs h-7"
-                  onClick={() => setCurrentView("calendar-view")}
-                  data-testid="button-view-full-calendar"
-                >
-                  Alle Termine anzeigen
-                </Button>
               </CardContent>
             </Card>
           </motion.div>
