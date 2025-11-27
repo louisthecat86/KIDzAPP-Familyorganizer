@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -39,6 +40,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PhotoUpload } from "@/components/PhotoUpload";
+import { ProofViewer } from "@/components/ProofViewer";
 
 type Peer = {
   id: number;
@@ -2357,23 +2359,31 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             ) : (
               tasks.filter((t: Task) => t.status === "submitted").map((task: Task) => (
                 <TaskCard key={task.id} task={task} variant="parent">
-                  <div className="flex gap-2 w-full sm:w-auto">
-                    <Button 
-                      onClick={() => onApprove(task.id)} 
-                      className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white"
-                      data-testid={`button-approve-task-${task.id}`}
-                      size="sm"
-                    >
-                      <CheckCircle className="mr-2 h-4 w-4" /> Genehmigen
-                    </Button>
-                    <Button 
-                      onClick={() => onDelete(task.id)} 
-                      className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white"
-                      data-testid={`button-delete-task-${task.id}`}
-                      size="sm"
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" /> Löschen
-                    </Button>
+                  <div className="flex flex-col gap-3 w-full">
+                    {task.proof && (
+                      <div className="p-3 rounded-lg border border-border bg-secondary/30">
+                        <p className="text-xs text-muted-foreground mb-2">📸 Beweis eingereicht:</p>
+                        <ProofViewer proof={task.proof} taskTitle={task.title} />
+                      </div>
+                    )}
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      <Button 
+                        onClick={() => onApprove(task.id)} 
+                        className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white"
+                        data-testid={`button-approve-task-${task.id}`}
+                        size="sm"
+                      >
+                        <CheckCircle className="mr-2 h-4 w-4" /> Genehmigen
+                      </Button>
+                      <Button 
+                        onClick={() => onDelete(task.id)} 
+                        className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white"
+                        data-testid={`button-delete-task-${task.id}`}
+                        size="sm"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" /> Löschen
+                      </Button>
+                    </div>
                   </div>
                 </TaskCard>
               ))
