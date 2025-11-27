@@ -4333,18 +4333,18 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
         
         {user.role === "parent" && (
-          <Card 
-            className="bg-gradient-to-br from-purple-900/50 to-black border border-purple-500/30 cursor-pointer hover:from-purple-800/50 hover:to-black/80 transition-all mb-6 p-6"
+          <div 
             onClick={() => setCurrentView("allowances")}
             data-testid="card-active-allowances"
+            className="w-full p-6 mb-6 bg-purple-900 border-2 border-purple-500 rounded-lg cursor-pointer hover:bg-purple-800"
           >
-            <div className="text-center">
-              <div className="text-5xl font-bold text-purple-400 mb-3">💰</div>
-              <div className="text-3xl font-bold text-purple-500">{allowances?.length || 0}</div>
-              <p className="text-sm text-muted-foreground mt-2">Taschengelder</p>
-              <p className="text-xs text-muted-foreground mt-1">→ Klick zum Verwalten</p>
+            <div className="text-center text-white">
+              <div className="text-6xl mb-2">💰</div>
+              <div className="text-4xl font-bold text-yellow-300">{allowances?.length ?? 0}</div>
+              <div className="text-lg mt-3">TASCHENGELDER</div>
+              <div className="text-sm text-gray-300 mt-1">Klick zum Verwalten →</div>
             </div>
-          </Card>
+          </div>
         )}
         
         <motion.section 
