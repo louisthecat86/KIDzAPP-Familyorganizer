@@ -840,13 +840,25 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
         const res = await fetch("/api/peers/reset-pin-recovery", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: trimmedName, role: "parent", recoveryCode, newPin: trimmedPin })
+          body: JSON.stringify({ name: trimmedName, role: "parent", recoveryCode: recoveryCode.trim(), newPin: trimmedPin })
         });
-        if (!res.ok) throw new Error((await res.json()).error || "Recovery code invalid");
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || "Recovery code invalid");
+        }
+        const data = await res.json();
+        
         toast({
-          title: "Erfolg!",
-          description: "PIN wurde zurückgesetzt. Bitte melde dich jetzt an"
+          title: "PIN zurückgesetzt! 🎉",
+          description: "Neuer Recovery Code generiert"
         });
+        
+        // Zeige neuen Recovery Code an
+        if (data.newRecoveryCode) {
+          setRecoveryCodes([data.newRecoveryCode]);
+          setShowRecoveryCodes(true);
+        }
+        
         setUseRecoveryCode(false);
         setRecoveryCode("");
         setPin("");
@@ -1079,8 +1091,8 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               <Input 
                 id="recovery-code"
                 value={recoveryCode} 
-                onChange={(e) => setRecoveryCode(e.target.value.toUpperCase())}
-                placeholder="z.B. A1B2-C3D4"
+                onChange={(e) => setRecoveryCode(e.target.value)}
+                placeholder="z.B. 1234-5678"
                 disabled={isLoading}
                 data-testid="input-recovery-code"
               />

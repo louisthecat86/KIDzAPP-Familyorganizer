@@ -355,7 +355,8 @@ export class DatabaseStorage implements IStorage {
 
   async validateAndResetPin(parentName: string, recoveryCode: string, newPin: string): Promise<Peer> {
     const crypto = await import('crypto');
-    const hashedCode = crypto.createHash('sha256').update(recoveryCode).digest('hex');
+    const trimmedCode = recoveryCode.trim();
+    const hashedCode = crypto.createHash('sha256').update(trimmedCode).digest('hex');
     const peer = await this.getPeerByName(parentName);
     
     if (!peer || peer.role !== "parent") {
@@ -363,6 +364,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (!peer.recoveryCode || peer.recoveryCode !== hashedCode) {
+      console.error("Recovery code mismatch:", { stored: peer.recoveryCode?.substring(0, 8), provided: hashedCode.substring(0, 8) });
       throw new Error("Invalid recovery code");
     }
 
