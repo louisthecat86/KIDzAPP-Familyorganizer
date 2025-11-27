@@ -4010,25 +4010,34 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                   <div className="w-full space-y-2">
                     <style>{`
                       .rdp-child {
-                        --rdp-cell-size: 24px;
+                        --rdp-cell-size: 20px;
                         --rdp-accent-color: rgb(59, 130, 246);
                         --rdp-background-color: rgba(59, 130, 246, 0.1);
-                        margin: 0 auto;
-                        display: block;
+                        width: 100%;
+                        display: flex !important;
+                        justify-content: center;
+                      }
+                      .rdp-child table {
+                        width: 100%;
+                        border-collapse: collapse;
                       }
                       .rdp-child .rdp-head_cell {
                         color: rgb(156, 163, 175);
                         font-weight: 600;
-                        font-size: 0.55rem;
+                        font-size: 0.5rem;
+                        padding: 0 2px;
                       }
                       .rdp-child .rdp-cell {
                         color: rgb(156, 163, 175);
-                        padding: 0;
+                        padding: 2px;
+                        text-align: center;
                       }
                       .rdp-child .rdp-day {
                         color: rgb(209, 213, 219);
                         border-radius: 2px;
-                        font-size: 0.6rem;
+                        font-size: 0.55rem;
+                        width: 100%;
+                        padding: 2px;
                       }
                       .rdp-child .rdp-day_selected {
                         background-color: rgb(59, 130, 246);
@@ -4042,7 +4051,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                         color: rgb(229, 231, 235);
                         font-weight: 600;
                         margin-bottom: 0.25rem;
-                        font-size: 0.65rem;
+                        font-size: 0.6rem;
                       }
                       .rdp-child .rdp-nav {
                         gap: 1px;
@@ -4053,29 +4062,31 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                         padding: 0;
                       }
                     `}</style>
-                    <div className="rdp-child w-full flex justify-center">
-                      <DayPicker
-                        mode="single"
-                        selected={selectedDate}
-                        onSelect={(date) => date && setSelectedDate(date)}
-                        locale={{
-                          months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
-                          weekdays: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
-                          weekdaysShort: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"]
-                        }}
-                        modifiers={{
-                          hasEvent: (date) => events.some(e => {
-                            const eventDate = new Date(e.startDate);
-                            return eventDate.toDateString() === date.toDateString();
-                          })
-                        }}
-                        modifiersStyles={{
-                          hasEvent: {
-                            backgroundColor: "rgba(59, 130, 246, 0.2)",
-                            fontWeight: "bold"
-                          }
-                        }}
-                      />
+                    <div className="w-full">
+                      <div className="rdp-child">
+                        <DayPicker
+                          mode="single"
+                          selected={selectedDate}
+                          onSelect={(date) => date && setSelectedDate(date)}
+                          locale={{
+                            months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
+                            weekdays: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
+                            weekdaysShort: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"]
+                          }}
+                          modifiers={{
+                            hasEvent: (date) => events.some(e => {
+                              const eventDate = new Date(e.startDate);
+                              return eventDate.toDateString() === date.toDateString();
+                            })
+                          }}
+                          modifiersStyles={{
+                            hasEvent: {
+                              backgroundColor: "rgba(59, 130, 246, 0.2)",
+                              fontWeight: "bold"
+                            }
+                          }}
+                        />
+                      </div>
                     </div>
                     
                     <div className="w-full">
