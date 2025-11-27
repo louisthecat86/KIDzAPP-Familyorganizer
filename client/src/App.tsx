@@ -2941,7 +2941,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <div 
             onClick={() => setCurrentView("allowance-payout")}
             data-testid="card-active-allowances"
-            className="p-6 bg-gradient-to-br from-orange-600 to-orange-700 border border-orange-400/50 rounded-lg cursor-pointer hover:from-orange-700 hover:to-orange-800 transition-all shadow-lg overflow-hidden relative"
+            className="p-6 bg-gradient-to-br from-primary to-primary/80 border border-primary/30 rounded-lg cursor-pointer hover:from-primary hover:to-primary/70 transition-all shadow-lg overflow-hidden relative"
           >
             <div className="absolute inset-0 opacity-10">
               <div className="absolute inset-0 animate-spin" style={{ animationDuration: "8s" }}>
@@ -2955,7 +2955,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <div className="text-center relative z-10">
               <div className="text-5xl mb-2 animate-pulse">⚡</div>
               <div className="text-2xl font-bold text-white">Taschengeld</div>
-              <div className="text-sm text-orange-100 mt-1">Zahlungen & Terminzahlungen</div>
+              <div className="text-sm text-white/80 mt-1">Zahlungen & Terminzahlungen</div>
             </div>
           </div>
         )}
