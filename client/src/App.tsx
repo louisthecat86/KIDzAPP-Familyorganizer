@@ -3692,8 +3692,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   }
 
   if (currentView === "tasks") {
-    const isBalanceInsufficient = displayBalance !== null && displayBalance < newTask.sats;
-    const balancePercentage = displayBalance !== null && newTask.sats > 0 ? (displayBalance / newTask.sats) * 100 : 100;
+    const availableBalance = displayBalance !== null ? displayBalance / 1000 : 0;
+    const isBalanceInsufficient = displayBalance !== null && availableBalance < newTask.sats;
+    const balancePercentage = displayBalance !== null && newTask.sats > 0 ? (availableBalance / newTask.sats) * 100 : 100;
 
     return (
       <div className="space-y-8">
@@ -3732,7 +3733,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       <Bitcoin className="h-4 w-4 text-primary" /> Belohnung
                     </Label>
                     <span className={`text-xs font-semibold ${isBalanceInsufficient ? "text-red-400" : "text-emerald-400"}`}>
-                      ⚡ {displayBalance !== null && displayBalance !== undefined ? (displayBalance / 1000).toLocaleString("de-DE", { maximumFractionDigits: 0 }) : "---"} Sats
+                      ⚡ {availableBalance > 0 ? availableBalance.toLocaleString("de-DE", { maximumFractionDigits: 0 }) : "---"} Sats
                     </span>
                   </div>
                   <Input 
