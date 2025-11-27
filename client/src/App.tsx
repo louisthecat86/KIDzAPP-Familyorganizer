@@ -519,6 +519,7 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
   const [showWalletSubmenu, setShowWalletSubmenu] = useState(false);
   const [showCalendarSubmenu, setShowCalendarSubmenu] = useState(false);
   const [activeSettingsTab, setActiveSettingsTab] = useState<"ansicht" | "wallet" | "peers" | null>(null);
+  const [walletTab, setWalletTab] = useState<"nwc" | "lnbits">("nwc");
   
   const menuItems = [
     { id: "dashboard", label: user.role === "parent" ? "Dashboard" : "Mein Dashboard", icon: Home },
@@ -539,6 +540,8 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
           user={user} 
           setUser={() => {}} 
           activeTab={activeSettingsTab}
+          walletTab={walletTab}
+          setWalletTab={setWalletTab}
           onClose={() => setActiveSettingsTab(null)}
           layoutView={layoutView}
           setLayoutView={setLayoutView}
@@ -696,14 +699,14 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
                   {showWalletSubmenu && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-6 mt-1 space-y-1">
                       <button
-                        onClick={() => { handleSettingsClick("wallet"); setSidebarOpen(false); }}
+                        onClick={() => { setWalletTab("lnbits"); handleSettingsClick("wallet"); setSidebarOpen(false); }}
                         className="w-full px-4 py-2 rounded-lg text-xs text-muted-foreground hover:bg-secondary transition-colors text-left"
                         data-testid="submenu-wallet-lnbits"
                       >
                         ⚡ LNbits Anbindung
                       </button>
                       <button
-                        onClick={() => { handleSettingsClick("wallet"); setSidebarOpen(false); }}
+                        onClick={() => { setWalletTab("nwc"); handleSettingsClick("wallet"); setSidebarOpen(false); }}
                         className="w-full px-4 py-2 rounded-lg text-xs text-muted-foreground hover:bg-secondary transition-colors text-left"
                         data-testid="submenu-wallet-nwc"
                       >
@@ -1593,7 +1596,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
   }
 }
 
-function SettingsModal({ user, setUser, activeTab, onClose, layoutView, setLayoutView }: any) {
+function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onClose, layoutView, setLayoutView }: any) {
   const queryClient = useQueryClient();
   const [editNwc, setEditNwc] = useState(user.nwcConnectionString || "");
   const [editLnbitsUrl, setEditLnbitsUrl] = useState(user.lnbitsUrl || "");
@@ -1781,7 +1784,7 @@ function SettingsModal({ user, setUser, activeTab, onClose, layoutView, setLayou
 
           {/* WALLET TAB */}
           {activeTab === "wallet" && (
-            <Tabs defaultValue="nwc" className="w-full">
+            <Tabs defaultValue={walletTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="nwc" data-testid="tab-nwc">NWC</TabsTrigger>
                 <TabsTrigger value="lnbits" data-testid="tab-lnbits">LNbits</TabsTrigger>
