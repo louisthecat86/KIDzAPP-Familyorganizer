@@ -3170,10 +3170,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                             value="nwc" 
                             checked={selectedWallet === "nwc"}
                             onChange={(e) => setSelectedWallet(e.target.value as "lnbits" | "nwc")}
-                            disabled={!user.nwcConnectionString}
                             className="cursor-pointer"
                           />
-                          <span className={!user.nwcConnectionString ? "opacity-50" : ""}>🔌 NWC</span>
+                          <span>🔌 NWC</span>
                         </label>
                       </div>
                       <div className="text-center">
