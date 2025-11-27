@@ -953,7 +953,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
           );
       
       const user = typeof response === 'object'
-        ? { id: response.id, name: response.name, role: response.role, connectionId: response.connectionId } as User
+        ? { id: response.id, name: response.name, role: response.role, connectionId: response.connectionId, balance: response.balance } as User
         : response as User;
 
       
