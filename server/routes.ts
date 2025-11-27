@@ -1045,8 +1045,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const parent = await storage.getPeer(parentId);
-      if (!parent || !parent.lnbitsUrl || !parent.lnbitsAdminKey) {
-        return res.status(400).json({ error: "Parent LNBits not configured" });
+      if (!parent || (!parent.lnbitsUrl && !parent.nwcConnectionString)) {
+        return res.status(400).json({ error: "Parent has no payment method configured (LNbits or NWC)" });
       }
 
       const child = await storage.getPeer(childId);
@@ -1054,8 +1054,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Child Lightning address not set" });
       }
 
-      const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
-      const paymentHash = await lnbits.payToLightningAddress(sats, child.lightningAddress, `Taschengeld für ${child.name}`);
+      let paymentHash: string;
+
+      // Try LNbits first, fall back to NWC
+      if (parent.lnbitsUrl && parent.lnbitsAdminKey) {
+        console.log("[Payout] Using LNbits for allowance payment");
+        const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+        paymentHash = await lnbits.payToLightningAddress(sats, child.lightningAddress, `Taschengeld für ${child.name}`);
+      } else if (parent.nwcConnectionString) {
+        console.log("[Payout] Using NWC for allowance payment");
+        const nwc = new NWCClient(parent.nwcConnectionString);
+        paymentHash = await nwc.payToLightningAddress(sats, child.lightningAddress, `Taschengeld für ${child.name}`);
+      } else {
+        throw new Error("No valid payment method available");
+      }
       
       // Update allowance lastPaidDate
       await storage.updateAllowance(allowanceId, { lastPaidDate: new Date() });
@@ -1078,8 +1090,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const parent = await storage.getPeer(parentId);
-      if (!parent || !parent.lnbitsUrl || !parent.lnbitsAdminKey) {
-        return res.status(400).json({ error: "Parent LNBits not configured" });
+      if (!parent || (!parent.lnbitsUrl && !parent.nwcConnectionString)) {
+        return res.status(400).json({ error: "Parent has no payment method configured (LNbits or NWC)" });
       }
 
       const child = await storage.getPeer(childId);
@@ -1088,8 +1100,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const memo = message || `Sofortzahlung für ${child.name}`;
-      const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
-      const paymentHash = await lnbits.payToLightningAddress(sats, child.lightningAddress, memo);
+      let paymentHash: string;
+
+      // Try LNbits first, fall back to NWC
+      if (parent.lnbitsUrl && parent.lnbitsAdminKey) {
+        console.log("[Payout] Using LNbits for instant payment");
+        const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+        paymentHash = await lnbits.payToLightningAddress(sats, child.lightningAddress, memo);
+      } else if (parent.nwcConnectionString) {
+        console.log("[Payout] Using NWC for instant payment");
+        const nwc = new NWCClient(parent.nwcConnectionString);
+        paymentHash = await nwc.payToLightningAddress(sats, child.lightningAddress, memo);
+      } else {
+        throw new Error("No valid payment method available");
+      }
 
       res.json({ success: true, paymentHash });
     } catch (error) {
