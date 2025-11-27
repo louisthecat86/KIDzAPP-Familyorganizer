@@ -2425,7 +2425,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <div className="relative z-10">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div className="flex-1">
-                <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest mb-2">💰 Ausgegeben</p>
+                <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest mb-2">⚡ Ausgegeben</p>
                 <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-primary" data-testid="text-sats-spent">
                   {(satsSpent || 0).toLocaleString()} <span className="text-2xl opacity-50 text-white">SATS</span>
                 </h2>
