@@ -844,7 +844,45 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [parentMode, setParentMode] = useState<"new" | "join" | null>(null);
+  const [showForgotPin, setShowForgotPin] = useState(false);
+  const [forgotPinName, setForgotPinName] = useState("");
+  const [forgotPinOldPin, setForgotPinOldPin] = useState("");
+  const [forgotPinNewPin, setForgotPinNewPin] = useState("");
+  const [isForgotLoading, setIsForgotLoading] = useState(false);
   const { toast } = useToast();
+
+  const handleForgotPin = async () => {
+    if (!forgotPinName.trim() || !forgotPinOldPin || !forgotPinNewPin || forgotPinNewPin.length !== 4) {
+      toast({ title: "Fehler", description: "Alle Felder ausfüllen (neue PIN = 4 Ziffern)", variant: "destructive" });
+      return;
+    }
+    setIsForgotLoading(true);
+    try {
+      // First, verify the user exists with correct old PIN
+      const loginRes = await loginUser(forgotPinName.trim(), "parent", forgotPinOldPin);
+      
+      // Then reset the PIN
+      const res = await fetch(`/api/peers/${loginRes.id}/change-pin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ oldPin: forgotPinOldPin, newPin: forgotPinNewPin }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      
+      toast({ title: "✅ PIN zurückgesetzt!", description: "Melde dich jetzt mit deiner neuen PIN an" });
+      setShowForgotPin(false);
+      setForgotPinName("");
+      setForgotPinOldPin("");
+      setForgotPinNewPin("");
+      setPin(forgotPinNewPin);
+      setName(forgotPinName.trim());
+    } catch (error) {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setIsForgotLoading(false);
+    }
+  };
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -1092,10 +1130,99 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               >
                 {isLogin ? "Noch kein Account? Registrieren" : "Bereits registriert? Anmelden"}
               </Button>
+              {isLogin && role === "parent" && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowForgotPin(true)}
+                  disabled={isLoading}
+                  data-testid="button-forgot-pin"
+                >
+                  PIN vergessen?
+                </Button>
+              )}
             </div>
           </form>
         </div>
       </div>
+
+      {showForgotPin && (
+        <Dialog open={showForgotPin} onOpenChange={setShowForgotPin}>
+          <DialogContent className="sm:max-w-[400px]">
+            <DialogHeader>
+              <DialogTitle>PIN zurücksetzen</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="forgot-name">Name</Label>
+                <Input 
+                  id="forgot-name"
+                  value={forgotPinName}
+                  onChange={(e) => setForgotPinName(e.target.value)}
+                  className="bg-secondary border-border"
+                  disabled={isForgotLoading}
+                  data-testid="input-forgot-pin-name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="forgot-old-pin">Alte PIN</Label>
+                <Input 
+                  id="forgot-old-pin"
+                  type="password"
+                  placeholder="••••"
+                  value={forgotPinOldPin}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, "").slice(0, 4);
+                    setForgotPinOldPin(val);
+                  }}
+                  className="bg-secondary border-border font-mono text-center tracking-widest"
+                  disabled={isForgotLoading}
+                  maxLength={4}
+                  data-testid="input-forgot-pin-old"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="forgot-new-pin">Neue PIN</Label>
+                <Input 
+                  id="forgot-new-pin"
+                  type="password"
+                  placeholder="••••"
+                  value={forgotPinNewPin}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, "").slice(0, 4);
+                    setForgotPinNewPin(val);
+                  }}
+                  className="bg-secondary border-border font-mono text-center tracking-widest"
+                  disabled={isForgotLoading}
+                  maxLength={4}
+                  data-testid="input-forgot-pin-new"
+                />
+                <p className="text-xs text-muted-foreground">{forgotPinNewPin.length}/4 Ziffern</p>
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button 
+                  onClick={handleForgotPin}
+                  disabled={isForgotLoading || !forgotPinName.trim() || !forgotPinOldPin || forgotPinNewPin.length !== 4}
+                  className="flex-1"
+                  data-testid="button-confirm-forgot-pin"
+                >
+                  {isForgotLoading ? "Wird verarbeitet..." : "PIN zurücksetzen"}
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowForgotPin(false)}
+                  disabled={isForgotLoading}
+                  className="flex-1"
+                  data-testid="button-cancel-forgot-pin"
+                >
+                  Abbrechen
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
