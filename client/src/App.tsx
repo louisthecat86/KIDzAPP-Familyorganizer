@@ -462,7 +462,7 @@ export default function App() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setSidebarOpen(true)}
+          onClick={() => setSidebarOpen(!sidebarOpen)}
           className="fixed right-4 top-4 z-50"
           data-testid="button-open-sidebar"
         >
