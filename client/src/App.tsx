@@ -740,52 +740,47 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
 function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4 sm:p-6 relative overflow-hidden">
-      <Card className="w-full max-w-4xl z-10 border-border/50 bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl shadow-2xl">
-        <div className="flex flex-col md:grid md:grid-cols-2 gap-0">
-          <div className="flex p-4 sm:p-6 md:p-10 bg-gradient-to-br from-sky-500/25 via-cyan-500/15 to-blue-600/10 flex-col justify-center border-b md:border-b-0 md:border-r border-sky-500/50">
-            <div className="h-12 md:h-16 w-12 md:w-16 bg-sky-500/40 rounded-2xl flex items-center justify-center mb-4 md:mb-6 text-sky-300 shadow-[0_0_25px_rgba(14,165,233,0.4)]">
-              <Bitcoin className="h-8 md:h-10 w-8 md:w-10" />
+      <Card className="w-full max-w-2xl z-10 border-border/50 bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl shadow-2xl">
+        <div className="p-6 sm:p-10">
+          <div className="text-center mb-8">
+            <div className="h-12 w-12 bg-primary/20 rounded-2xl flex items-center justify-center mb-4 text-primary shadow-[0_0_25px_rgba(14,165,233,0.3)] mx-auto">
+              <Bitcoin className="h-6 w-6" />
             </div>
-            <h1 className="text-2xl md:text-4xl font-heading font-bold mb-3 md:mb-4 text-sky-300">Spark ⚡ Kids</h1>
-            <h2 className="text-lg md:text-xl font-semibold text-sky-200 mb-4">der Familienorganizer</h2>
-            <p className="text-sky-100 text-sm md:text-lg">
-              Wo aus Aufgaben Belohnungen werden. Erledige Aufgaben, lerne Verantwortung und verdiene echte Sats.
-            </p>
+            <h1 className="text-3xl sm:text-4xl font-heading font-bold mb-2">Spark ⚡ Kids</h1>
+            <h2 className="text-base sm:text-lg font-semibold text-muted-foreground mb-1">der Familienorganizer</h2>
+            <p className="text-sm text-muted-foreground">Wo aus Aufgaben Belohnungen werden</p>
           </div>
 
-          <div className="p-4 sm:p-6 md:p-10 flex flex-col justify-center">
-            <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Wähle deine Rolle</h2>
-            <div className="grid gap-3 sm:gap-4">
-              <Button 
-                variant="outline" 
-                className="h-auto p-4 sm:p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
-                onClick={() => onSelect("parent")}
-                data-testid="button-select-parent"
-              >
-                <div className="mr-3 sm:mr-4 h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors flex-shrink-0">
-                  <UserIcon className="h-5 sm:h-6 w-5 sm:w-6" />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="font-bold text-base sm:text-lg">Eltern</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Wallet verwalten & Aufgaben erstellen</p>
-                </div>
-              </Button>
+          <div className="grid gap-3 sm:gap-4">
+            <Button 
+              variant="outline" 
+              className="h-auto p-4 sm:p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
+              onClick={() => onSelect("parent")}
+              data-testid="button-select-parent"
+            >
+              <div className="mr-3 sm:mr-4 h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors flex-shrink-0">
+                <UserIcon className="h-5 sm:h-6 w-5 sm:w-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-bold text-base sm:text-lg">Eltern</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground">Wallet verwalten & Aufgaben erstellen</p>
+              </div>
+            </Button>
 
-              <Button 
-                variant="outline" 
-                className="h-auto p-4 sm:p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
-                onClick={() => onSelect("child")}
-                data-testid="button-select-child"
-              >
-                <div className="mr-3 sm:mr-4 h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors flex-shrink-0">
-                  <Sparkles className="h-5 sm:h-6 w-5 sm:w-6" />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="font-bold text-base sm:text-lg">Kind</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Aufgaben erledigen & Sats sammeln</p>
-                </div>
-              </Button>
-            </div>
+            <Button 
+              variant="outline" 
+              className="h-auto p-4 sm:p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
+              onClick={() => onSelect("child")}
+              data-testid="button-select-child"
+            >
+              <div className="mr-3 sm:mr-4 h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors flex-shrink-0">
+                <Sparkles className="h-5 sm:h-6 w-5 sm:w-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-bold text-base sm:text-lg">Kind</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground">Aufgaben erledigen & Sats sammeln</p>
+              </div>
+            </Button>
           </div>
         </div>
       </Card>
@@ -888,32 +883,32 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             <CardTitle className="text-2xl">Familie auswählen</CardTitle>
             <CardDescription>Möchtest du eine neue Familie gründen oder einer bestehenden beitreten?</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3">
             <Button
               onClick={() => setParentMode("new")}
-              className="w-full h-auto p-4 justify-start text-left hover:bg-primary/10"
+              className="w-full h-auto px-4 py-3 justify-start text-left"
               data-testid="button-create-new-family"
             >
-              <div className="mr-3 h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                <Plus className="h-5 w-5 text-primary" />
+              <div className="mr-3 h-8 w-8 rounded-full bg-primary/30 flex items-center justify-center flex-shrink-0">
+                <Plus className="h-4 w-4" />
               </div>
-              <div>
-                <p className="font-bold">Neue Familie gründen</p>
-                <p className="text-xs text-muted-foreground">Erstelle eine neue Familie und verwalte sie</p>
+              <div className="min-w-0">
+                <p className="font-semibold text-sm">Neue Familie gründen</p>
+                <p className="text-xs text-muted-foreground">Erstelle eine neue Familie</p>
               </div>
             </Button>
             <Button
               onClick={() => setParentMode("join")}
               variant="outline"
-              className="w-full h-auto p-4 justify-start text-left hover:border-primary hover:bg-primary/5"
+              className="w-full h-auto px-4 py-3 justify-start text-left"
               data-testid="button-join-family"
             >
-              <div className="mr-3 h-10 w-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                <Users className="h-5 w-5" />
+              <div className="mr-3 h-8 w-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                <Users className="h-4 w-4" />
               </div>
-              <div>
-                <p className="font-bold">Familie beitreten</p>
-                <p className="text-xs text-muted-foreground">Tritt einer bestehenden Familie bei mit einer ID</p>
+              <div className="min-w-0">
+                <p className="font-semibold text-sm">Familie beitreten</p>
+                <p className="text-xs text-muted-foreground">Beitreten mit Familie-ID</p>
               </div>
             </Button>
           </CardContent>
@@ -1019,7 +1014,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
 
             <Separator />
 
-            <div className="grid gap-3">
+            <div className="space-y-2">
               <Button 
                 type="submit"
                 className="w-full"
