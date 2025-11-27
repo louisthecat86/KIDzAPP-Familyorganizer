@@ -342,6 +342,38 @@ export class DatabaseStorage implements IStorage {
     const result = await db.insert(chatMessages).values(message).returning();
     return result[0];
   }
+
+  // Recovery Code operations (parent only)
+  async createRecoveryCodes(peerId: number, codes: string[]): Promise<RecoveryCode[]> {
+    const crypto = await import('crypto');
+    const hashedCodes = codes.map(code => ({
+      peerId,
+      code: crypto.createHash('sha256').update(code).digest('hex'),
+    }));
+    const result = await db.insert(recoveryCodes).values(hashedCodes).returning();
+    return result;
+  }
+
+  async validateRecoveryCode(peerId: number, code: string): Promise<boolean> {
+    const crypto = await import('crypto');
+    const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
+    const result = await db.select().from(recoveryCodes)
+      .where(and(eq(recoveryCodes.peerId, peerId), eq(recoveryCodes.code, hashedCode), eq(recoveryCodes.used, false)))
+      .limit(1);
+    
+    if (result.length > 0) {
+      // Mark code as used
+      await db.update(recoveryCodes)
+        .set({ used: true })
+        .where(eq(recoveryCodes.id, result[0].id));
+      return true;
+    }
+    return false;
+  }
+
+  async getRecoveryCodesByParent(peerId: number): Promise<RecoveryCode[]> {
+    return await db.select().from(recoveryCodes).where(eq(recoveryCodes.peerId, peerId));
+  }
 }
 
 export const storage = new DatabaseStorage();

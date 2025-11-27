@@ -51,6 +51,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate Recovery Codes (10 codes like A1B2-C3D4)
+  const generateRecoveryCodes = (): string[] => {
+    const codes: string[] = [];
+    for (let i = 0; i < 10; i++) {
+      const part1 = Math.random().toString(36).substring(2, 6).toUpperCase();
+      const part2 = Math.random().toString(36).substring(2, 6).toUpperCase();
+      codes.push(`${part1}-${part2}`);
+    }
+    return codes;
+  };
+
   // Peer Registration
   app.post("/api/peers/register", async (req, res) => {
     try {
@@ -88,7 +99,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         connectionId: connectionId || `BTC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
         familyName: role === "parent" ? familyNameToUse : undefined,
       });
-      res.json(peer);
+
+      // Generate recovery codes for parent accounts
+      let recoveryCodes: string[] = [];
+      if (role === "parent") {
+        recoveryCodes = generateRecoveryCodes();
+        await storage.createRecoveryCodes(peer.id, recoveryCodes);
+      }
+
+      res.json({ ...peer, recoveryCodes: role === "parent" ? recoveryCodes : undefined });
     } catch (error) {
       if ((error as any).message?.includes("unique constraint")) {
         return res.status(400).json({ error: "Name und PIN Kombination existiert bereits" });
@@ -116,6 +135,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(peer);
     } catch (error) {
       res.status(500).json({ error: "Login failed" });
+    }
+  });
+
+  // Reset parent PIN using recovery code
+  app.post("/api/peers/reset-pin-recovery", async (req, res) => {
+    try {
+      const { name, role, recoveryCode, newPin } = req.body;
+
+      if (role !== "parent") {
+        return res.status(400).json({ error: "Recovery codes only for parent accounts" });
+      }
+
+      if (!name || !recoveryCode || !newPin || newPin.length !== 4) {
+        return res.status(400).json({ error: "Name, recovery code, and 4-digit PIN required" });
+      }
+
+      // Find parent by name
+      const peer = await storage.getPeerByName(name);
+      if (!peer || peer.role !== "parent") {
+        return res.status(404).json({ error: "Parent account not found" });
+      }
+
+      // Validate recovery code
+      const isValid = await storage.validateRecoveryCode(peer.id, recoveryCode);
+      if (!isValid) {
+        return res.status(400).json({ error: "Invalid or used recovery code" });
+      }
+
+      // Update PIN
+      const updated = await storage.updatePeerPin(peer.id, newPin);
+      res.json({ success: true, message: "PIN reset successfully", peer: updated });
+    } catch (error) {
+      console.error("Recovery PIN reset error:", error);
+      res.status(500).json({ error: "Failed to reset PIN" });
     }
   });
 
