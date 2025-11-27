@@ -13,6 +13,7 @@ export const peers = pgTable("peers", {
   familyName: text("family_name"), // Family name (set by parent on registration)
   balance: integer("balance").default(0).notNull(), // Sats balance
   nwcConnectionString: text("nwc_connection_string"), // NWC: nostr+walletconnect://... (parent for escrow)
+  nwcBalance: integer("nwc_balance"), // NWC wallet balance in msats (user-set or fetched)
   lnbitsUrl: text("lnbits_url"), // LNBits instance URL (parent)
   lnbitsAdminKey: text("lnbits_admin_key"), // LNBits admin key (parent)
   lightningAddress: text("lightning_address"), // Lightning address for child (receives sats directly)

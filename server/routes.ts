@@ -531,7 +531,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { peerId } = req.params;
       const { balance } = req.body;
       
-      if (!balance || typeof balance !== "number" || balance < 0) {
+      if (balance === undefined || typeof balance !== "number" || balance < 0) {
         return res.status(400).json({ error: "Valid balance number required" });
       }
 
@@ -540,16 +540,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Parent not found" });
       }
 
-      // Store balance in cache (in production, use Redis or persistent storage)
-      if (!global.nwcBalanceCache) {
-        global.nwcBalanceCache = {};
-      }
-      global.nwcBalanceCache[parent.nwcConnectionString || "default"] = balance;
+      // Update balance in database
+      const updated = await db.update(peers)
+        .set({ nwcBalance: balance })
+        .where(eq(peers.id, parseInt(peerId)))
+        .returning();
       
-      console.log(`[NWC] Balance manually set to ${balance} msats for parent ${peerId}`);
-      res.json({ success: true, balance });
+      console.log(`[NWC] Balance set to ${balance} msats for parent ${peerId}`);
+      res.json({ success: true, balance, parent: updated[0] });
     } catch (error) {
       console.error("Set NWC balance error:", error);
+      res.status(500).json({ error: String(error) });
+    }
+  });
+
+  // Get NWC balance from database
+  app.get("/api/parent/:peerId/nwc-balance", async (req, res) => {
+    try {
+      const { peerId } = req.params;
+      const parent = await storage.getPeer(parseInt(peerId));
+      
+      if (!parent) {
+        return res.status(404).json({ error: "Parent not found" });
+      }
+
+      res.json({ balance: parent.nwcBalance || 0 });
+    } catch (error) {
+      console.error("Get NWC balance error:", error);
       res.status(500).json({ error: String(error) });
     }
   });
