@@ -339,6 +339,72 @@ export default function App() {
     }
   });
 
+  // Allowances states
+  const [allowanceChildId, setAllowanceChildId] = useState<number | null>(null);
+  const [allowanceSats, setAllowanceSats] = useState("");
+  const [allowanceFrequency, setAllowanceFrequency] = useState("weekly");
+  const [isCreatingAllowance, setIsCreatingAllowance] = useState(false);
+
+  const { data: allowances = [] } = useQuery({
+    queryKey: ["allowances", user?.connectionId],
+    queryFn: async () => {
+      const res = await fetch(`/api/allowances/${user!.connectionId}`);
+      if (!res.ok) throw new Error("Failed to fetch allowances");
+      return res.json();
+    },
+    refetchInterval: 5000,
+    enabled: user?.role === "parent" && !!user?.connectionId
+  });
+
+  const { data: parentChildren = [] } = useQuery({
+    queryKey: ["parent-children", user?.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/parent/${user!.id}/children`);
+      if (!res.ok) throw new Error("Failed to fetch children");
+      return res.json();
+    },
+    enabled: user?.role === "parent"
+  });
+
+  const handleCreateAllowance = async () => {
+    if (!allowanceChildId || !allowanceSats || !user) return;
+    setIsCreatingAllowance(true);
+    try {
+      const res = await fetch("/api/allowances", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          parentId: user.id,
+          childId: allowanceChildId,
+          connectionId: user.connectionId,
+          sats: parseInt(allowanceSats),
+          frequency: allowanceFrequency
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to create allowance");
+      toast({ title: "Erfolg", description: "Taschengeld hinzugefügt!" });
+      queryClient.invalidateQueries({ queryKey: ["allowances"] });
+      setAllowanceChildId(null);
+      setAllowanceSats("");
+      setAllowanceFrequency("weekly");
+    } catch (error) {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setIsCreatingAllowance(false);
+    }
+  };
+
+  const handleDeleteAllowance = async (allowanceId: number) => {
+    try {
+      const res = await fetch(`/api/allowances/${allowanceId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete allowance");
+      toast({ title: "Erfolg", description: "Taschengeld gelöscht!" });
+      queryClient.invalidateQueries({ queryKey: ["allowances"] });
+    } catch (error) {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    }
+  };
+
   const handleRoleSelect = (role: UserRole) => {
     setSelectedRole(role);
     setMode("auth");
@@ -2459,17 +2525,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         return data.walletBalance;
       },
       refetchInterval: 10000
-    });
-
-    const { data: allowances = [] } = useQuery({
-      queryKey: ["allowances", user.connectionId],
-      queryFn: async () => {
-        const res = await fetch(`/api/allowances/${user.connectionId}`);
-        if (!res.ok) throw new Error("Failed to fetch allowances");
-        return res.json();
-      },
-      refetchInterval: 5000,
-      enabled: user.role === "parent"
     });
 
     const handleShowSpendingStats = async () => {
