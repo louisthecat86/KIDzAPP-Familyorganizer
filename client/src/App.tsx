@@ -755,7 +755,7 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left Column */}
           <div className="space-y-6">
-            <div>
+            <div className="mt-8">
               <h3 className="text-2xl font-bold mb-4">So funktioniert's</h3>
               <div className="space-y-3 text-muted-foreground">
                 <p>✓ Eltern erstellen Aufgaben mit Sats-Belohnung</p>
