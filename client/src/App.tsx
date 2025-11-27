@@ -768,7 +768,7 @@ export default function App() {
 function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView, queryClient }: any) {
   const { toast } = useToast();
   const [isProcessingPayout, setIsProcessingPayout] = useState(false);
-  const [payoutTab, setPayoutTab] = useState<"plans" | "ad-hoc">("plans");
+  const [payoutTab, setPayoutTab] = useState<"plans" | "instant" | null>(null);
   const [adHocChildId, setAdHocChildId] = useState<number | null>(null);
   const [adHocSats, setAdHocSats] = useState("");
   
@@ -857,118 +857,144 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
           <h1 className="text-3xl font-bold">💰 Sats senden</h1>
         </div>
 
-        <Card className="border-border bg-card/50">
-          <CardContent className="p-0">
-            <Tabs value={payoutTab} onValueChange={(val) => setPayoutTab(val as any)} className="w-full">
-              <TabsList className="w-full grid grid-cols-2 rounded-t-lg rounded-b-none bg-secondary/50 border-b border-border">
-                <TabsTrigger value="plans" data-testid="tab-scheduled-payouts">📅 Zahlpläne</TabsTrigger>
-                <TabsTrigger value="ad-hoc" data-testid="tab-ad-hoc-payment">⚡ Sofortzahlung</TabsTrigger>
-              </TabsList>
-
-              <div className="p-6">
-                {/* Scheduled Payouts */}
-                {payoutTab === "plans" && (
-                  <div className="space-y-4">
-                    {childrenWithAllowances.length === 0 ? (
-                      <div className="text-center py-8">
-                        <p className="text-muted-foreground mb-4">Keine Kinder mit aktiven Zahlplänen vorhanden.</p>
-                        <Button onClick={() => setCurrentView("allowances")} variant="outline">
-                          Zahlpläne verwalten →
-                        </Button>
-                      </div>
-                    ) : (
-                      childrenWithAllowances.map((item: any) => (
-                        <div key={item.child.id} className="border border-border rounded-lg p-4">
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                              <div className="h-10 w-10 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold">
-                                {item.child.name[0]}
-                              </div>
-                              <div>
-                                <p className="font-semibold">{item.child.name}</p>
-                                <p className="text-xs text-muted-foreground">⚡ {item.child.lightningAddress || "Keine Adresse"}</p>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            {item.allowances.map((allowance: any) => (
-                              <div key={allowance.id} className="flex items-center justify-between p-3 bg-secondary/30 rounded">
-                                <div>
-                                  <p className="font-semibold text-primary">{allowance.sats} Sats</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {allowance.frequency === "daily" ? "Täglich" : 
-                                     allowance.frequency === "weekly" ? "Wöchentlich" :
-                                     allowance.frequency === "biweekly" ? "Zweiwöchentlich" : "Monatlich"}
-                                  </p>
-                                </div>
-                                <Button
-                                  onClick={() => handlePayout(allowance.id, item.child.id, allowance.sats)}
-                                  disabled={!item.child.lightningAddress || isProcessingPayout}
-                                  size="sm"
-                                  className="bg-green-600 hover:bg-green-700"
-                                  data-testid={`button-payout-${allowance.id}`}
-                                >
-                                  {isProcessingPayout ? "..." : "Zahlen"}
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))
-                    )}
+        {payoutTab === null ? (
+          <Card className="border-2 border-primary/40 bg-primary/5">
+            <CardContent className="p-8">
+              <h2 className="text-2xl font-bold mb-6 text-center">Was möchtest du tun?</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Button 
+                  onClick={() => setPayoutTab("plans")}
+                  className="h-24 text-lg bg-blue-600 hover:bg-blue-700"
+                  data-testid="button-choose-scheduled"
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <span className="text-2xl">📅</span>
+                    <span>Terminzahlung</span>
                   </div>
-                )}
+                </Button>
+                <Button 
+                  onClick={() => setPayoutTab("instant")}
+                  className="h-24 text-lg bg-green-600 hover:bg-green-700"
+                  data-testid="button-choose-instant"
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <span className="text-2xl">⚡</span>
+                    <span>Sofortzahlung</span>
+                  </div>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <Button 
+              variant="outline" 
+              onClick={() => setPayoutTab(null)} 
+              className="gap-2 mb-6"
+              data-testid="button-back-to-choice"
+            >
+              <ChevronLeft className="h-4 w-4" /> Zur Auswahl
+            </Button>
 
-                {/* Ad-hoc Payment */}
-                {payoutTab === "ad-hoc" && (
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="adhoc-child" className="text-sm font-semibold mb-2 block">Kind auswählen</Label>
-                      <select
-                        id="adhoc-child"
-                        value={adHocChildId || ""}
-                        onChange={(e) => setAdHocChildId(e.target.value ? parseInt(e.target.value) : null)}
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        data-testid="select-adhoc-child"
-                      >
-                        <option value="">-- Kind wählen --</option>
-                        {allChildren.map((child: any) => (
-                          <option key={child.id} value={child.id}>
-                            {child.name} {child.lightningAddress ? "✓" : "⚠️"}
-                          </option>
-                        ))}
-                      </select>
-                      <p className="text-xs text-muted-foreground mt-1">⚠️ = Keine Lightning Adresse konfiguriert</p>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="adhoc-sats" className="text-sm font-semibold mb-2 block">Betrag (Sats)</Label>
-                      <Input
-                        id="adhoc-sats"
-                        type="number"
-                        placeholder="z.B. 500"
-                        value={adHocSats}
-                        onChange={(e) => setAdHocSats(e.target.value)}
-                        data-testid="input-adhoc-sats"
-                        className="text-lg"
-                      />
-                    </div>
-
-                    <Button
-                      onClick={handleAdHocPayout}
-                      disabled={!adHocChildId || !adHocSats || isProcessingPayout}
-                      className="w-full bg-green-600 hover:bg-green-700"
-                      size="lg"
-                      data-testid="button-send-adhoc"
-                    >
-                      {isProcessingPayout ? "⏳ Wird gesendet..." : "💚 Jetzt senden"}
+            {payoutTab === "plans" && (
+              <div className="space-y-4">
+                {childrenWithAllowances.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground mb-4">Keine Kinder mit aktiven Zahlplänen vorhanden.</p>
+                    <Button onClick={() => setCurrentView("allowances")} variant="outline">
+                      Zahlpläne verwalten →
                     </Button>
                   </div>
+                ) : (
+                  childrenWithAllowances.map((item: any) => (
+                    <div key={item.child.id} className="border border-border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold">
+                            {item.child.name[0]}
+                          </div>
+                          <div>
+                            <p className="font-semibold">{item.child.name}</p>
+                            <p className="text-xs text-muted-foreground">⚡ {item.child.lightningAddress || "Keine Adresse"}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        {item.allowances.map((allowance: any) => (
+                          <div key={allowance.id} className="flex items-center justify-between p-3 bg-secondary/30 rounded">
+                            <div>
+                              <p className="font-semibold text-primary">{allowance.sats} Sats</p>
+                              <p className="text-xs text-muted-foreground">
+                                {allowance.frequency === "daily" ? "Täglich" : 
+                                 allowance.frequency === "weekly" ? "Wöchentlich" :
+                                 allowance.frequency === "biweekly" ? "Zweiwöchentlich" : "Monatlich"}
+                              </p>
+                            </div>
+                            <Button
+                              onClick={() => handlePayout(allowance.id, item.child.id, allowance.sats)}
+                              disabled={!item.child.lightningAddress || isProcessingPayout}
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700"
+                              data-testid={`button-payout-${allowance.id}`}
+                            >
+                              {isProcessingPayout ? "..." : "Zahlen"}
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))
                 )}
               </div>
-            </Tabs>
-          </CardContent>
-        </Card>
+            )}
+
+            {payoutTab === "instant" && (
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="adhoc-child" className="text-sm font-semibold mb-2 block">Kind auswählen</Label>
+                  <select
+                    id="adhoc-child"
+                    value={adHocChildId || ""}
+                    onChange={(e) => setAdHocChildId(e.target.value ? parseInt(e.target.value) : null)}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    data-testid="select-adhoc-child"
+                  >
+                    <option value="">-- Kind wählen --</option>
+                    {allChildren.map((child: any) => (
+                      <option key={child.id} value={child.id}>
+                        {child.name} {child.lightningAddress ? "✓" : "⚠️"}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-muted-foreground mt-1">⚠️ = Keine Lightning Adresse konfiguriert</p>
+                </div>
+
+                <div>
+                  <Label htmlFor="adhoc-sats" className="text-sm font-semibold mb-2 block">Betrag (Sats)</Label>
+                  <Input
+                    id="adhoc-sats"
+                    type="number"
+                    placeholder="z.B. 500"
+                    value={adHocSats}
+                    onChange={(e) => setAdHocSats(e.target.value)}
+                    data-testid="input-adhoc-sats"
+                    className="text-lg"
+                  />
+                </div>
+
+                <Button
+                  onClick={handleAdHocPayout}
+                  disabled={!adHocChildId || !adHocSats || isProcessingPayout}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  size="lg"
+                  data-testid="button-send-adhoc"
+                >
+                  {isProcessingPayout ? "⏳ Wird gesendet..." : "💚 Jetzt senden"}
+                </Button>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </motion.div>
   );
