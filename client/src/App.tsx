@@ -2477,6 +2477,21 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       <div className="space-y-4">
         <h1 className="text-3xl font-bold">Dashboard</h1>
         
+        {user.role === "parent" && (
+          <div 
+            onClick={() => setCurrentView("allowances")}
+            data-testid="card-active-allowances"
+            className="w-full p-6 bg-purple-900 border-2 border-purple-500 rounded-lg cursor-pointer hover:bg-purple-800"
+          >
+            <div className="text-center text-white">
+              <div className="text-6xl mb-2">💰</div>
+              <div className="text-4xl font-bold text-yellow-300">{allowances?.length ?? 0}</div>
+              <div className="text-lg mt-3">TASCHENGELDER</div>
+              <div className="text-sm text-gray-300 mt-1">Klick zum Verwalten →</div>
+            </div>
+          </div>
+        )}
+        
         {showConnectionCode && (
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }}>
             <Card className="border-2 border-primary/40 bg-primary/5">
@@ -4329,24 +4344,8 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     };
 
     return (
-      <div className="max-w-4xl space-y-4">
-        <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
-        
-        {user.role === "parent" && (
-          <div 
-            onClick={() => setCurrentView("allowances")}
-            data-testid="card-active-allowances"
-            className="w-full p-6 mb-6 bg-purple-900 border-2 border-purple-500 rounded-lg cursor-pointer hover:bg-purple-800"
-          >
-            <div className="text-center text-white">
-              <div className="text-6xl mb-2">💰</div>
-              <div className="text-4xl font-bold text-yellow-300">{allowances?.length ?? 0}</div>
-              <div className="text-lg mt-3">TASCHENGELDER</div>
-              <div className="text-sm text-gray-300 mt-1">Klick zum Verwalten →</div>
-            </div>
-          </div>
-        )}
-        
+      <div className="max-w-4xl space-y-2">
+        <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
         <motion.section 
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
