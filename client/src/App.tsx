@@ -2489,7 +2489,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
               ) : (
                 <>
                   {walletTab === "lnbits" && (
-                  <div className="space-y-4 mt-4">
+                  <div className="space-y-4 mt-4 border-2 border-primary/40 bg-primary/5 rounded-lg p-4">
                     {user.lnbitsUrl ? (
                       <div className="space-y-3">
                         <div className="p-3 rounded-lg border border-green-500/30 bg-green-500/10">
