@@ -918,6 +918,15 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
       return;
     }
 
+    if (!isLogin && role === "parent" && parentMode === "new" && !favoriteColor.trim()) {
+      toast({
+        title: "Fehler",
+        description: "Bitte gib deine Lieblingsfarbe ein",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!isLogin && role === "parent" && parentMode === "join" && !trimmedJoinParentId) {
       toast({
         title: "Fehler",
@@ -1053,35 +1062,19 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
         <div className="space-y-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && role === "parent" && parentMode === "new" && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="familyName">Familienname</Label>
-                  <Input 
-                    id="familyName"
-                    value={familyName}
-                    onChange={(e) => setFamilyName(e.target.value)}
-                    className="bg-sky-500/10 border-sky-500/40 focus:border-sky-400 focus:bg-sky-500/20 text-foreground placeholder:text-sky-300/50"
-                    disabled={isLoading}
-                    autoComplete="off"
-                    placeholder="z.B. Familie Müller"
-                    data-testid="input-family-name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="favoriteColor">Lieblingsfarbe (für PIN-Vergessen)</Label>
-                  <Input 
-                    id="favoriteColor"
-                    value={favoriteColor}
-                    onChange={(e) => setFavoriteColor(e.target.value)}
-                    className="bg-sky-500/10 border-sky-500/40 focus:border-sky-400 focus:bg-sky-500/20 text-foreground placeholder:text-sky-300/50"
-                    disabled={isLoading}
-                    autoComplete="off"
-                    placeholder="z.B. Blau"
-                    data-testid="input-favorite-color"
-                  />
-                  <p className="text-xs text-muted-foreground">Du kannst damit deine PIN später zurücksetzen</p>
-                </div>
-              </>
+              <div className="space-y-2">
+                <Label htmlFor="familyName">Familienname</Label>
+                <Input 
+                  id="familyName"
+                  value={familyName}
+                  onChange={(e) => setFamilyName(e.target.value)}
+                  className="bg-sky-500/10 border-sky-500/40 focus:border-sky-400 focus:bg-sky-500/20 text-foreground placeholder:text-sky-300/50"
+                  disabled={isLoading}
+                  autoComplete="off"
+                  placeholder="z.B. Familie Müller"
+                  data-testid="input-family-name"
+                />
+              </div>
             )}
             {!isLogin && role === "parent" && parentMode === "join" && (
               <div className="space-y-2">
@@ -1112,6 +1105,22 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 data-testid="input-name"
               />
             </div>
+            {!isLogin && role === "parent" && parentMode === "new" && (
+              <div className="space-y-2">
+                <Label htmlFor="favoriteColor">Lieblingsfarbe (für PIN-Vergessen)</Label>
+                <Input 
+                  id="favoriteColor"
+                  value={favoriteColor}
+                  onChange={(e) => setFavoriteColor(e.target.value)}
+                  className="bg-sky-500/10 border-sky-500/40 focus:border-sky-400 focus:bg-sky-500/20 text-foreground placeholder:text-sky-300/50"
+                  disabled={isLoading}
+                  autoComplete="off"
+                  placeholder="z.B. Blau"
+                  data-testid="input-favorite-color"
+                />
+                <p className="text-xs text-muted-foreground">Du kannst damit deine PIN später zurücksetzen</p>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="pin">PIN (4 Ziffern)</Label>
               <Input 
@@ -1140,7 +1149,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               <Button 
                 type="submit"
                 className="w-full"
-                disabled={isLoading || name.trim().length === 0 || pin.length !== 4}
+                disabled={isLoading || name.trim().length === 0 || pin.length !== 4 || (!isLogin && role === "parent" && parentMode === "new" && (!familyName.trim() || !favoriteColor.trim()))}
                 data-testid={isLogin ? "button-login" : "button-register"}
               >
                 {isLoading ? "Wird verarbeitet..." : isLogin ? "Anmelden" : "Registrieren"}
