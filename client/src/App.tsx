@@ -3476,6 +3476,16 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const { toast } = useToast();
 
+  const { data: connectedPeers = [] } = useQuery({
+    queryKey: ["peers", user.connectionId],
+    queryFn: async () => {
+      const res = await fetch(`/api/peers/connection/${user.connectionId}`);
+      if (!res.ok) throw new Error("Failed to fetch peers");
+      return res.json();
+    },
+    refetchInterval: 2000
+  });
+
   const myTasks = tasks.filter((t: Task) => t.assignedTo === user.id);
   const availableTasks = tasks.filter((t: Task) => t.status === "open");
 
