@@ -2941,12 +2941,21 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <div 
             onClick={() => setCurrentView("allowance-payout")}
             data-testid="card-active-allowances"
-            className="p-4 bg-purple-900/50 border border-purple-500/50 rounded cursor-pointer hover:bg-purple-800/50"
+            className="p-6 bg-gradient-to-br from-orange-600 to-orange-700 border border-orange-400/50 rounded-lg cursor-pointer hover:from-orange-700 hover:to-orange-800 transition-all shadow-lg overflow-hidden relative"
           >
-            <div className="text-center">
-              <div className="text-2xl mb-1">💰</div>
-              <div className="text-xl font-bold text-purple-300">Sats senden</div>
-              <div className="text-xs text-muted-foreground mt-1">Zahlungen & Terminzahlungen</div>
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute inset-0 animate-spin" style={{ animationDuration: "8s" }}>
+                <svg className="w-full h-full" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="2" opacity="0.3" />
+                  <circle cx="50" cy="50" r="30" stroke="currentColor" strokeWidth="1.5" opacity="0.2" />
+                  <circle cx="50" cy="50" r="20" stroke="currentColor" strokeWidth="1" opacity="0.15" />
+                </svg>
+              </div>
+            </div>
+            <div className="text-center relative z-10">
+              <div className="text-5xl mb-2 animate-pulse">⚡</div>
+              <div className="text-2xl font-bold text-white">Taschengeld</div>
+              <div className="text-sm text-orange-100 mt-1">Zahlungen & Terminzahlungen</div>
             </div>
           </div>
         )}
