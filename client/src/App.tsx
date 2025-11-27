@@ -743,47 +743,45 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
 function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4 sm:p-6 relative overflow-hidden">
-      <Card className="w-full max-w-2xl z-10 border border-border bg-gradient-to-br from-gray-900 to-black backdrop-blur-xl shadow-2xl">
-        <div className="p-6 sm:p-10 overflow-hidden">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl sm:text-4xl font-heading font-bold mb-2">Spark ⚡ Kids</h1>
-            <h2 className="text-base sm:text-lg font-semibold text-muted-foreground mb-1">der Familienorganizer</h2>
-            <p className="text-sm text-muted-foreground">Wo aus Aufgaben Belohnungen werden</p>
-          </div>
-
-          <div className="grid gap-3 sm:gap-4">
-            <Button 
-              variant="outline" 
-              className="h-auto p-4 sm:p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
-              onClick={() => onSelect("parent")}
-              data-testid="button-select-parent"
-            >
-              <div className="mr-3 sm:mr-4 h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors flex-shrink-0">
-                <UserIcon className="h-5 sm:h-6 w-5 sm:w-6" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="font-bold text-base sm:text-lg">Eltern</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground">Wallet verwalten & Aufgaben erstellen</p>
-              </div>
-            </Button>
-
-            <Button 
-              variant="outline" 
-              className="h-auto p-4 sm:p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
-              onClick={() => onSelect("child")}
-              data-testid="button-select-child"
-            >
-              <div className="mr-3 sm:mr-4 h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors flex-shrink-0">
-                <Sparkles className="h-5 sm:h-6 w-5 sm:w-6" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="font-bold text-base sm:text-lg">Kind</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground">Aufgaben erledigen & Sats sammeln</p>
-              </div>
-            </Button>
-          </div>
+      <div className="w-full max-w-2xl z-10">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl sm:text-4xl font-heading font-bold mb-2">Spark ⚡ Kids</h1>
+          <h2 className="text-base sm:text-lg font-semibold text-muted-foreground mb-1">der Familienorganizer</h2>
+          <p className="text-sm text-muted-foreground">Wo aus Aufgaben Belohnungen werden</p>
         </div>
-      </Card>
+
+        <div className="grid gap-3 sm:gap-4">
+          <Button 
+            variant="outline" 
+            className="h-auto p-4 sm:p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
+            onClick={() => onSelect("parent")}
+            data-testid="button-select-parent"
+          >
+            <div className="mr-3 sm:mr-4 h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors flex-shrink-0">
+              <UserIcon className="h-5 sm:h-6 w-5 sm:w-6" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-bold text-base sm:text-lg">Eltern</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">Wallet verwalten & Aufgaben erstellen</p>
+            </div>
+          </Button>
+
+          <Button 
+            variant="outline" 
+            className="h-auto p-4 sm:p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
+            onClick={() => onSelect("child")}
+            data-testid="button-select-child"
+          >
+            <div className="mr-3 sm:mr-4 h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors flex-shrink-0">
+              <Sparkles className="h-5 sm:h-6 w-5 sm:w-6" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-bold text-base sm:text-lg">Kind</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">Aufgaben erledigen & Sats sammeln</p>
+            </div>
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
