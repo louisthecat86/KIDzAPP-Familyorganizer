@@ -2864,6 +2864,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   });
   const [draggedCard, setDraggedCard] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedWallet, setSelectedWallet] = useState<"lnbits" | "nwc">(user.lnbitsUrl ? "lnbits" : "nwc");
 
   const hideConnectionCode = () => {
     setShowConnectionCode(false);
@@ -2982,8 +2983,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       },
       refetchInterval: 5000
     });
-
-    const [selectedWallet, setSelectedWallet] = useState<"lnbits" | "nwc">(user.lnbitsUrl ? "lnbits" : "nwc");
 
     const { data: walletBalances = { lnbitsBalance: null, nwcBalance: null } } = useQuery({
       queryKey: ["wallet-balance", user.id],
