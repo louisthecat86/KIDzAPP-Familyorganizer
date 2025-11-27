@@ -2435,11 +2435,15 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           </motion.div>
         )}
         
-        <motion.section 
+        <motion.div 
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black border border-border p-8 cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
-          onClick={handleShowSpendingStats}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleShowSpendingStats();
+          }}
         >
           <div className="relative z-10">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -2452,7 +2456,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               </div>
             </div>
           </div>
-        </motion.section>
+        </motion.div>
         
         <div className={`grid ${layoutView === "one-column" ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
           {cardOrder.map((cardId, index) => {
