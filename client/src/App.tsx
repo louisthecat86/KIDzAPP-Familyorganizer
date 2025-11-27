@@ -840,7 +840,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
     >
       <div className="px-4 py-8 max-w-4xl space-y-6">
         <div className="flex items-center gap-3 mb-8">
-          <Button variant="outline" onClick={() => setCurrentView("allowances")} className="gap-2" data-testid="button-back-to-dashboard">
+          <Button variant="outline" onClick={() => setCurrentView("dashboard")} className="gap-2" data-testid="button-back-to-dashboard">
             <ChevronLeft className="h-4 w-4" /> Zurück
           </Button>
           <h1 className="text-3xl font-bold">💰 Sats senden</h1>
