@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
+import { LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line, ResponsiveContainer } from "recharts";
 import { 
   CheckCircle, 
   Circle, 
@@ -5198,9 +5199,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
 
 function BitcoinValueWidget({ sats }: { sats: number }) {
   const [btcPrice, setBtcPrice] = useState<{ usd: number; eur: number } | null>(null);
-  const [valueInUsd, setValueInUsd] = useState(0);
-  const [valueInEur, setValueInEur] = useState(0);
-  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [currency, setCurrency] = useState<"usd" | "eur">("usd");
 
   useEffect(() => {
     const fetchPrice = async () => {
@@ -5208,53 +5207,141 @@ function BitcoinValueWidget({ sats }: { sats: number }) {
         const res = await fetch("/api/btc-price");
         const data = await res.json();
         setBtcPrice(data);
-        setLastUpdate(new Date());
-        
-        // Calculate values: 1 BTC = 100,000,000 sats
-        const btcAmount = sats / 100_000_000;
-        setValueInUsd(btcAmount * data.usd);
-        setValueInEur(btcAmount * data.eur);
       } catch (error) {
         console.error("Failed to fetch BTC price:", error);
       }
     };
 
     fetchPrice();
-    const interval = setInterval(fetchPrice, 30000); // Update every 30 seconds
+    const interval = setInterval(fetchPrice, 30000);
     return () => clearInterval(interval);
   }, [sats]);
 
-  if (!btcPrice) {
-    return null;
-  }
+  if (!btcPrice) return null;
+
+  // Simulate 12 months of data
+  const btcAmount = sats / 100_000_000;
+  const currentValue = currency === "usd" ? btcAmount * btcPrice.usd : btcAmount * btcPrice.eur;
+  const currencySymbol = currency === "usd" ? "$" : "€";
+
+  // Generate realistic data: Bitcoin with volatility, Savingsbook linear growth
+  const chartData = Array.from({ length: 12 }, (_, i) => {
+    const month = i + 1;
+    // Bitcoin: realistic volatility (±15% average monthly)
+    const bitcoinVariation = Math.sin(i * 0.8) * 0.15 + (Math.random() - 0.5) * 0.1;
+    const bitcoinValue = currentValue * (1 + bitcoinVariation) * (0.7 + (i / 12) * 0.5);
+    
+    // Savingsbook: steady linear growth (0.5% monthly interest)
+    const savingsValue = currentValue * (1 + (i * 0.005));
+
+    return {
+      month,
+      bitcoin: Math.max(0, bitcoinValue),
+      savings: savingsValue,
+    };
+  });
 
   return (
     <div className="pt-4 border-t border-border/50">
       <div className="space-y-4">
-        <div className="flex items-start gap-3">
-          <div className="h-8 w-8 bg-yellow-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-            <span className="text-yellow-500 text-sm">💰</span>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">🎓</span>
+            <h3 className="text-sm font-bold uppercase tracking-widest">Deine Sats wachsen!</h3>
           </div>
-          <div className="flex-1">
-            <p className="text-xs text-muted-foreground uppercase tracking-widest mb-3">Bitcoin Wertzuwachs</p>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-lg p-3">
-                <p className="text-xs text-muted-foreground mb-1">Wert in USD</p>
-                <p className="text-lg font-mono font-bold text-yellow-400" data-testid="text-sats-usd-value">
-                  ${valueInUsd.toFixed(2)}
-                </p>
-              </div>
-              <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-lg p-3">
-                <p className="text-xs text-muted-foreground mb-1">Wert in EUR</p>
-                <p className="text-lg font-mono font-bold text-yellow-400" data-testid="text-sats-eur-value">
-                  €{valueInEur.toFixed(2)}
-                </p>
-              </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setCurrency("usd")}
+              className={`px-3 py-1 text-xs rounded font-bold transition-all ${
+                currency === "usd"
+                  ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/50"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              USD
+            </button>
+            <button
+              onClick={() => setCurrency("eur")}
+              className={`px-3 py-1 text-xs rounded font-bold transition-all ${
+                currency === "eur"
+                  ? "bg-blue-500/20 text-blue-400 border border-blue-500/50"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              EUR
+            </button>
+          </div>
+        </div>
+
+        {/* Current Value Cards */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xl">⚡</span>
+              <p className="text-xs text-muted-foreground font-bold">BITCOIN</p>
             </div>
-            <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-              💡 Sparen lohnt sich! Bitcoin: ${btcPrice.usd.toLocaleString()} | €{btcPrice.eur.toLocaleString()}
-              {lastUpdate && <span className="ml-auto">aktualisiert vor {Math.round((Date.now() - lastUpdate.getTime()) / 1000)}s</span>}
+            <p className="text-2xl font-mono font-bold text-yellow-400" data-testid="text-sats-current-value">
+              {currencySymbol}{currentValue.toFixed(2)}
             </p>
+            <p className="text-xs text-muted-foreground mt-1">📈 Steigt & fällt</p>
+          </div>
+          
+          <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xl">🏦</span>
+              <p className="text-xs text-muted-foreground font-bold">SPARBUCH</p>
+            </div>
+            <p className="text-2xl font-mono font-bold text-blue-400">
+              {currencySymbol}{(currentValue * 1.005).toFixed(2)}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">📊 Langsam & sicher</p>
+          </div>
+        </div>
+
+        {/* Chart */}
+        <div className="bg-gradient-to-br from-slate-900/50 to-slate-950/50 border border-border/50 rounded-lg p-4 overflow-x-auto">
+          <LineChart width={280} height={180} data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+            <XAxis dataKey="month" tick={{ fontSize: 12, fill: "rgba(255,255,255,0.5)" }} />
+            <YAxis tick={{ fontSize: 12, fill: "rgba(255,255,255,0.5)" }} />
+            <Tooltip 
+              contentStyle={{ backgroundColor: "rgba(0,0,0,0.8)", border: "1px solid rgba(255,255,255,0.2)" }}
+              formatter={(value) => `${currencySymbol}${(value as number).toFixed(2)}`}
+            />
+            <Line type="monotone" dataKey="bitcoin" stroke="#fbbf24" strokeWidth={2.5} dot={false} name="Bitcoin" isAnimationActive={true} />
+            <Line type="monotone" dataKey="savings" stroke="#60a5fa" strokeWidth={2} dot={false} name="Sparbuch" isAnimationActive={true} />
+          </LineChart>
+        </div>
+
+        {/* Education Messages */}
+        <div className="space-y-2">
+          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 flex gap-2">
+            <span className="text-lg flex-shrink-0">📚</span>
+            <div className="text-xs">
+              <p className="font-bold text-yellow-400 mb-1">Bitcoin kann steigen UND fallen!</p>
+              <p className="text-muted-foreground">Manchmal geht es hoch, manchmal runter. Das ist normal.</p>
+            </div>
+          </div>
+          
+          <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 flex gap-2">
+            <span className="text-lg flex-shrink-0">💡</span>
+            <div className="text-xs">
+              <p className="font-bold text-green-400 mb-1">Langfristig lohnt sich Sparen!</p>
+              <p className="text-muted-foreground">Über lange Zeit wachsen Deine Sats und der Wert kann steigen.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div className="flex items-center justify-center gap-6 text-xs">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-0.5 bg-yellow-400 rounded-full"></div>
+            <span className="text-muted-foreground">Bitcoin (volatil)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-0.5 bg-blue-400 rounded-full"></div>
+            <span className="text-muted-foreground">Sparbuch (steady)</span>
           </div>
         </div>
       </div>
