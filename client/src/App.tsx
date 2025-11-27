@@ -5198,6 +5198,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
 
 function BitcoinValueWidget({ sats }: { sats: number }) {
   const [btcPrice, setBtcPrice] = useState<{ usd: number; eur: number } | null>(null);
+  const [interestRate, setInterestRate] = useState(0.5); // Start at 0.5% monthly
 
   useEffect(() => {
     const fetchPrice = async () => {
@@ -5220,11 +5221,12 @@ function BitcoinValueWidget({ sats }: { sats: number }) {
   // Calculate values in EUR
   const btcAmount = sats / 100_000_000;
   const currentValueEur = btcAmount * btcPrice.eur;
-  const savingsValueEur = currentValueEur * 1.005; // 0.5% monthly interest simulation
+  const savingsValueEur = currentValueEur * (1 + interestRate / 100);
 
   // Simulate 12 months growth
   const bitcoinGrowth = currentValueEur * 0.5; // 50% growth over 12 months (example)
-  const savingsGrowth = savingsValueEur * 0.006; // 0.6% steady growth
+  const annualInterestRate = interestRate * 12; // Convert monthly to annual
+  const savingsGrowth = (currentValueEur * annualInterestRate) / 100; // Annual growth based on interest rate
 
   return (
     <div className="pt-4 border-t border-border/50">
@@ -5282,6 +5284,36 @@ function BitcoinValueWidget({ sats }: { sats: number }) {
           </div>
         </div>
 
+        {/* Interest Rate Selector */}
+        <div className="bg-gradient-to-r from-slate-900/50 to-slate-950/50 border border-border/50 rounded-lg p-4 space-y-3">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label htmlFor="interest-slider" className="text-xs font-bold text-muted-foreground uppercase">
+                Zinssatz anpassen
+              </label>
+              <div className="text-sm font-mono font-bold text-blue-400" data-testid="text-interest-rate">
+                {interestRate.toFixed(2)}% / Monat = {annualInterestRate.toFixed(1)}% / Jahr
+              </div>
+            </div>
+            <input
+              id="interest-slider"
+              type="range"
+              min="0"
+              max="5"
+              step="0.1"
+              value={interestRate}
+              onChange={(e) => setInterestRate(parseFloat(e.target.value))}
+              className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              data-testid="slider-interest-rate"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>0%</span>
+              <span>2.5%</span>
+              <span>5%</span>
+            </div>
+          </div>
+        </div>
+
         {/* Visual Growth Indicator */}
         <div className="bg-gradient-to-r from-slate-900/50 to-slate-950/50 border border-border/50 rounded-lg p-4 space-y-3">
           <p className="text-xs font-bold text-muted-foreground uppercase mb-2">Was könnte in 12 Monaten passieren?</p>
@@ -5290,7 +5322,7 @@ function BitcoinValueWidget({ sats }: { sats: number }) {
           <div>
             <div className="flex items-center justify-between mb-1">
               <p className="text-xs text-muted-foreground">⚡ Bitcoin</p>
-              <p className="text-xs font-mono text-yellow-400">+€{bitcoinGrowth.toFixed(2)}</p>
+              <p className="text-xs font-mono text-yellow-400" data-testid="text-bitcoin-growth">+€{bitcoinGrowth.toFixed(2)}</p>
             </div>
             <div className="h-6 bg-slate-800 rounded-lg border border-yellow-500/30 overflow-hidden">
               <div className="h-full bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-end pr-2" style={{ width: `${Math.min(100, (bitcoinGrowth / (bitcoinGrowth + savingsGrowth)) * 200)}%` }}>
@@ -5302,8 +5334,8 @@ function BitcoinValueWidget({ sats }: { sats: number }) {
           {/* Sparbuch bar */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <p className="text-xs text-muted-foreground">🏦 Sparbuch</p>
-              <p className="text-xs font-mono text-blue-400">+€{savingsGrowth.toFixed(2)}</p>
+              <p className="text-xs text-muted-foreground">🏦 Sparbuch ({interestRate.toFixed(2)}%)</p>
+              <p className="text-xs font-mono text-blue-400" data-testid="text-savings-growth">+€{savingsGrowth.toFixed(2)}</p>
             </div>
             <div className="h-6 bg-slate-800 rounded-lg border border-blue-500/30 overflow-hidden">
               <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-end pr-2" style={{ width: `${Math.min(100, (savingsGrowth / (bitcoinGrowth + savingsGrowth)) * 200)}%` }}>
