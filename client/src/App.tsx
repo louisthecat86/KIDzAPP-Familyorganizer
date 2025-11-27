@@ -680,17 +680,6 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
                   📐 Ansicht
                 </button>
 
-                {/* Kinder verwalten (nur für Parent) */}
-                {user.role === "parent" && (
-                  <button
-                    onClick={() => { setCurrentView("settings"); setSidebarOpen(false); }}
-                    className="w-full px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary transition-colors text-left"
-                    data-testid="submenu-children-management"
-                  >
-                    👶 Kinder verwalten
-                  </button>
-                )}
-
                 {/* Wallet Einstellung mit Submenü */}
                 <div>
                   <button
