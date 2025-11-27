@@ -2938,7 +2938,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     );
   }
 
-  if (currentView === "settings") {
+  if (currentView === "settings" && user.role === "parent") {
     const { data: connectedPeers = [] } = useQuery({
       queryKey: ["peers", user.connectionId],
       queryFn: async () => {
@@ -3046,6 +3046,59 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           </Card>
         )}
 
+        <Card className="border-2 border-primary/40 bg-primary/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bitcoin className="h-5 w-5 text-primary" /> Wallet-Verwaltung
+            </CardTitle>
+            <CardDescription>Verbinde dein Lightning Wallet</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="child-lightning-address">Lightning Adresse</Label>
+              <Input 
+                id="child-lightning-address"
+                placeholder="name@walletofsatoshi.com"
+                defaultValue={user.lightningAddress || ""}
+                className="font-mono text-xs"
+                data-testid="input-child-lightning-address"
+              />
+              <p className="text-xs text-muted-foreground">
+                Format: name@domain.com
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Status: {user.lightningAddress ? "✓ Konfiguriert" : "✗ Nicht konfiguriert"}
+              </p>
+            </div>
+            <Button 
+              onClick={() => {
+                const addr = (document.getElementById("child-lightning-address") as HTMLInputElement)?.value;
+                if (addr) {
+                  fetch("/api/wallet/setup-child-address", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ peerId: user.id, lightningAddress: addr }),
+                  }).then(r => r.json()).then(data => {
+                    setUser(data);
+                    toast({ title: "Lightning Adresse gespeichert!", description: "Du erhältst nun Sats direkt" });
+                  }).catch(err => toast({ title: "Fehler", description: err.message, variant: "destructive" }));
+                }
+              }}
+              className="bg-primary hover:bg-primary/90"
+              data-testid="button-save-child-lightning-address"
+            >
+              Speichern
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (currentView === "settings" && user.role === "child") {
+    return (
+      <div className="max-w-4xl">
+        <h1 className="text-3xl font-bold mb-8">Einstellungen</h1>
         <Card className="border-2 border-primary/40 bg-primary/5">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
