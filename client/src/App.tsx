@@ -878,7 +878,11 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
           <>
             <Button 
               variant="outline" 
-              onClick={() => setPayoutTab(null)} 
+              onClick={() => {
+                setPayoutTab(null);
+                setAdHocChildId(null);
+                setAdHocSats("");
+              }} 
               className="gap-2 mb-6"
               data-testid="button-back-to-choice"
             >
