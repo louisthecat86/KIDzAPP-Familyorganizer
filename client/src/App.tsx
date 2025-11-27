@@ -440,6 +440,7 @@ export default function App() {
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-foreground font-sans selection:bg-primary selection:text-primary-foreground flex">
       <Sidebar 
         user={user} 
+        setUser={setUser}
         currentView={currentView} 
         setCurrentView={setCurrentView}
         sidebarOpen={sidebarOpen}
@@ -514,7 +515,7 @@ export default function App() {
   );
 }
 
-function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpen, onLogout, layoutView, setLayoutView }: any) {
+function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setSidebarOpen, onLogout, layoutView, setLayoutView }: any) {
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [showWalletSubmenu, setShowWalletSubmenu] = useState(false);
   const [showCalendarSubmenu, setShowCalendarSubmenu] = useState(false);
