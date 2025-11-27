@@ -2861,6 +2861,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       refetchInterval: 10000
     });
 
+    const displayBalance = walletBalance?.balance;
+    const selectedWallet = "lnbits";
 
     const handleShowSpendingStats = async () => {
       try {
