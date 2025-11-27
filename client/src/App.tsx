@@ -4156,7 +4156,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           </div>
         </motion.section>
 
-        {tasks.length > 0 && (
+        {(tasks.length > 0 || availableTasks.length > 0) && (
           <div className="space-y-4">
             <div className={`grid ${layoutView === "one-column" ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
