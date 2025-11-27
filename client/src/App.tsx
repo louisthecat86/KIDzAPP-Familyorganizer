@@ -12,7 +12,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
-import { LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line, ResponsiveContainer } from "recharts";
 import { 
   CheckCircle, 
   Circle, 
@@ -5199,7 +5198,6 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
 
 function BitcoinValueWidget({ sats }: { sats: number }) {
   const [btcPrice, setBtcPrice] = useState<{ usd: number; eur: number } | null>(null);
-  const [currency, setCurrency] = useState<"usd" | "eur">("eur");
 
   useEffect(() => {
     const fetchPrice = async () => {
@@ -5219,99 +5217,100 @@ function BitcoinValueWidget({ sats }: { sats: number }) {
 
   if (!btcPrice) return null;
 
-  // Simulate 12 months of data
+  // Calculate values in EUR
   const btcAmount = sats / 100_000_000;
-  const currentValue = currency === "usd" ? btcAmount * btcPrice.usd : btcAmount * btcPrice.eur;
-  const currencySymbol = currency === "usd" ? "$" : "€";
+  const currentValueEur = btcAmount * btcPrice.eur;
+  const savingsValueEur = currentValueEur * 1.005; // 0.5% monthly interest simulation
 
-  // Generate realistic data: Bitcoin with volatility, Savingsbook linear growth
-  const chartData = Array.from({ length: 12 }, (_, i) => {
-    const month = i + 1;
-    // Bitcoin: realistic volatility (±15% average monthly)
-    const bitcoinVariation = Math.sin(i * 0.8) * 0.15 + (Math.random() - 0.5) * 0.1;
-    const bitcoinValue = currentValue * (1 + bitcoinVariation) * (0.7 + (i / 12) * 0.5);
-    
-    // Savingsbook: steady linear growth (0.5% monthly interest)
-    const savingsValue = currentValue * (1 + (i * 0.005));
-
-    return {
-      month,
-      bitcoin: Math.max(0, bitcoinValue),
-      savings: savingsValue,
-    };
-  });
+  // Simulate 12 months growth
+  const bitcoinGrowth = currentValueEur * 0.5; // 50% growth over 12 months (example)
+  const savingsGrowth = savingsValueEur * 0.006; // 0.6% steady growth
 
   return (
     <div className="pt-4 border-t border-border/50">
       <div className="space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🎓</span>
-            <h3 className="text-sm font-bold uppercase tracking-widest">Deine Sats wachsen!</h3>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrency("usd")}
-              className={`px-3 py-1 text-xs rounded font-bold transition-all ${
-                currency === "usd"
-                  ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/50"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              USD
-            </button>
-            <button
-              onClick={() => setCurrency("eur")}
-              className={`px-3 py-1 text-xs rounded font-bold transition-all ${
-                currency === "eur"
-                  ? "bg-blue-500/20 text-blue-400 border border-blue-500/50"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              EUR
-            </button>
-          </div>
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-2xl">🎓</span>
+          <h3 className="text-sm font-bold uppercase tracking-widest">Deine Sats wachsen!</h3>
         </div>
 
-        {/* Current Value Cards */}
+        {/* Comparison Cards */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xl">⚡</span>
+          {/* Bitcoin Card */}
+          <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">⚡</span>
               <p className="text-xs text-muted-foreground font-bold">BITCOIN</p>
             </div>
-            <p className="text-2xl font-mono font-bold text-yellow-400" data-testid="text-sats-current-value">
-              {currencySymbol}{currentValue.toFixed(2)}
+            <div>
+              <p className="text-2xl font-mono font-bold text-yellow-400" data-testid="text-sats-current-value">
+                €{currentValueEur.toFixed(2)}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">Deine Sats heute</p>
+            </div>
+            <div className="bg-yellow-500/20 rounded px-2 py-1 border border-yellow-500/30">
+              <p className="text-xs font-bold text-yellow-300">
+                +€{bitcoinGrowth.toFixed(2)} in 1 Jahr?
+              </p>
+            </div>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              📈 <span className="text-yellow-400">Steigt & fällt!</span>
             </p>
-            <p className="text-xs text-muted-foreground mt-1">📈 Steigt & fällt</p>
           </div>
-          
-          <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xl">🏦</span>
+
+          {/* Sparbuch Card */}
+          <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-lg p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🏦</span>
               <p className="text-xs text-muted-foreground font-bold">SPARBUCH</p>
             </div>
-            <p className="text-2xl font-mono font-bold text-blue-400">
-              {currencySymbol}{(currentValue * 1.005).toFixed(2)}
+            <div>
+              <p className="text-2xl font-mono font-bold text-blue-400">
+                €{savingsValueEur.toFixed(2)}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">Mit 0,5% Zinsen</p>
+            </div>
+            <div className="bg-blue-500/20 rounded px-2 py-1 border border-blue-500/30">
+              <p className="text-xs font-bold text-blue-300">
+                +€{savingsGrowth.toFixed(2)} in 1 Jahr
+              </p>
+            </div>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              📊 <span className="text-blue-400">Langsam & sicher</span>
             </p>
-            <p className="text-xs text-muted-foreground mt-1">📊 Langsam & sicher</p>
           </div>
         </div>
 
-        {/* Chart */}
-        <div className="bg-gradient-to-br from-slate-900/50 to-slate-950/50 border border-border/50 rounded-lg p-4 overflow-x-auto">
-          <LineChart width={280} height={180} data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-            <XAxis dataKey="month" tick={{ fontSize: 12, fill: "rgba(255,255,255,0.5)" }} />
-            <YAxis tick={{ fontSize: 12, fill: "rgba(255,255,255,0.5)" }} />
-            <Tooltip 
-              contentStyle={{ backgroundColor: "rgba(0,0,0,0.8)", border: "1px solid rgba(255,255,255,0.2)" }}
-              formatter={(value) => `${currencySymbol}${(value as number).toFixed(2)}`}
-            />
-            <Line type="monotone" dataKey="bitcoin" stroke="#fbbf24" strokeWidth={2.5} dot={false} name="Bitcoin" isAnimationActive={true} />
-            <Line type="monotone" dataKey="savings" stroke="#60a5fa" strokeWidth={2} dot={false} name="Sparbuch" isAnimationActive={true} />
-          </LineChart>
+        {/* Visual Growth Indicator */}
+        <div className="bg-gradient-to-r from-slate-900/50 to-slate-950/50 border border-border/50 rounded-lg p-4 space-y-3">
+          <p className="text-xs font-bold text-muted-foreground uppercase mb-2">Was könnte in 12 Monaten passieren?</p>
+          
+          {/* Bitcoin bar */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-xs text-muted-foreground">⚡ Bitcoin</p>
+              <p className="text-xs font-mono text-yellow-400">+€{bitcoinGrowth.toFixed(2)}</p>
+            </div>
+            <div className="h-6 bg-slate-800 rounded-lg border border-yellow-500/30 overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-end pr-2" style={{ width: `${Math.min(100, (bitcoinGrowth / (bitcoinGrowth + savingsGrowth)) * 200)}%` }}>
+                <span className="text-xs font-bold text-white drop-shadow">📈</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Sparbuch bar */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-xs text-muted-foreground">🏦 Sparbuch</p>
+              <p className="text-xs font-mono text-blue-400">+€{savingsGrowth.toFixed(2)}</p>
+            </div>
+            <div className="h-6 bg-slate-800 rounded-lg border border-blue-500/30 overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-end pr-2" style={{ width: `${Math.min(100, (savingsGrowth / (bitcoinGrowth + savingsGrowth)) * 200)}%` }}>
+                <span className="text-xs font-bold text-white drop-shadow">📊</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Education Messages */}
@@ -5320,28 +5319,24 @@ function BitcoinValueWidget({ sats }: { sats: number }) {
             <span className="text-lg flex-shrink-0">📚</span>
             <div className="text-xs">
               <p className="font-bold text-yellow-400 mb-1">Bitcoin kann steigen UND fallen!</p>
-              <p className="text-muted-foreground">Manchmal geht es hoch, manchmal runter. Das ist normal.</p>
+              <p className="text-muted-foreground">Manchmal geht es hoch 📈, manchmal runter 📉. Das ist normal und heißt Volatilität.</p>
             </div>
           </div>
-          
+
           <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 flex gap-2">
             <span className="text-lg flex-shrink-0">💡</span>
             <div className="text-xs">
               <p className="font-bold text-green-400 mb-1">Langfristig lohnt sich Sparen!</p>
-              <p className="text-muted-foreground">Über lange Zeit wachsen Deine Sats und der Wert kann steigen.</p>
+              <p className="text-muted-foreground">Wenn du lange Zeit Sats sparst, kann der Wert stark wachsen - besser als im Sparbuch!</p>
             </div>
           </div>
-        </div>
 
-        {/* Legend */}
-        <div className="flex items-center justify-center gap-6 text-xs">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-0.5 bg-yellow-400 rounded-full"></div>
-            <span className="text-muted-foreground">Bitcoin (volatil)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-0.5 bg-blue-400 rounded-full"></div>
-            <span className="text-muted-foreground">Sparbuch (steady)</span>
+          <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3 flex gap-2">
+            <span className="text-lg flex-shrink-0">🎯</span>
+            <div className="text-xs">
+              <p className="font-bold text-purple-400 mb-1">Die Zahlen sind Beispiele</p>
+              <p className="text-muted-foreground">Die echten Werte hängen ab davon, wie der Bitcoin-Preis sich ändert!</p>
+            </div>
           </div>
         </div>
       </div>
