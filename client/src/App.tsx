@@ -847,33 +847,31 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
         </div>
 
         {payoutTab === null ? (
-          <Card className="border-2 border-primary/40 bg-primary/5">
-            <CardContent className="p-8">
-              <h2 className="text-2xl font-bold mb-6 text-center">Was möchtest du tun?</h2>
-              <div className="flex flex-col gap-4 max-w-md mx-auto">
-                <Button 
-                  onClick={() => setPayoutTab("plans")}
-                  className="h-24 text-lg bg-blue-600 hover:bg-blue-700"
-                  data-testid="button-choose-scheduled"
-                >
-                  <div className="flex flex-col items-center gap-2">
-                    <span className="text-2xl">📅</span>
-                    <span>Terminzahlung</span>
-                  </div>
-                </Button>
-                <Button 
-                  onClick={() => setPayoutTab("instant")}
-                  className="h-24 text-lg bg-green-600 hover:bg-green-700"
-                  data-testid="button-choose-instant"
-                >
-                  <div className="flex flex-col items-center gap-2">
-                    <span className="text-2xl">⚡</span>
-                    <span>Sofortzahlung</span>
-                  </div>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex flex-col items-center justify-center gap-4 py-8">
+            <h2 className="text-2xl font-bold text-center">Was möchtest du tun?</h2>
+            <div className="w-full max-w-sm space-y-3">
+              <Button 
+                onClick={() => setPayoutTab("plans")}
+                className="w-full h-28 text-lg bg-blue-600 hover:bg-blue-700"
+                data-testid="button-choose-scheduled"
+              >
+                <div className="flex flex-col items-center gap-3">
+                  <span className="text-3xl">📅</span>
+                  <span className="text-base">Terminzahlung</span>
+                </div>
+              </Button>
+              <Button 
+                onClick={() => setPayoutTab("instant")}
+                className="w-full h-28 text-lg bg-green-600 hover:bg-green-700"
+                data-testid="button-choose-instant"
+              >
+                <div className="flex flex-col items-center gap-3">
+                  <span className="text-3xl">⚡</span>
+                  <span className="text-base">Sofortzahlung</span>
+                </div>
+              </Button>
+            </div>
+          </div>
         ) : (
           <>
             {payoutTab === "plans" && (
