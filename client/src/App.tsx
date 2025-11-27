@@ -1128,6 +1128,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
       refetchInterval: 2000
     });
 
+    const parents = connectedPeers.filter((p: any) => p.role === "parent");
     const children = connectedPeers.filter((p: any) => p.role === "child");
 
     const handleUnlinkChild = async (childId: number, childName: string) => {
@@ -1157,7 +1158,74 @@ function PeersContent({ user, setUser, queryClient }: any) {
     };
 
     return (
-      <div className="space-y-3">
+      <div className="space-y-6">
+        {/* Eltern Hierarchie */}
+        <div className="space-y-3">
+          <h3 className="font-semibold text-sm text-muted-foreground uppercase">👨‍👩‍👧 Familienstruktur</h3>
+          
+          {/* Eltern */}
+          <div className="flex gap-3 justify-center">
+            {parents.length > 0 ? (
+              parents.map((parent: any, idx: number) => (
+                <div key={parent.id} className="flex-1 max-w-xs">
+                  <div className="p-3 rounded-lg bg-primary/10 border-2 border-primary/50 flex flex-col items-center text-center">
+                    <div className="h-10 w-10 rounded-full bg-primary/30 text-primary flex items-center justify-center font-bold mb-2">
+                      {parent.name[0]}
+                    </div>
+                    <p className="font-semibold text-sm">{parent.name}</p>
+                    <p className="text-xs text-muted-foreground">Eltern</p>
+                  </div>
+                </div>
+              ))
+            ) : null}
+          </div>
+
+          {/* Verbindungslinie und Kinder */}
+          {children.length > 0 && (
+            <div className="space-y-3">
+              {/* Verbindungslinie */}
+              <div className="flex justify-center">
+                <div className="h-6 w-0.5 bg-gradient-to-b from-primary/50 to-primary/20"></div>
+              </div>
+
+              {/* Kinder */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                {children.map((child: any) => (
+                  <div key={child.id} className="p-3 rounded-lg bg-secondary border border-border/50 flex items-center justify-between group hover:bg-secondary/80 transition-colors">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs flex-shrink-0">
+                        {child.name[0]}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-sm truncate">{child.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {child.lightningAddress ? `⚡ ${child.lightningAddress}` : "⚠️ Keine Adresse"}
+                        </p>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleUnlinkChild(child.id, child.name)}
+                      className="text-destructive hover:text-destructive h-8 w-8 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      data-testid={`button-unlink-child-${child.id}`}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {children.length === 0 && (
+            <div className="text-center py-4 text-muted-foreground text-sm border border-dashed border-border rounded-lg">
+              <p>Noch keine Kinder verbunden</p>
+              <p className="text-xs mt-1">Teile deinen Verbindungscode mit deinen Kindern</p>
+            </div>
+          )}
+        </div>
+
         {/* Connection ID Box */}
         <div className="p-3 rounded-lg bg-primary/10 border border-primary/30">
           <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Kopplungs-ID für Kinder</p>
@@ -1177,41 +1245,6 @@ function PeersContent({ user, setUser, queryClient }: any) {
           </div>
           <p className="text-xs text-muted-foreground mt-2">Teile diese ID mit deinen Kindern, um sie mit der Familie zu verbinden</p>
         </div>
-
-        {children.length > 0 ? (
-          <div className="space-y-3">
-            <h3 className="font-semibold text-sm">👶 Kinder ({children.length})</h3>
-            {children.map((child: any) => (
-              <div key={child.id} className="p-3 rounded-lg bg-secondary border border-border flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs">
-                    {child.name[0]}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm">{child.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {child.lightningAddress ? `⚡ ${child.lightningAddress}` : "⚠️ Keine Adresse"}
-                    </p>
-                  </div>
-                </div>
-                <Button 
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleUnlinkChild(child.id, child.name)}
-                  className="text-destructive hover:text-destructive h-8 w-8"
-                  data-testid={`button-unlink-child-${child.id}`}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-4 text-muted-foreground text-sm">
-            <p>Noch keine Kinder verbunden</p>
-            <p className="text-xs mt-1">Teile deinen Verbindungscode mit deinen Kindern</p>
-          </div>
-        )}
       </div>
     );
   } else {
