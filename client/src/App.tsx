@@ -117,11 +117,11 @@ function getMessageColor(senderName: string): string {
 }
 
 // --- API Functions ---
-async function registerUser(name: string, role: UserRole, pin: string, familyName?: string, joinParentConnectionId?: string): Promise<User> {
+async function registerUser(name: string, role: UserRole, pin: string, familyName?: string, joinParentConnectionId?: string, securityQuestion?: string, securityAnswer?: string): Promise<User> {
   const res = await fetch("/api/peers/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, role, pin, familyName, joinParentConnectionId }),
+    body: JSON.stringify({ name, role, pin, familyName, joinParentConnectionId, securityQuestion, securityAnswer }),
   });
   const data = await res.json();
   if (!res.ok) {
