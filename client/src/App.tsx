@@ -429,6 +429,11 @@ export default function App() {
     e.preventDefault();
     if (!newTask.title || !user) return;
 
+    if (newTask.sats <= 0) {
+      toast({ title: "Fehler", description: "Belohnung muss größer als 0 sein", variant: "destructive" });
+      return;
+    }
+
     createTaskMutation.mutate({
       connectionId: user.connectionId,
       createdBy: user.id,

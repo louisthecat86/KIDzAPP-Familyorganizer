@@ -498,22 +498,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let invoice = "";
       let escrowLocked = false;
 
-      // Try to create escrow invoice if wallet is configured
+      // Validate reward against LNbits balance
       if (parent.lnbitsUrl && parent.lnbitsAdminKey) {
         try {
           const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+          const balance = await lnbits.getBalance();
+          
+          if (balance < data.sats) {
+            return res.status(400).json({ 
+              error: `Unzureichende Balance. Benötigt: ${data.sats} Sats, verfügbar: ${balance} Sats` 
+            });
+          }
+
+          // Create escrow invoice if balance is sufficient
           invoice = await lnbits.createPaylink(data.sats, `Task: ${data.title}`);
           escrowLocked = true;
         } catch (error) {
-          console.warn("LNbits invoice creation failed, creating task without escrow:", error);
-        }
-      } else if (parent.nwcConnectionString) {
-        try {
-          const nwc = new NWCClient(parent.nwcConnectionString);
-          invoice = await nwc.createPaymentRequest(data.sats, `Task: ${data.title}`);
-          escrowLocked = true;
-        } catch (error) {
-          console.warn("NWC invoice creation failed, creating task without escrow:", error);
+          if ((error as any).message?.includes("Unzureichende")) {
+            throw error;
+          }
+          console.warn("LNbits operation failed, creating task without escrow:", error);
         }
       }
 
@@ -548,6 +552,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ error: error.errors });
+      } else if ((error as any).message?.includes("Unzureichende")) {
+        res.status(400).json({ error: (error as Error).message });
       } else {
         console.error("Create task error:", error);
         res.status(500).json({ error: "Failed to create task" });
