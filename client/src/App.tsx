@@ -2474,12 +2474,16 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               return createDraggableCard(
                 cardId,
                 <Card className="bg-gradient-to-br from-gray-900 to-black border border-border hover:from-gray-800 hover:to-gray-950 transition-colors h-full">
-                  <CardContent className="pt-6">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-primary flex items-center justify-center gap-1">
-                        📤 {(satsSpent || 0).toLocaleString()}
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center border border-primary/30 flex-shrink-0">
+                        <span className="text-primary text-lg">📤</span>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-2">Ausgegeben an Kinder</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest mb-1">Ausgegeben</p>
+                        <h3 className="text-2xl font-mono font-bold text-primary" data-testid="text-sats-spent">{(satsSpent || 0).toLocaleString()}</h3>
+                        <p className="text-xs text-muted-foreground mt-1">An Kinder gezahlt</p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>,
