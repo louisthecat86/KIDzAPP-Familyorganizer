@@ -3026,6 +3026,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                             value="lnbits" 
                             checked={selectedWallet === "lnbits"}
                             disabled={!user.lnbitsUrl}
+                            readOnly
                             className="cursor-pointer"
                           />
                           <span className={!user.lnbitsUrl ? "opacity-50" : ""}>💳 LNbits</span>
