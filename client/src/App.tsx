@@ -3351,6 +3351,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
   const [showLink, setShowLink] = useState(false);
   const [parentConnectionId, setParentConnectionId] = useState("");
   const [isLinking, setIsLinking] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const { toast } = useToast();
 
   const myTasks = tasks.filter((t: Task) => t.assignedTo === user.id);
