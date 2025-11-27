@@ -485,6 +485,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Upload proof photo for task
+  app.post("/api/tasks/:id/proof", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { proof } = req.body;
+      
+      if (!proof) {
+        return res.status(400).json({ error: "Proof image required" });
+      }
+
+      const taskId = parseInt(id);
+      const task = await storage.getTask(taskId);
+      if (!task) {
+        return res.status(404).json({ error: "Task not found" });
+      }
+
+      // Update task with proof and set status to submitted
+      const updatedTask = await storage.updateTask(taskId, {
+        proof: proof,
+        status: "submitted"
+      });
+
+      res.json({ success: true, proof: updatedTask?.proof });
+    } catch (error) {
+      console.error("Upload proof error:", error);
+      res.status(500).json({ error: "Failed to upload proof" });
+    }
+  });
+
   // Withdraw sats via child's Lightning wallet
   app.post("/api/withdraw", async (req, res) => {
     try {
