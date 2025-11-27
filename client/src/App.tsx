@@ -2646,6 +2646,50 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   }
 
   if (currentView === "nostr") {
+    // For children: only show Lightning Address
+    if (user.role === "child") {
+      return (
+        <div className="max-w-4xl">
+          <h1 className="text-3xl font-bold mb-8">Wallet-Einstellungen</h1>
+          <Card className="border-2 border-primary/40 bg-primary/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bitcoin className="h-5 w-5 text-primary" /> Lightning Adresse
+              </CardTitle>
+              <CardDescription>Hinterlege deine Lightning Adresse um Sats zu erhalten</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="lightning-address">Lightning Adresse</Label>
+                <Input 
+                  id="lightning-address"
+                  placeholder="name@example.com"
+                  value={lightningAddress}
+                  onChange={(e) => setLightningAddress(e.target.value)}
+                  className="font-mono text-xs"
+                  data-testid="input-lightning-address"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Format: name@domain.com
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Status: {user.lightningAddress ? "✓ Konfiguriert" : "✗ Nicht konfiguriert"}
+                </p>
+              </div>
+              <Button 
+                onClick={setupLightningAddress}
+                className="bg-primary hover:bg-primary/90"
+                data-testid="button-setup-lightning-address"
+              >
+                Speichern
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+
+    // For parents: show all tabs
     return (
       <div className="max-w-4xl">
         <h1 className="text-3xl font-bold mb-8">Wallet-Einstellungen</h1>
@@ -2751,43 +2795,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   </Button>
                 </CardContent>
               </Card>
-
-              {user.role === "child" && (
-                <Card className="border-2 border-primary/40 bg-primary/5">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Bitcoin className="h-5 w-5 text-primary" /> Lightning Adresse
-                    </CardTitle>
-                    <CardDescription>Hinterlege deine Lightning Adresse um Sats zu erhalten</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="lightning-address">Lightning Adresse</Label>
-                      <Input 
-                        id="lightning-address"
-                        placeholder="name@example.com"
-                        value={lightningAddress}
-                        onChange={(e) => setLightningAddress(e.target.value)}
-                        className="font-mono text-xs"
-                        data-testid="input-lightning-address"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Format: name@domain.com
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Status: {user.lightningAddress ? "✓ Konfiguriert" : "✗ Nicht konfiguriert"}
-                      </p>
-                    </div>
-                    <Button 
-                      onClick={setupLightningAddress}
-                      className="bg-primary hover:bg-primary/90"
-                      data-testid="button-setup-lightning-address"
-                    >
-                      Speichern
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
             </div>
           </TabsContent>
         </Tabs>
