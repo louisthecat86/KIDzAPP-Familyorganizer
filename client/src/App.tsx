@@ -1602,6 +1602,14 @@ function SettingsModal({ user, setUser, activeTab, onClose, layoutView, setLayou
   const [isSaving, setIsSaving] = useState(false);
   const { toast: useToastFn } = useToast();
 
+  // Sync state with user changes
+  useEffect(() => {
+    setEditNwc(user.nwcConnectionString || "");
+    setEditLnbitsUrl(user.lnbitsUrl || "");
+    setEditLnbitsAdminKey(user.lnbitsAdminKey || "");
+    setShowAdminKey(false);
+  }, [user]);
+
   const saveNWC = async () => {
     if (!editNwc) return;
     setIsSaving(true);
