@@ -742,44 +742,107 @@ function Sidebar({ user, currentView, setCurrentView, sidebarOpen, setSidebarOpe
 
 function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4 sm:p-6 relative overflow-hidden">
-      <div className="w-full max-w-2xl z-10">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-heading font-bold mb-2">Spark ⚡ Kids</h1>
-          <h2 className="text-base sm:text-lg font-semibold text-muted-foreground mb-1">der Familienorganizer</h2>
-          <p className="text-sm text-muted-foreground">Wo aus Aufgaben Belohnungen werden</p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4 sm:p-6 relative overflow-hidden flex items-center justify-center">
+      <div className="w-full max-w-5xl z-10">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl sm:text-5xl font-heading font-bold mb-2">Spark ⚡ Kids</h1>
+          <h2 className="text-lg sm:text-xl font-semibold text-muted-foreground mb-1">der Familienorganizer</h2>
+          <p className="text-base text-muted-foreground">Wo aus Aufgaben Belohnungen werden</p>
         </div>
 
-        <div className="grid gap-3 sm:gap-4">
-          <Button 
-            variant="outline" 
-            className="h-auto p-4 sm:p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
-            onClick={() => onSelect("parent")}
-            data-testid="button-select-parent"
-          >
-            <div className="mr-3 sm:mr-4 h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors flex-shrink-0">
-              <UserIcon className="h-5 sm:h-6 w-5 sm:w-6" />
-            </div>
-            <div className="min-w-0">
-              <h3 className="font-bold text-base sm:text-lg">Eltern</h3>
-              <p className="text-xs sm:text-sm text-muted-foreground">Wallet verwalten & Aufgaben erstellen</p>
-            </div>
-          </Button>
+        {/* Two Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-12">
+          {/* Left Column - Features */}
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-2xl font-bold mb-6">Wie es funktioniert</h3>
+              <div className="space-y-4">
+                <div className="flex gap-4">
+                  <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 text-primary">
+                    <span className="text-lg font-bold">1</span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-1">Eltern erstellen Aufgaben</h4>
+                    <p className="text-sm text-muted-foreground">Mit Bitcoin-Belohnungen in Sats</p>
+                  </div>
+                </div>
 
-          <Button 
-            variant="outline" 
-            className="h-auto p-4 sm:p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group"
-            onClick={() => onSelect("child")}
-            data-testid="button-select-child"
-          >
-            <div className="mr-3 sm:mr-4 h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors flex-shrink-0">
-              <Sparkles className="h-5 sm:h-6 w-5 sm:w-6" />
+                <div className="flex gap-4">
+                  <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 text-primary">
+                    <span className="text-lg font-bold">2</span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-1">Kinder erledigen Aufgaben</h4>
+                    <p className="text-sm text-muted-foreground">Mit Foto-Beweis direkt vom Handy</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 text-primary">
+                    <span className="text-lg font-bold">3</span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-1">Eltern bestätigen & zahlen</h4>
+                    <p className="text-sm text-muted-foreground">Lightning-Zahlungen direkt aufs Kinder-Wallet</p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="min-w-0">
-              <h3 className="font-bold text-base sm:text-lg">Kind</h3>
-              <p className="text-xs sm:text-sm text-muted-foreground">Aufgaben erledigen & Sats sammeln</p>
+
+            <div className="pt-4 border-t border-border">
+              <h4 className="font-semibold mb-3">Features</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <span className="text-primary">✓</span> Familie via QR-Code verbinden
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-primary">✓</span> Kalender & Ereignisse mit RSVP
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-primary">✓</span> Familienchat & Benachrichtigungen
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-primary">✓</span> Sicherheitsfragen für PIN-Schutz
+                </li>
+              </ul>
             </div>
-          </Button>
+          </div>
+
+          {/* Right Column - Buttons */}
+          <div className="space-y-4">
+            <p className="text-muted-foreground mb-6">Wähle deine Rolle um zu starten:</p>
+            
+            <Button 
+              variant="outline" 
+              className="h-auto p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group w-full"
+              onClick={() => onSelect("parent")}
+              data-testid="button-select-parent"
+            >
+              <div className="mr-4 h-12 w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors flex-shrink-0">
+                <UserIcon className="h-6 w-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-bold text-lg">Eltern</h3>
+                <p className="text-sm text-muted-foreground">Wallet verwalten & Aufgaben erstellen</p>
+              </div>
+            </Button>
+
+            <Button 
+              variant="outline" 
+              className="h-auto p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group w-full"
+              onClick={() => onSelect("child")}
+              data-testid="button-select-child"
+            >
+              <div className="mr-4 h-12 w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors flex-shrink-0">
+                <Sparkles className="h-6 w-6" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-bold text-lg">Kind</h3>
+                <p className="text-sm text-muted-foreground">Aufgaben erledigen & Sats sammeln</p>
+              </div>
+            </Button>
+          </div>
         </div>
       </div>
     </div>
