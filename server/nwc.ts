@@ -349,9 +349,16 @@ export class NWCClient {
   }
 
   /**
-   * Get a realistic simulated balance for demo purposes
+   * Get simulated or cached balance
    */
   private getSimulatedBalance(): number {
+    // Check if there's a manually set balance in cache
+    if (typeof global !== "undefined" && global.nwcBalanceCache && global.nwcBalanceCache[this.connectionString]) {
+      const cachedBalance = global.nwcBalanceCache[this.connectionString];
+      console.log(`[NWC] Using cached balance: ${cachedBalance} msats`);
+      return cachedBalance;
+    }
+    
     // Generate realistic balance based on wallet pubkey + current time
     // This creates variation while keeping it consistent per session
     const pubkeyHash = this.walletPubKey.split('').reduce((acc, char) => {

@@ -525,6 +525,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Set NWC balance manually (for testing/verification)
+  app.post("/api/parent/:peerId/nwc-balance", async (req, res) => {
+    try {
+      const { peerId } = req.params;
+      const { balance } = req.body;
+      
+      if (!balance || typeof balance !== "number" || balance < 0) {
+        return res.status(400).json({ error: "Valid balance number required" });
+      }
+
+      const parent = await storage.getPeer(parseInt(peerId));
+      if (!parent) {
+        return res.status(404).json({ error: "Parent not found" });
+      }
+
+      // Store balance in cache (in production, use Redis or persistent storage)
+      if (!global.nwcBalanceCache) {
+        global.nwcBalanceCache = {};
+      }
+      global.nwcBalanceCache[parent.nwcConnectionString || "default"] = balance;
+      
+      console.log(`[NWC] Balance manually set to ${balance} msats for parent ${peerId}`);
+      res.json({ success: true, balance });
+    } catch (error) {
+      console.error("Set NWC balance error:", error);
+      res.status(500).json({ error: String(error) });
+    }
+  });
+
   // Debug NWC connection
   app.get("/api/parent/:peerId/nwc-debug", async (req, res) => {
     try {
