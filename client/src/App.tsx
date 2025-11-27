@@ -1663,9 +1663,24 @@ function SettingsModal({ user, setUser, activeTab, onClose, layoutView, setLayou
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setUser({ ...user, lnbitsUrl: editLnbitsUrl, lnbitsAdminKey: editLnbitsAdminKey });
-      useToastFn({ title: "LNbits gespeichert!", description: "LNbits Wallet ist jetzt aktiv" });
+      
+      // Show success toast with longer duration
+      useToastFn({ 
+        title: "✅ LNbits erfolgreich gespeichert!", 
+        description: `URL: ${editLnbitsUrl}`,
+        duration: 5000
+      });
+      
+      // Keep modal open for a moment to show success
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      onClose();
     } catch (error) {
-      useToastFn({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      useToastFn({ 
+        title: "❌ Fehler beim Speichern", 
+        description: (error as Error).message, 
+        variant: "destructive",
+        duration: 5000
+      });
     } finally {
       setIsSaving(false);
     }
@@ -1829,7 +1844,7 @@ function SettingsModal({ user, setUser, activeTab, onClose, layoutView, setLayou
               className="bg-primary hover:bg-primary/90"
               data-testid="button-save-wallet"
             >
-              {isSaving ? "Speichern..." : "Speichern"}
+              {isSaving ? "⏳ Speichern..." : "💾 Speichern"}
             </Button>
           )}
         </CardFooter>
