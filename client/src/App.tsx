@@ -760,6 +760,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
   const [adHocChildId, setAdHocChildId] = useState<number | null>(null);
   const [adHocSats, setAdHocSats] = useState("");
   const [adHocMessage, setAdHocMessage] = useState("");
+  const paymentMethod = "lnbits";
   
   const { data: childrenWithAllowances = [], refetch: refetchAllowances } = useQuery({
     queryKey: ["children-with-allowances", user.id, user.connectionId],
@@ -878,24 +879,6 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
           <h1 className="text-3xl font-bold">💰 Taschengeld</h1>
         </div>
 
-        {/* Payment Method Selection */}
-        {payoutTab !== null && (
-          <div className="flex gap-2 mb-4 bg-secondary/30 p-3 rounded-lg">
-            <label className="flex items-center gap-2 cursor-pointer" data-testid="label-payment-method">
-              <input 
-                type="radio" 
-                name="paymentMethod" 
-                value="lnbits" 
-                checked={paymentMethod === "lnbits"}
-                disabled={!user.lnbitsUrl}
-                data-testid="radio-payment-lnbits"
-              />
-              <span className={`text-sm font-semibold ${!user.lnbitsUrl ? "opacity-50" : ""}`}>
-                💳 LNbits {!user.lnbitsUrl && "(nicht konfiguriert)"}
-              </span>
-            </label>
-          </div>
-        )}
 
         {payoutTab === null ? (
           <div className="flex flex-col items-center justify-center gap-8 py-8 w-full">
