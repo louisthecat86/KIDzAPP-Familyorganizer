@@ -4365,6 +4365,27 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         </motion.section>
 
 
+        {user.role === "parent" && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
+                <Card 
+                  className="bg-gradient-to-br from-gray-900 to-black border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
+                  onClick={() => setCurrentView("allowances")}
+                  data-testid="card-active-allowances"
+                >
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-purple-500">{allowances.length}</div>
+                      <p className="text-sm text-muted-foreground mt-2">💰 Taschengelder</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
+          </div>
+        )}
+
         {connectedParents.length > 0 && (
           <div className="space-y-4">
             <div className={`grid ${layoutView === "one-column" ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
@@ -4427,23 +4448,6 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                 </CardContent>
               </Card>
             </motion.div>
-            
-            {user.role === "parent" && (
-              <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
-                <Card 
-                  className="bg-gradient-to-br from-gray-900 to-black border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
-                  onClick={() => setCurrentView("allowances")}
-                  data-testid="card-active-allowances"
-                >
-                  <CardContent className="pt-6">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-purple-500">{allowances.length}</div>
-                      <p className="text-sm text-muted-foreground mt-2">💰 Taschengelder</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
             </div>
 
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
