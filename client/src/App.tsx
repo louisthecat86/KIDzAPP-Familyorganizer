@@ -243,6 +243,9 @@ export default function App() {
   const [layoutView, setLayoutView] = useState("two-column");
   const [showSpendingStats, setShowSpendingStats] = useState(false);
   const [spendingStats, setSpendingStats] = useState<Array<{ childId: number; childName: string; satSpent: number }>>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [isLoadingMessage, setIsLoadingMessage] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -2671,10 +2674,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   }
 
   if (currentView === "chat") {
-    const [messages, setMessages] = useState<any[]>([]);
-    const [newMessage, setNewMessage] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-
     useEffect(() => {
       const fetchMessages = async () => {
         try {
@@ -4254,10 +4253,6 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
   }
 
   if (currentView === "chat") {
-    const [messages, setMessages] = useState<any[]>([]);
-    const [newMessage, setNewMessage] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-
     useEffect(() => {
       const fetchMessages = async () => {
         try {
