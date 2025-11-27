@@ -4329,8 +4329,24 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     };
 
     return (
-      <div className="max-w-4xl space-y-2">
-        <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
+      <div className="max-w-4xl space-y-4">
+        <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
+        
+        {user.role === "parent" && (
+          <Card 
+            className="bg-gradient-to-br from-purple-900/50 to-black border border-purple-500/30 cursor-pointer hover:from-purple-800/50 hover:to-black/80 transition-all mb-6 p-6"
+            onClick={() => setCurrentView("allowances")}
+            data-testid="card-active-allowances"
+          >
+            <div className="text-center">
+              <div className="text-5xl font-bold text-purple-400 mb-3">💰</div>
+              <div className="text-3xl font-bold text-purple-500">{allowances?.length || 0}</div>
+              <p className="text-sm text-muted-foreground mt-2">Taschengelder</p>
+              <p className="text-xs text-muted-foreground mt-1">→ Klick zum Verwalten</p>
+            </div>
+          </Card>
+        )}
+        
         <motion.section 
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -4363,24 +4379,6 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
             )}
           </div>
         </motion.section>
-
-
-        {user.role === "parent" && (
-          <Card 
-            className="bg-gradient-to-br from-purple-900/50 to-black border border-purple-500/30 cursor-pointer hover:from-purple-800/50 hover:to-black/80 transition-all mb-4"
-            onClick={() => setCurrentView("allowances")}
-            data-testid="card-active-allowances"
-          >
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-purple-400 mb-2">💰</div>
-                <div className="text-3xl font-bold text-purple-500">{allowances?.length || 0}</div>
-                <p className="text-sm text-muted-foreground mt-2">Taschengelder</p>
-                <p className="text-xs text-muted-foreground mt-1">Klick zum Verwalten</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {connectedParents.length > 0 && (
           <div className="space-y-4">
