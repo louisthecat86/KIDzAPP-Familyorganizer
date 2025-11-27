@@ -1007,6 +1007,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get children with active allowances
+  app.get("/api/parent/:id/children-with-allowances/:connectionId", async (req, res) => {
+    try {
+      const parentId = parseInt(req.params.id);
+      const connectionId = req.params.connectionId;
+      
+      const children = await storage.getChildrenWithAllowances(parentId, connectionId);
+      res.json(children);
+    } catch (error) {
+      console.error("Get children with allowances error:", error);
+      res.status(500).json({ error: "Failed to fetch children with allowances" });
+    }
+  });
+
+  // Payout allowance to child
+  app.post("/api/parent/:id/payout-allowance", async (req, res) => {
+    try {
+      const parentId = parseInt(req.params.id);
+      const { allowanceId, childId, sats } = req.body;
+
+      if (!allowanceId || !childId || !sats) {
+        return res.status(400).json({ error: "allowanceId, childId, sats required" });
+      }
+
+      const parent = await storage.getPeer(parentId);
+      if (!parent || !parent.lnbitsUrl || !parent.lnbitsAdminKey) {
+        return res.status(400).json({ error: "Parent LNBits not configured" });
+      }
+
+      const child = await storage.getPeer(childId);
+      if (!child || !child.lightningAddress) {
+        return res.status(400).json({ error: "Child Lightning address not set" });
+      }
+
+      const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+      const paymentHash = await lnbits.payToLightningAddress(sats, child.lightningAddress, `Taschengeld für ${child.name}`);
+      
+      // Update allowance lastPaidDate
+      await storage.updateAllowance(allowanceId, { lastPaidDate: new Date() });
+
+      res.json({ success: true, paymentHash });
+    } catch (error) {
+      console.error("Payout allowance error:", error);
+      res.status(500).json({ error: String(error) });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

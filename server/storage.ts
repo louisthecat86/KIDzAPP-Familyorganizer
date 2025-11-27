@@ -431,6 +431,32 @@ export class DatabaseStorage implements IStorage {
     return result[0]?.lastPaidDate || null;
   }
 
+  async getChildrenWithAllowances(parentId: number, connectionId: string): Promise<Array<{
+    child: Peer;
+    allowances: Allowance[];
+  }>> {
+    const childAllowances = await db.select()
+      .from(allowances)
+      .where(and(eq(allowances.parentId, parentId), eq(allowances.connectionId, connectionId), eq(allowances.isActive, true)));
+
+    const result = [];
+    for (const allowance of childAllowances) {
+      const childResult = await db.select().from(peers).where(eq(peers.id, allowance.childId)).limit(1);
+      if (childResult[0]) {
+        const existing = result.find(r => r.child.id === allowance.childId);
+        if (existing) {
+          existing.allowances.push(allowance);
+        } else {
+          result.push({
+            child: childResult[0],
+            allowances: [allowance]
+          });
+        }
+      }
+    }
+    return result;
+  }
+
 }
 
 export const storage = new DatabaseStorage();
