@@ -3759,7 +3759,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       <span className="text-red-400 text-lg">⚠️</span>
                       <div className="flex-1">
                         <p className="text-xs font-semibold text-red-300">Unzureichende Balance</p>
-                        <p className="text-xs text-red-200/70">Du benötigst {newTask.sats - displayBalance} Sats mehr</p>
+                        <p className="text-xs text-red-200/70">Du benötigst {Math.ceil(newTask.sats - availableBalance)} Sats mehr</p>
                       </div>
                     </motion.div>
                   )}
