@@ -66,6 +66,7 @@ type User = {
   balance?: number;
   lnbitsUrl?: string;
   lightningAddress?: string;
+  favoriteColor?: string;
 };
 
 type Task = {
@@ -119,11 +120,11 @@ function getMessageColor(senderName: string): string {
 }
 
 // --- API Functions ---
-async function registerUser(name: string, role: UserRole, pin: string, familyName?: string, joinParentConnectionId?: string, securityQuestion?: string, securityAnswer?: string): Promise<User> {
+async function registerUser(name: string, role: UserRole, pin: string, familyName?: string, joinParentConnectionId?: string, favoriteColor?: string): Promise<User> {
   const res = await fetch("/api/peers/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, role, pin, familyName, joinParentConnectionId, securityQuestion, securityAnswer }),
+    body: JSON.stringify({ name, role, pin, familyName, joinParentConnectionId, favoriteColor }),
   });
   const data = await res.json();
   if (!res.ok) {
@@ -839,6 +840,7 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
 function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (user: User) => void; onBack: () => void }) {
   const [name, setName] = useState("");
   const [familyName, setFamilyName] = useState("");
+  const [favoriteColor, setFavoriteColor] = useState("");
   const [joinParentId, setJoinParentId] = useState("");
   const [pin, setPin] = useState("");
   const [isLogin, setIsLogin] = useState(true);
@@ -846,34 +848,40 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
   const [parentMode, setParentMode] = useState<"new" | "join" | null>(null);
   const [showForgotPin, setShowForgotPin] = useState(false);
   const [forgotPinName, setForgotPinName] = useState("");
-  const [forgotPinOldPin, setForgotPinOldPin] = useState("");
+  const [forgotPinColor, setForgotPinColor] = useState("");
   const [forgotPinNewPin, setForgotPinNewPin] = useState("");
   const [isForgotLoading, setIsForgotLoading] = useState(false);
   const { toast } = useToast();
 
   const handleForgotPin = async () => {
-    if (!forgotPinName.trim() || !forgotPinOldPin || !forgotPinNewPin || forgotPinNewPin.length !== 4) {
+    if (!forgotPinName.trim() || !forgotPinColor.trim() || !forgotPinNewPin || forgotPinNewPin.length !== 4) {
       toast({ title: "Fehler", description: "Alle Felder ausfüllen (neue PIN = 4 Ziffern)", variant: "destructive" });
       return;
     }
     setIsForgotLoading(true);
     try {
-      // First, verify the user exists with correct old PIN
-      const loginRes = await loginUser(forgotPinName.trim(), "parent", forgotPinOldPin);
-      
-      // Then reset the PIN
-      const res = await fetch(`/api/peers/${loginRes.id}/change-pin`, {
+      // Verify name and favorite color
+      const res = await fetch("/api/peers/verify-reset", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ oldPin: forgotPinOldPin, newPin: forgotPinNewPin }),
+        body: JSON.stringify({ name: forgotPinName.trim(), favoriteColor: forgotPinColor.trim(), role: "parent" }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       
+      // Then reset the PIN
+      const changeRes = await fetch(`/api/peers/${data.id}/change-pin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ oldPin: data.pin, newPin: forgotPinNewPin }),
+      });
+      const changeData = await changeRes.json();
+      if (!changeRes.ok) throw new Error(changeData.error);
+      
       toast({ title: "✅ PIN zurückgesetzt!", description: "Melde dich jetzt mit deiner neuen PIN an" });
       setShowForgotPin(false);
       setForgotPinName("");
-      setForgotPinOldPin("");
+      setForgotPinColor("");
       setForgotPinNewPin("");
       setPin(forgotPinNewPin);
       setName(forgotPinName.trim());
@@ -929,7 +937,8 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             role, 
             trimmedPin, 
             role === "parent" && parentMode === "new" ? trimmedFamilyName : undefined,
-            role === "parent" && parentMode === "join" ? trimmedJoinParentId : undefined
+            role === "parent" && parentMode === "join" ? trimmedJoinParentId : undefined,
+            role === "parent" ? favoriteColor : undefined
           );
       
       const user = typeof response === 'object'
@@ -1044,19 +1053,35 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
         <div className="space-y-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && role === "parent" && parentMode === "new" && (
-              <div className="space-y-2">
-                <Label htmlFor="familyName">Familienname</Label>
-                <Input 
-                  id="familyName"
-                  value={familyName}
-                  onChange={(e) => setFamilyName(e.target.value)}
-                  className="bg-sky-500/10 border-sky-500/40 focus:border-sky-400 focus:bg-sky-500/20 text-foreground placeholder:text-sky-300/50"
-                  disabled={isLoading}
-                  autoComplete="off"
-                  placeholder="z.B. Familie Müller"
-                  data-testid="input-family-name"
-                />
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="familyName">Familienname</Label>
+                  <Input 
+                    id="familyName"
+                    value={familyName}
+                    onChange={(e) => setFamilyName(e.target.value)}
+                    className="bg-sky-500/10 border-sky-500/40 focus:border-sky-400 focus:bg-sky-500/20 text-foreground placeholder:text-sky-300/50"
+                    disabled={isLoading}
+                    autoComplete="off"
+                    placeholder="z.B. Familie Müller"
+                    data-testid="input-family-name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="favoriteColor">Lieblingsfarbe (für PIN-Vergessen)</Label>
+                  <Input 
+                    id="favoriteColor"
+                    value={favoriteColor}
+                    onChange={(e) => setFavoriteColor(e.target.value)}
+                    className="bg-sky-500/10 border-sky-500/40 focus:border-sky-400 focus:bg-sky-500/20 text-foreground placeholder:text-sky-300/50"
+                    disabled={isLoading}
+                    autoComplete="off"
+                    placeholder="z.B. Blau"
+                    data-testid="input-favorite-color"
+                  />
+                  <p className="text-xs text-muted-foreground">Du kannst damit deine PIN später zurücksetzen</p>
+                </div>
+              </>
             )}
             {!isLogin && role === "parent" && parentMode === "join" && (
               <div className="space-y-2">
@@ -1166,20 +1191,15 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="forgot-old-pin">Alte PIN</Label>
+                <Label htmlFor="forgot-color">Lieblingsfarbe</Label>
                 <Input 
-                  id="forgot-old-pin"
-                  type="password"
-                  placeholder="••••"
-                  value={forgotPinOldPin}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, "").slice(0, 4);
-                    setForgotPinOldPin(val);
-                  }}
-                  className="bg-secondary border-border font-mono text-center tracking-widest"
+                  id="forgot-color"
+                  placeholder="z.B. Blau"
+                  value={forgotPinColor}
+                  onChange={(e) => setForgotPinColor(e.target.value)}
+                  className="bg-secondary border-border"
                   disabled={isForgotLoading}
-                  maxLength={4}
-                  data-testid="input-forgot-pin-old"
+                  data-testid="input-forgot-pin-color"
                 />
               </div>
               <div className="space-y-2">
@@ -1203,7 +1223,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               <div className="flex gap-2 pt-4">
                 <Button 
                   onClick={handleForgotPin}
-                  disabled={isForgotLoading || !forgotPinName.trim() || !forgotPinOldPin || forgotPinNewPin.length !== 4}
+                  disabled={isForgotLoading || !forgotPinName.trim() || !forgotPinColor.trim() || forgotPinNewPin.length !== 4}
                   className="flex-1"
                   data-testid="button-confirm-forgot-pin"
                 >

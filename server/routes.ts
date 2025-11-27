@@ -77,10 +77,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Verify for PIN reset
+  app.post("/api/peers/verify-reset", async (req, res) => {
+    try {
+      const { name, favoriteColor, role } = req.body;
+      
+      if (!name || !favoriteColor || !role) {
+        return res.status(400).json({ error: "Name, favoriteColor und role erforderlich" });
+      }
+
+      const peer = await db.select().from(peers)
+        .where(and(eq(peers.name, name), eq(peers.role, role)))
+        .limit(1);
+      
+      if (!peer || peer.length === 0) {
+        return res.status(404).json({ error: "Name nicht gefunden" });
+      }
+
+      if (peer[0].favoriteColor?.toLowerCase() !== favoriteColor.toLowerCase()) {
+        return res.status(400).json({ error: "Lieblingsfarbe ist falsch" });
+      }
+
+      res.json({ id: peer[0].id, pin: peer[0].pin });
+    } catch (error) {
+      console.error("Verify reset error:", error);
+      res.status(500).json({ error: "Verifizierung fehlgeschlagen" });
+    }
+  });
+
   // Peer Registration
   app.post("/api/peers/register", async (req, res) => {
     try {
-      const { name, role, pin, familyName, joinParentConnectionId } = req.body;
+      const { name, role, pin, familyName, joinParentConnectionId, favoriteColor } = req.body;
       
       if (!name || !role || !pin) {
         return res.status(400).json({ error: "Name, role, and pin required" });
@@ -113,6 +141,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pin,
         connectionId: connectionId || `BTC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
         familyName: role === "parent" ? familyNameToUse : undefined,
+        favoriteColor: role === "parent" ? favoriteColor : undefined,
       } as any);
 
       res.json(peer);
