@@ -879,28 +879,11 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
         </div>
 
         {/* Payment Method Selection */}
-        {payoutTab !== null && (
+        {payoutTab !== null && user.lnbitsUrl && (
           <div className="flex gap-2 mb-4 bg-secondary/30 p-3 rounded-lg">
-            <label className="flex items-center gap-2 cursor-pointer" data-testid="label-payment-method">
-              <input 
-                type="radio" 
-                name="paymentMethod" 
-                value="lnbits" 
-                checked={paymentMethod === "lnbits"}
-                disabled={!user.lnbitsUrl}
-                data-testid="radio-payment-lnbits"
-              />
-              <span className={`text-sm font-semibold ${!user.lnbitsUrl ? "opacity-50" : ""}`}>
-                💳 LNbits {!user.lnbitsUrl && "(nicht konfiguriert)"}
-              </span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input 
-                type="radio" 
-                name="paymentMethod" 
-              />
-              </span>
-            </label>
+            <div className="text-sm font-semibold">
+              💳 LNbits Wallet aktiv
+            </div>
           </div>
         )}
 
