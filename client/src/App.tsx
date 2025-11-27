@@ -10,6 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { DayPicker } from "react-day-picker";
+import "react-day-picker/dist/style.css";
 import { 
   CheckCircle, 
   Circle, 
@@ -2246,6 +2248,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     return stored ? JSON.parse(stored) : ["tasks-open", "tasks-pending", "tasks-completed", "sats-spent", "wallet-balance"];
   });
   const [draggedCard, setDraggedCard] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const { toast } = useToast();
 
   const hideConnectionCode = () => {
@@ -2506,25 +2509,98 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             }
           })}
           
-          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
-            <Card className="bg-gradient-to-br from-gray-900 to-black border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors h-full" onClick={() => setCurrentView("calendar-view")} data-testid="card-calendar">
+          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }} className="col-span-full lg:col-span-2">
+            <Card className="bg-gradient-to-br from-gray-900 to-black border-border h-full" data-testid="card-calendar">
               <CardContent className="p-6">
-                <h3 className="text-base font-bold mb-3 flex items-center gap-1">
-                  <Calendar className="h-4 w-4 text-primary" /> Kalender ({upcomingEvents.length})
+                <h3 className="text-base font-bold mb-4 flex items-center gap-1">
+                  <Calendar className="h-4 w-4 text-primary" /> Kalender
                 </h3>
-                {upcomingEvents.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">Noch keine Termine geplant</p>
-                ) : (
-                  <div className="space-y-2">
-                    {upcomingEvents.slice(0, 3).map((event: FamilyEvent) => (
-                      <div key={event.id} className="text-sm border-l-2 border-primary/30 pl-3 py-1">
-                        <p className="font-semibold text-xs" data-testid={`text-dash-event-${event.id}`}>{event.title}</p>
-                        <p className="text-xs text-muted-foreground">📅 {new Date(event.startDate).toLocaleDateString("de-DE", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
-                        {event.location && <p className="text-xs text-muted-foreground">📍 {event.location}</p>}
-                      </div>
-                    ))}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  <div className="lg:col-span-2 overflow-auto" style={{ maxHeight: "400px" }}>
+                    <style>{`
+                      .rdp {
+                        --rdp-cell-size: 45px;
+                        --rdp-accent-color: rgb(59, 130, 246);
+                        --rdp-background-color: rgba(59, 130, 246, 0.1);
+                        margin: 0;
+                      }
+                      .rdp-head_cell {
+                        color: rgb(156, 163, 175);
+                        font-weight: 600;
+                        font-size: 0.75rem;
+                      }
+                      .rdp-cell {
+                        color: rgb(156, 163, 175);
+                      }
+                      .rdp-day {
+                        color: rgb(209, 213, 219);
+                        border-radius: 6px;
+                      }
+                      .rdp-day_selected {
+                        background-color: rgb(59, 130, 246);
+                        color: white;
+                      }
+                      .rdp-day_today {
+                        color: rgb(59, 130, 246);
+                        font-weight: bold;
+                      }
+                      .rdp-caption {
+                        color: rgb(229, 231, 235);
+                        font-weight: 600;
+                        margin-bottom: 1rem;
+                      }
+                    `}</style>
+                    <DayPicker
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={(date) => date && setSelectedDate(date)}
+                      locale={{
+                        months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
+                        weekdays: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
+                        weekdaysShort: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"]
+                      }}
+                      modifiers={{
+                        hasEvent: (date) => events.some(e => {
+                          const eventDate = new Date(e.startDate);
+                          return eventDate.toDateString() === date.toDateString();
+                        })
+                      }}
+                      modifiersStyles={{
+                        hasEvent: {
+                          backgroundColor: "rgba(59, 130, 246, 0.2)",
+                          fontWeight: "bold"
+                        }
+                      }}
+                    />
                   </div>
-                )}
+                  
+                  <div className="lg:col-span-1">
+                    <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase">
+                      {selectedDate.toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })}
+                    </p>
+                    <div className="space-y-2 max-h-80 overflow-y-auto">
+                      {events
+                        .filter(e => new Date(e.startDate).toDateString() === selectedDate.toDateString())
+                        .map((event: FamilyEvent) => (
+                          <div 
+                            key={event.id} 
+                            className="text-xs border-l-2 border-primary/50 pl-3 py-2 bg-primary/5 rounded cursor-pointer hover:bg-primary/10 transition-colors"
+                            onClick={() => setCurrentView("calendar-view")}
+                            data-testid={`text-calendar-event-${event.id}`}
+                          >
+                            <p className="font-semibold text-primary">{event.title}</p>
+                            <p className="text-muted-foreground">
+                              ⏰ {new Date(event.startDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                            </p>
+                            {event.location && <p className="text-muted-foreground">📍 {event.location}</p>}
+                          </div>
+                        ))}
+                      {events.filter(e => new Date(e.startDate).toDateString() === selectedDate.toDateString()).length === 0 && (
+                        <p className="text-xs text-muted-foreground text-center py-4">Keine Termine an diesem Tag</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
