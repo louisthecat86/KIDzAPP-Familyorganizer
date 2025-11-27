@@ -920,10 +920,10 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
         : response as User;
 
       // Show recovery code modal if there's a recovery code (registration or PIN reset)
-      const recoveryCodeToShow = (typeof response === 'object' && response.recoveryCode && typeof response.recoveryCode === 'string')
-        ? response.recoveryCode
-        : (typeof response === 'object' && response.newRecoveryCode && typeof response.newRecoveryCode === 'string')
-        ? response.newRecoveryCode
+      const recoveryCodeToShow = (typeof response === 'object' && (response as any).recoveryCode && typeof (response as any).recoveryCode === 'string')
+        ? (response as any).recoveryCode
+        : (typeof response === 'object' && (response as any).newRecoveryCode && typeof (response as any).newRecoveryCode === 'string')
+        ? (response as any).newRecoveryCode
         : null;
       
       if (recoveryCodeToShow) {
@@ -998,7 +998,16 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             <Button 
               onClick={() => {
                 setShowRecoveryCodes(false);
-                onComplete({ id: 0, name, role: "parent", connectionId: "" });
+                // If coming from registration (isLogin was false), complete
+                // If coming from PIN reset (useRecoveryCode was true), go back to login
+                if (useRecoveryCode) {
+                  setUseRecoveryCode(false);
+                  setRecoveryCode("");
+                  setPin("");
+                  setIsLogin(true);
+                } else {
+                  onComplete({ id: 0, name, role: "parent", connectionId: "" });
+                }
               }}
               className="flex-1 bg-primary hover:bg-primary/90"
               data-testid="button-done-recovery-code"
