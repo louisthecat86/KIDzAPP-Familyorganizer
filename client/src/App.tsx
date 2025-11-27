@@ -758,11 +758,26 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
             <div className="mt-8">
               <h3 className="text-2xl font-bold mb-4">So funktioniert's</h3>
               <div className="space-y-3 text-muted-foreground">
-                <p>✓ Eltern erstellen Aufgaben mit Sats-Belohnung</p>
-                <p>✓ Kinder erledigen Aufgaben & laden Foto-Beweis hoch</p>
-                <p>✓ Eltern bestätigen & zahlen sofort aus</p>
-                <p>✓ Familienkalender für gemeinsame Termine mit Zusage- & Absagenfunktion</p>
-                <p>✓ Familienchat für direkten Austausch</p>
+                <div className="flex gap-2">
+                  <span className="flex-shrink-0">✓</span>
+                  <span>Eltern erstellen Aufgaben mit Sats-Belohnung</span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="flex-shrink-0">✓</span>
+                  <span>Kinder erledigen Aufgaben & laden Foto-Beweis hoch</span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="flex-shrink-0">✓</span>
+                  <span>Eltern bestätigen & zahlen sofort aus</span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="flex-shrink-0">✓</span>
+                  <span>Familienkalender für gemeinsame Termine mit Zusage- & Absagenfunktion</span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="flex-shrink-0">✓</span>
+                  <span>Familienchat für direkten Austausch</span>
+                </div>
               </div>
             </div>
           </div>
