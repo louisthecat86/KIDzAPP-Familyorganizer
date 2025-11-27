@@ -2510,32 +2510,32 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }} className="col-span-full">
             <Card className="bg-gradient-to-br from-gray-900 to-black border-border" data-testid="card-calendar">
-              <CardContent className="p-3 md:p-6">
-                <h3 className="text-base font-bold mb-3 md:mb-4 flex items-center gap-1">
-                  <Calendar className="h-4 w-4 text-primary" /> Kalender
+              <CardContent className="p-2 md:p-3">
+                <h3 className="text-sm font-bold mb-2 flex items-center gap-1">
+                  <Calendar className="h-3 w-3 text-primary" /> Kalender
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-                  <div className="md:col-span-2 overflow-auto" style={{ maxHeight: "320px" }}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                  <div className="md:col-span-2 overflow-auto" style={{ maxHeight: "240px" }}>
                     <style>{`
                       .rdp {
-                        --rdp-cell-size: 32px;
+                        --rdp-cell-size: 28px;
                         --rdp-accent-color: rgb(59, 130, 246);
                         --rdp-background-color: rgba(59, 130, 246, 0.1);
                         margin: 0;
                       }
                       @media (min-width: 768px) {
                         .rdp {
-                          --rdp-cell-size: 40px;
+                          --rdp-cell-size: 32px;
                         }
                       }
                       .rdp-head_cell {
                         color: rgb(156, 163, 175);
                         font-weight: 600;
-                        font-size: 0.65rem;
+                        font-size: 0.6rem;
                       }
                       @media (min-width: 768px) {
                         .rdp-head_cell {
-                          font-size: 0.75rem;
+                          font-size: 0.65rem;
                         }
                       }
                       .rdp-cell {
@@ -2544,12 +2544,12 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       }
                       .rdp-day {
                         color: rgb(209, 213, 219);
-                        border-radius: 4px;
-                        font-size: 0.75rem;
+                        border-radius: 3px;
+                        font-size: 0.65rem;
                       }
                       @media (min-width: 768px) {
                         .rdp-day {
-                          font-size: 0.875rem;
+                          font-size: 0.75rem;
                         }
                       }
                       .rdp-day_selected {
@@ -2563,27 +2563,27 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       .rdp-caption {
                         color: rgb(229, 231, 235);
                         font-weight: 600;
-                        margin-bottom: 0.5rem;
-                        font-size: 0.875rem;
+                        margin-bottom: 0.25rem;
+                        font-size: 0.75rem;
                       }
                       @media (min-width: 768px) {
                         .rdp-caption {
-                          margin-bottom: 1rem;
-                          font-size: 1rem;
+                          margin-bottom: 0.5rem;
+                          font-size: 0.875rem;
                         }
                       }
                       .rdp-nav {
-                        gap: 4px;
+                        gap: 2px;
                       }
                       .rdp-nav_button {
-                        width: 24px;
-                        height: 24px;
+                        width: 20px;
+                        height: 20px;
                         padding: 0;
                       }
                       @media (min-width: 768px) {
                         .rdp-nav_button {
-                          width: 32px;
-                          height: 32px;
+                          width: 24px;
+                          height: 24px;
                         }
                       }
                     `}</style>
@@ -2612,28 +2612,27 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   </div>
                   
                   <div className="md:col-span-1">
-                    <p className="text-xs font-semibold text-muted-foreground mb-2 md:mb-3 uppercase truncate">
+                    <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase truncate">
                       {selectedDate.toLocaleDateString("de-DE", { day: "numeric", month: "short", year: "numeric" })}
                     </p>
-                    <div className="space-y-1 md:space-y-2 max-h-64 md:max-h-80 overflow-y-auto">
+                    <div className="space-y-0.5 max-h-48 md:max-h-56 overflow-y-auto">
                       {events
                         .filter(e => new Date(e.startDate).toDateString() === selectedDate.toDateString())
                         .map((event: FamilyEvent) => (
                           <div 
                             key={event.id} 
-                            className="text-xs border-l-2 border-primary/50 pl-2 md:pl-3 py-1 md:py-2 bg-primary/5 rounded cursor-pointer hover:bg-primary/10 transition-colors"
+                            className="text-xs border-l border-primary/50 pl-2 py-0.5 bg-primary/5 rounded cursor-pointer hover:bg-primary/10 transition-colors"
                             onClick={() => setCurrentView("calendar-view")}
                             data-testid={`text-calendar-event-${event.id}`}
                           >
-                            <p className="font-semibold text-primary truncate">{event.title}</p>
+                            <p className="font-semibold text-primary text-xs truncate">{event.title}</p>
                             <p className="text-muted-foreground text-xs">
                               ⏰ {new Date(event.startDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
                             </p>
-                            {event.location && <p className="text-muted-foreground text-xs truncate">📍 {event.location}</p>}
                           </div>
                         ))}
                       {events.filter(e => new Date(e.startDate).toDateString() === selectedDate.toDateString()).length === 0 && (
-                        <p className="text-xs text-muted-foreground text-center py-2 md:py-4">Keine Termine</p>
+                        <p className="text-xs text-muted-foreground text-center py-1">Keine Termine</p>
                       )}
                     </div>
                   </div>
