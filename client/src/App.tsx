@@ -850,7 +850,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
           <Card className="border-2 border-primary/40 bg-primary/5">
             <CardContent className="p-8">
               <h2 className="text-2xl font-bold mb-6 text-center">Was möchtest du tun?</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-4 max-w-md mx-auto">
                 <Button 
                   onClick={() => setPayoutTab("plans")}
                   className="h-24 text-lg bg-blue-600 hover:bg-blue-700"
@@ -876,19 +876,6 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
           </Card>
         ) : (
           <>
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setPayoutTab(null);
-                setAdHocChildId(null);
-                setAdHocSats("");
-              }} 
-              className="gap-2 mb-6"
-              data-testid="button-back-to-choice"
-            >
-              <ChevronLeft className="h-4 w-4" /> Zur Auswahl
-            </Button>
-
             {payoutTab === "plans" && (
               <div className="space-y-4">
                 {childrenWithAllowances.length === 0 ? (
