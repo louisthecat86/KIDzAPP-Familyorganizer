@@ -17,10 +17,11 @@ export class LNBitsClient {
   ) {}
 
   async createInvoice(amount: number, memo: string): Promise<LNBitsInvoice> {
-    const url = `${this.baseUrl}/api/v1/invoices`;
+    // Try new API path first
+    let url = `${this.baseUrl}/api/v1/invoices`;
     console.log("LNBits createInvoice - URL:", url);
     
-    const response = await fetch(url, {
+    let response = await fetch(url, {
       method: "POST",
       headers: {
         "X-Api-Key": this.adminKey,
@@ -33,6 +34,24 @@ export class LNBitsClient {
       }),
     });
 
+    // If new API fails, try old invoices endpoint
+    if (!response.ok && response.status === 404) {
+      console.log("New invoice API returned 404, trying legacy endpoint...");
+      url = `${this.baseUrl}/invoices`;
+      response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "X-Api-Key": this.adminKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: amount,
+          memo: memo,
+          out: false,
+        }),
+      });
+    }
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error("LNBits error:", response.status, errorText);
@@ -43,7 +62,7 @@ export class LNBitsClient {
   }
 
   async checkPayment(checkingId: string): Promise<boolean> {
-    const response = await fetch(
+    let response = await fetch(
       `${this.baseUrl}/api/v1/invoices/${checkingId}`,
       {
         headers: {
@@ -51,6 +70,18 @@ export class LNBitsClient {
         },
       }
     );
+
+    // Try legacy endpoint if not found
+    if (!response.ok && response.status === 404) {
+      response = await fetch(
+        `${this.baseUrl}/invoices/${checkingId}`,
+        {
+          headers: {
+            "X-Api-Key": this.adminKey,
+          },
+        }
+      );
+    }
 
     if (!response.ok) {
       throw new Error(`Failed to check payment: ${response.statusText}`);
@@ -61,7 +92,7 @@ export class LNBitsClient {
   }
 
   async payInvoice(paymentRequest: string): Promise<string> {
-    const response = await fetch(`${this.baseUrl}/api/v1/payments`, {
+    let response = await fetch(`${this.baseUrl}/api/v1/payments`, {
       method: "POST",
       headers: {
         "X-Api-Key": this.adminKey,
@@ -72,6 +103,21 @@ export class LNBitsClient {
         bolt11: paymentRequest,
       }),
     });
+
+    // Try legacy endpoint if not found
+    if (!response.ok && response.status === 404) {
+      response = await fetch(`${this.baseUrl}/payments`, {
+        method: "POST",
+        headers: {
+          "X-Api-Key": this.adminKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          out: true,
+          bolt11: paymentRequest,
+        }),
+      });
+    }
 
     if (!response.ok) {
       throw new Error(`Failed to pay invoice: ${response.statusText}`);
@@ -156,11 +202,20 @@ export class LNBitsClient {
   }
 
   async getBalance(): Promise<number> {
-    const response = await fetch(`${this.baseUrl}/api/v1/wallet`, {
+    let response = await fetch(`${this.baseUrl}/api/v1/wallet`, {
       headers: {
         "X-Api-Key": this.adminKey,
       },
     });
+
+    // Try legacy endpoint if not found
+    if (!response.ok && response.status === 404) {
+      response = await fetch(`${this.baseUrl}/wallet`, {
+        headers: {
+          "X-Api-Key": this.adminKey,
+        },
+      });
+    }
 
     if (!response.ok) {
       throw new Error(`Failed to get wallet balance: ${response.statusText}`);
