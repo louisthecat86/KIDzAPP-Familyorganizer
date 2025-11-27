@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages } from "@shared/schema";
+import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type RecoveryCode, type InsertRecoveryCode, recoveryCodes } from "@shared/schema";
 import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
@@ -43,6 +43,11 @@ export interface IStorage {
   // Chat Message operations
   getChatMessages(connectionId: string): Promise<(ChatMessage & { senderName: string })[]>;
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
+
+  // Recovery Code operations (parent only)
+  createRecoveryCodes(peerId: number, codes: string[]): Promise<RecoveryCode[]>;
+  validateRecoveryCode(peerId: number, code: string): Promise<boolean>;
+  getRecoveryCodesByParent(peerId: number): Promise<RecoveryCode[]>;
 }
 
 export class DatabaseStorage implements IStorage {
