@@ -5199,7 +5199,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
 
 function BitcoinValueWidget({ sats }: { sats: number }) {
   const [btcPrice, setBtcPrice] = useState<{ usd: number; eur: number } | null>(null);
-  const [currency, setCurrency] = useState<"usd" | "eur">("usd");
+  const [currency, setCurrency] = useState<"usd" | "eur">("eur");
 
   useEffect(() => {
     const fetchPrice = async () => {
