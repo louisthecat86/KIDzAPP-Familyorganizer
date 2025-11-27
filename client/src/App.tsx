@@ -3008,7 +3008,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     <div className="space-y-4">
                       <div className="text-center">
                         <div className="text-3xl font-bold text-primary flex items-center justify-center gap-1">
-                          {displayBalance !== null ? (
+                          {displayBalance !== null && displayBalance !== undefined ? (
                             <>
                               ⚡ {displayBalance.toLocaleString("de-DE")} Sats
                             </>
@@ -3732,7 +3732,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       <Bitcoin className="h-4 w-4 text-primary" /> Belohnung
                     </Label>
                     <span className={`text-xs font-semibold ${isBalanceInsufficient ? "text-red-400" : "text-emerald-400"}`}>
-                      ⚡ {displayBalance !== null ? displayBalance.toLocaleString() : "---"} Sats verfügbar
+                      ⚡ {displayBalance !== null && displayBalance !== undefined ? displayBalance.toLocaleString() : "---"} Sats verfügbar
                     </span>
                   </div>
                   <Input 
