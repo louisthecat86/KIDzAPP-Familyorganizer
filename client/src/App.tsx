@@ -1063,6 +1063,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
   const [showWalletSubmenu, setShowWalletSubmenu] = useState(false);
   const [showCalendarSubmenu, setShowCalendarSubmenu] = useState(false);
   const [activeSettingsTab, setActiveSettingsTab] = useState<"ansicht" | "wallet" | "peers" | null>(null);
+  const [walletTab, setWalletTab] = useState("lnbits");
   
   const menuItems = [
     { id: "dashboard", label: user.role === "parent" ? "Dashboard" : "Mein Dashboard", icon: Home },
