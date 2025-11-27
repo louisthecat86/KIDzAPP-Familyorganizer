@@ -516,6 +516,12 @@ export default function App() {
                   queryClient={queryClient}
                   layoutView={layoutView}
                   setLayoutView={setLayoutView}
+                  messages={messages}
+                  setMessages={setMessages}
+                  newMessage={newMessage}
+                  setNewMessage={setNewMessage}
+                  isLoadingMessage={isLoadingMessage}
+                  setIsLoadingMessage={setIsLoadingMessage}
                 />
               )}
             </motion.div>
@@ -3298,7 +3304,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   return null;
 }
 
-function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentView, onAccept, onSubmit, onDeleteEvent, queryClient, layoutView, setLayoutView }: any) {
+function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentView, onAccept, onSubmit, onDeleteEvent, queryClient, layoutView, setLayoutView, messages, setMessages, newMessage, setNewMessage, isLoadingMessage, setIsLoadingMessage }: any) {
   const [showLink, setShowLink] = useState(false);
   const [parentConnectionId, setParentConnectionId] = useState("");
   const [isLinking, setIsLinking] = useState(false);
