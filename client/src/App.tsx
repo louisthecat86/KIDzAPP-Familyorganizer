@@ -2862,8 +2862,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       refetchInterval: 10000
     });
 
-    const displayBalance = walletBalance?.balance;
-    const selectedWallet = "lnbits";
+    const displayBalance = walletBalance?.lnbitsBalance;
 
     const handleShowSpendingStats = async () => {
       try {
@@ -3019,20 +3018,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 <Card className={`border-border bg-gradient-to-br from-gray-900 to-black ${displayBalance !== null ? "hover:from-gray-800 hover:to-gray-950" : "opacity-60"} transition-colors h-full`}>
                   <CardContent className="pt-6">
                     <div className="space-y-4">
-                      <div className="flex gap-2 justify-center text-xs">
-                        <label className="flex items-center gap-1 cursor-pointer" data-testid="label-wallet-lnbits">
-                          <input 
-                            type="radio" 
-                            name="walletMethod" 
-                            value="lnbits" 
-                            checked={selectedWallet === "lnbits"}
-                            disabled={!user.lnbitsUrl}
-                            readOnly
-                            className="cursor-pointer"
-                          />
-                          <span className={!user.lnbitsUrl ? "opacity-50" : ""}>💳 LNbits</span>
-                        </label>
-                      </div>
                       <div className="text-center">
                         <div className="text-3xl font-bold text-primary flex items-center justify-center gap-1">
                           {displayBalance !== null ? (
