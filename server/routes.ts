@@ -1908,7 +1908,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (child.lightningAddress) {
         try {
           const lnbits = new LNBitsClient(parent[0].lnbitsUrl, parent[0].lnbitsAdminKey);
-          await lnbits.payToLightningAddress(child.lightningAddress, settings.bonusSats, `Level ${currentLevel} Bonus!`);
+          await lnbits.payToLightningAddress(settings.bonusSats, child.lightningAddress, `Level ${currentLevel} Bonus!`);
           
           // Record the payout
           await storage.createLevelBonusPayout({
