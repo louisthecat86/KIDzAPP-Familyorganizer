@@ -12,16 +12,13 @@ interface TrackerEntry {
   euroValue: number;
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length > 0) {
     const data = payload[0].payload;
-    console.log("✅ Tooltip data:", data);
-    
     return (
       <div className="bg-slate-950 border-2 border-blue-500 rounded p-2 shadow-xl" style={{ pointerEvents: 'none' }}>
         <p className="text-xs text-green-400">€ {data.euroValue?.toFixed(2)}</p>
         <p className="text-xs text-yellow-400">⚡ {data.totalSats}</p>
-        <p className="text-xs text-blue-400">💙 €{data.btcPrice?.toLocaleString('de-DE') || '?'}</p>
       </div>
     );
   }
@@ -42,7 +39,6 @@ export function ChildTracker({ childId }: { childId: number }) {
           ...entry,
           btcPriceScaled: entry.btcPrice / 1000
         }));
-        console.log("🔵 TRACKER DATA WITH BTC PRICE:", scaledData);
         setTrackerData(scaledData || []);
       } catch (error) {
         console.error("Failed to fetch tracker data:", error);
@@ -80,13 +76,6 @@ export function ChildTracker({ childId }: { childId: number }) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Debug */}
-          <div className="text-xs bg-red-950/50 p-2 rounded border border-red-700">
-            <p>DEBUG - Last entry:</p>
-            <p>euroValue: {latestEntry.euroValue}</p>
-            <p>totalSats: {latestEntry.totalSats}</p>
-            <p>btcPrice: {latestEntry.btcPrice}</p>
-          </div>
 
           {/* Stats */}
           <div className="grid grid-cols-2 gap-4">
@@ -137,7 +126,22 @@ export function ChildTracker({ childId }: { childId: number }) {
           <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t border-border/50">
             <p>✓ {trackerData.length} genehmigte Aufgaben</p>
             <p>⚡ Verdient: {trackerData.reduce((sum, e) => sum + (e.earnedSats || 0), 0).toLocaleString()} Satoshi</p>
-            <p className="text-blue-300 font-semibold">💙 BTC Preis aktuell: €{latestEntry.btcPrice.toLocaleString('de-DE', {maximumFractionDigits: 0})}</p>
+            <p className="text-blue-300 font-semibold">💙 BTC Preis aktuell: €{latestEntry.btcPrice ? latestEntry.btcPrice.toLocaleString('de-DE', {maximumFractionDigits: 0}) : 'N/A'}</p>
+            
+            {/* All data points with btcPrice */}
+            <div className="mt-3 pt-3 border-t border-border/50">
+              <p className="text-muted-foreground mb-2">Alle Datenpunkte:</p>
+              <div className="space-y-1 max-h-32 overflow-y-auto text-xs">
+                {trackerData.map((entry, idx) => (
+                  <div key={idx} className="flex justify-between bg-slate-950/50 p-1 rounded">
+                    <span className="text-muted-foreground">{entry.date}</span>
+                    <span className="text-green-400">€{entry.euroValue.toFixed(2)}</span>
+                    <span className="text-yellow-400">⚡{entry.totalSats}</span>
+                    <span className="text-blue-400">₿€{entry.btcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0})}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
