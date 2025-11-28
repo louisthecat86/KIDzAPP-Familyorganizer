@@ -6029,6 +6029,36 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     const [showQuiz, setShowQuiz] = useState<string | null>(null);
     const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
     const [quizSubmitted, setQuizSubmitted] = useState<Record<string, boolean>>({});
+    const [educationTab, setEducationTab] = useState<"modules" | "converter" | "challenges">("modules");
+    const [satoshiInput, setSatoshiInput] = useState("100000");
+    const [bitcoinInput, setBitcoinInput] = useState("0.001");
+    const [euroInput, setEuroInput] = useState("50");
+    const [btcPrice, setBtcPrice] = useState<number | null>(null);
+    const [dailyChallenge, setDailyChallenge] = useState<{ completed: boolean; reward: number } | null>(null);
+    const [xp, setXp] = useState(0);
+    
+    useEffect(() => {
+      const fetchBtcPrice = async () => {
+        try {
+          const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur');
+          const data = await response.json();
+          setBtcPrice(data.bitcoin.eur);
+        } catch (error) {
+          console.error("[BTC Price] Failed to fetch:", error);
+        }
+      };
+      fetchBtcPrice();
+      
+      const today = new Date().toDateString();
+      const lastChallengeDay = localStorage.getItem("last-challenge-day");
+      if (lastChallengeDay !== today) {
+        setDailyChallenge({ completed: false, reward: Math.floor(Math.random() * 50) + 25 });
+        localStorage.setItem("last-challenge-day", today);
+      } else {
+        const saved = localStorage.getItem("daily-challenge");
+        if (saved) setDailyChallenge(JSON.parse(saved));
+      }
+    }, []);
     
     const modules = [
       {
@@ -6158,136 +6188,174 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
       { id: "advanced-master", title: "Fortgeschritten-Meister", icon: "🔴", condition: modules.filter(m => m.level === "Fortgeschritten").every(m => completedModules.includes(m.id)) }
     ];
 
+    const xpPerModule = 100;
+    const userXp = completedModules.length * xpPerModule;
+    const userLevel = Math.floor(userXp / 300) + 1;
+    
     return (
-      <div className="max-w-6xl space-y-8">
-        {/* Header */}
-        <div className="space-y-3">
-          <h1 className="text-4xl font-bold text-slate-900">Bitcoin Bildungszentrum 📚⚡</h1>
+      <div className="max-w-6xl space-y-6">
+        {/* Header with XP + Level */}
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-slate-600">Werde ein Bitcoin-Experte! {completedModules.length}/{modules.length} Module meistert</p>
-            <div className="w-64 bg-slate-200/50 rounded-full h-3">
-              <div className="bg-gradient-to-r from-violet-500 to-cyan-500 h-3 rounded-full transition-all" style={{width: `${(completedModules.length / modules.length) * 100}%`}}></div>
+            <h1 className="text-4xl font-bold text-slate-900">Bitcoin Bildungszentrum 📚⚡</h1>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-violet-600">{userLevel}</div>
+              <p className="text-xs text-slate-600">Level</p>
+              <p className="text-xs text-slate-600 mt-1">{userXp} XP</p>
             </div>
+          </div>
+          <div className="flex gap-3 border-b">
+            <button onClick={() => setEducationTab("modules")} className={`pb-3 px-4 font-medium text-sm border-b-2 transition-all ${educationTab === "modules" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-modules">📚 Module ({completedModules.length}/{modules.length})</button>
+            <button onClick={() => setEducationTab("converter")} className={`pb-3 px-4 font-medium text-sm border-b-2 transition-all ${educationTab === "converter" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-converter">🔄 Konverter</button>
+            <button onClick={() => setEducationTab("challenges")} className={`pb-3 px-4 font-medium text-sm border-b-2 transition-all ${educationTab === "challenges" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-challenges">🎯 Tägliche Challenge</button>
           </div>
         </div>
 
-        {/* Achievements */}
-        <div className="space-y-3">
-          <h2 className="text-lg font-bold text-slate-900">Deine Abzeichen 🏆</h2>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            {achievements.map(badge => (
-              <div key={badge.id} className={`p-4 rounded-lg border-2 transition-all text-center ${badge.condition ? "border-amber-400/50 bg-amber-400/10" : "border-slate-300/50 bg-slate-100/30 opacity-50"}`}>
-                <span className="text-3xl block mb-1">{badge.icon}</span>
-                <p className="text-xs font-semibold text-slate-700">{badge.title}</p>
+        {educationTab === "modules" && (
+          <div className="space-y-8">
+            {/* Achievements */}
+            <div className="space-y-3">
+              <h2 className="text-lg font-bold text-slate-900">Deine Abzeichen 🏆</h2>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                {achievements.map(badge => (
+                  <div key={badge.id} className={`p-4 rounded-lg border-2 transition-all text-center ${badge.condition ? "border-amber-400/50 bg-amber-400/10" : "border-slate-300/50 bg-slate-100/30 opacity-50"}`}>
+                    <span className="text-3xl block mb-1">{badge.icon}</span>
+                    <p className="text-xs font-semibold text-slate-700">{badge.title}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Learning Modules */}
+            {["Anfänger", "Mittelstufe", "Fortgeschritten"].map(level => (
+              <div key={level} className="space-y-3">
+                <h3 className={`text-sm font-semibold uppercase tracking-wide ${level === "Anfänger" ? "text-green-600" : level === "Mittelstufe" ? "text-yellow-600" : "text-red-600"}`}>{level} Level</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {modules.filter(m => m.level === level).map(module => {
+                    const isCompleted = completedModules.includes(module.id);
+                    const isQuizOpen = showQuiz === module.id;
+                    return (
+                      <Card key={module.id} className={`transition-all ${isCompleted ? "border-green-500/50 bg-green-500/5" : "border-slate-200"} ${isQuizOpen ? "ring-2 ring-blue-500/50" : ""}`}>
+                        <CardHeader className="pb-2">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-2xl">{module.icon}</span>
+                                <div>
+                                  <CardTitle className="text-base">{module.title}</CardTitle>
+                                  {isCompleted && <p className="text-xs text-green-600 font-semibold">+{xpPerModule} XP</p>}
+                                </div>
+                              </div>
+                              <Badge variant="outline" className={`${module.levelColor} text-xs`}>{module.level}</Badge>
+                            </div>
+                            {isCompleted && <span className="text-2xl">✅</span>}
+                          </div>
+                        </CardHeader>
+                        {!isQuizOpen ? (
+                          <>
+                            <CardContent className="pb-3"><div className="space-y-2 mb-4">{module.content.map((text, idx) => (<p key={idx} className="text-sm text-slate-600">• {text}</p>))}</div></CardContent>
+                            <CardFooter className="gap-2">
+                              {!isCompleted ? (
+                                <Button onClick={() => setShowQuiz(module.id)} className="flex-1 bg-blue-600 hover:bg-blue-700" size="sm" data-testid={`button-quiz-${module.id}`}>Quiz starten →</Button>
+                              ) : (
+                                <Button onClick={() => setShowQuiz(module.id)} variant="outline" className="flex-1" size="sm">Quiz wiederholen</Button>
+                              )}
+                            </CardFooter>
+                          </>
+                        ) : (
+                          <CardContent className="space-y-4">
+                            {modules.find(m => m.id === module.id)?.quiz.map((q, idx) => (
+                              <div key={idx} className="space-y-2 pb-3 border-b last:border-0">
+                                <p className="text-sm font-semibold text-slate-900">{idx + 1}. {q.question}</p>
+                                <div className="space-y-2">
+                                  {q.options.map((option, optIdx) => (
+                                    <label key={optIdx} className="flex items-center gap-3 p-2 rounded-lg border border-slate-200/50 hover:bg-slate-50/50 cursor-pointer">
+                                      <input type="radio" name={`${module.id}-q${idx}`} checked={quizAnswers[`${module.id}-${idx}`] === optIdx} onChange={() => setQuizAnswers({...quizAnswers, [`${module.id}-${idx}`]: optIdx})} className="h-4 w-4" />
+                                      <span className="text-sm text-slate-700">{option}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                            <div className="flex gap-2 pt-3">
+                              <Button onClick={() => setShowQuiz(null)} variant="outline" className="flex-1" size="sm">Zurück</Button>
+                              <Button onClick={() => handleQuizSubmit(module.id)} className="flex-1 bg-green-600 hover:bg-green-700" size="sm" data-testid={`button-submit-quiz-${module.id}`}>Einreichen</Button>
+                            </div>
+                          </CardContent>
+                        )}
+                      </Card>
+                    );
+                  })}
+                </div>
               </div>
             ))}
           </div>
-        </div>
+        )}
 
-        {/* Learning Modules */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-slate-900">Lernmodule</h2>
-          
-          {["Anfänger", "Mittelstufe", "Fortgeschritten"].map(level => (
-            <div key={level} className="space-y-3">
-              <h3 className={`text-sm font-semibold uppercase tracking-wide ${level === "Anfänger" ? "text-green-600" : level === "Mittelstufe" ? "text-yellow-600" : "text-red-600"}`}>
-                {level} Level
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {modules.filter(m => m.level === level).map(module => {
-                  const isCompleted = completedModules.includes(module.id);
-                  const isQuizOpen = showQuiz === module.id;
-                  
-                  return (
-                    <Card key={module.id} className={`transition-all ${isCompleted ? "border-green-500/50 bg-green-500/5" : "border-slate-200"} ${isQuizOpen ? "ring-2 ring-blue-500/50" : ""}`}>
-                      <CardHeader className="pb-2">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-2xl">{module.icon}</span>
-                              <CardTitle className="text-base">{module.title}</CardTitle>
-                            </div>
-                            <Badge variant="outline" className={`${module.levelColor} text-xs`}>{module.level}</Badge>
-                          </div>
-                          {isCompleted && <span className="text-2xl">✅</span>}
-                        </div>
-                      </CardHeader>
-                      
-                      {!isQuizOpen ? (
-                        <>
-                          <CardContent className="pb-3">
-                            <div className="space-y-2 mb-4">
-                              {module.content.map((text, idx) => (
-                                <p key={idx} className="text-sm text-slate-600">
-                                  • {text}
-                                </p>
-                              ))}
-                            </div>
-                          </CardContent>
-                          <CardFooter className="gap-2">
-                            {!isCompleted ? (
-                              <Button onClick={() => setShowQuiz(module.id)} className="flex-1 bg-blue-600 hover:bg-blue-700" size="sm" data-testid={`button-quiz-${module.id}`}>
-                                Quiz starten →
-                              </Button>
-                            ) : (
-                              <Button onClick={() => setShowQuiz(module.id)} variant="outline" className="flex-1" size="sm">
-                                Quiz wiederholen
-                              </Button>
-                            )}
-                          </CardFooter>
-                        </>
-                      ) : (
-                        <CardContent className="space-y-4">
-                          {modules.find(m => m.id === module.id)?.quiz.map((q, idx) => (
-                            <div key={idx} className="space-y-2 pb-3 border-b last:border-0">
-                              <p className="text-sm font-semibold text-slate-900">{idx + 1}. {q.question}</p>
-                              <div className="space-y-2">
-                                {q.options.map((option, optIdx) => (
-                                  <label key={optIdx} className="flex items-center gap-3 p-2 rounded-lg border border-slate-200/50 hover:bg-slate-50/50 cursor-pointer">
-                                    <input
-                                      type="radio"
-                                      name={`${module.id}-q${idx}`}
-                                      checked={quizAnswers[`${module.id}-${idx}`] === optIdx}
-                                      onChange={() => setQuizAnswers({...quizAnswers, [`${module.id}-${idx}`]: optIdx})}
-                                      className="h-4 w-4"
-                                    />
-                                    <span className="text-sm text-slate-700">{option}</span>
-                                  </label>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                          <div className="flex gap-2 pt-3">
-                            <Button onClick={() => setShowQuiz(null)} variant="outline" className="flex-1" size="sm">
-                              Zurück
-                            </Button>
-                            <Button 
-                              onClick={() => handleQuizSubmit(module.id)} 
-                              className="flex-1 bg-green-600 hover:bg-green-700" 
-                              size="sm"
-                              data-testid={`button-submit-quiz-${module.id}`}
-                            >
-                              Einreichen
-                            </Button>
-                          </div>
-                        </CardContent>
-                      )}
-                    </Card>
-                  );
-                })}
+        {educationTab === "converter" && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="border-violet-500/50 bg-violet-500/5">
+              <CardHeader><CardTitle className="text-base">⚡ Satoshi → Bitcoin</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                <div><Label className="text-xs">Satoshis</Label><Input type="number" value={satoshiInput} onChange={(e) => setSatoshiInput(e.target.value)} className="font-mono" data-testid="input-sats" /></div>
+                <div className="p-3 rounded-lg bg-slate-100/50 text-center"><p className="text-xs text-slate-600 mb-1">Bitcoin</p><p className="text-lg font-bold text-violet-600">{(parseFloat(satoshiInput) / 100000000).toFixed(8)} ₿</p></div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-cyan-500/50 bg-cyan-500/5">
+              <CardHeader><CardTitle className="text-base">₿ Bitcoin → Euro</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                <div><Label className="text-xs">Bitcoin</Label><Input type="number" value={bitcoinInput} onChange={(e) => setBitcoinInput(e.target.value)} className="font-mono" data-testid="input-btc" /></div>
+                <div className="p-3 rounded-lg bg-slate-100/50 text-center"><p className="text-xs text-slate-600 mb-1">Euro (Live)</p><p className="text-lg font-bold text-cyan-600">€{btcPrice ? (parseFloat(bitcoinInput) * btcPrice).toFixed(2) : "...loading"}</p></div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-amber-500/50 bg-amber-500/5">
+              <CardHeader><CardTitle className="text-base">💶 Euro → Satoshis</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                <div><Label className="text-xs">Euro</Label><Input type="number" value={euroInput} onChange={(e) => setEuroInput(e.target.value)} className="font-mono" data-testid="input-eur" /></div>
+                <div className="p-3 rounded-lg bg-slate-100/50 text-center"><p className="text-xs text-slate-600 mb-1">Satoshis</p><p className="text-lg font-bold text-amber-600">{btcPrice ? Math.floor((parseFloat(euroInput) / btcPrice) * 100000000).toLocaleString() : "..."} sats</p></div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {educationTab === "challenges" && dailyChallenge && (
+          <Card className={`border-2 ${dailyChallenge.completed ? "border-green-500/50 bg-green-500/5" : "border-amber-500/50 bg-amber-500/5"}`}>
+            <CardContent className="pt-8 pb-8 text-center space-y-4">
+              <div className="text-5xl">🎯</div>
+              <div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">Tägliche Challenge</h3>
+                <p className="text-slate-600">{dailyChallenge.completed ? "Challenge abgeschlossen! 🎉" : "Lerne heute ein neues Bitcoin-Modul!"}</p>
               </div>
-            </div>
-          ))}
-        </div>
+              <div className="bg-slate-100/50 p-4 rounded-lg">
+                <p className="text-sm text-slate-600 mb-1">Belohnung für heute</p>
+                <p className="text-3xl font-bold text-green-600">+{dailyChallenge.reward} Sats ⚡</p>
+              </div>
+              {!dailyChallenge.completed && (
+                <Button 
+                  onClick={() => {
+                    const newChallenge = { ...dailyChallenge, completed: true };
+                    setDailyChallenge(newChallenge);
+                    localStorage.setItem("daily-challenge", JSON.stringify(newChallenge));
+                    toast({ title: "🎉 Challenge bestanden!", description: `+${dailyChallenge.reward} Sats verdient!` });
+                  }}
+                  className="w-full bg-green-600 hover:bg-green-700 h-12 text-lg"
+                  data-testid="button-complete-challenge"
+                >
+                  Challenge abschließen
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Completion Message */}
         {completedModules.length === modules.length && (
           <Card className="border-green-500/50 bg-gradient-to-r from-green-500/10 to-blue-500/10">
             <CardContent className="pt-8 pb-8 text-center">
               <p className="text-4xl mb-3">🏆👑🚀</p>
               <p className="text-2xl font-bold text-green-600 mb-2">Bitcoin-Meister erreicht!</p>
-              <p className="text-slate-600 mb-4">Du beherrschst alle Bitcoin-Konzepte! Nutze dein Wissen um noch mehr Sats zu verdienen!</p>
-              <Badge className="bg-green-600">Zertifizierter Lernender</Badge>
+              <Badge className="bg-green-600">Level {userLevel} Experte</Badge>
             </CardContent>
           </Card>
         )}
