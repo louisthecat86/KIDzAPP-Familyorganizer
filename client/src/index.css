@@ -50,72 +50,72 @@
   --radius: 0.5rem;
 }
 
-/* BITCOIN DARK THEME - Cypherpunk & Modern Finance */
+/* GLASS LIGHT THEME - Modern with Gradient Background */
 :root {
-  /* Dark Mode by Default (but defining light variables just in case, mapped to dark) */
-  --background: 0 0% 7%; /* #121212 - Almost black */
-  --foreground: 0 0% 95%; /* #f2f2f2 - Off white */
+  /* Light Mode for Glass-Morphism Design */
+  --background: 0 0% 96%; /* Light gray */
+  --foreground: 0 0% 15%; /* Dark text */
 
-  --card: 0 0% 10%; /* #1a1a1a */
-  --card-foreground: 0 0% 95%;
+  --card: 0 0% 100%; /* White cards */
+  --card-foreground: 0 0% 15%;
 
-  --popover: 0 0% 10%;
-  --popover-foreground: 0 0% 95%;
+  --popover: 0 0% 98%; /* Almost white popovers */
+  --popover-foreground: 0 0% 15%;
 
-  /* Primary: Bitcoin Orange */
-  --primary: 34 97% 54%; /* #F7931A */
-  --primary-foreground: 0 0% 10%; /* Dark text on orange */
+  /* Primary: Violet */
+  --primary: 263 70% 50%; /* Violet #7b47ff */
+  --primary-foreground: 0 0% 100%; /* White text on violet */
 
-  /* Secondary: Dark Grey */
-  --secondary: 0 0% 15%;
-  --secondary-foreground: 0 0% 90%;
+  /* Secondary: Light Gray */
+  --secondary: 0 0% 92%;
+  --secondary-foreground: 0 0% 20%;
 
-  /* Muted: Mid Grey */
-  --muted: 0 0% 20%;
-  --muted-foreground: 0 0% 60%;
+  /* Muted: Gray */
+  --muted: 0 0% 88%;
+  --muted-foreground: 0 0% 45%;
 
-  /* Accent: Gold */
-  --accent: 45 100% 50%;
-  --accent-foreground: 0 0% 10%;
+  /* Accent: Cyan */
+  --accent: 187 85% 53%; /* Cyan #38d8f4 */
+  --accent-foreground: 0 0% 15%;
 
-  --destructive: 0 62% 30%;
-  --destructive-foreground: 0 0% 98%;
+  --destructive: 0 62% 50%;
+  --destructive-foreground: 0 0% 100%;
 
-  --border: 0 0% 20%;
-  --input: 0 0% 20%;
-  --ring: 34 97% 54%;
+  --border: 0 0% 85%;
+  --input: 0 0% 85%;
+  --ring: 263 70% 50%;
 
   --radius: 0.5rem;
 }
 
 .dark {
-  --background: 0 0% 7%;
-  --foreground: 0 0% 95%;
+  --background: 0 0% 96%;
+  --foreground: 0 0% 15%;
 
-  --card: 0 0% 10%;
-  --card-foreground: 0 0% 95%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 15%;
 
-  --popover: 0 0% 10%;
-  --popover-foreground: 0 0% 95%;
+  --popover: 0 0% 98%;
+  --popover-foreground: 0 0% 15%;
 
-  --primary: 34 97% 54%;
-  --primary-foreground: 0 0% 10%;
+  --primary: 263 70% 50%;
+  --primary-foreground: 0 0% 100%;
 
-  --secondary: 0 0% 15%;
-  --secondary-foreground: 0 0% 90%;
+  --secondary: 0 0% 92%;
+  --secondary-foreground: 0 0% 20%;
 
-  --muted: 0 0% 20%;
-  --muted-foreground: 0 0% 60%;
+  --muted: 0 0% 88%;
+  --muted-foreground: 0 0% 45%;
 
-  --accent: 45 100% 50%;
-  --accent-foreground: 0 0% 10%;
+  --accent: 187 85% 53%;
+  --accent-foreground: 0 0% 15%;
 
-  --destructive: 0 62% 30%;
-  --destructive-foreground: 0 0% 98%;
+  --destructive: 0 62% 50%;
+  --destructive-foreground: 0 0% 100%;
 
-  --border: 0 0% 20%;
-  --input: 0 0% 20%;
-  --ring: 34 97% 54%;
+  --border: 0 0% 85%;
+  --input: 0 0% 85%;
+  --ring: 263 70% 50%;
 }
 
 @layer base {
