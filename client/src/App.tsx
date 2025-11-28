@@ -5576,7 +5576,11 @@ function TrackerChart({ userId }: { userId: number }) {
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(16,185,129,0.1)" />
             <XAxis dataKey="date" tick={{ fontSize: 8 }} />
             <YAxis width={40} tick={{ fontSize: 8 }} tickFormatter={v => `€${v.toFixed(0)}`} />
-            <Tooltip formatter={v => `€${Number(v).toFixed(2)}`} />
+            <Tooltip 
+              formatter={v => `€${Number(v).toFixed(2)}`}
+              labelFormatter={() => "Wert"}
+              contentStyle={{ display: "none" }}
+            />
             <Area type="monotone" dataKey="euroValue" stroke="#10b981" fill="url(#trackerGrad)" />
           </AreaChart>
         </ResponsiveContainer>
