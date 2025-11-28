@@ -6807,6 +6807,13 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                     { id: "lightning", cond: user.lightningAddress?.length > 0 },
                     { id: "star", cond: (user.balance || 0) > 50000 }
                   ];
+                  
+                  // Calculate weekly stats
+                  const now = new Date();
+                  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                  const weeklyCompleted = completedTasks.length;
+                  const weeklySats = satsBreakdown?.taskSats || 0;
+                  
                   return (
                     <Dialog open={showStatsModal} onOpenChange={setShowStatsModal}>
                       <DialogContent className="max-w-2xl">
@@ -6835,7 +6842,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                               <Flame className="h-4 w-4 text-violet-600" />
                             </div>
                             <p className="text-xs text-slate-600 mb-1 font-medium">Diese Woche</p>
-                            <p className="text-2xl font-bold text-violet-600">{passedQuizzes.length}/7</p>
+                            <p className="text-2xl font-bold text-violet-600">{weeklyCompleted} Tasks</p>
                           </div>
                           
                           <div className="rounded-lg bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200/50 p-4 text-center">
@@ -6843,7 +6850,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                               <TrendingUp className="h-4 w-4 text-cyan-600" />
                             </div>
                             <p className="text-xs text-slate-600 mb-1 font-medium">7-Tage</p>
-                            <p className="text-2xl font-bold text-cyan-600">{(passedQuizzes.length * 100).toLocaleString()} Sats</p>
+                            <p className="text-2xl font-bold text-cyan-600">{weeklySats.toLocaleString()} Sats</p>
                           </div>
                         </div>
                       </DialogContent>
