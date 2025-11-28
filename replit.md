@@ -1,8 +1,8 @@
-# Spark ⚡ Kids - Family Organizer
+# KIDzAPP - Family Organizer
 
 ## Overview
 
-Spark ⚡ Kids is a family organization application that gamifies chores and tasks using Bitcoin/Lightning Network payments. The app enables parents to create tasks with satoshi rewards, while children can complete tasks and receive Bitcoin payments directly to their Lightning addresses. The platform includes family event management, chat functionality, and automated allowance payments.
+KIDzAPP is a family organization application that gamifies chores and tasks using Bitcoin/Lightning Network payments. The app enables parents to create tasks with satoshi rewards, while children can complete tasks and receive Bitcoin payments directly to their Lightning addresses. The platform includes family event management, chat functionality, and automated allowance payments.
 
 **Core Purpose:** Transform household chores into a Bitcoin-earning opportunity for children while teaching financial responsibility and providing family coordination tools.
 
