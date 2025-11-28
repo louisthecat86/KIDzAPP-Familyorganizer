@@ -6029,7 +6029,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     const [showQuiz, setShowQuiz] = useState<string | null>(null);
     const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
     const [quizSubmitted, setQuizSubmitted] = useState<Record<string, boolean>>({});
-    const [educationTab, setEducationTab] = useState<"modules" | "converter" | "challenges">("modules");
+    const [educationTab, setEducationTab] = useState<"modules" | "converter" | "challenges" | "resources">("modules");
     const [satoshiInput, setSatoshiInput] = useState("100000");
     const [bitcoinInput, setBitcoinInput] = useState("0.001");
     const [euroInput, setEuroInput] = useState("50");
@@ -6071,11 +6071,16 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           "Bitcoin ist digitales Geld - wie elektronische Münzen die du sammeln kannst!",
           "Es wurde 2009 erfunden und es gibt maximal 21 Millionen Bitcoin.",
           "Bitcoin wird von vielen Menschen auf der ganzen Welt verwenden, nicht von einer Bank.",
-          "Jeder Bitcoin kann in 100 Millionen Satoshis (Sats) aufgeteilt werden."
+          "Jeder Bitcoin kann in 100 Millionen Satoshis (Sats) aufgeteilt werden.",
+          "Satoshi Nakamoto ist der anonyme Erfinder von Bitcoin - der Name ist bis heute geheim!",
+          "Das Bitcoin Netzwerk sichert über 1 Billiarde Euro an Werten.",
+          "Es werden ca. 10 Minuten benötigt um einen neuen Block zu erstellen.",
+          "Bitcoin Transaktionen sind transparent - jeder kann die Blockchain sehen, aber nicht wer wo ist."
         ],
         quiz: [
           { question: "Wann wurde Bitcoin erfunden?", options: ["2009", "2015", "2001"], correct: 0 },
-          { question: "Wie viele Bitcoin gibt es maximal?", options: ["21 Millionen", "Unbegrenzt", "1 Milliarde"], correct: 0 }
+          { question: "Wie viele Bitcoin gibt es maximal?", options: ["21 Millionen", "Unbegrenzt", "1 Milliarde"], correct: 0 },
+          { question: "Wer ist Satoshi Nakamoto?", options: ["Der anonyme Bitcoin Erfinder", "Ein Kryptograph", "Ein Unternehmer"], correct: 0 }
         ]
       },
       {
@@ -6086,13 +6091,18 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         icon: "⚡",
         content: [
           "Satoshis sind die kleinste Einheit von Bitcoin - wie Cent für Euro!",
-          "1 Bitcoin = 100.000.000 Satoshis",
+          "1 Bitcoin = 100.000.000 Satoshis (das ist 10^8 Sats)",
           "Die Bezeichnung 'Satoshi' ehrt den Erfinder von Bitcoin (Satoshi Nakamoto)",
-          "Sats sind perfekt für kleine Transaktionen und Zahlungen"
+          "Sats sind perfekt für kleine Transaktionen und Zahlungen.",
+          "Ein Satoshi ist 0,00000001 Bitcoin - unglaublich klein!",
+          "Bei 100 Euro = ca. 200.000 Sats (je nach Bitcoin Kurs)",
+          "Der Name 'Satoshi' wurde zur Ehre des Erfinders gewählt.",
+          "Sats machen Bitcoin praktisch für den Alltag - keine riesigen Zahlen nötig!"
         ],
         quiz: [
           { question: "1 Bitcoin = ?", options: ["100.000.000 Sats", "1.000.000 Sats", "10.000 Sats"], correct: 0 },
-          { question: "Wer war Satoshi Nakamoto?", options: ["Erfinder von Bitcoin", "Ein Astronaut", "Ein Kryptograph"], correct: 0 }
+          { question: "Wer war Satoshi Nakamoto?", options: ["Der anonyme Bitcoin Erfinder", "Ein Astronaut", "Ein Kryptograph"], correct: 0 },
+          { question: "Wie viel ist ein Satoshi?", options: ["0,00000001 Bitcoin", "0,01 Bitcoin", "0,001 Bitcoin"], correct: 0 }
         ]
       },
       {
@@ -6103,13 +6113,18 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         icon: "🌩️",
         content: [
           "Lightning ist ein Netzwerk auf top von Bitcoin für SUPER schnelle Zahlungen!",
-          "Transaktionen im Lightning Netzwerk dauern Sekunden statt Minuten",
-          "Du kannst sofort Bitcoin (über Sats) senden und empfangen",
-          "Es ist wie der Unterschied zwischen SMS und Telefonanruf"
+          "Transaktionen im Lightning Netzwerk dauern Sekunden statt Minuten.",
+          "Du kannst sofort Bitcoin (über Sats) senden und empfangen.",
+          "Es ist wie der Unterschied zwischen SMS und Telefonanruf.",
+          "Lightning Kanäle ermöglichen sofortige Zahlungen zwischen zwei Parteien.",
+          "Gebühren im Lightning sind extrem niedrig - oft unter 1 Sat!",
+          "Lightning wurde 2015 vorgeschlagen um Bitcoin zu skalieren.",
+          "Millionen von Transaktionen pro Sekunde sind theoretisch möglich!"
         ],
         quiz: [
-          { question: "Wie lange dauert eine Lightning Transaktion?", options: ["Sekunden", "Stunden", "Tage"], correct: 0 },
-          { question: "Was ist Lightning?", options: ["Zahlungsnetzwerk auf Bitcoin", "Eine Kryptowährung", "Eine Bank"], correct: 0 }
+          { question: "Wie lange dauert eine Lightning Transaktion?", options: ["Sekunden", "Minuten", "Stunden"], correct: 0 },
+          { question: "Was ist Lightning?", options: ["Zahlungsnetzwerk auf Bitcoin", "Eine Kryptowährung", "Eine Bank"], correct: 0 },
+          { question: "Wann wurde Lightning vorgeschlagen?", options: ["2015", "2009", "2020"], correct: 0 }
         ]
       },
       {
@@ -6119,14 +6134,19 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         title: "Blockchain erklärt",
         icon: "🔗",
         content: [
-          "Eine Blockchain ist eine Kette von Blöcken mit Transaktionsdaten",
-          "Jeder Block ist mit dem vorherigen verbunden - wie eine Kette",
-          "Das macht es unmöglich, alte Transaktionen zu fälschen",
-          "Viele Computer speichern die gleiche Blockchain - ultra sicher!"
+          "Eine Blockchain ist eine Kette von Blöcken mit Transaktionsdaten.",
+          "Jeder Block ist mit dem vorherigen verbunden - wie eine Kette.",
+          "Das macht es unmöglich, alte Transaktionen zu fälschen.",
+          "Viele Computer speichern die gleiche Blockchain - ultra sicher!",
+          "Ein neuer Block wird alle 10 Minuten hinzugefügt.",
+          "Jeder Block enthält tausende von Transaktionen.",
+          "Wenn jemand einen Block ändern möchte, müsste er 51% der Computer kontrollieren!",
+          "Die Bitcoin Blockchain hat seit 2009 kein einziges Mal einen Fehler gehabt."
         ],
         quiz: [
           { question: "Warum ist Blockchain sicher?", options: ["Blöcke sind verkettet & verteilt", "Es ist verschlüsselt", "Nur eine Person hat Zugriff"], correct: 0 },
-          { question: "Wie viele Computer speichern die Blockchain?", options: ["Tausende weltweit", "Nur eine", "10"], correct: 0 }
+          { question: "Wie lange braucht es für einen Block?", options: ["10 Minuten", "1 Minute", "1 Stunde"], correct: 0 },
+          { question: "Wie viele Computer müssten einen Block ändern?", options: ["51% der Computer", "Nur eine", "Alle"], correct: 0 }
         ]
       },
       {
@@ -6136,14 +6156,19 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         title: "Sicherheit & private Keys",
         icon: "🔐",
         content: [
-          "Deine Lightning Adresse ist wie deine Kontonummer - sie ist öffentlich",
+          "Deine Lightning Adresse ist wie deine Kontonummer - sie ist öffentlich.",
           "Aber dein privater Schlüssel ist wie dein Passwort - NIEMALS weitergeben!",
-          "Mit deinem privaten Schlüssel kann jemand dein Geld nehmen",
-          "Bewahre deine Keys immer geheim auf!"
+          "Mit deinem privaten Schlüssel kann jemand dein Geld nehmen.",
+          "Bewahre deine Keys immer geheim auf!",
+          "Ein privater Key ist eine 256-bit Zahl - fast unmöglich zu erraten.",
+          "Es gibt 2^256 mögliche private Keys - mehr als Sterne im Universum!",
+          "Wenn du deinen Key verlierst, kann keine Bank dir helfen - es ist weg.",
+          "Schreibe deine Keys niemals auf Papier auf das andere sehen können - Cold Storage ist wichtig!"
         ],
         quiz: [
           { question: "Kann deine Lightning Adresse öffentlich sein?", options: ["Ja, sie ist öffentlich", "Nein, geheim halten", "Optional"], correct: 0 },
-          { question: "Was passiert wenn man seinen private Key verliert?", options: ["Du kannst nicht mehr auf dein Geld zugreifen", "Bitcoin sendet es zurück", "Es ist automatisch gesichert"], correct: 0 }
+          { question: "Was passiert wenn man seinen private Key verliert?", options: ["Du kannst nicht mehr auf dein Geld zugreifen", "Bitcoin sendet es zurück", "Es ist automatisch gesichert"], correct: 0 },
+          { question: "Ein privater Key ist wie...", options: ["Dein Passwort", "Deine Kontonummer", "Dein Name"], correct: 0 }
         ]
       },
       {
@@ -6153,14 +6178,19 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         title: "Die Zukunft von Bitcoin",
         icon: "🚀",
         content: [
-          "Bitcoin wird immer beliebter und mehr Menschen verwenden es",
-          "Der Wert von Bitcoin kann steigen und fallen - aber langfristig ist es interessant",
-          "Lightning macht Bitcoin für tägliche Zahlungen nutzbar",
-          "Du lernst heute die Finanz-Technologie der Zukunft!"
+          "Bitcoin wird immer beliebter und mehr Menschen verwenden es.",
+          "Der Wert von Bitcoin kann steigen und fallen - aber langfristig ist es interessant.",
+          "Lightning macht Bitcoin für tägliche Zahlungen nutzbar.",
+          "Du lernst heute die Finanz-Technologie der Zukunft!",
+          "2024: Über 50 Millionen Menschen besitzen Bitcoin weltweit.",
+          "El Salvador hat Bitcoin als gesetzliches Zahlungsmittel anerkannt.",
+          "Länder wie Argentinien nutzen Bitcoin gegen Inflation.",
+          "Große Unternehmen wie MicroStrategy und Marathon halten Bitcoin als Vermögensanlage."
         ],
         quiz: [
-          { question: "Ist Bitcoin riskant?", options: ["Ja, Wert schwankt stark", "Nein, 100% sicher", "Nur Anfänger riskieren"], correct: 0 },
-          { question: "Was macht Bitcoin relevant?", options: ["Dezentral & nicht an Banken gebunden", "Es ist schneller als Geld", "Die Regierung mag es"], correct: 0 }
+          { question: "Ist Bitcoin riskant?", options: ["Ja, Wert schwankt stark", "Nein, 100% sicher", "Moderates Risiko"], correct: 0 },
+          { question: "Welches Land hat Bitcoin als gesetzliches Zahlungsmittel?", options: ["El Salvador", "Deutschland", "USA"], correct: 0 },
+          { question: "Wie viele Menschen besitzen Bitcoin (2024)?", options: ["Über 50 Millionen", "1 Million", "500.000"], correct: 0 }
         ]
       }
     ];
@@ -6208,6 +6238,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
             <button onClick={() => setEducationTab("modules")} className={`pb-3 px-4 font-medium text-sm border-b-2 transition-all ${educationTab === "modules" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-modules">📚 Module ({completedModules.length}/{modules.length})</button>
             <button onClick={() => setEducationTab("converter")} className={`pb-3 px-4 font-medium text-sm border-b-2 transition-all ${educationTab === "converter" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-converter">🔄 Konverter</button>
             <button onClick={() => setEducationTab("challenges")} className={`pb-3 px-4 font-medium text-sm border-b-2 transition-all ${educationTab === "challenges" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-challenges">🎯 Tägliche Challenge</button>
+            <button onClick={() => setEducationTab("resources")} className={`pb-3 px-4 font-medium text-sm border-b-2 transition-all ${educationTab === "resources" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-resources">🌐 Ressourcen</button>
           </div>
         </div>
 
@@ -6317,6 +6348,69 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                 <div className="p-3 rounded-lg bg-slate-100/50 text-center"><p className="text-xs text-slate-600 mb-1">Satoshis</p><p className="text-lg font-bold text-amber-600">{btcPrice ? Math.floor((parseFloat(euroInput) / btcPrice) * 100000000).toLocaleString() : "..."} sats</p></div>
               </CardContent>
             </Card>
+          </div>
+        )}
+
+        {educationTab === "resources" && (
+          <div className="space-y-4">
+            <p className="text-slate-600 mb-6">Hier findest du die besten Bitcoin Ressourcen im Internet um noch mehr zu lernen:</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <a href="https://bitcoin.org" target="_blank" rel="noopener noreferrer" className="block p-4 border border-blue-500/30 rounded-lg hover:bg-blue-500/5 transition-all">
+                <div className="text-2xl mb-2">₿</div>
+                <h3 className="font-semibold text-slate-900 mb-1">Bitcoin.org</h3>
+                <p className="text-xs text-slate-600 mb-2">Die offizielle Bitcoin Website mit Anfänger-Guides und technischen Infos</p>
+                <span className="text-xs text-blue-600 font-medium">→ Zur Website</span>
+              </a>
+
+              <a href="https://www.youtube.com/c/aantonop" target="_blank" rel="noopener noreferrer" className="block p-4 border border-purple-500/30 rounded-lg hover:bg-purple-500/5 transition-all">
+                <div className="text-2xl mb-2">📺</div>
+                <h3 className="font-semibold text-slate-900 mb-1">Andreas M. Antonopoulos</h3>
+                <p className="text-xs text-slate-600 mb-2">Großartiger YouTuber erklärt Bitcoin & Kryptographie verständlich</p>
+                <span className="text-xs text-purple-600 font-medium">→ YouTube Kanal</span>
+              </a>
+
+              <a href="https://lightning.network" target="_blank" rel="noopener noreferrer" className="block p-4 border border-yellow-500/30 rounded-lg hover:bg-yellow-500/5 transition-all">
+                <div className="text-2xl mb-2">⚡</div>
+                <h3 className="font-semibold text-slate-900 mb-1">Lightning Network</h3>
+                <p className="text-xs text-slate-600 mb-2">Offizielle Lightning Network Info - die Zukunft von Bitcoin Zahlungen</p>
+                <span className="text-xs text-yellow-600 font-medium">→ Zur Website</span>
+              </a>
+
+              <a href="https://www.coinbase.com/learn" target="_blank" rel="noopener noreferrer" className="block p-4 border border-green-500/30 rounded-lg hover:bg-green-500/5 transition-all">
+                <div className="text-2xl mb-2">📚</div>
+                <h3 className="font-semibold text-slate-900 mb-1">Coinbase Learn</h3>
+                <p className="text-xs text-slate-600 mb-2">Interaktive Lektionen zu Bitcoin, Krypto und Blockchain</p>
+                <span className="text-xs text-green-600 font-medium">→ Zur Website</span>
+              </a>
+
+              <a href="https://en.wikipedia.org/wiki/Bitcoin" target="_blank" rel="noopener noreferrer" className="block p-4 border border-red-500/30 rounded-lg hover:bg-red-500/5 transition-all">
+                <div className="text-2xl mb-2">📖</div>
+                <h3 className="font-semibold text-slate-900 mb-1">Bitcoin Wikipedia</h3>
+                <p className="text-xs text-slate-600 mb-2">Umfassende technische und historische Bitcoin Informationen</p>
+                <span className="text-xs text-red-600 font-medium">→ Zur Website</span>
+              </a>
+
+              <a href="https://bitcoin-on-chain.glitch.me" target="_blank" rel="noopener noreferrer" className="block p-4 border border-cyan-500/30 rounded-lg hover:bg-cyan-500/5 transition-all">
+                <div className="text-2xl mb-2">📊</div>
+                <h3 className="font-semibold text-slate-900 mb-1">Bitcoin Analytics</h3>
+                <p className="text-xs text-slate-600 mb-2">Echte Bitcoin Blockchain Statistiken und Metriken live sehen</p>
+                <span className="text-xs text-cyan-600 font-medium">→ Zur Website</span>
+              </a>
+
+              <a href="https://www.lopp.net/bitcoin.html" target="_blank" rel="noopener noreferrer" className="block p-4 border border-amber-500/30 rounded-lg hover:bg-amber-500/5 transition-all">
+                <div className="text-2xl mb-2">🔗</div>
+                <h3 className="font-semibold text-slate-900 mb-1">Jameson Lopp's Bitcoin Resources</h3>
+                <p className="text-xs text-slate-600 mb-2">Die beste Sammlung von Bitcoin Links und Ressourcen</p>
+                <span className="text-xs text-amber-600 font-medium">→ Zur Website</span>
+              </a>
+
+              <a href="https://www.thebookofbitcoin.com" target="_blank" rel="noopener noreferrer" className="block p-4 border border-violet-500/30 rounded-lg hover:bg-violet-500/5 transition-all">
+                <div className="text-2xl mb-2">📕</div>
+                <h3 className="font-semibold text-slate-900 mb-1">The Book of Bitcoin</h3>
+                <p className="text-xs text-slate-600 mb-2">Kostenlos online lesbar - für Bitcoin Anfänger und Profis</p>
+                <span className="text-xs text-violet-600 font-medium">→ Zur Website</span>
+              </a>
+            </div>
           </div>
         )}
 
