@@ -94,11 +94,11 @@ export function ChildTracker({ childId }: { childId: number }) {
           {/* Chart */}
           <div className="h-64 -mx-6">
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={trackerData} margin={{ top: 5, right: 60, left: -20, bottom: 5 }}>
+              <ComposedChart data={trackerData} margin={{ top: 5, right: 80, left: -20, bottom: 5 }}>
                 <defs>
                   <linearGradient id="trackerGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.01} />
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(16,185,129,0.15)" />
@@ -109,29 +109,45 @@ export function ChildTracker({ childId }: { childId: number }) {
                 <YAxis 
                   yAxisId="left"
                   width={50} 
-                  tick={{ fontSize: 9, fill: "rgba(16,185,129,0.7)" }} 
+                  tick={{ fontSize: 9, fill: "rgba(34,197,94,0.7)" }} 
                   tickFormatter={(value) => `€${Number(value).toFixed(0)}`} 
+                />
+                <YAxis 
+                  yAxisId="middle"
+                  orientation="right"
+                  width={50}
+                  tick={{ fontSize: 9, fill: "rgba(250,204,21,0.7)" }}
+                  tickFormatter={(value) => `${Number(value).toLocaleString()}`}
                 />
                 <YAxis 
                   yAxisId="right"
                   orientation="right"
                   width={50}
                   tick={{ fontSize: 9, fill: "rgba(59,130,246,0.7)" }}
-                  tickFormatter={(value) => `${Number(value).toLocaleString()}`}
+                  tickFormatter={(value) => `€${Number(value).toLocaleString()}`}
                 />
                 <Tooltip content={<CustomTooltip />} cursor={false} />
                 <Area 
                   yAxisId="left"
                   type="monotone" 
                   dataKey="euroValue" 
-                  stroke="#10b981" 
+                  stroke="#22c55e" 
                   fill="url(#trackerGradient)" 
+                  isAnimationActive={false}
+                />
+                <Line 
+                  yAxisId="middle"
+                  type="monotone" 
+                  dataKey="totalSats" 
+                  stroke="#facc15" 
+                  dot={false}
+                  strokeWidth={2}
                   isAnimationActive={false}
                 />
                 <Line 
                   yAxisId="right"
                   type="monotone" 
-                  dataKey="totalSats" 
+                  dataKey="btcPrice" 
                   stroke="#3b82f6" 
                   dot={false}
                   strokeWidth={2}
