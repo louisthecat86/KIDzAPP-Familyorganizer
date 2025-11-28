@@ -5574,15 +5574,8 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
     };
   });
 
-  // Use daily snapshots if available, otherwise use historical price data
-  const btcChartData = (dailySnapshots.length > 0)
-    ? dailySnapshots.slice(-10) // Show last 10 days
-    : (Array.isArray(historicalData) && historicalData.length > 0)
-      ? historicalData.map((item: any) => ({
-          date: item.date,
-          value: Math.round((btcAmount * item.price) * 100) / 100
-        }))
-      : [];
+  // Use daily snapshots for personalized chart
+  const btcChartData = dailySnapshots.slice(-10); // Show last 10 days
 
   return (
     <div className="pt-4 border-t border-border/50">
