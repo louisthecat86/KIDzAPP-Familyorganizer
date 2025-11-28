@@ -5196,13 +5196,13 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
 
   // Savings Comparison View
   if (currentView === "savings-comparison") {
-    return <SavingsComparisonPage sats={user.balance || 0} />;
+    return <SavingsComparisonPage sats={user.balance || 0} setCurrentView={setCurrentView} />;
   }
 
   return null;
 }
 
-function SavingsComparisonPage({ sats }: { sats: number }) {
+function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurrentView: (view: string) => void }) {
   const [days, setDays] = useState<30 | 60 | 90>(30);
   const [interestRate, setInterestRate] = useState(0.5);
   const [btcHistoricalData, setBtcHistoricalData] = useState<any[]>([]);
@@ -5283,7 +5283,7 @@ function SavingsComparisonPage({ sats }: { sats: number }) {
         <h1 className="text-3xl font-bold flex items-center gap-2">
           <span className="text-3xl">🎓</span> Sparen vergleichen
         </h1>
-        <Button onClick={() => window.history.back()} variant="ghost" data-testid="button-back-savings">
+        <Button onClick={() => setCurrentView("dashboard")} variant="ghost" data-testid="button-back-savings">
           ← Zurück
         </Button>
       </div>
