@@ -80,6 +80,14 @@ export function ChildTracker({ childId }: { childId: number }) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Debug */}
+          <div className="text-xs bg-red-950/50 p-2 rounded border border-red-700">
+            <p>DEBUG - Last entry:</p>
+            <p>euroValue: {latestEntry.euroValue}</p>
+            <p>totalSats: {latestEntry.totalSats}</p>
+            <p>btcPrice: {latestEntry.btcPrice}</p>
+          </div>
+
           {/* Stats */}
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-3">
