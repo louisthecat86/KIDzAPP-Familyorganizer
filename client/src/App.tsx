@@ -1363,42 +1363,49 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
 function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void }) {
   return (
     <div 
-      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: 'url(/logo.png)' }}
+      className="min-h-screen flex flex-col items-center justify-between p-6 bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: 'url(/background.png)' }}
     >
-      {/* Buttons at bottom */}
-      <div className="w-full max-w-md mt-auto mb-8 absolute bottom-0 left-1/2 -translate-x-1/2 px-4">
-        <div className="space-y-3">
-          <button 
-            className="w-full p-4 bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl hover:bg-white/30 hover:border-white/50 transition-all flex items-center gap-4 group shadow-lg"
-            onClick={() => onSelect("parent")}
-            data-testid="button-select-parent"
-          >
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-              <UserIcon className="h-6 w-6 text-white" />
-            </div>
-            <div className="text-left">
-              <h3 className="font-bold text-lg text-gray-900 tracking-wide">ELTERN</h3>
-              <p className="text-sm text-gray-700">Aufgaben & Wallet verwalten</p>
-            </div>
-            <span className="ml-auto text-yellow-500 text-xl opacity-0 group-hover:opacity-100 transition-opacity">⚡</span>
-          </button>
+      {/* Logo at top */}
+      <div className="flex-1 flex items-center justify-center pt-8">
+        <img 
+          src="/logo-transparent.png" 
+          alt="KID⚡APP - Family Organizer" 
+          className="max-w-sm w-full h-auto"
+        />
+      </div>
 
-          <button 
-            className="w-full p-4 bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl hover:bg-white/30 hover:border-white/50 transition-all flex items-center gap-4 group shadow-lg"
-            onClick={() => onSelect("child")}
-            data-testid="button-select-child"
-          >
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-              <Sparkles className="h-6 w-6 text-white" />
-            </div>
-            <div className="text-left">
-              <h3 className="font-bold text-lg text-gray-900 tracking-wide">KIND</h3>
-              <p className="text-sm text-gray-700">Aufgaben erledigen & Sats verdienen</p>
-            </div>
-            <span className="ml-auto text-yellow-500 text-xl opacity-0 group-hover:opacity-100 transition-opacity">⚡</span>
-          </button>
-        </div>
+      {/* Buttons at bottom */}
+      <div className="w-full max-w-md pb-8 space-y-3">
+        <button 
+          className="w-full p-4 bg-white/25 backdrop-blur-md border border-white/40 rounded-2xl hover:bg-white/35 hover:border-white/60 transition-all flex items-center gap-4 group shadow-xl"
+          onClick={() => onSelect("parent")}
+          data-testid="button-select-parent"
+        >
+          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+            <UserIcon className="h-6 w-6 text-white" />
+          </div>
+          <div className="text-left">
+            <h3 className="font-bold text-lg text-gray-900 tracking-wide">ELTERN</h3>
+            <p className="text-sm text-gray-700">Aufgaben & Wallet verwalten</p>
+          </div>
+          <span className="ml-auto text-yellow-500 text-xl opacity-0 group-hover:opacity-100 transition-opacity">⚡</span>
+        </button>
+
+        <button 
+          className="w-full p-4 bg-white/25 backdrop-blur-md border border-white/40 rounded-2xl hover:bg-white/35 hover:border-white/60 transition-all flex items-center gap-4 group shadow-xl"
+          onClick={() => onSelect("child")}
+          data-testid="button-select-child"
+        >
+          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+            <Sparkles className="h-6 w-6 text-white" />
+          </div>
+          <div className="text-left">
+            <h3 className="font-bold text-lg text-gray-900 tracking-wide">KIND</h3>
+            <p className="text-sm text-gray-700">Aufgaben erledigen & Sats verdienen</p>
+          </div>
+          <span className="ml-auto text-yellow-500 text-xl opacity-0 group-hover:opacity-100 transition-opacity">⚡</span>
+        </button>
       </div>
     </div>
   );
