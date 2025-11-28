@@ -5607,8 +5607,6 @@ function TrackerChart({ userId }: { userId: number }) {
       }
     };
     fetchBtcPrice();
-    const interval = setInterval(fetchBtcPrice, 60000); // Update every 60 seconds
-    return () => clearInterval(interval);
   }, []);
 
   if (loading) return <div className="text-xs text-muted-foreground">Wird geladen...</div>;
@@ -5628,13 +5626,11 @@ function TrackerChart({ userId }: { userId: number }) {
       {/* Aktuelle Werte */}
       <div className="grid grid-cols-2 gap-2">
         <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-2">
-          <p className="text-[9px] text-muted-foreground uppercase tracking-wider">⚡ Satoshi</p>
-          <p className="text-base font-bold text-yellow-300 mt-0.5">{latest.totalSats.toLocaleString()}</p>
+          <p className="text-base font-bold text-yellow-300">{latest.totalSats.toLocaleString()}</p>
           <p className="text-[8px] text-muted-foreground mt-0.5">deine Münzen</p>
         </div>
         <div className="bg-green-500/10 border border-green-500/30 rounded p-2">
-          <p className="text-[9px] text-muted-foreground uppercase tracking-wider">💶 Euro-Wert</p>
-          <p className="text-base font-bold text-green-300 mt-0.5">€{liveEuroValue.toFixed(2)}</p>
+          <p className="text-base font-bold text-green-300">€{liveEuroValue.toFixed(2)}</p>
           <p className="text-[8px] text-muted-foreground mt-0.5">live aktuell</p>
         </div>
       </div>
