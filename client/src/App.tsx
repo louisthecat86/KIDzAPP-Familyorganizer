@@ -5583,7 +5583,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
   const bitcoinValueEur = lastDailySnapshot;
   
   // Get current savings value from last monthly snapshot or start fresh
-  const lastMonthlySaving = monthlySnapshots.length > 0 ? monthlySnapshots[0].value : 0;
+  const lastMonthlySaving = monthlySnapshots.length > 0 ? monthlySnapshots[monthlySnapshots.length - 1].value : 0;
   const savingsValueEur = lastMonthlySaving > 0 ? lastMonthlySaving : currentValueEur;
 
   // Use all daily snapshots for personalized Bitcoin chart without limit
