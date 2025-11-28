@@ -5533,165 +5533,44 @@ function BitcoinValueWidget({ sats, setCurrentView }: { sats: number; setCurrent
 
   return (
     <div className="pt-4 border-t border-border/50">
-      <div className="space-y-4">
-        {/* Header */}
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-2xl">🎓</span>
-          <h3 className="text-sm font-bold uppercase tracking-widest">Deine Sats wachsen!</h3>
-        </div>
-
-        {/* Comparison Cards */}
-        <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-3">
+        {/* Comparison Cards - Minimal */}
+        <div className="grid grid-cols-2 gap-2">
           {/* Bitcoin Card */}
-          <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">⚡</span>
+          <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg p-3">
+            <div className="flex items-center gap-1 mb-2">
+              <span className="text-lg">⚡</span>
               <p className="text-xs text-muted-foreground font-bold">BITCOIN</p>
             </div>
-            <div>
-              <p className="text-2xl font-mono font-bold text-yellow-400" data-testid="text-sats-current-value">
-                €{currentValueEur.toFixed(2)}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">Deine Sats heute</p>
-            </div>
-            <div className="bg-yellow-500/20 rounded px-2 py-1 border border-yellow-500/30">
-              <p className="text-xs font-bold text-yellow-300">
-                +€{bitcoinGrowth.toFixed(2)} in 1 Jahr?
-              </p>
-            </div>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              📈 <span className="text-yellow-400">Steigt & fällt!</span>
+            <p className="text-xl font-mono font-bold text-yellow-400" data-testid="text-sats-current-value">
+              €{currentValueEur.toFixed(2)}
             </p>
+            <p className="text-xs text-muted-foreground mt-1">Deine Sats heute</p>
           </div>
 
           {/* Sparbuch Card */}
-          <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-lg p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🏦</span>
+          <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-lg p-3">
+            <div className="flex items-center gap-1 mb-2">
+              <span className="text-lg">🏦</span>
               <p className="text-xs text-muted-foreground font-bold">SPARBUCH</p>
             </div>
-            <div>
-              <p className="text-2xl font-mono font-bold text-blue-400">
-                €{savingsValueEur.toFixed(2)}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">Mit 0,5% Zinsen</p>
-            </div>
-            <div className="bg-blue-500/20 rounded px-2 py-1 border border-blue-500/30">
-              <p className="text-xs font-bold text-blue-300">
-                +€{savingsGrowth.toFixed(2)} in 1 Jahr
-              </p>
-            </div>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              📊 <span className="text-blue-400">Langsam & sicher</span>
+            <p className="text-xl font-mono font-bold text-blue-400">
+              €{savingsValueEur.toFixed(2)}
             </p>
+            <p className="text-xs text-muted-foreground mt-1">Mit 0,5% Zinsen</p>
           </div>
         </div>
 
-        {/* Interest Rate Selector */}
-        <div className="bg-gradient-to-r from-slate-900/50 to-slate-950/50 border border-border/50 rounded-lg p-4 space-y-3">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label htmlFor="interest-slider" className="text-xs font-bold text-muted-foreground uppercase">
-                Zinssatz anpassen
-              </label>
-              <div className="text-sm font-mono font-bold text-blue-400" data-testid="text-interest-rate">
-                {interestRate.toFixed(2)}% / Monat = {annualInterestRate.toFixed(1)}% / Jahr
-              </div>
-            </div>
-            <input
-              id="interest-slider"
-              type="range"
-              min="0"
-              max="5"
-              step="0.1"
-              value={interestRate}
-              onChange={(e) => setInterestRate(parseFloat(e.target.value))}
-              className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
-              data-testid="slider-interest-rate"
-            />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>0%</span>
-              <span>2.5%</span>
-              <span>5%</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Visual Growth Indicator */}
-        <div className="bg-gradient-to-r from-slate-900/50 to-slate-950/50 border border-border/50 rounded-lg p-4 space-y-3">
-          <p className="text-xs font-bold text-muted-foreground uppercase mb-2">Was könnte in 12 Monaten passieren?</p>
-          
-          {/* Bitcoin bar */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <p className="text-xs text-muted-foreground">⚡ Bitcoin</p>
-              <p className="text-xs font-mono text-yellow-400" data-testid="text-bitcoin-growth">+€{bitcoinGrowth.toFixed(2)}</p>
-            </div>
-            <div className="h-6 bg-slate-800 rounded-lg border border-yellow-500/30 overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-end pr-2" style={{ width: `${Math.min(100, (bitcoinGrowth / (bitcoinGrowth + savingsGrowth)) * 200)}%` }}>
-                <span className="text-xs font-bold text-white drop-shadow">📈</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Sparbuch bar */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <p className="text-xs text-muted-foreground">🏦 Sparbuch ({interestRate.toFixed(2)}%)</p>
-              <p className="text-xs font-mono text-blue-400" data-testid="text-savings-growth">+€{savingsGrowth.toFixed(2)}</p>
-            </div>
-            <div className="h-6 bg-slate-800 rounded-lg border border-blue-500/30 overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-end pr-2" style={{ width: `${Math.min(100, (savingsGrowth / (bitcoinGrowth + savingsGrowth)) * 200)}%` }}>
-                <span className="text-xs font-bold text-white drop-shadow">📊</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Education Messages */}
-        <div className="space-y-2">
-          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 flex gap-2">
-            <span className="text-lg flex-shrink-0">📚</span>
-            <div className="text-xs">
-              <p className="font-bold text-yellow-400 mb-1">Bitcoin kann steigen UND fallen!</p>
-              <p className="text-muted-foreground">Manchmal geht es hoch 📈, manchmal runter 📉. Das ist normal und heißt Volatilität.</p>
-            </div>
-          </div>
-
-          <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 flex gap-2">
-            <span className="text-lg flex-shrink-0">💡</span>
-            <div className="text-xs">
-              <p className="font-bold text-green-400 mb-1">Langfristig lohnt sich Sparen!</p>
-              <p className="text-muted-foreground">Wenn du lange Zeit Sats sparst, kann der Wert stark wachsen - besser als im Sparbuch!</p>
-            </div>
-          </div>
-
-          <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg p-3 flex gap-2">
-            <span className="text-lg flex-shrink-0">🎁</span>
-            <div className="flex-1">
-              <p className="font-bold text-cyan-400 mb-1">Zinseszins Zauberei!</p>
-              <p className="text-muted-foreground text-xs">Die Zinsen verdienen selbst wieder Zinsen! Mit {interestRate.toFixed(2)}% Zins pro Monat wachsen deine Sats immer schneller. 🚀</p>
-            </div>
-          </div>
-
-          {setCurrentView && (
-            <Button 
-              onClick={() => setCurrentView("savings-comparison")}
-              className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold"
-              data-testid="button-open-savings-comparison"
-            >
-              📊 Sparen vergleichen →
-            </Button>
-          )}
-
-          <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3 flex gap-2">
-            <span className="text-lg flex-shrink-0">🎯</span>
-            <div className="text-xs">
-              <p className="font-bold text-purple-400 mb-1">Die Zahlen sind Beispiele</p>
-              <p className="text-muted-foreground">Die echten Werte hängen ab davon, wie der Bitcoin-Preis sich ändert!</p>
-            </div>
-          </div>
-        </div>
+        {/* Button */}
+        {setCurrentView && (
+          <Button 
+            onClick={() => setCurrentView("savings-comparison")}
+            className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold text-sm"
+            data-testid="button-open-savings-comparison"
+          >
+            📊 Sparen vergleichen →
+          </Button>
+        )}
       </div>
     </div>
   );
