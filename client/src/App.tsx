@@ -5578,7 +5578,7 @@ function TrackerChart({ userId }: { userId: number }) {
   const [loading, setLoading] = useState(true);
   const [showEuro, setShowEuro] = useState(true);
   const [showSats, setShowSats] = useState(true);
-  const [showBtcPrice, setShowBtcPrice] = useState(false);
+  const [showBtcPrice, setShowBtcPrice] = useState(true);
 
   useEffect(() => {
     const fetchTrackerData = async () => {
@@ -5648,6 +5648,18 @@ function TrackerChart({ userId }: { userId: number }) {
             title="Zeige wie viele Satoshi du verdient hast"
           >
             ⚡ Deine Satoshi
+          </button>
+          <button
+            onClick={() => setShowBtcPrice(!showBtcPrice)}
+            className={`text-xs px-3 py-2 rounded-lg border transition-all ${
+              showBtcPrice 
+                ? 'bg-blue-500/20 border-blue-500/50 text-blue-400 font-semibold' 
+                : 'bg-slate-800/50 border-slate-700/50 text-slate-400 opacity-60'
+            }`}
+            data-testid="toggle-btc-price"
+            title="Zeige den Bitcoin-Kurs über Zeit"
+          >
+            ₿ Bitcoin-Kurs
           </button>
         </div>
       </div>
