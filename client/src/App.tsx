@@ -471,12 +471,68 @@ export default function App() {
     toast({ title: "Beweis hochgeladen", description: "Warte auf Bestätigung." });
   };
 
-  const approveTask = (taskId: number) => {
+  const approveTask = async (taskId: number) => {
     updateTaskMutation.mutate({
       id: taskId,
       updates: { status: "approved" },
     });
     toast({ title: "Sats ausgezahlt!", description: "Transaktion gesendet." });
+
+    // Check for level bonus after approving task
+    const task = tasks.find((t: Task) => t.id === taskId);
+    if (task && task.assignedTo && user) {
+      // Get updated completed tasks count
+      const approvedTasks = tasks.filter((t: Task) => 
+        t.assignedTo === task.assignedTo && 
+        (t.status === "approved" || t.id === taskId)
+      );
+      const completedCount = approvedTasks.length;
+      
+      // Calculate current level (based on completed tasks)
+      const getLevel = (completed: number) => {
+        if (completed >= 30) return 10;
+        if (completed >= 27) return 9;
+        if (completed >= 24) return 8;
+        if (completed >= 21) return 7;
+        if (completed >= 18) return 6;
+        if (completed >= 15) return 5;
+        if (completed >= 12) return 4;
+        if (completed >= 9) return 3;
+        if (completed >= 6) return 2;
+        if (completed >= 3) return 1;
+        return 0;
+      };
+      
+      const currentLevel = getLevel(completedCount);
+      
+      // Check and pay level bonus
+      if (currentLevel > 0) {
+        try {
+          const bonusRes = await fetch("/api/level-bonus/check-and-pay", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              childId: task.assignedTo,
+              currentLevel,
+              connectionId: user.connectionId
+            }),
+          });
+          
+          if (bonusRes.ok) {
+            const bonusData = await bonusRes.json();
+            if (bonusData.bonusPaid) {
+              toast({ 
+                title: "🏆 Level-Bonus!", 
+                description: `Level ${bonusData.level} erreicht: +${bonusData.sats} Sats Bonus!`,
+                duration: 5000
+              });
+            }
+          }
+        } catch (error) {
+          console.error("Level bonus check error:", error);
+        }
+      }
+    }
   };
 
   const handleDeleteTask = (taskId: number) => {
