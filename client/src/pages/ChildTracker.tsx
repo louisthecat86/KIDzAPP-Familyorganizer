@@ -17,16 +17,16 @@ const CustomTooltip = ({ active, payload }: any) => {
     return (
       <div style={{
         backgroundColor: "#1e293b",
-        border: "3px solid #10b981",
+        border: "5px solid #22c55e",
         borderRadius: "12px",
         padding: "12px 16px",
-        boxShadow: "0 8px 24px rgba(16, 185, 129, 0.4)",
-        minWidth: "180px"
+        boxShadow: "0 8px 24px rgba(34, 197, 94, 0.6), inset 0 0 0 2px rgba(34, 197, 94, 0.3)",
+        minWidth: "200px"
       }}>
-        <p style={{ color: "#86efac", fontSize: "14px", fontWeight: "600", margin: "4px 0" }}>
+        <p style={{ color: "#86efac", fontSize: "15px", fontWeight: "700", margin: "6px 0" }}>
           Euro : €{data.euroValue.toFixed(2)}
         </p>
-        <p style={{ color: "#fbbf24", fontSize: "14px", fontWeight: "600", margin: "4px 0" }}>
+        <p style={{ color: "#fbbf24", fontSize: "15px", fontWeight: "700", margin: "6px 0" }}>
           Satoshi : {data.totalSats.toLocaleString()}
         </p>
       </div>
