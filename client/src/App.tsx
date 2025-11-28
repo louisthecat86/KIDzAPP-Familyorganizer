@@ -951,7 +951,6 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
           <Button variant="outline" onClick={() => setCurrentView("dashboard")} className="gap-2" data-testid="button-back-to-dashboard">
             <ChevronLeft className="h-4 w-4" /> Zurück
           </Button>
-          <h1 className="text-3xl font-bold">💰 Taschengeld</h1>
         </div>
 
 
