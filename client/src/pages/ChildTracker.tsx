@@ -12,21 +12,16 @@ interface TrackerEntry {
   euroValue: number;
 }
 
-const CustomTooltip = ({ active, payload }: any) => {
-  if (active && payload && payload.length) {
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length > 0) {
     const data = payload[0].payload;
+    console.log("✅ Tooltip data:", data);
     
     return (
-      <div className="bg-slate-950 border border-slate-700 rounded-lg p-3 shadow-2xl min-w-fit" style={{ pointerEvents: 'none' }}>
-        <p className="text-green-400 font-bold text-sm">
-          Euro: €{data.euroValue?.toFixed(2) || "N/A"}
-        </p>
-        <p className="text-yellow-400 font-bold text-sm">
-          Satoshi: {data.totalSats?.toLocaleString() || "N/A"}
-        </p>
-        <p className="text-blue-400 font-bold text-sm">
-          BTC Preis: €{data.btcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0}) || "N/A"}
-        </p>
+      <div className="bg-slate-950 border-2 border-blue-500 rounded p-2 shadow-xl" style={{ pointerEvents: 'none' }}>
+        <p className="text-xs text-green-400">€ {data.euroValue?.toFixed(2)}</p>
+        <p className="text-xs text-yellow-400">⚡ {data.totalSats}</p>
+        <p className="text-xs text-blue-400">💙 €{data.btcPrice?.toLocaleString('de-DE') || '?'}</p>
       </div>
     );
   }
@@ -109,7 +104,7 @@ export function ChildTracker({ childId }: { childId: number }) {
                 <YAxis 
                   tick={{ fontSize: 9, fill: "rgba(34,197,94,1)" }} 
                 />
-                <Tooltip content={<CustomTooltip />} cursor={false} />
+                <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#fff' }} />
                 <Line 
                   type="monotone" 
                   dataKey="euroValue" 
