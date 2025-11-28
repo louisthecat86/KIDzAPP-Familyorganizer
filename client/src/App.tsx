@@ -4867,67 +4867,64 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
 
         {connectedParents.length > 0 && (
           <div className="space-y-4">
-            <div className={`grid ${layoutView === "one-column" ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
               <Card 
-                className="bg-gradient-to-br from-gray-900 to-black border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
-                onClick={() => setCurrentView("tasks-my")}
-                data-testid="card-my-tasks"
+                className="bg-gradient-to-br from-gray-900 to-black border-border"
+                data-testid="card-task-overview"
               >
                 <CardContent className="pt-6">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-primary">{assignedTasks.length}</div>
-                    <p className="text-sm text-muted-foreground mt-2">In Arbeit</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* In Arbeit */}
+                    <div 
+                      onClick={() => setCurrentView("tasks-my")}
+                      className="border border-primary/30 bg-gradient-to-br from-primary/5 to-transparent rounded-lg p-4 cursor-pointer hover:from-primary/10 hover:border-primary/50 transition-all"
+                      data-testid="card-my-tasks"
+                    >
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-primary">{assignedTasks.length}</div>
+                        <p className="text-xs text-muted-foreground mt-2 uppercase tracking-widest">In Arbeit</p>
+                      </div>
+                    </div>
+                    
+                    {/* Zur Bestätigung */}
+                    <div 
+                      onClick={() => setCurrentView("tasks-pending")}
+                      className="border border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-transparent rounded-lg p-4 cursor-pointer hover:from-amber-500/10 hover:border-amber-500/50 transition-all"
+                      data-testid="card-pending-tasks"
+                    >
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-amber-500">{submittedTasks.length}</div>
+                        <p className="text-xs text-muted-foreground mt-2 uppercase tracking-widest">Zur Bestätigung</p>
+                      </div>
+                    </div>
+                    
+                    {/* Erledigt */}
+                    <div 
+                      onClick={() => setCurrentView("tasks-completed")}
+                      className="border border-green-500/30 bg-gradient-to-br from-green-500/5 to-transparent rounded-lg p-4 cursor-pointer hover:from-green-500/10 hover:border-green-500/50 transition-all"
+                      data-testid="card-completed-tasks"
+                    >
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-green-500">{completedTasks.length}</div>
+                        <p className="text-xs text-muted-foreground mt-2 uppercase tracking-widest">Erledigt</p>
+                      </div>
+                    </div>
+                    
+                    {/* Verfügbar */}
+                    <div 
+                      onClick={() => setCurrentView("tasks-open")}
+                      className="border border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-transparent rounded-lg p-4 cursor-pointer hover:from-blue-500/10 hover:border-blue-500/50 transition-all"
+                      data-testid="card-available-tasks"
+                    >
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-blue-500">{availableTasks.length}</div>
+                        <p className="text-xs text-muted-foreground mt-2 uppercase tracking-widest">Verfügbar</p>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             </motion.div>
-            
-            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
-              <Card 
-                className="bg-gradient-to-br from-gray-900 to-black border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
-                onClick={() => setCurrentView("tasks-pending")}
-                data-testid="card-pending-tasks"
-              >
-                <CardContent className="pt-6">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-amber-500">{submittedTasks.length}</div>
-                    <p className="text-sm text-muted-foreground mt-2">Zur Bestätigung</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-            
-            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
-              <Card 
-                className="bg-gradient-to-br from-gray-900 to-black border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
-                onClick={() => setCurrentView("tasks-completed")}
-                data-testid="card-completed-tasks"
-              >
-                <CardContent className="pt-6">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-green-500">{completedTasks.length}</div>
-                    <p className="text-sm text-muted-foreground mt-2">Erledigt</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-            
-            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}>
-              <Card 
-                className="bg-gradient-to-br from-gray-900 to-black border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
-                onClick={() => setCurrentView("tasks-open")}
-                data-testid="card-available-tasks"
-              >
-                <CardContent className="pt-6">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-blue-500">{availableTasks.length}</div>
-                    <p className="text-sm text-muted-foreground mt-2">Verfügbar</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-            </div>
 
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
             <Card 
