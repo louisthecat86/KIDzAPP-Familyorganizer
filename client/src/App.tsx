@@ -4873,7 +4873,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                 data-testid="card-task-overview"
               >
                 <CardContent className="pt-6">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-3">
                     {/* In Arbeit */}
                     <div 
                       onClick={() => setCurrentView("tasks-my")}
