@@ -5600,55 +5600,73 @@ function TrackerChart({ userId }: { userId: number }) {
 
   const latest = trackerData[trackerData.length - 1];
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
+      {/* Titel mit Erklärung */}
+      <div>
+        <h3 className="text-sm font-bold text-white mb-1">Dein Verdienst-Übersicht</h3>
+        <p className="text-xs text-muted-foreground">So viel hast du bisher mit deinen Tasks verdient:</p>
+      </div>
+
+      {/* Aktuelle Werte */}
       <div className="grid grid-cols-3 gap-2">
-        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-2">
-          <p className="text-[11px] text-muted-foreground">Gesamt</p>
-          <p className="text-sm font-bold text-yellow-300">{latest.totalSats.toLocaleString()}</p>
+        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-3">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">⚡ Satoshi</p>
+          <p className="text-lg font-bold text-yellow-300 mt-1">{latest.totalSats.toLocaleString()}</p>
+          <p className="text-[9px] text-muted-foreground mt-1">deine Münzen</p>
         </div>
-        <div className="bg-green-500/10 border border-green-500/30 rounded p-2">
-          <p className="text-[11px] text-muted-foreground">Euro</p>
-          <p className="text-sm font-bold text-green-300">€{latest.euroValue.toFixed(2)}</p>
+        <div className="bg-green-500/10 border border-green-500/30 rounded p-3">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">💶 Euro-Wert</p>
+          <p className="text-lg font-bold text-green-300 mt-1">€{latest.euroValue.toFixed(2)}</p>
+          <p className="text-[9px] text-muted-foreground mt-1">aktueller Wert</p>
         </div>
-        <div className="bg-blue-500/10 border border-blue-500/30 rounded p-2">
-          <p className="text-[11px] text-muted-foreground">BTC Preis</p>
-          <p className="text-sm font-bold text-blue-300">€{latest.btcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0}) || 'N/A'}</p>
+        <div className="bg-blue-500/10 border border-blue-500/30 rounded p-3">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">₿ BTC-Kurs</p>
+          <p className="text-lg font-bold text-blue-300 mt-1">€{latest.btcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0}) || 'N/A'}</p>
+          <p className="text-[9px] text-muted-foreground mt-1">pro Bitcoin</p>
         </div>
       </div>
-      <div className="flex gap-2 flex-wrap mb-2">
-        <button
-          onClick={() => setShowEuro(!showEuro)}
-          className={`text-xs px-2 py-1 rounded border transition-colors ${
-            showEuro 
-              ? 'bg-green-500/20 border-green-500/50 text-green-400' 
-              : 'bg-slate-800/50 border-slate-700/50 text-slate-400'
-          }`}
-          data-testid="toggle-euro"
-        >
-          € Euro
-        </button>
-        <button
-          onClick={() => setShowSats(!showSats)}
-          className={`text-xs px-2 py-1 rounded border transition-colors ${
-            showSats 
-              ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400' 
-              : 'bg-slate-800/50 border-slate-700/50 text-slate-400'
-          }`}
-          data-testid="toggle-sats"
-        >
-          ⚡ Satoshi
-        </button>
-        <button
-          onClick={() => setShowBtcPrice(!showBtcPrice)}
-          className={`text-xs px-2 py-1 rounded border transition-colors ${
-            showBtcPrice 
-              ? 'bg-blue-500/20 border-blue-500/50 text-blue-400' 
-              : 'bg-slate-800/50 border-slate-700/50 text-slate-400'
-          }`}
-          data-testid="toggle-btc-price"
-        >
-          BTC Preis
-        </button>
+
+      {/* Chart-Steuerung mit besseren Labels */}
+      <div>
+        <p className="text-xs text-muted-foreground mb-2">📊 Klick auf die Linien, um sie zu zeigen/verstecken:</p>
+        <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={() => setShowEuro(!showEuro)}
+            className={`text-xs px-3 py-2 rounded-lg border transition-all ${
+              showEuro 
+                ? 'bg-green-500/20 border-green-500/50 text-green-400 font-semibold' 
+                : 'bg-slate-800/50 border-slate-700/50 text-slate-400 opacity-60'
+            }`}
+            data-testid="toggle-euro"
+            title="Zeige wie viel Euro deine Satoshi aktuell wert sind"
+          >
+            💶 Wert in Euro
+          </button>
+          <button
+            onClick={() => setShowSats(!showSats)}
+            className={`text-xs px-3 py-2 rounded-lg border transition-all ${
+              showSats 
+                ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400 font-semibold' 
+                : 'bg-slate-800/50 border-slate-700/50 text-slate-400 opacity-60'
+            }`}
+            data-testid="toggle-sats"
+            title="Zeige wie viele Satoshi du verdient hast"
+          >
+            ⚡ Deine Satoshi
+          </button>
+          <button
+            onClick={() => setShowBtcPrice(!showBtcPrice)}
+            className={`text-xs px-3 py-2 rounded-lg border transition-all ${
+              showBtcPrice 
+                ? 'bg-blue-500/20 border-blue-500/50 text-blue-400 font-semibold' 
+                : 'bg-slate-800/50 border-slate-700/50 text-slate-400 opacity-60'
+            }`}
+            data-testid="toggle-btc-price"
+            title="Zeige den Bitcoin-Kurs über Zeit"
+          >
+            ₿ Bitcoin-Kurs
+          </button>
+        </div>
       </div>
       <div className="h-32 -mx-2">
         <ResponsiveContainer width="100%" height="100%">
@@ -5681,9 +5699,9 @@ function TrackerChart({ userId }: { userId: number }) {
                   const data = payload[0].payload;
                   return (
                     <div className="bg-slate-950 border border-slate-700 rounded p-2 text-xs">
-                      <p className="text-green-400">€{data.euroValue?.toFixed(2)}</p>
-                      <p className="text-yellow-400">⚡{data.totalSats?.toLocaleString()}</p>
-                      <p className="text-blue-400">BTC: €{data.btcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0}) || 'N/A'}</p>
+                      <p className="text-green-400">💶 Wert: €{data.euroValue?.toFixed(2)}</p>
+                      <p className="text-yellow-400">⚡ Satoshi: {data.totalSats?.toLocaleString()}</p>
+                      <p className="text-blue-400">₿ Kurs: €{data.btcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0}) || 'N/A'}</p>
                     </div>
                   );
                 }
@@ -5696,6 +5714,25 @@ function TrackerChart({ userId }: { userId: number }) {
             {showBtcPrice && <Area yAxisId="btcPrice" type="monotone" dataKey="btcPriceScaled" stroke="#3b82f6" fill="url(#trackerGradBlue)" />}
           </AreaChart>
         </ResponsiveContainer>
+      </div>
+
+      {/* Erklärung für die Linien */}
+      <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3 space-y-2">
+        <p className="text-xs font-semibold text-white">📖 Das bedeuten die Linien:</p>
+        <div className="space-y-1 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <span><span className="text-green-400 font-semibold">Grüne Linie</span> = Wie viel Euro deine Satoshi aktuell wert sind</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+            <span><span className="text-yellow-400 font-semibold">Gelbe Linie</span> = Wie viele Satoshi du insgesamt verdient hast</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+            <span><span className="text-blue-400 font-semibold">Blaue Linie</span> = Der Bitcoin-Kurs (wie teuer ist Bitcoin gerade?)</span>
+          </div>
+        </div>
       </div>
     </div>
   );
