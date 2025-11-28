@@ -766,9 +766,9 @@ export default function App() {
             </Card>
 
             {allowances.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Aktive Taschengelder ({allowances.length})</CardTitle>
+              <Card className="w-full max-w-md border border-border/50 bg-card/50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">Aktive Zahlungen ({allowances.length})</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {allowances.map((allowance: any) => {
@@ -784,23 +784,28 @@ export default function App() {
                     return (
                       <div
                         key={allowance.id}
-                        className="p-4 rounded-lg border border-border bg-secondary/30 flex items-center justify-between"
+                        className="p-4 rounded-xl border border-primary/20 bg-gradient-to-r from-violet-500/10 to-purple-500/10 flex items-center justify-between gap-3"
                         data-testid={`card-allowance-${allowance.id}`}
                       >
-                        <div>
-                          <p className="font-semibold">{child?.name || "Unbekannt"}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {allowance.sats} Sats {freqLabel}
-                          </p>
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                            {child?.name?.[0] || "?"}
+                          </div>
+                          <div>
+                            <p className="font-semibold">{child?.name || "Unbekannt"}</p>
+                            <p className="text-sm text-primary font-medium">
+                              {allowance.sats} Sats {freqLabel}
+                            </p>
+                          </div>
                         </div>
                         <Button
                           onClick={() => handleDeleteAllowance(allowance.id)}
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
-                          className="text-destructive hover:text-destructive"
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                           data-testid={`button-delete-allowance-${allowance.id}`}
                         >
-                          <X className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     );
