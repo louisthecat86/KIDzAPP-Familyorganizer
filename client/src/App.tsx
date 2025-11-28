@@ -5571,7 +5571,7 @@ function BitcoinValueWidget({ sats, setCurrentView }: { sats: number; setCurrent
   });
 
   // Scale bitcoin data to same scale as current value for comparison
-  const btcChartData = Array.isArray(historicalData) && historicalData.length > 0
+  const btcChartData = (Array.isArray(historicalData) && historicalData.length > 0)
     ? historicalData.map((item: any) => ({
         date: item.date,
         value: Math.round((btcAmount * item.price) * 100) / 100
@@ -5592,8 +5592,8 @@ function BitcoinValueWidget({ sats, setCurrentView }: { sats: number; setCurrent
             <p className="text-lg font-mono font-bold text-yellow-400" data-testid="text-sats-current-value">
               €{currentValueEur.toFixed(2)}
             </p>
-            {btcChartData.length > 1 && (
-              <div className="space-y-1.5">
+            <div className="space-y-1.5">
+              {btcChartData.length > 0 ? (
                 <div className="h-12 -mx-1">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={btcChartData}>
@@ -5605,24 +5605,28 @@ function BitcoinValueWidget({ sats, setCurrentView }: { sats: number; setCurrent
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="flex flex-wrap gap-1">
-                  {timeframes.map((tf) => (
-                    <button
-                      key={tf.days}
-                      onClick={() => setBtcDays(tf.days)}
-                      className={`text-xs px-2 py-0.5 rounded border transition-colors ${
-                        btcDays === tf.days
-                          ? "bg-yellow-500/30 border-yellow-500/60 text-yellow-400 font-bold"
-                          : "bg-yellow-500/10 border-yellow-500/20 text-yellow-300 hover:bg-yellow-500/20"
-                      }`}
-                      data-testid={`button-btc-timeframe-${tf.days}`}
-                    >
-                      {tf.label}
-                    </button>
-                  ))}
+              ) : (
+                <div className="h-12 flex items-center justify-center text-xs text-muted-foreground">
+                  Daten werden geladen...
                 </div>
+              )}
+              <div className="flex flex-wrap gap-1">
+                {timeframes.map((tf) => (
+                  <button
+                    key={tf.days}
+                    onClick={() => setBtcDays(tf.days)}
+                    className={`text-xs px-2 py-0.5 rounded border transition-colors ${
+                      btcDays === tf.days
+                        ? "bg-yellow-500/30 border-yellow-500/60 text-yellow-400 font-bold"
+                        : "bg-yellow-500/10 border-yellow-500/20 text-yellow-300 hover:bg-yellow-500/20"
+                    }`}
+                    data-testid={`button-btc-timeframe-${tf.days}`}
+                  >
+                    {tf.label}
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
           </div>
 
           {/* Sparbuch Card */}
