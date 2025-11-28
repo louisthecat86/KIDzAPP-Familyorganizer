@@ -5500,7 +5500,7 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
 function BitcoinValueWidget({ sats, setCurrentView }: { sats: number; setCurrentView?: (view: string) => void }) {
   const [btcPrice, setBtcPrice] = useState<{ usd: number; eur: number } | null>(null);
   const [interestRate, setInterestRate] = useState(0.2); // Start at 0.2% monthly
-  const [historicalData, setHistoricalData] = useState<any[]>([]);
+  const [allHistoricalData, setAllHistoricalData] = useState<{ [key: number]: any[] }>({});
   const [btcDays, setBtcDays] = useState<number>(30);
 
   const timeframes = [
@@ -5518,20 +5518,34 @@ function BitcoinValueWidget({ sats, setCurrentView }: { sats: number; setCurrent
         const priceData = await priceRes.json();
         setBtcPrice(priceData);
 
-        const historyRes = await fetch(`/api/btc-history?days=${btcDays}`);
-        const historyData = await historyRes.json();
-        setHistoricalData(historyData);
+        // Only fetch missing timeframes
+        const needsFetch = timeframes.filter(tf => !allHistoricalData[tf.days]);
+        
+        if (needsFetch.length > 0) {
+          const newData: { [key: number]: any[] } = { ...allHistoricalData };
+          
+          for (const tf of needsFetch) {
+            const historyRes = await fetch(`/api/btc-history?days=${tf.days}`);
+            if (historyRes.ok) {
+              const historyData = await historyRes.json();
+              newData[tf.days] = historyData;
+            }
+          }
+          setAllHistoricalData(newData);
+        }
       } catch (error) {
         console.error("Failed to fetch data:", error);
       }
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 30000);
+    const interval = setInterval(fetchData, 300000); // Longer interval to avoid rate limits
     return () => clearInterval(interval);
-  }, [sats, btcDays]);
+  }, [sats]);
 
-  if (!btcPrice || historicalData.length === 0) return null;
+  if (!btcPrice) return null;
+
+  const historicalData = allHistoricalData[btcDays] || [];
 
   // Calculate values in EUR
   const btcAmount = sats / 100_000_000;
@@ -5549,10 +5563,12 @@ function BitcoinValueWidget({ sats, setCurrentView }: { sats: number; setCurrent
   });
 
   // Scale bitcoin data to same scale as current value for comparison
-  const btcChartData = historicalData.map((item: any) => ({
-    date: item.date,
-    value: Math.round((btcAmount * item.price) * 100) / 100
-  })).slice(-10); // Last 10 data points
+  const btcChartData = Array.isArray(historicalData) && historicalData.length > 0
+    ? historicalData.map((item: any) => ({
+        date: item.date,
+        value: Math.round((btcAmount * item.price) * 100) / 100
+      }))
+    : [];
 
   return (
     <div className="pt-4 border-t border-border/50">
