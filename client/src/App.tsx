@@ -1362,40 +1362,42 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
 
 function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4 sm:p-6 relative overflow-hidden flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-violet-600 via-purple-500 to-cyan-400 p-4 sm:p-6 relative overflow-hidden flex items-center justify-center">
       <div className="w-full max-w-5xl z-10">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-5xl sm:text-7xl font-heading font-bold mb-4 bg-gradient-to-r from-primary via-primary to-yellow-500 bg-clip-text text-transparent">Spark ⚡ Kids</h1>
-          <h2 className="text-lg sm:text-xl font-semibold text-muted-foreground mb-1">der Familienorganizer</h2>
-          <p className="text-base text-muted-foreground">Wo aus Aufgaben Belohnungen werden</p>
+          <h1 className="text-5xl sm:text-7xl font-heading font-bold mb-4 text-gray-900 tracking-tight">
+            KID<span className="text-yellow-400">⚡</span>APP
+          </h1>
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-1">FAMILYORGANIZER</h2>
+          <p className="text-base text-gray-700">Wo aus Aufgaben Belohnungen werden</p>
         </div>
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left Column */}
           <div className="space-y-6">
-            <div className="mt-8">
-              <h3 className="text-2xl font-bold mb-4">So funktioniert's</h3>
-              <div className="space-y-3 text-muted-foreground">
+            <div className="mt-8 bg-white/20 backdrop-blur-sm rounded-2xl p-6">
+              <h3 className="text-2xl font-bold mb-4 text-gray-900">So funktioniert's</h3>
+              <div className="space-y-3 text-gray-800">
                 <div className="flex gap-2">
-                  <span className="flex-shrink-0">✓</span>
+                  <span className="flex-shrink-0 text-yellow-500">⚡</span>
                   <span>Eltern erstellen Aufgaben mit Sats-Belohnung</span>
                 </div>
                 <div className="flex gap-2">
-                  <span className="flex-shrink-0">✓</span>
+                  <span className="flex-shrink-0 text-yellow-500">⚡</span>
                   <span>Kinder erledigen Aufgaben & laden Foto-Beweis hoch</span>
                 </div>
                 <div className="flex gap-2">
-                  <span className="flex-shrink-0">✓</span>
+                  <span className="flex-shrink-0 text-yellow-500">⚡</span>
                   <span>Eltern bestätigen & zahlen sofort aus</span>
                 </div>
                 <div className="flex gap-2">
-                  <span className="flex-shrink-0">✓</span>
-                  <span>Familienkalender für gemeinsame Termine mit Zusage- & Absagenfunktion</span>
+                  <span className="flex-shrink-0 text-yellow-500">⚡</span>
+                  <span>Familienkalender für gemeinsame Termine</span>
                 </div>
                 <div className="flex gap-2">
-                  <span className="flex-shrink-0">✓</span>
+                  <span className="flex-shrink-0 text-yellow-500">⚡</span>
                   <span>Familienchat für direkten Austausch</span>
                 </div>
               </div>
@@ -1403,36 +1405,34 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
           </div>
 
           {/* Right Column - Buttons */}
-          <div className="space-y-3">
-            <Button 
-              variant="outline" 
-              className="h-auto p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group w-full"
+          <div className="space-y-4">
+            <button 
+              className="w-full h-auto p-6 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg hover:bg-white hover:scale-[1.02] transition-all group flex items-center"
               onClick={() => onSelect("parent")}
               data-testid="button-select-parent"
             >
-              <div className="mr-4 h-12 w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors flex-shrink-0">
-                <UserIcon className="h-6 w-6" />
+              <div className="mr-4 h-14 w-14 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-md">
+                <UserIcon className="h-7 w-7 text-white" />
               </div>
-              <div className="min-w-0">
-                <h3 className="font-bold text-lg">Eltern</h3>
-                <p className="text-sm text-muted-foreground">Aufgaben & Wallet verwalten</p>
+              <div className="min-w-0 text-left">
+                <h3 className="font-bold text-xl text-gray-900">Eltern</h3>
+                <p className="text-sm text-gray-600">Aufgaben & Wallet verwalten</p>
               </div>
-            </Button>
+            </button>
 
-            <Button 
-              variant="outline" 
-              className="h-auto p-6 justify-start text-left hover:border-primary hover:bg-primary/5 transition-all group w-full"
+            <button 
+              className="w-full h-auto p-6 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg hover:bg-white hover:scale-[1.02] transition-all group flex items-center"
               onClick={() => onSelect("child")}
               data-testid="button-select-child"
             >
-              <div className="mr-4 h-12 w-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors flex-shrink-0">
-                <Sparkles className="h-6 w-6" />
+              <div className="mr-4 h-14 w-14 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center flex-shrink-0 shadow-md">
+                <Sparkles className="h-7 w-7 text-white" />
               </div>
-              <div className="min-w-0">
-                <h3 className="font-bold text-lg">Kind</h3>
-                <p className="text-sm text-muted-foreground">Aufgaben erledigen & Sats verdienen</p>
+              <div className="min-w-0 text-left">
+                <h3 className="font-bold text-xl text-gray-900">Kind</h3>
+                <p className="text-sm text-gray-600">Aufgaben erledigen & Sats verdienen</p>
               </div>
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -1878,7 +1878,7 @@ function NavBar({ user, onLogout, onSettings }: { user: User; onLogout: () => vo
             <span className="text-lg">⚡</span>
           </div>
           <span className="text-xl font-heading font-bold hidden sm:inline-block tracking-tight">
-            Spark Kids
+            KID⚡APP
           </span>
         </div>
 
