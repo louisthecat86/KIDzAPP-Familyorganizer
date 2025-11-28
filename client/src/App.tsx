@@ -5256,6 +5256,10 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
   const [isLinking, setIsLinking] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showTrackerChart, setShowTrackerChart] = useState(false);
+  const [passedQuizzes, setPassedQuizzes] = useState<string[]>(() => {
+    const saved = typeof localStorage !== 'undefined' ? localStorage.getItem("passed-quizzes") : null;
+    return saved ? JSON.parse(saved) : [];
+  });
   const { toast } = useToast();
 
   const { data: connectedPeers = [] } = useQuery({
@@ -6028,10 +6032,6 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
   }
 
   if (currentView === "bitcoin-education" && user.role === "child") {
-    const [passedQuizzes, setPassedQuizzes] = useState<string[]>(() => {
-      const saved = typeof localStorage !== 'undefined' ? localStorage.getItem("passed-quizzes") : null;
-      return saved ? JSON.parse(saved) : [];
-    });
     const [showQuiz, setShowQuiz] = useState<string | null>(null);
     const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
     const [quizSubmitted, setQuizSubmitted] = useState<Record<string, boolean>>({});
