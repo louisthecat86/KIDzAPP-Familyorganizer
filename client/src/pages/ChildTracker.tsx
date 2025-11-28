@@ -11,6 +11,23 @@ interface TrackerEntry {
   euroValue: number;
 }
 
+const CustomTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-slate-950 border-8 border-green-500 rounded-lg p-4 shadow-2xl min-w-fit" style={{ pointerEvents: 'none' }}>
+        <p className="text-green-400 font-bold text-sm">
+          Euro : €{data.euroValue.toFixed(2)}
+        </p>
+        <p className="text-yellow-400 font-bold text-sm">
+          Satoshi : {data.totalSats.toLocaleString()}
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
 export function ChildTracker({ childId }: { childId: number }) {
   const [trackerData, setTrackerData] = useState<TrackerEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,18 +106,7 @@ export function ChildTracker({ childId }: { childId: number }) {
                   tick={{ fontSize: 9, fill: "rgba(16,185,129,0.7)" }} 
                   tickFormatter={(value) => `€${Number(value).toFixed(0)}`} 
                 />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: "#0f172a",
-                    border: "8px solid #22c55e",
-                    borderRadius: "12px",
-                    padding: "12px 16px",
-                    boxShadow: "0 0 40px rgba(34, 197, 94, 0.9)"
-                  }}
-                  formatter={(value: any) => [value, ""]}
-                  labelFormatter={(label) => ""}
-                  cursor={{ fill: "rgba(34, 197, 94, 0.1)" }}
-                />
+                <Tooltip content={<CustomTooltip />} cursor={false} />
                 <Area 
                   type="monotone" 
                   dataKey="euroValue" 
