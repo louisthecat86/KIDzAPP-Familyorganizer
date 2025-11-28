@@ -5578,7 +5578,7 @@ function TrackerChart({ userId }: { userId: number }) {
   const [loading, setLoading] = useState(true);
   const [showEuro, setShowEuro] = useState(true);
   const [showSats, setShowSats] = useState(true);
-  const [showBtcPrice, setShowBtcPrice] = useState(true);
+  const [showBtcPrice, setShowBtcPrice] = useState(false);
 
   useEffect(() => {
     const fetchTrackerData = async () => {
@@ -5608,7 +5608,7 @@ function TrackerChart({ userId }: { userId: number }) {
       </div>
 
       {/* Aktuelle Werte */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-3">
         <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-3">
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">⚡ Satoshi</p>
           <p className="text-lg font-bold text-yellow-300 mt-1">{latest.totalSats.toLocaleString()}</p>
@@ -5618,11 +5618,6 @@ function TrackerChart({ userId }: { userId: number }) {
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">💶 Euro-Wert</p>
           <p className="text-lg font-bold text-green-300 mt-1">€{latest.euroValue.toFixed(2)}</p>
           <p className="text-[9px] text-muted-foreground mt-1">aktueller Wert</p>
-        </div>
-        <div className="bg-blue-500/10 border border-blue-500/30 rounded p-3">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">₿ BTC-Kurs</p>
-          <p className="text-lg font-bold text-blue-300 mt-1">€{latest.btcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0}) || 'N/A'}</p>
-          <p className="text-[9px] text-muted-foreground mt-1">beim letzten Update</p>
         </div>
       </div>
 
@@ -5653,18 +5648,6 @@ function TrackerChart({ userId }: { userId: number }) {
             title="Zeige wie viele Satoshi du verdient hast"
           >
             ⚡ Deine Satoshi
-          </button>
-          <button
-            onClick={() => setShowBtcPrice(!showBtcPrice)}
-            className={`text-xs px-3 py-2 rounded-lg border transition-all ${
-              showBtcPrice 
-                ? 'bg-blue-500/20 border-blue-500/50 text-blue-400 font-semibold' 
-                : 'bg-slate-800/50 border-slate-700/50 text-slate-400 opacity-60'
-            }`}
-            data-testid="toggle-btc-price"
-            title="Zeige den Bitcoin-Kurs über Zeit"
-          >
-            ₿ Bitcoin-Kurs
           </button>
         </div>
       </div>
