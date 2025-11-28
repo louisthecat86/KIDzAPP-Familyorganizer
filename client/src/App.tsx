@@ -5580,9 +5580,8 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
   const btcAmount = sats / 100_000_000;
   const currentValueEur = btcAmount * btcPrice.eur;
   
-  // Get Bitcoin value from last daily snapshot or calculate fresh
-  const lastDailySnapshot = dailySnapshots.length > 0 ? dailySnapshots[dailySnapshots.length - 1].value : currentValueEur;
-  const bitcoinValueEur = lastDailySnapshot;
+  // Bitcoin always shows CURRENT value (live), not snapshot value
+  const bitcoinValueEur = currentValueEur;
   
   // Get current savings value from last monthly snapshot or start fresh
   const lastMonthlySaving = monthlySnapshots.length > 0 ? monthlySnapshots[monthlySnapshots.length - 1].value : 0;
