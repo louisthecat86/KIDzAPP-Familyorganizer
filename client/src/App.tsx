@@ -1512,23 +1512,19 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
     }
     setIsForgotLoading(true);
     try {
-      // Verify name and favorite color
-      const res = await fetch("/api/peers/verify-reset", {
+      // Secure password reset - verify and update in one step, no password returned
+      const res = await fetch("/api/peers/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: forgotPinName.trim(), favoriteColor: forgotPinColor.trim(), role: "parent" }),
+        body: JSON.stringify({ 
+          name: forgotPinName.trim(), 
+          favoriteColor: forgotPinColor.trim(), 
+          role: "parent",
+          newPassword: forgotPinNewPin
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      
-      // Then reset the PIN
-      const changeRes = await fetch(`/api/peers/${data.id}/change-pin`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ oldPin: data.pin, newPin: forgotPinNewPin }),
-      });
-      const changeData = await changeRes.json();
-      if (!changeRes.ok) throw new Error(changeData.error);
       
       toast({ title: "✅ Passwort zurückgesetzt!", description: "Melde dich jetzt mit deinem neuen Passwort an" });
       setShowForgotPin(false);

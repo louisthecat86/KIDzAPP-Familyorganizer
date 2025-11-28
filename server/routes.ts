@@ -107,13 +107,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Verify for PIN reset
-  app.post("/api/peers/verify-reset", async (req, res) => {
+  // Password reset with security question verification - no password exposed
+  app.post("/api/peers/reset-password", async (req, res) => {
     try {
-      const { name, favoriteColor, role } = req.body;
+      const { name, favoriteColor, role, newPassword } = req.body;
       
-      if (!name || !favoriteColor || !role) {
-        return res.status(400).json({ error: "Name, favoriteColor und role erforderlich" });
+      if (!name || !favoriteColor || !role || !newPassword) {
+        return res.status(400).json({ error: "Name, favoriteColor, role und newPassword erforderlich" });
+      }
+
+      // Validate password requirements
+      if (newPassword.length < 8 || newPassword.length > 12) {
+        return res.status(400).json({ error: "Passwort muss 8-12 Zeichen haben" });
+      }
+      if (!/[A-Z]/.test(newPassword)) {
+        return res.status(400).json({ error: "Passwort muss mindestens einen Großbuchstaben enthalten" });
+      }
+      if (!/[0-9]/.test(newPassword)) {
+        return res.status(400).json({ error: "Passwort muss mindestens eine Zahl enthalten" });
       }
 
       const peer = await db.select().from(peers)
@@ -128,10 +139,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Lieblingsfarbe ist falsch" });
       }
 
-      res.json({ id: peer[0].id, pin: peer[0].pin });
+      // Directly update password - no old password returned
+      await db.update(peers).set({ pin: newPassword }).where(eq(peers.id, peer[0].id));
+
+      res.json({ success: true, message: "Passwort wurde zurückgesetzt" });
     } catch (error) {
-      console.error("Verify reset error:", error);
-      res.status(500).json({ error: "Verifizierung fehlgeschlagen" });
+      console.error("Password reset error:", error);
+      res.status(500).json({ error: "Passwort-Reset fehlgeschlagen" });
     }
   });
 
@@ -141,7 +155,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { name, role, pin, familyName, joinParentConnectionId, favoriteColor } = req.body;
       
       if (!name || !role || !pin) {
-        return res.status(400).json({ error: "Name, role, and pin required" });
+        return res.status(400).json({ error: "Name, role, and password required" });
+      }
+
+      // Validate password requirements
+      const passwordValidation = validatePassword(pin);
+      if (!passwordValidation.valid) {
+        return res.status(400).json({ error: passwordValidation.error });
       }
 
       let connectionId = joinParentConnectionId;
