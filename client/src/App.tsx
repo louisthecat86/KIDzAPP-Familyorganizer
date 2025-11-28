@@ -49,7 +49,6 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { PhotoUpload } from "@/components/PhotoUpload";
 import { ProofViewer } from "@/components/ProofViewer";
-import familyOrganizerLogo from "@assets/2-Photoroom_1764336432015.png";
 
 type Peer = {
   id: number;
@@ -2923,24 +2922,20 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     
     return (
       <div className="space-y-4">
-        <div className="flex flex-col md:flex-row gap-4 items-start">
-          <img src={familyOrganizerLogo} alt="FamilyOrganizer" className="h-32 md:h-64 object-contain flex-shrink-0" />
-          
-          <div className="flex-1 space-y-4">
-            {user.role === "parent" && (
-              <div 
-                onClick={() => setCurrentView("allowance-payout")}
-                data-testid="card-active-allowances"
-                className="p-6 bg-gradient-to-br from-violet-500/30 to-cyan-500/30 backdrop-blur-md border border-white/50 rounded-2xl cursor-pointer hover:bg-white/55 transition-all shadow-xl overflow-hidden relative"
-              >
-                <div className="text-center relative z-10">
-                  <div className="text-2xl font-bold text-slate-900">Taschengeld</div>
-                  <div className="text-sm text-slate-700 mt-1">Zahlungen & Terminzahlungen</div>
-                </div>
-              </div>
-            )}
+        <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
+        
+        {user.role === "parent" && (
+          <div 
+            onClick={() => setCurrentView("allowance-payout")}
+            data-testid="card-active-allowances"
+            className="p-6 bg-gradient-to-br from-violet-500/30 to-cyan-500/30 backdrop-blur-md border border-white/50 rounded-2xl cursor-pointer hover:bg-white/55 transition-all shadow-xl overflow-hidden relative"
+          >
+            <div className="text-center relative z-10">
+              <div className="text-2xl font-bold text-slate-900">Taschengeld</div>
+              <div className="text-sm text-slate-700 mt-1">Zahlungen & Terminzahlungen</div>
+            </div>
           </div>
-        </div>
+        )}
         
         {showConnectionCode && (
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }}>
@@ -5122,12 +5117,9 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     }, [user.id]);
 
     return (
-      <div className="max-w-full space-y-2">
-        <div className="flex flex-col md:flex-row gap-4 items-start">
-          <img src={familyOrganizerLogo} alt="FamilyOrganizer" className="h-32 md:h-64 object-contain flex-shrink-0" />
-          
-          <div className="flex-1">
-            <motion.section 
+      <div className="max-w-4xl space-y-2">
+        <h1 className="text-3xl font-bold mb-4 text-slate-900">Dashboard</h1>
+        <motion.section 
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="relative overflow-hidden rounded-2xl bg-white/50 backdrop-blur-xl border border-white/50 p-8 shadow-xl"
@@ -5450,8 +5442,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
             </div>
           </div>
         )}
-          </div>
-        </div>
+
       </div>
     );
   }
