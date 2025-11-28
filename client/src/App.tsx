@@ -2441,7 +2441,9 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
         body: JSON.stringify({ peerId: user.id, nwcConnectionString: editNwcConnectionString }),
       });
       if (!res.ok) throw new Error("Failed to save NWC configuration");
-      setUser({ ...user, hasNwcConfigured: true, walletType: "nwc" });
+      const updatedUser = { ...user, hasNwcConfigured: true, walletType: "nwc" };
+      setUser(updatedUser);
+      localStorage.setItem("sats-user", JSON.stringify(updatedUser));
       setEditNwcConnectionString("");
       useToastFn({ title: "NWC verbunden!", description: "Nostr Wallet Connect ist jetzt aktiv", duration: 3000 });
       setTimeout(() => onClose(), 1500);
@@ -4228,7 +4230,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           body: JSON.stringify({ peerId: user.id, nwcConnectionString: editNwcConnectionString }),
         });
         if (!res.ok) throw new Error("Failed to save NWC configuration");
-        setUser({ ...user, hasNwcConfigured: true, walletType: "nwc" });
+        const updatedUser = { ...user, hasNwcConfigured: true, walletType: "nwc" };
+        setUser(updatedUser);
+        localStorage.setItem("sats-user", JSON.stringify(updatedUser));
         setEditNwcConnectionString("");
         toast({ title: "Erfolg", description: "Nostr Wallet Connect verbunden!" });
       } catch (error) {
