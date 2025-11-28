@@ -2288,14 +2288,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Recurring tasks scheduler (checks every hour)
-  cron.schedule("0 * * * *", async () => {
+  // Recurring tasks scheduler (checks every 2 minutes for testing)
+  cron.schedule("*/2 * * * *", async () => {
     try {
       const allRecurringTasks = await db.select().from(recurringTasks).where(eq(recurringTasks.isActive, true));
+      console.log(`[Recurring Tasks Scheduler] Running... Found ${allRecurringTasks.length} active recurring tasks`);
       const now = new Date();
       
       for (const recurring of allRecurringTasks) {
+        console.log(`[Recurring Tasks Scheduler] Checking: ${recurring.title} (${recurring.frequency}, time: ${recurring.time}, dayOfWeek: ${recurring.dayOfWeek})`);
         const shouldCreate = checkIfTaskShouldBeCreated(recurring, now);
+        console.log(`[Recurring Tasks Scheduler] ${recurring.title} - shouldCreate: ${shouldCreate}`);
         
         if (shouldCreate) {
           // Create new task
@@ -2310,11 +2313,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Update lastCreatedDate
           await storage.updateRecurringTask(recurring.id, { lastCreatedDate: now });
-          console.log(`[Recurring Tasks] Created task from recurring rule: ${recurring.title}`);
+          console.log(`[Recurring Tasks] ✅ Created task from recurring rule: ${recurring.title}`);
         }
       }
     } catch (error) {
-      console.error("[Recurring Tasks] Error:", error);
+      console.error("[Recurring Tasks] ❌ Error:", error);
     }
   });
 
@@ -2325,25 +2328,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const taskTime = new Date(now);
     taskTime.setHours(hours, minutes, 0, 0);
     
-    // Check if current time has passed the task time
-    if (now < taskTime) return false;
+    const nowStr = now.toLocaleString();
+    const taskTimeStr = taskTime.toLocaleString();
+    console.log(`[Task Check] Now: ${nowStr}, TaskTime: ${taskTimeStr}, IsPassed: ${now >= taskTime}`);
+    
+    // Check if current time has passed the task time (with 2 minute window)
+    const timeDiff = Math.abs(now.getTime() - taskTime.getTime()) / (1000 * 60);
+    if (timeDiff > 2) return false; // Only trigger within 2 minutes of scheduled time
+    
+    const today = new Date(now).toDateString();
+    const lastCreatedDate = lastCreated ? new Date(lastCreated).toDateString() : null;
     
     if (recurring.frequency === "daily") {
-      // Daily: Create if not created today
-      const today = new Date(now).toDateString();
-      const lastCreatedDate = lastCreated ? new Date(lastCreated).toDateString() : null;
       return today !== lastCreatedDate;
     } else if (recurring.frequency === "weekly") {
-      // Weekly: Create if it's the right day and not created today
       if (now.getDay() !== recurring.dayOfWeek) return false;
-      const today = new Date(now).toDateString();
-      const lastCreatedDate = lastCreated ? new Date(lastCreated).toDateString() : null;
       return today !== lastCreatedDate;
     } else if (recurring.frequency === "monthly") {
-      // Monthly: Create if it's the right day and not created today
-      if (now.getDate() !== recurring.dayOfMonth) return false;
-      const today = new Date(now).toDateString();
-      const lastCreatedDate = lastCreated ? new Date(lastCreated).toDateString() : null;
+      if (now.getDate() !== (recurring.dayOfMonth || 1)) return false;
       return today !== lastCreatedDate;
     }
     return false;
