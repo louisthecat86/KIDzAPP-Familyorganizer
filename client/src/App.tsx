@@ -5518,20 +5518,28 @@ function BitcoinValueWidget({ sats, setCurrentView }: { sats: number; setCurrent
         const priceData = await priceRes.json();
         setBtcPrice(priceData);
 
-        // Only fetch missing timeframes
+        // Only fetch missing timeframes with delays to avoid rate limiting
         const needsFetch = timeframes.filter(tf => !allHistoricalData[tf.days]);
         
         if (needsFetch.length > 0) {
           const newData: { [key: number]: any[] } = { ...allHistoricalData };
           
-          for (const tf of needsFetch) {
-            const historyRes = await fetch(`/api/btc-history?days=${tf.days}`);
-            if (historyRes.ok) {
-              const historyData = await historyRes.json();
-              newData[tf.days] = historyData;
+          for (let i = 0; i < needsFetch.length; i++) {
+            const tf = needsFetch[i];
+            // Add delay between requests
+            if (i > 0) await new Promise(r => setTimeout(r, 500));
+            
+            try {
+              const historyRes = await fetch(`/api/btc-history?days=${tf.days}`);
+              if (historyRes.ok) {
+                const historyData = await historyRes.json();
+                newData[tf.days] = historyData;
+                setAllHistoricalData(newData);
+              }
+            } catch (error) {
+              console.error(`Failed to fetch ${tf.days} days:`, error);
             }
           }
-          setAllHistoricalData(newData);
         }
       } catch (error) {
         console.error("Failed to fetch data:", error);

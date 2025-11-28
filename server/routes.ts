@@ -1174,9 +1174,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
 
+  // Simple in-memory cache for API responses (5 min TTL)
+  const cache: { [key: string]: { data: any; expires: number } } = {};
+  
+  const getCached = (key: string) => {
+    const item = cache[key];
+    if (!item || Date.now() > item.expires) {
+      delete cache[key];
+      return null;
+    }
+    return item.data;
+  };
+  
+  const setCached = (key: string, data: any, ttlMs = 300000) => {
+    cache[key] = { data, expires: Date.now() + ttlMs };
+  };
+
   // Get current BTC price
   app.get("/api/btc-price", async (req, res) => {
     try {
+      const cacheKey = "btc-price";
+      const cached = getCached(cacheKey);
+      if (cached) {
+        console.log("[BTC Price] Returning cached data");
+        return res.json(cached);
+      }
+
       const response = await fetch(
         "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,eur"
       );
@@ -1186,11 +1209,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("[BTC Price] Data:", JSON.stringify(data).substring(0, 100));
       
       if (data?.bitcoin?.usd && data?.bitcoin?.eur) {
-        return res.json({
+        const responseData = {
           usd: data.bitcoin.usd,
           eur: data.bitcoin.eur,
           timestamp: new Date().toISOString()
-        });
+        };
+        setCached(cacheKey, responseData);
+        return res.json(responseData);
       }
       console.log("[BTC Price] Missing fields:", Object.keys(data));
       throw new Error(`Missing Bitcoin price data`);
@@ -1204,6 +1229,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/btc-history", async (req, res) => {
     try {
       const days = req.query.days || "30";
+      const cacheKey = `btc-history-${days}`;
+      const cached = getCached(cacheKey);
+      if (cached) {
+        console.log(`[BTC History] Returning cached data for ${days} days`);
+        return res.json(cached);
+      }
+
       const response = await fetch(
         `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=eur&days=${days}`
       );
@@ -1219,6 +1251,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           price: Math.round(price[1] * 100) / 100
         }));
         
+        setCached(cacheKey, chartData);
         return res.json(chartData);
       }
       console.log("[BTC History] Invalid data structure");
