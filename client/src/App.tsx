@@ -6032,7 +6032,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     const [showQuiz, setShowQuiz] = useState<string | null>(null);
     const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
     const [quizSubmitted, setQuizSubmitted] = useState<Record<string, boolean>>({});
-    const [educationTab, setEducationTab] = useState<"modules" | "converter" | "challenges" | "resources" | "glossar">("modules");
+    const [educationTab, setEducationTab] = useState<"home" | "modules" | "converter" | "challenges" | "resources" | "glossar">("home");
     const [glossarSearch, setGlossarSearch] = useState("");
     const [satoshiInput, setSatoshiInput] = useState("100000");
     const [bitcoinInput, setBitcoinInput] = useState("0.001");
@@ -6150,6 +6150,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           <h1 className="text-4xl font-bold text-slate-900">Bitcoin Bildungszentrum</h1>
           <div className="overflow-x-auto -mx-4 px-4 border-b">
             <div className="flex gap-1 min-w-max md:min-w-0">
+              <button onClick={() => setEducationTab("home")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "home" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-home">🏠 Home</button>
               <button onClick={() => setEducationTab("modules")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "modules" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-modules">📚 Module</button>
               <button onClick={() => setEducationTab("converter")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "converter" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-converter">🔄 Konverter</button>
               <button onClick={() => setEducationTab("challenges")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "challenges" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-challenges">🎯 Challenge</button>
@@ -6158,6 +6159,125 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
             </div>
           </div>
         </div>
+
+        {educationTab === "home" && (
+          <div className="space-y-6 pb-8">
+            {/* Balance Card */}
+            <Card className="border-violet-300/50 bg-gradient-to-br from-violet-500/20 to-cyan-500/20 backdrop-blur-sm">
+              <CardContent className="pt-6 pb-6">
+                <div className="text-center">
+                  <p className="text-sm text-slate-600 mb-2">💰 Dein Balance</p>
+                  <h2 className="text-5xl font-bold text-cyan-600 mb-1">{(user.balance || 0).toLocaleString()} <span className="text-2xl">SATS</span></h2>
+                  <p className="text-xs text-slate-600">Verdient durch Aufgaben & Challenges</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Daily Challenge Widget - 3 */}
+              <Card className="border-amber-300/50 bg-amber-500/5">
+                <CardContent className="pt-5 pb-5">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm font-bold text-slate-900 mb-2">🎯 Today's Challenge</p>
+                      <h3 className="text-lg font-bold text-amber-600 mb-1">{dailyChallenge.title}</h3>
+                      <p className="text-xs text-slate-600 mb-3">{dailyChallenge.description}</p>
+                      <div className="flex gap-2 items-center">
+                        <Badge variant="secondary" className="text-xs">⭐⭐ Mittel</Badge>
+                        <span className="text-xs text-slate-500">{dailyChallenge.completed ? "✅ Erledigt!" : "Morgen neu"}</span>
+                      </div>
+                    </div>
+                    <span className="text-4xl">{dailyChallenge.icon}</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Education Progress - 4 */}
+              <Card className="border-green-300/50 bg-green-500/5">
+                <CardContent className="pt-5 pb-5">
+                  <p className="text-sm font-bold text-slate-900 mb-3">🧠 Lernfortschritt</p>
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-xs font-semibold text-slate-700">Module</span>
+                        <span className="text-xs font-bold text-green-600">{passedQuizzes.length}/20</span>
+                      </div>
+                      <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-green-500 to-cyan-500" style={{ width: `${(passedQuizzes.length / 20) * 100}%` }} />
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-600">
+                      {passedQuizzes.length === 20 ? "🏆 Du bist ein Bitcoin Experte!" : `${20 - passedQuizzes.length} Module freizuschalten`}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Recent Achievements - 5 */}
+              <Card className="border-amber-300/50 bg-amber-500/5 md:col-span-2">
+                <CardContent className="pt-5 pb-5">
+                  <p className="text-sm font-bold text-slate-900 mb-3">🏆 Deine Abzeichen</p>
+                  <div className="grid grid-cols-5 gap-2">
+                    {[
+                      { id: "first", icon: "🌱", title: "Anfänger", cond: passedQuizzes.length >= 1 },
+                      { id: "half", icon: "📚", title: "Lernender", cond: passedQuizzes.length >= 10 },
+                      { id: "master", icon: "👑", title: "Experte", cond: passedQuizzes.length === 20 },
+                      { id: "lightning", icon: "⚡", title: "Lightning", cond: user.lightningAddress?.length > 0 },
+                      { id: "star", icon: "⭐", title: "Rising Star", cond: (user.balance || 0) > 50000 }
+                    ].map(b => (
+                      <div key={b.id} className={`text-center p-2 rounded-lg border transition-all ${b.cond ? "border-amber-400/50 bg-amber-400/10" : "border-slate-300/50 bg-slate-100/30 opacity-50"}`}>
+                        <span className="text-2xl block">{b.icon}</span>
+                        <p className="text-xs font-bold text-slate-600 mt-1 truncate">{b.title}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Quick Stats - 6 */}
+              <Card className="border-violet-300/50 bg-violet-500/5">
+                <CardContent className="pt-5 pb-5">
+                  <p className="text-sm font-bold text-slate-900 mb-3">⭐ Diese Woche</p>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-xs text-slate-600">Module bestanden</span>
+                      <span className="text-sm font-bold text-violet-600">7/20</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-xs text-slate-600">Daily Challenges</span>
+                      <span className="text-sm font-bold text-violet-600">5/7</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-xs text-slate-600">Quizzes bestanden</span>
+                      <span className="text-sm font-bold text-violet-600">{passedQuizzes.length}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Satoshi Trend - 7 */}
+              <Card className="border-cyan-300/50 bg-cyan-500/5">
+                <CardContent className="pt-5 pb-5">
+                  <p className="text-sm font-bold text-slate-900 mb-3">📊 7-Tage Trend</p>
+                  <div className="space-y-1 text-xs">
+                    {["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"].map((day, i) => {
+                      const amount = Math.floor(Math.random() * 5000) + 1000;
+                      return (
+                        <div key={day} className="flex justify-between items-center">
+                          <span className="text-slate-600">{day}</span>
+                          <div className="flex items-center gap-1">
+                            <div className="h-1 bg-gradient-to-r from-cyan-500 to-violet-500 rounded" style={{ width: `${(amount / 5000) * 40}px` }} />
+                            <span className="text-slate-700 font-semibold">{amount.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
 
         {educationTab === "modules" && (
           <div className="space-y-8">
