@@ -5575,7 +5575,12 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
   });
 
   // Use daily snapshots for personalized chart
-  const btcChartData = dailySnapshots.slice(-10); // Show last 10 days
+  // Fallback to today's value if no snapshots exist yet
+  const today = new Date();
+  const todayFormatted = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: 'short' }).format(today);
+  const btcChartData = dailySnapshots.length > 0 
+    ? dailySnapshots.slice(-10) 
+    : [{ date: todayFormatted, value: currentValueEur }]; // Show today's value as starting point
 
   return (
     <div className="pt-4 border-t border-border/50">
