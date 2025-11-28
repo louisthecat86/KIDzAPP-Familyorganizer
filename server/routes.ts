@@ -8,6 +8,20 @@ import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 import cron from "node-cron";
 
+function sanitizePeerForClient(peer: any): any {
+  if (!peer) return peer;
+  const { lnbitsAdminKey, lnbitsUrl, nwcConnectionString, ...safePeer } = peer;
+  return {
+    ...safePeer,
+    hasLnbitsConfigured: !!(lnbitsUrl && lnbitsAdminKey),
+    hasNwcConfigured: !!nwcConnectionString,
+  };
+}
+
+function sanitizePeersForClient(peers: any[]): any[] {
+  return peers.map(sanitizePeerForClient);
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Test LNBits connection - with multiple endpoint attempts
   app.post("/api/wallet/test", async (req, res) => {
@@ -144,7 +158,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         favoriteColor: role === "parent" ? favoriteColor : undefined,
       } as any);
 
-      res.json(peer);
+      res.json(sanitizePeerForClient(peer));
     } catch (error) {
       if ((error as any).message?.includes("unique constraint")) {
         return res.status(400).json({ error: "Name und PIN Kombination existiert bereits" });
@@ -169,7 +183,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Peer not found. Please register first." });
       }
       
-      res.json(peer);
+      res.json(sanitizePeerForClient(peer));
     } catch (error) {
       res.status(500).json({ error: "Login failed" });
     }
@@ -248,9 +262,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "peerId erforderlich" });
       }
 
-      const peer = await storage.updatePeerWallet(peerId, "", "");
+      await storage.updatePeerWallet(peerId, "", "");
       console.log("LNbits wallet deleted successfully for peer:", peerId);
-      res.json({ success: true, peer });
+      res.json({ success: true });
     } catch (error) {
       console.error("LNbits wallet delete error:", error);
       res.status(500).json({ error: "Fehler beim Löschen der Wallet-Verbindung" });
@@ -317,7 +331,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save LNbits credentials
       const peer = await storage.updatePeerWallet(peerId, normalizedUrl, lnbitsAdminKey);
       console.log("LNbits wallet saved successfully for peer:", peerId);
-      res.json(peer);
+      res.json(sanitizePeerForClient(peer));
     } catch (error) {
       console.error("LNbits wallet setup error:", error);
       res.status(500).json({ error: "Wallet-Setup fehlgeschlagen: " + (error as Error).message });
@@ -339,7 +353,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const peer = await storage.updateChildLightningAddress(peerId, lightningAddress);
-      res.json(peer);
+      res.json(sanitizePeerForClient(peer));
     } catch (error) {
       console.error("Child address setup error:", error);
       res.status(500).json({ error: "Failed to setup child lightning address" });
@@ -362,7 +376,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const updatedChild = await storage.linkChildToParent(childId, parentConnectionId);
-      res.json(updatedChild);
+      res.json(sanitizePeerForClient(updatedChild));
     } catch (error) {
       console.error("Link error:", error);
       res.status(500).json({ error: "Failed to link child to parent" });
@@ -379,7 +393,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const updatedChild = await storage.unlinkChildFromParent(childId);
-      res.json(updatedChild);
+      res.json(sanitizePeerForClient(updatedChild));
     } catch (error) {
       console.error("Unlink error:", error);
       res.status(500).json({ error: "Failed to unlink child from parent" });
@@ -390,7 +404,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/peers/parents", async (req, res) => {
     try {
       const parents = await storage.getAllParents();
-      res.json(parents);
+      res.json(sanitizePeersForClient(parents));
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch parents" });
     }
@@ -401,7 +415,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { connectionId } = req.params;
       const peers = await storage.getPeersByConnectionId(connectionId);
-      res.json(peers);
+      res.json(sanitizePeersForClient(peers));
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch peers" });
     }
@@ -816,7 +830,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const updatedChild = await storage.updatePeerPin(parseInt(childId), newPin);
-      res.json({ success: true, child: updatedChild });
+      res.json({ success: true, child: sanitizePeerForClient(updatedChild) });
     } catch (error) {
       console.error("Reset PIN error:", error);
       res.status(500).json({ error: "Failed to reset PIN" });
@@ -1154,7 +1168,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const parentId = parseInt(req.params.id);
       const children = await storage.getChildrenForParent(parentId);
-      res.json(children);
+      res.json(sanitizePeersForClient(children));
     } catch (error) {
       console.error("Get children error:", error);
       res.status(500).json({ error: "Failed to fetch children" });
@@ -1168,7 +1182,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const connectionId = req.params.connectionId;
       
       const children = await storage.getChildrenWithAllowances(parentId, connectionId);
-      res.json(children);
+      res.json(sanitizePeersForClient(children));
     } catch (error) {
       console.error("Get children with allowances error:", error);
       res.status(500).json({ error: "Failed to fetch children with allowances" });
@@ -1186,37 +1200,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const parent = await storage.getPeer(parentId);
-      if (!parent || (!parent.lnbitsUrl && !parent.nwcConnectionString)) {
-        return res.status(400).json({ error: "Parent has no payment method configured (LNbits or NWC)" });
+      if (!parent || !parent.lnbitsUrl || !parent.lnbitsAdminKey) {
+        return res.status(400).json({ error: "LNbits ist nicht konfiguriert" });
       }
 
       const child = await storage.getPeer(childId);
       if (!child || !child.lightningAddress) {
-        return res.status(400).json({ error: "Child Lightning address not set" });
+        return res.status(400).json({ error: "Kind hat keine Lightning-Adresse" });
       }
 
-      let paymentHash: string;
-
-      // Use selected payment method if specified
-      if (paymentMethod === "nwc" && parent.nwcConnectionString) {
-        console.log("[Payout] Using NWC for allowance payment");
-        const nwc = new NWCClient(parent.nwcConnectionString);
-        paymentHash = await nwc.payToLightningAddress(sats, child.lightningAddress, `Taschengeld für ${child.name}`);
-      } else if (paymentMethod === "lnbits" && parent.lnbitsUrl && parent.lnbitsAdminKey) {
-        console.log("[Payout] Using LNbits for allowance payment");
-        const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
-        paymentHash = await lnbits.payToLightningAddress(sats, child.lightningAddress, `Taschengeld für ${child.name}`);
-      } else if (parent.lnbitsUrl && parent.lnbitsAdminKey) {
-        console.log("[Payout] Fallback: Using LNbits for allowance payment");
-        const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
-        paymentHash = await lnbits.payToLightningAddress(sats, child.lightningAddress, `Taschengeld für ${child.name}`);
-      } else if (parent.nwcConnectionString) {
-        console.log("[Payout] Fallback: Using NWC for allowance payment");
-        const nwc = new NWCClient(parent.nwcConnectionString);
-        paymentHash = await nwc.payToLightningAddress(sats, child.lightningAddress, `Taschengeld für ${child.name}`);
-      } else {
-        throw new Error("No valid payment method available");
-      }
+      console.log("[Payout] Using LNbits for allowance payment");
+      const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+      const paymentHash = await lnbits.payToLightningAddress(sats, child.lightningAddress, `Taschengeld für ${child.name}`);
       
       // Update allowance lastPaidDate
       await storage.updateAllowance(allowanceId, { lastPaidDate: new Date() });
@@ -1239,38 +1234,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const parent = await storage.getPeer(parentId);
-      if (!parent || (!parent.lnbitsUrl && !parent.nwcConnectionString)) {
-        return res.status(400).json({ error: "Parent has no payment method configured (LNbits or NWC)" });
+      if (!parent || !parent.lnbitsUrl || !parent.lnbitsAdminKey) {
+        return res.status(400).json({ error: "LNbits ist nicht konfiguriert" });
       }
 
       const child = await storage.getPeer(childId);
       if (!child || !child.lightningAddress) {
-        return res.status(400).json({ error: "Child Lightning address not set" });
+        return res.status(400).json({ error: "Kind hat keine Lightning-Adresse" });
       }
 
       const memo = message || `Sofortzahlung für ${child.name}`;
-      let paymentHash: string;
-
-      // Use selected payment method if specified
-      if (paymentMethod === "nwc" && parent.nwcConnectionString) {
-        console.log("[Payout] Using NWC for instant payment");
-        const nwc = new NWCClient(parent.nwcConnectionString);
-        paymentHash = await nwc.payToLightningAddress(sats, child.lightningAddress, memo);
-      } else if (paymentMethod === "lnbits" && parent.lnbitsUrl && parent.lnbitsAdminKey) {
-        console.log("[Payout] Using LNbits for instant payment");
-        const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
-        paymentHash = await lnbits.payToLightningAddress(sats, child.lightningAddress, memo);
-      } else if (parent.lnbitsUrl && parent.lnbitsAdminKey) {
-        console.log("[Payout] Fallback: Using LNbits for instant payment");
-        const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
-        paymentHash = await lnbits.payToLightningAddress(sats, child.lightningAddress, memo);
-      } else if (parent.nwcConnectionString) {
-        console.log("[Payout] Fallback: Using NWC for instant payment");
-        const nwc = new NWCClient(parent.nwcConnectionString);
-        paymentHash = await nwc.payToLightningAddress(sats, child.lightningAddress, memo);
-      } else {
-        throw new Error("No valid payment method available");
-      }
+      console.log("[Payout] Using LNbits for instant payment");
+      const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+      const paymentHash = await lnbits.payToLightningAddress(sats, child.lightningAddress, memo);
 
       // Update child's balance
       const newBalance = (child.balance || 0) + sats;
@@ -1656,7 +1632,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Get all active allowances
       const allPeers = await db.select().from(peers);
-      const connectionIds = [...new Set(allPeers.map((p: any) => p.connectionId))];
+      const connectionIds = Array.from(new Set(allPeers.map((p: any) => p.connectionId)));
 
       for (const connectionId of connectionIds) {
         const allowances = await storage.getAllowances(connectionId);

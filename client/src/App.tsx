@@ -57,7 +57,7 @@ type Peer = {
   pin: string;
   connectionId: string;
   balance?: number;
-  lnbitsUrl?: string;
+  hasLnbitsConfigured?: boolean;
   createdAt: Date;
 };
 
@@ -70,8 +70,7 @@ type User = {
   connectionId: string;
   familyName?: string;
   balance?: number;
-  lnbitsUrl?: string;
-  lnbitsAdminKey?: string;
+  hasLnbitsConfigured?: boolean;
   lightningAddress?: string;
   favoriteColor?: string;
 };
@@ -2311,17 +2310,17 @@ function PeersContent({ user, setUser, queryClient }: any) {
 
 function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onClose, layoutView, setLayoutView }: any) {
   const queryClient = useQueryClient();
-  const [editLnbitsUrl, setEditLnbitsUrl] = useState(user.lnbitsUrl || "");
-  const [editLnbitsAdminKey, setEditLnbitsAdminKey] = useState(user.lnbitsAdminKey || "");
+  const [editLnbitsUrl, setEditLnbitsUrl] = useState("");
+  const [editLnbitsAdminKey, setEditLnbitsAdminKey] = useState("");
   const [editFamilyName, setEditFamilyName] = useState(user.familyName || "");
   const [showAdminKey, setShowAdminKey] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { toast: useToastFn } = useToast();
 
-  // Sync state with user changes
+  // Sync state with user changes - credentials are never stored in user object
   useEffect(() => {
-    setEditLnbitsUrl(user.lnbitsUrl || "");
-    setEditLnbitsAdminKey(user.lnbitsAdminKey || "");
+    setEditLnbitsUrl("");
+    setEditLnbitsAdminKey("");
     setEditFamilyName(user.familyName || "");
     setShowAdminKey(false);
   }, [user]);
@@ -2367,12 +2366,14 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setUser({ ...user, lnbitsUrl: editLnbitsUrl, lnbitsAdminKey: editLnbitsAdminKey });
+      setUser({ ...user, hasLnbitsConfigured: true });
+      setEditLnbitsUrl("");
+      setEditLnbitsAdminKey("");
       
       // Show success toast with longer duration
       useToastFn({ 
         title: "✅ LNbits erfolgreich gespeichert!", 
-        description: `URL: ${editLnbitsUrl}`,
+        description: "Wallet-Verbindung ist jetzt aktiv",
         duration: 3000
       });
       
@@ -2400,7 +2401,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setUser({ ...user, lnbitsUrl: undefined, lnbitsAdminKey: undefined });
+      setUser({ ...user, hasLnbitsConfigured: false });
       
       useToastFn({ 
         title: "❌ LNbits Verbindung getrennt", 
@@ -2574,11 +2575,11 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                 <>
                   {walletTab === "lnbits" && (
                   <div className="space-y-4 mt-4 border-2 border-primary/40 bg-primary/5 rounded-lg p-4">
-                    {user.lnbitsUrl ? (
+                    {user.hasLnbitsConfigured ? (
                       <div className="space-y-3">
                         <div className="p-3 rounded-lg border border-green-500/30 bg-green-500/10">
                           <p className="text-sm font-semibold text-green-300">✓ LNbits verbunden</p>
-                          <p className="text-sm text-muted-foreground mt-1">URL: <span className="text-sm font-mono break-all">{user.lnbitsUrl}</span></p>
+                          <p className="text-sm text-muted-foreground mt-1">Wallet ist konfiguriert und einsatzbereit</p>
                         </div>
                         <Button
                           onClick={deleteLNbits}
@@ -2777,8 +2778,8 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
 
 function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, queryClient, layoutView, setLayoutView, showSpendingStats, setShowSpendingStats, spendingStats, setSpendingStats, messages, setMessages, newMessage, setNewMessage, isLoadingMessage, setIsLoadingMessage, allowances, parentChildren, allowanceChildId, setAllowanceChildId, allowanceSats, setAllowanceSats, allowanceFrequency, setAllowanceFrequency, isCreatingAllowance, handleCreateAllowance, handleDeleteAllowance }: any) {
   const { toast } = useToast();
-  const [lnbitsUrl, setLnbitsUrl] = useState(user.lnbitsUrl || "");
-  const [lnbitsAdminKey, setLnbitsAdminKey] = useState(user.lnbitsAdminKey || "");
+  const [lnbitsUrl, setLnbitsUrl] = useState("");
+  const [lnbitsAdminKey, setLnbitsAdminKey] = useState("");
   const [lightningAddress, setLightningAddress] = useState(user.lightningAddress || "");
   const [showConnectionCode, setShowConnectionCode] = useState(() => {
     const stored = localStorage.getItem(`connectionCodeShown_${user.id}`);
@@ -2850,7 +2851,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setUser({ ...user, lnbitsUrl: data.lnbitsUrl, lnbitsAdminKey: data.lnbitsAdminKey });
+      setUser({ ...user, hasLnbitsConfigured: true });
+      setLnbitsUrl("");
+      setLnbitsAdminKey("");
       toast({ title: "LNbits verbunden!", description: "LNbits Wallet ist jetzt aktiv" });
     } catch (error) {
       toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
@@ -3583,7 +3586,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       data-testid="input-lnbits-key"
                     />
                     <p className="text-xs text-muted-foreground">
-                      Status: {user.lnbitsUrl ? "✓ Verbunden" : "✗ Nicht verbunden"}
+                      Status: {user.hasLnbitsConfigured ? "✓ Verbunden" : "✗ Nicht verbunden"}
                     </p>
                   </div>
                   <Button 
@@ -3726,7 +3729,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   }
 
   if (currentView === "tasks") {
-    const isLnbitsConfigured = user.lnbitsUrl && user.lnbitsAdminKey;
+    const isLnbitsConfigured = user.hasLnbitsConfigured;
     const availableBalance = displayBalance !== null ? displayBalance / 1000 : 0;
     const isBalanceInsufficient = displayBalance !== null && availableBalance < newTask.sats;
     const balancePercentage = displayBalance !== null && newTask.sats > 0 ? (availableBalance / newTask.sats) * 100 : 100;
@@ -3954,8 +3957,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   }
 
   if (currentView === "wallet-settings" && user.role === "parent") {
-    const [editLnbitsUrl, setEditLnbitsUrl] = useState(user.lnbitsUrl || "");
-    const [editLnbitsAdminKey, setEditLnbitsAdminKey] = useState(user.lnbitsAdminKey || "");
+    const [editLnbitsUrl, setEditLnbitsUrl] = useState("");
+    const [editLnbitsAdminKey, setEditLnbitsAdminKey] = useState("");
     const [showAdminKey, setShowAdminKey] = useState(false);
 
     const handleSaveLnbits = async () => {
@@ -4001,15 +4004,15 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <CardDescription>Verbinde dein LNbits-Konto um Aufgaben mit Satoshi-Belohnungen zu erstellen</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {user.lnbitsUrl ? (
+            {user.hasLnbitsConfigured ? (
               <div className="space-y-3">
                 <div className="p-3 rounded-lg border border-green-500/30 bg-green-500/10">
                   <p className="text-sm font-semibold text-green-300">✓ LNbits verbunden</p>
-                  <p className="text-sm text-muted-foreground mt-1">URL: <span className="text-sm font-mono break-all">{user.lnbitsUrl}</span></p>
+                  <p className="text-sm text-muted-foreground mt-1">Wallet ist konfiguriert und einsatzbereit</p>
                 </div>
                 <Button
                   onClick={() => {
-                    setUser({ ...user, lnbitsUrl: undefined, lnbitsAdminKey: undefined });
+                    setUser({ ...user, hasLnbitsConfigured: false });
                     fetch("/api/wallet/disconnect", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ peerId: user.id }) });
                     toast({ title: "Getrennt", description: "LNbits-Verbindung wurde entfernt" });
                   }}
@@ -4779,8 +4782,8 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     const children = connectedPeers.filter((p: any) => p.role === "child");
     const [resetPinChildId, setResetPinChildId] = useState<number | null>(null);
     const [resetPinValue, setResetPinValue] = useState("");
-    const [editLnbitsUrl, setEditLnbitsUrl] = useState(user.lnbitsUrl || "");
-    const [editLnbitsAdminKey, setEditLnbitsAdminKey] = useState(user.lnbitsAdminKey || "");
+    const [editLnbitsUrl, setEditLnbitsUrl] = useState("");
+    const [editLnbitsAdminKey, setEditLnbitsAdminKey] = useState("");
     const [showAdminKey, setShowAdminKey] = useState(false);
 
     const handleResetPin = async (childId: number) => {
@@ -4838,15 +4841,15 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
             <CardDescription>Verbinde dein LNbits-Konto um Aufgaben mit Satoshi-Belohnungen zu erstellen</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {user.lnbitsUrl ? (
+            {user.hasLnbitsConfigured ? (
               <div className="space-y-3">
                 <div className="p-3 rounded-lg border border-green-500/30 bg-green-500/10">
                   <p className="text-sm font-semibold text-green-300">✓ LNbits verbunden</p>
-                  <p className="text-sm text-muted-foreground mt-1">URL: <span className="text-sm font-mono break-all">{user.lnbitsUrl}</span></p>
+                  <p className="text-sm text-muted-foreground mt-1">Wallet ist konfiguriert und einsatzbereit</p>
                 </div>
                 <Button
                   onClick={() => {
-                    setUser({ ...user, lnbitsUrl: undefined, lnbitsAdminKey: undefined });
+                    setUser({ ...user, hasLnbitsConfigured: false });
                     fetch("/api/wallet/disconnect", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ peerId: user.id }) });
                     toast({ title: "Getrennt", description: "LNbits-Verbindung wurde entfernt" });
                   }}
