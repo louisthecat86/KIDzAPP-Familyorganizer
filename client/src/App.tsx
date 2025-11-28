@@ -1367,16 +1367,16 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
       style={{ backgroundImage: 'url(/background.png)' }}
     >
       {/* Logo at top */}
-      <div className="pt-4">
+      <div className="pt-2">
         <img 
           src="/logo-transparent.png" 
           alt="KID⚡APP - Family Organizer" 
-          className="max-w-xs w-full h-auto"
+          className="max-w-[280px] w-full h-auto"
         />
       </div>
       
-      {/* Center content */}
-      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md gap-5">
+      {/* Center content - pushed more to middle */}
+      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md gap-4 -mt-12">
         
         {/* Info Box */}
         <div className="bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl p-5 w-full shadow-lg">
