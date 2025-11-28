@@ -5738,7 +5738,7 @@ function TrackerChart({ userId }: { userId: number }) {
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-            <span><span className="text-blue-400 font-semibold">Blaue Linie</span> = Der Bitcoin-Kurs (wie teuer ist Bitcoin gerade?)</span>
+            <span><span className="text-blue-400 font-semibold">Blaue Linie</span> = Der Bitcoin-Kurs zum Zeitpunkt des Datenpunktes (nicht der aktuelle Preis)</span>
           </div>
         </div>
       </div>
