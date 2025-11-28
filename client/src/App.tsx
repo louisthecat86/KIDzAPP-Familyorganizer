@@ -5500,64 +5500,104 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
 function BitcoinValueWidget({ sats, setCurrentView }: { sats: number; setCurrentView?: (view: string) => void }) {
   const [btcPrice, setBtcPrice] = useState<{ usd: number; eur: number } | null>(null);
   const [interestRate, setInterestRate] = useState(0.5); // Start at 0.5% monthly
+  const [historicalData, setHistoricalData] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchPrice = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch("/api/btc-price");
-        const data = await res.json();
-        setBtcPrice(data);
+        const priceRes = await fetch("/api/btc-price");
+        const priceData = await priceRes.json();
+        setBtcPrice(priceData);
+
+        const historyRes = await fetch("/api/btc-history?days=30");
+        const historyData = await historyRes.json();
+        setHistoricalData(historyData);
       } catch (error) {
-        console.error("Failed to fetch BTC price:", error);
+        console.error("Failed to fetch data:", error);
       }
     };
 
-    fetchPrice();
-    const interval = setInterval(fetchPrice, 30000);
+    fetchData();
+    const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
   }, [sats]);
 
-  if (!btcPrice) return null;
+  if (!btcPrice || historicalData.length === 0) return null;
 
   // Calculate values in EUR
   const btcAmount = sats / 100_000_000;
   const currentValueEur = btcAmount * btcPrice.eur;
   const savingsValueEur = currentValueEur * (1 + interestRate / 100);
 
-  // Simulate 12 months growth with compound interest
-  const bitcoinGrowth = currentValueEur * 0.5; // 50% growth over 12 months (example)
-  const monthlyRate = interestRate / 100; // Convert percentage to decimal
-  const savingsValueAfter12Months = currentValueEur * Math.pow(1 + monthlyRate, 12); // Compound interest formula
-  const savingsGrowth = savingsValueAfter12Months - currentValueEur; // Actual growth with compound interest
-  const annualInterestRate = interestRate * 12; // For display
+  // Generate 12 months savings projection
+  const savingsProjection = Array.from({ length: 13 }, (_, month) => {
+    const monthlyRate = interestRate / 100;
+    const value = currentValueEur * Math.pow(1 + monthlyRate, month);
+    return {
+      month: month === 0 ? "Jetzt" : `M${month}`,
+      value: Math.round(value * 100) / 100
+    };
+  });
+
+  // Scale bitcoin data to same scale as current value for comparison
+  const btcChartData = historicalData.map((item: any) => ({
+    date: item.date,
+    value: Math.round((btcAmount * item.price) * 100) / 100
+  })).slice(-10); // Last 10 data points
 
   return (
     <div className="pt-4 border-t border-border/50">
       <div className="space-y-3">
-        {/* Comparison Cards - Minimal */}
+        {/* Comparison Cards with Mini Charts */}
         <div className="grid grid-cols-2 gap-2">
           {/* Bitcoin Card */}
-          <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg p-3">
-            <div className="flex items-center gap-1 mb-2">
+          <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg p-3 space-y-2">
+            <div className="flex items-center gap-1">
               <span className="text-lg">⚡</span>
               <p className="text-xs text-muted-foreground font-bold">BITCOIN</p>
             </div>
-            <p className="text-xl font-mono font-bold text-yellow-400" data-testid="text-sats-current-value">
+            <p className="text-lg font-mono font-bold text-yellow-400" data-testid="text-sats-current-value">
               €{currentValueEur.toFixed(2)}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Deine Sats heute</p>
+            {btcChartData.length > 1 && (
+              <div className="h-12 -mx-1 -mb-1">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={btcChartData}>
+                    <CartesianGrid strokeDasharray="0" stroke="rgba(255,193,7,0.1)" />
+                    <XAxis dataKey="date" tick={{ fontSize: 9 }} />
+                    <YAxis width={30} tick={{ fontSize: 9 }} />
+                    <Tooltip contentStyle={{ fontSize: 11, background: "rgba(0,0,0,0.8)", border: "1px solid rgba(255,193,7,0.3)" }} />
+                    <Line type="monotone" dataKey="value" stroke="#facc15" dot={false} strokeWidth={2} isAnimationActive={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">Letzte 10 Tage</p>
           </div>
 
           {/* Sparbuch Card */}
-          <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-lg p-3">
-            <div className="flex items-center gap-1 mb-2">
+          <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-lg p-3 space-y-2">
+            <div className="flex items-center gap-1">
               <span className="text-lg">🏦</span>
               <p className="text-xs text-muted-foreground font-bold">SPARBUCH</p>
             </div>
-            <p className="text-xl font-mono font-bold text-blue-400">
+            <p className="text-lg font-mono font-bold text-blue-400">
               €{savingsValueEur.toFixed(2)}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Mit 0,5% Zinsen</p>
+            {savingsProjection.length > 1 && (
+              <div className="h-12 -mx-1 -mb-1">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={savingsProjection}>
+                    <CartesianGrid strokeDasharray="0" stroke="rgba(34,197,94,0.1)" />
+                    <XAxis dataKey="month" tick={{ fontSize: 9 }} />
+                    <YAxis width={30} tick={{ fontSize: 9 }} />
+                    <Tooltip contentStyle={{ fontSize: 11, background: "rgba(0,0,0,0.8)", border: "1px solid rgba(34,197,94,0.3)" }} />
+                    <Line type="monotone" dataKey="value" stroke="#22c55e" dot={false} strokeWidth={2} isAnimationActive={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">0,5% monatlich</p>
           </div>
         </div>
 
