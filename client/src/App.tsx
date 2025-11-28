@@ -4817,18 +4817,18 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           <div className="relative z-10 space-y-6">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div className="flex-1">
-                <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest mb-2">⚡ Verdiente Sats</p>
+                <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest mb-2">Erhaltene Sats</p>
                 <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-primary" data-testid="text-earned-sats">
                   {(user.balance || 0).toLocaleString()} <span className="text-2xl opacity-50 text-white">SATS</span>
                 </h2>
                 {satsBreakdown && (
                   <div className="flex gap-4 mt-3 text-xs">
                     <div>
-                      <span className="text-muted-foreground">📋 Tasks:</span>
+                      <span className="text-muted-foreground">Verdient:</span>
                       <span className="font-mono text-yellow-400 ml-1">{satsBreakdown.taskSats.toLocaleString()}</span>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">💰 Taschengeld:</span>
+                      <span className="text-muted-foreground">Taschengeld:</span>
                       <span className="font-mono text-green-400 ml-1">{satsBreakdown.allowanceSats.toLocaleString()}</span>
                     </div>
                   </div>
