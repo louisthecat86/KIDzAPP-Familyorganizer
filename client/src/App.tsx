@@ -1364,13 +1364,13 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-600 via-purple-500 to-cyan-400 p-4 sm:p-6 relative overflow-hidden flex items-center justify-center">
       <div className="w-full max-w-5xl z-10">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-5xl sm:text-7xl font-heading font-bold mb-4 text-gray-900 tracking-tight">
-            KID<span className="text-yellow-400">⚡</span>APP
-          </h1>
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-1">FAMILYORGANIZER</h2>
-          <p className="text-base text-gray-700">Wo aus Aufgaben Belohnungen werden</p>
+        {/* Header - Logo Image */}
+        <div className="text-center mb-12">
+          <img 
+            src="/attached_assets/grafik_1764330832953.png" 
+            alt="KID⚡APP - Family Organizer" 
+            className="max-w-md mx-auto w-full h-auto"
+          />
         </div>
 
         {/* Main Content */}
