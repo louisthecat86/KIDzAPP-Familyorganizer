@@ -1362,66 +1362,42 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
 
 function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-600 via-purple-500 to-cyan-400 flex items-center justify-center p-4">
-      {/* Centered Glass Card */}
-      <div className="w-full max-w-lg">
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-[0_20px_60px_-20px_rgba(60,0,120,0.5)]">
-          {/* Logo */}
-          <div className="text-center mb-8">
-            <img 
-              src="/logo.png" 
-              alt="KID⚡APP - Family Organizer" 
-              className="max-w-[280px] mx-auto w-full h-auto"
-            />
-          </div>
+    <div 
+      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: 'url(/logo.png)' }}
+    >
+      {/* Buttons at bottom */}
+      <div className="w-full max-w-md mt-auto mb-8 absolute bottom-0 left-1/2 -translate-x-1/2 px-4">
+        <div className="space-y-3">
+          <button 
+            className="w-full p-4 bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl hover:bg-white/30 hover:border-white/50 transition-all flex items-center gap-4 group shadow-lg"
+            onClick={() => onSelect("parent")}
+            data-testid="button-select-parent"
+          >
+            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+              <UserIcon className="h-6 w-6 text-white" />
+            </div>
+            <div className="text-left">
+              <h3 className="font-bold text-lg text-gray-900 tracking-wide">ELTERN</h3>
+              <p className="text-sm text-gray-700">Aufgaben & Wallet verwalten</p>
+            </div>
+            <span className="ml-auto text-yellow-500 text-xl opacity-0 group-hover:opacity-100 transition-opacity">⚡</span>
+          </button>
 
-          {/* Features - Compact */}
-          <div className="mb-8 space-y-2">
-            {[
-              "Aufgaben erstellen & Sats verdienen",
-              "Foto-Beweis hochladen",
-              "Sofort-Auszahlung per Lightning",
-              "Familienkalender & Chat"
-            ].map((text, i) => (
-              <div key={i} className="flex items-center gap-3 text-white/90 text-sm">
-                <span className="text-yellow-400 text-base">⚡</span>
-                <span>{text}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Role Selection Buttons */}
-          <div className="space-y-3">
-            <button 
-              className="w-full p-4 bg-white/15 backdrop-blur-sm border border-white/30 rounded-2xl hover:bg-white/25 hover:border-white/50 transition-all flex items-center gap-4 group"
-              onClick={() => onSelect("parent")}
-              data-testid="button-select-parent"
-            >
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                <UserIcon className="h-6 w-6 text-white" />
-              </div>
-              <div className="text-left">
-                <h3 className="font-bold text-lg text-white tracking-wide">ELTERN</h3>
-                <p className="text-sm text-white/70">Aufgaben & Wallet verwalten</p>
-              </div>
-              <span className="ml-auto text-yellow-400 text-xl opacity-0 group-hover:opacity-100 transition-opacity">⚡</span>
-            </button>
-
-            <button 
-              className="w-full p-4 bg-white/15 backdrop-blur-sm border border-white/30 rounded-2xl hover:bg-white/25 hover:border-white/50 transition-all flex items-center gap-4 group"
-              onClick={() => onSelect("child")}
-              data-testid="button-select-child"
-            >
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                <Sparkles className="h-6 w-6 text-white" />
-              </div>
-              <div className="text-left">
-                <h3 className="font-bold text-lg text-white tracking-wide">KIND</h3>
-                <p className="text-sm text-white/70">Aufgaben erledigen & Sats verdienen</p>
-              </div>
-              <span className="ml-auto text-yellow-400 text-xl opacity-0 group-hover:opacity-100 transition-opacity">⚡</span>
-            </button>
-          </div>
+          <button 
+            className="w-full p-4 bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl hover:bg-white/30 hover:border-white/50 transition-all flex items-center gap-4 group shadow-lg"
+            onClick={() => onSelect("child")}
+            data-testid="button-select-child"
+          >
+            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+              <Sparkles className="h-6 w-6 text-white" />
+            </div>
+            <div className="text-left">
+              <h3 className="font-bold text-lg text-gray-900 tracking-wide">KIND</h3>
+              <p className="text-sm text-gray-700">Aufgaben erledigen & Sats verdienen</p>
+            </div>
+            <span className="ml-auto text-yellow-500 text-xl opacity-0 group-hover:opacity-100 transition-opacity">⚡</span>
+          </button>
         </div>
       </div>
     </div>
