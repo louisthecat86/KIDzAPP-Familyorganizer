@@ -5579,6 +5579,9 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
 function TrackerChart({ userId }: { userId: number }) {
   const [trackerData, setTrackerData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showEuro, setShowEuro] = useState(true);
+  const [showSats, setShowSats] = useState(true);
+  const [showBtcPrice, setShowBtcPrice] = useState(true);
 
   useEffect(() => {
     const fetchTrackerData = async () => {
@@ -5614,6 +5617,41 @@ function TrackerChart({ userId }: { userId: number }) {
           <p className="text-[11px] text-muted-foreground">BTC Preis</p>
           <p className="text-sm font-bold text-blue-300">€{latest.btcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0}) || 'N/A'}</p>
         </div>
+      </div>
+      <div className="flex gap-2 flex-wrap mb-2">
+        <button
+          onClick={() => setShowEuro(!showEuro)}
+          className={`text-xs px-2 py-1 rounded border transition-colors ${
+            showEuro 
+              ? 'bg-green-500/20 border-green-500/50 text-green-400' 
+              : 'bg-slate-800/50 border-slate-700/50 text-slate-400'
+          }`}
+          data-testid="toggle-euro"
+        >
+          € Euro
+        </button>
+        <button
+          onClick={() => setShowSats(!showSats)}
+          className={`text-xs px-2 py-1 rounded border transition-colors ${
+            showSats 
+              ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400' 
+              : 'bg-slate-800/50 border-slate-700/50 text-slate-400'
+          }`}
+          data-testid="toggle-sats"
+        >
+          ⚡ Satoshi
+        </button>
+        <button
+          onClick={() => setShowBtcPrice(!showBtcPrice)}
+          className={`text-xs px-2 py-1 rounded border transition-colors ${
+            showBtcPrice 
+              ? 'bg-blue-500/20 border-blue-500/50 text-blue-400' 
+              : 'bg-slate-800/50 border-slate-700/50 text-slate-400'
+          }`}
+          data-testid="toggle-btc-price"
+        >
+          BTC Preis
+        </button>
       </div>
       <div className="h-32 -mx-2">
         <ResponsiveContainer width="100%" height="100%">
@@ -5656,9 +5694,9 @@ function TrackerChart({ userId }: { userId: number }) {
               }}
               cursor={false}
             />
-            <Area type="monotone" dataKey="euroValue" stroke="#10b981" fill="url(#trackerGradGreen)" />
-            <Area yAxisId="right" type="monotone" dataKey="totalSats" stroke="#fbbf24" fill="url(#trackerGradYellow)" />
-            <Area yAxisId="btcPrice" type="monotone" dataKey="btcPriceScaled" stroke="#3b82f6" fill="url(#trackerGradBlue)" />
+            {showEuro && <Area type="monotone" dataKey="euroValue" stroke="#10b981" fill="url(#trackerGradGreen)" />}
+            {showSats && <Area yAxisId="right" type="monotone" dataKey="totalSats" stroke="#fbbf24" fill="url(#trackerGradYellow)" />}
+            {showBtcPrice && <Area yAxisId="btcPrice" type="monotone" dataKey="btcPriceScaled" stroke="#3b82f6" fill="url(#trackerGradBlue)" />}
           </AreaChart>
         </ResponsiveContainer>
       </div>
