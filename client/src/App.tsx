@@ -86,23 +86,35 @@ function NotificationBadge({ count }: { count: number }) {
 function ThemeToggle() {
   const [isDark, setIsDark] = useState(() => {
     if (typeof document !== 'undefined') {
-      return document.documentElement.classList.contains('dark');
+      const hasDark = document.documentElement.classList.contains('dark');
+      return hasDark;
     }
     return true;
   });
 
-  const toggleTheme = () => {
-    if (typeof document !== 'undefined') {
-      const html = document.documentElement;
-      if (html.classList.contains('dark')) {
-        html.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
+  useEffect(() => {
+    if (typeof localStorage !== 'undefined') {
+      const saved = localStorage.getItem('theme-mode');
+      if (saved === 'light') {
+        document.documentElement.classList.remove('dark');
         setIsDark(false);
       } else {
-        html.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
+        document.documentElement.classList.add('dark');
         setIsDark(true);
       }
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const html = document.documentElement;
+    if (html.classList.contains('dark')) {
+      html.classList.remove('dark');
+      localStorage.setItem('theme-mode', 'light');
+      setIsDark(false);
+    } else {
+      html.classList.add('dark');
+      localStorage.setItem('theme-mode', 'dark');
+      setIsDark(true);
     }
   };
 
@@ -113,6 +125,7 @@ function ThemeToggle() {
       size="icon"
       className="h-10 w-10"
       data-testid="button-toggle-theme"
+      title={isDark ? "Light Mode" : "Dark Mode"}
     >
       {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
     </Button>
