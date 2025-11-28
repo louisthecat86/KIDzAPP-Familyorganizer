@@ -1367,12 +1367,35 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
       style={{ backgroundImage: 'url(/background.png)' }}
     >
       {/* Logo at top */}
-      <div className="flex-1 flex items-center justify-center pt-8">
+      <div className="flex-1 flex flex-col items-center justify-center pt-8 gap-8">
         <img 
           src="/logo-transparent.png" 
           alt="KID⚡APP - Family Organizer" 
           className="max-w-sm w-full h-auto"
         />
+        
+        {/* Info Box */}
+        <div className="bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl p-5 max-w-md w-full shadow-lg">
+          <h3 className="text-lg font-bold mb-3 text-gray-900">So funktioniert's</h3>
+          <div className="space-y-2 text-gray-800 text-sm">
+            <div className="flex gap-2">
+              <span className="text-yellow-500 flex-shrink-0">⚡</span>
+              <span>Eltern erstellen Aufgaben mit Sats-Belohnung</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="text-yellow-500 flex-shrink-0">⚡</span>
+              <span>Kinder erledigen Aufgaben & laden Foto-Beweis hoch</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="text-yellow-500 flex-shrink-0">⚡</span>
+              <span>Eltern bestätigen & zahlen sofort aus</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="text-yellow-500 flex-shrink-0">⚡</span>
+              <span>Familienkalender & Chat für direkten Austausch</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Buttons at bottom */}
