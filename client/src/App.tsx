@@ -49,6 +49,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { PhotoUpload } from "@/components/PhotoUpload";
 import { ProofViewer } from "@/components/ProofViewer";
+import familyOrganizerLogo from "@assets/2-Photoroom_1764336432015.png";
 
 type Peer = {
   id: number;
@@ -2922,7 +2923,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     
     return (
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
+        <img src={familyOrganizerLogo} alt="FamilyOrganizer" className="h-10 object-contain" />
         
         {user.role === "parent" && (
           <div 
@@ -5118,7 +5119,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
 
     return (
       <div className="max-w-4xl space-y-2">
-        <h1 className="text-3xl font-bold mb-4 text-slate-900">Dashboard</h1>
+        <img src={familyOrganizerLogo} alt="FamilyOrganizer" className="h-10 object-contain mb-4" />
         <motion.section 
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
