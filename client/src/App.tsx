@@ -4810,8 +4810,6 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
               </div>
             </div>
 
-            <BitcoinValueWidget sats={user.balance || 0} setCurrentView={setCurrentView} user={user} />
-
             {/* Tracker Chart */}
             <div className="pt-4 border-t border-border/50">
               <ChildTrackerComponent childId={user.id} />
