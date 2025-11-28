@@ -632,17 +632,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Create a new Bitcoin snapshot when child receives sats
         try {
+          console.log(`[Task Approval] About to create snapshot for ${child.name}...`);
           const btcPrice = await getFreshBitcoinPrice();
           const valueEur = (newBalance / 1e8) * btcPrice.eur;
+          console.log(`[Task Approval] Creating snapshot: ${newBalance} sats × €${btcPrice.eur} = €${valueEur.toFixed(2)}`);
           await storage.createDailyBitcoinSnapshot({
             peerId: child.id,
             connectionId: child.connectionId,
             valueEur: Math.round(valueEur * 100), // Convert to cents
             satoshiAmount: newBalance
           });
-          console.log(`[Snapshot] Created new snapshot for ${child.name}: ${newBalance} sats = €${valueEur.toFixed(2)}`);
+          console.log(`[Task Approval Snapshot] ✓ Created for ${child.name}: €${valueEur.toFixed(2)}`);
         } catch (snapshotError) {
-          console.warn("Failed to create Bitcoin snapshot (continuing anyway):", snapshotError);
+          console.error("[Task Approval Snapshot] ✗ Failed:", snapshotError);
         }
 
         let paymentHash = "";
@@ -1150,16 +1152,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create Bitcoin snapshot for new balance with FRESH price
       try {
+        console.log(`[Instant Payout] About to create snapshot for ${child.name}...`);
         const btcPrice = await getFreshBitcoinPrice();
         const valueEur = (newBalance / 1e8) * btcPrice.eur;
+        console.log(`[Instant Payout] Creating snapshot: ${newBalance} sats × €${btcPrice.eur} = €${valueEur.toFixed(2)}`);
         await storage.createDailyBitcoinSnapshot({
           peerId: child.id,
           connectionId: child.connectionId,
           valueEur: Math.round(valueEur * 100),
           satoshiAmount: newBalance
         });
+        console.log(`[Instant Payout Snapshot] ✓ Created for ${child.name}: €${valueEur.toFixed(2)}`);
       } catch (snapshotError) {
-        console.warn(`[Instant Payout Snapshot] Failed to create snapshot for ${child.name}:`, snapshotError);
+        console.error(`[Instant Payout Snapshot] ✗ Failed for ${child.name}:`, snapshotError);
       }
 
       res.json({ success: true, paymentHash });
@@ -1178,14 +1183,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (response.ok) {
         const data = await response.json();
         if (data?.bitcoin?.eur) {
+          console.log(`[getFreshBitcoinPrice] Fresh price: €${data.bitcoin.eur}`);
           return { eur: data.bitcoin.eur };
         }
       }
     } catch (e) {
-      console.warn("[getFreshBitcoinPrice] Failed to fetch");
+      console.warn("[getFreshBitcoinPrice] Failed to fetch:", e);
     }
     // Fallback to lastKnownPrice or default
-    if (lastKnownPrice) return { eur: lastKnownPrice.eur };
+    if (lastKnownPrice) {
+      console.log(`[getFreshBitcoinPrice] Using cached price: €${lastKnownPrice.eur}`);
+      return { eur: lastKnownPrice.eur };
+    }
+    console.log(`[getFreshBitcoinPrice] Using default price: €79000`);
     return { eur: 79000 };
   }
 
@@ -1241,16 +1251,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create Bitcoin snapshot for new balance with FRESH price
       try {
+        console.log(`[Allowance] About to create snapshot for ${child.name}...`);
         const btcPrice = await getFreshBitcoinPrice();
         const valueEur = (newBalance / 1e8) * btcPrice.eur;
+        console.log(`[Allowance] Creating snapshot: ${newBalance} sats × €${btcPrice.eur} = €${valueEur.toFixed(2)}`);
         await storage.createDailyBitcoinSnapshot({
           peerId: child.id,
           connectionId: child.connectionId,
           valueEur: Math.round(valueEur * 100),
           satoshiAmount: newBalance
         });
+        console.log(`[Allowance Snapshot] ✓ Created for ${child.name}: €${valueEur.toFixed(2)}`);
       } catch (snapshotError) {
-        console.warn(`[Allowance Snapshot] Failed to create snapshot for ${child.name}:`, snapshotError);
+        console.error(`[Allowance Snapshot] ✗ Failed for ${child.name}:`, snapshotError);
       }
 
       // Update allowance lastPaidDate
