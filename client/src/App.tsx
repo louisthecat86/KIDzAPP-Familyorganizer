@@ -5501,6 +5501,15 @@ function BitcoinValueWidget({ sats, setCurrentView }: { sats: number; setCurrent
   const [btcPrice, setBtcPrice] = useState<{ usd: number; eur: number } | null>(null);
   const [interestRate, setInterestRate] = useState(0.2); // Start at 0.2% monthly
   const [historicalData, setHistoricalData] = useState<any[]>([]);
+  const [btcDays, setBtcDays] = useState<number>(30);
+
+  const timeframes = [
+    { label: "10 Tage", days: 10 },
+    { label: "30 Tage", days: 30 },
+    { label: "3 Monate", days: 90 },
+    { label: "6 Monate", days: 180 },
+    { label: "1 Jahr", days: 365 }
+  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -5509,7 +5518,7 @@ function BitcoinValueWidget({ sats, setCurrentView }: { sats: number; setCurrent
         const priceData = await priceRes.json();
         setBtcPrice(priceData);
 
-        const historyRes = await fetch("/api/btc-history?days=30");
+        const historyRes = await fetch(`/api/btc-history?days=${btcDays}`);
         const historyData = await historyRes.json();
         setHistoricalData(historyData);
       } catch (error) {
@@ -5520,7 +5529,7 @@ function BitcoinValueWidget({ sats, setCurrentView }: { sats: number; setCurrent
     fetchData();
     const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
-  }, [sats]);
+  }, [sats, btcDays]);
 
   if (!btcPrice || historicalData.length === 0) return null;
 
@@ -5560,19 +5569,36 @@ function BitcoinValueWidget({ sats, setCurrentView }: { sats: number; setCurrent
               €{currentValueEur.toFixed(2)}
             </p>
             {btcChartData.length > 1 && (
-              <div className="h-12 -mx-1 -mb-1">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={btcChartData}>
-                    <CartesianGrid strokeDasharray="0" stroke="rgba(255,193,7,0.1)" />
-                    <XAxis dataKey="date" tick={{ fontSize: 9 }} />
-                    <YAxis width={30} tick={{ fontSize: 9 }} />
-                    <Tooltip contentStyle={{ fontSize: 11, background: "rgba(0,0,0,0.8)", border: "1px solid rgba(255,193,7,0.3)" }} />
-                    <Line type="monotone" dataKey="value" stroke="#facc15" dot={false} strokeWidth={2} isAnimationActive={false} />
-                  </LineChart>
-                </ResponsiveContainer>
+              <div className="space-y-1.5">
+                <div className="h-12 -mx-1">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={btcChartData}>
+                      <CartesianGrid strokeDasharray="0" stroke="rgba(255,193,7,0.1)" />
+                      <XAxis dataKey="date" tick={{ fontSize: 9 }} />
+                      <YAxis width={30} tick={{ fontSize: 9 }} />
+                      <Tooltip contentStyle={{ fontSize: 11, background: "rgba(0,0,0,0.8)", border: "1px solid rgba(255,193,7,0.3)" }} />
+                      <Line type="monotone" dataKey="value" stroke="#facc15" dot={false} strokeWidth={2} isAnimationActive={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {timeframes.map((tf) => (
+                    <button
+                      key={tf.days}
+                      onClick={() => setBtcDays(tf.days)}
+                      className={`text-xs px-2 py-0.5 rounded border transition-colors ${
+                        btcDays === tf.days
+                          ? "bg-yellow-500/30 border-yellow-500/60 text-yellow-400 font-bold"
+                          : "bg-yellow-500/10 border-yellow-500/20 text-yellow-300 hover:bg-yellow-500/20"
+                      }`}
+                      data-testid={`button-btc-timeframe-${tf.days}`}
+                    >
+                      {tf.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
-            <p className="text-xs text-muted-foreground">Letzte 10 Tage</p>
           </div>
 
           {/* Sparbuch Card */}
