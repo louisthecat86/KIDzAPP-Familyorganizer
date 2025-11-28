@@ -1840,8 +1840,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Start automatic allowance payout scheduler (runs every minute)
-  cron.schedule("* * * * *", async () => {
+  // Start automatic allowance payout scheduler (runs daily at 8:00 AM)
+  cron.schedule("0 8 * * *", async () => {
+    console.log("[Allowance Scheduler] Daily payout check started at 8:00 AM");
     try {
       // Get all active allowances
       const allPeers = await db.select().from(peers);
@@ -1859,6 +1860,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
       }
+      console.log("[Allowance Scheduler] Daily payout check completed");
     } catch (error) {
       console.error("[Allowance Scheduler] Error:", error);
     }
