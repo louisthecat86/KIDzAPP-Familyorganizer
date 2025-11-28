@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ChildTracker as ChildTrackerComponent } from "@/pages/ChildTracker";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { LineChart, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Line, Area, ResponsiveContainer, defs, linearGradient, stop } from "recharts";
@@ -4810,6 +4811,11 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
             </div>
 
             <BitcoinValueWidget sats={user.balance || 0} setCurrentView={setCurrentView} user={user} />
+
+            {/* Tracker Chart */}
+            <div className="pt-4 border-t border-border/50">
+              <ChildTrackerComponent childId={user.id} />
+            </div>
 
             {user.lightningAddress && (
               <div className="pt-4 border-t border-border/50">
