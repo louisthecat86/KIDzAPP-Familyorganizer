@@ -498,9 +498,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getMonthlySavingsSnapshots(peerId: number): Promise<MonthlySavingsSnapshot[]> {
-    return await db.select().from(monthlySavingsSnapshots)
+    const result = await db.select().from(monthlySavingsSnapshots)
       .where(eq(monthlySavingsSnapshots.peerId, peerId))
       .orderBy(desc(monthlySavingsSnapshots.createdAt));
+    // Reverse to get oldest first for chart display
+    return result.reverse();
   }
 
   async createMonthlySavingsSnapshot(snapshot: InsertMonthlySavingsSnapshot): Promise<MonthlySavingsSnapshot> {

@@ -1350,12 +1350,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const peerId = parseInt(req.params.peerId);
       const snapshots = await storage.getMonthlySavingsSnapshots(peerId);
-      res.json(snapshots.map(s => ({
+      const formattedSnapshots = snapshots.map(s => ({
         date: new Date(s.createdAt).toLocaleDateString("de-DE", { month: "short", day: "numeric" }),
         timestamp: s.createdAt,
         value: s.valueEur / 100, // Convert from cents to euros
         interestEarned: s.interestEarned / 100
-      })));
+      }));
+      console.log(`[Savings Snapshots] Fetched ${formattedSnapshots.length} snapshots for child ${peerId}`);
+      res.json(formattedSnapshots);
     } catch (error) {
       console.error("[Savings Snapshots Error]:", error);
       res.status(500).json({ error: "Failed to fetch snapshots" });
