@@ -5570,12 +5570,13 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
               if (historyRes.ok) {
                 const historyData = await historyRes.json();
                 newData[tf.days] = historyData;
-                setAllHistoricalData(newData);
               }
             } catch (error) {
               console.error(`Failed to fetch ${tf.days} days:`, error);
             }
           }
+          // Set all data once after fetching all timeframes
+          setAllHistoricalData(newData);
         }
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -5585,7 +5586,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
     fetchData();
     const interval = setInterval(fetchData, 300000); // Longer interval to avoid rate limits
     return () => clearInterval(interval);
-  }, [sats, user]);
+  }, [sats, user, timeframes]);
 
   if (!btcPrice) return null;
 
