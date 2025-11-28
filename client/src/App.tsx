@@ -586,7 +586,10 @@ export default function App() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-foreground font-sans selection:bg-primary selection:text-primary-foreground flex">
+    <div 
+      className="min-h-screen text-foreground font-sans selection:bg-primary selection:text-primary-foreground flex bg-cover bg-center bg-no-repeat bg-fixed"
+      style={{ backgroundImage: 'url(/background.png)' }}
+    >
       <Sidebar 
         user={user} 
         setUser={setUser}
@@ -1151,34 +1154,34 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
         initial={{ x: 250 }}
         animate={{ x: sidebarOpen ? 0 : 250 }}
         transition={{ duration: 0.3 }}
-        className="fixed right-0 top-0 h-screen w-64 bg-gradient-to-b from-gray-900 to-black border-l border-border z-40 flex flex-col pointer-events-none"
+        className="fixed right-0 top-0 h-screen w-64 bg-white/15 backdrop-blur-xl border-l border-white/30 z-40 flex flex-col pointer-events-none shadow-2xl"
         style={{ pointerEvents: sidebarOpen ? "auto" : "none" }}
       >
-        <div className="p-4 border-b border-border space-y-3">
+        <div className="p-4 border-b border-white/20 space-y-3">
           <div className="flex items-center justify-between">
-            <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary text-lg">
+            <div className="h-8 w-8 bg-yellow-400/30 rounded-lg flex items-center justify-center text-yellow-500 text-lg">
               ⚡
             </div>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setSidebarOpen(false)}
-              className="md:hidden"
+              className="md:hidden text-gray-800"
               data-testid="button-close-sidebar"
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
           <div className="space-y-2">
-            <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Familie</p>
-            <h2 className="text-2xl font-bold">{user.familyName || "Family"}</h2>
+            <p className="text-xs uppercase tracking-widest text-gray-600 font-semibold">Familie</p>
+            <h2 className="text-2xl font-bold text-gray-900">{user.familyName || "Family"}</h2>
             <div className="flex items-center gap-2 pt-2">
-              <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm">
+              <div className="h-8 w-8 rounded-full bg-violet-500/30 text-violet-700 flex items-center justify-center font-bold text-sm">
                 {user.name[0]}
               </div>
               <div>
-                <p className="text-sm font-medium">{user.name}</p>
-                <p className="text-xs text-muted-foreground capitalize">{user.role === "child" ? "Kind" : "Eltern"}</p>
+                <p className="text-sm font-medium text-gray-800">{user.name}</p>
+                <p className="text-xs text-gray-600 capitalize">{user.role === "child" ? "Kind" : "Eltern"}</p>
               </div>
             </div>
           </div>
@@ -1195,10 +1198,10 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                 <div key={item.id}>
                   <button
                     onClick={() => setShowCalendarSubmenu(!showCalendarSubmenu)}
-                    className={`w-full px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${
+                    className={`w-full px-4 py-2 rounded-xl flex items-center gap-2 transition-colors ${
                       isCalendarActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-secondary"
+                        ? "bg-violet-500/40 text-gray-900 font-medium"
+                        : "text-gray-700 hover:bg-white/20"
                     }`}
                     data-testid="menu-item-calendar"
                   >
@@ -1216,12 +1219,12 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                         }}
                         className={`w-full px-4 py-2 rounded-lg text-sm transition-colors text-left ${
                           currentView === "calendar-create"
-                            ? "bg-primary text-primary-foreground"
-                            : "text-muted-foreground hover:bg-secondary"
+                            ? "bg-violet-500/40 text-gray-900 font-medium"
+                            : "text-gray-700 hover:bg-white/20"
                         }`}
                         data-testid="submenu-calendar-create"
                       >
-                        📅 Termin anlegen
+                        Termin anlegen
                       </button>
                       <button
                         onClick={() => {
@@ -1230,12 +1233,12 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                         }}
                         className={`w-full px-4 py-2 rounded-lg text-sm transition-colors text-left ${
                           currentView === "calendar-view"
-                            ? "bg-primary text-primary-foreground"
-                            : "text-muted-foreground hover:bg-secondary"
+                            ? "bg-violet-500/40 text-gray-900 font-medium"
+                            : "text-gray-700 hover:bg-white/20"
                         }`}
                         data-testid="submenu-calendar-view"
                       >
-                        📋 Termine ansehen
+                        Termine ansehen
                       </button>
                     </motion.div>
                   )}
@@ -1251,10 +1254,10 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                   setCurrentView(item.id);
                   setSidebarOpen(false);
                 }}
-                className={`w-full px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${
+                className={`w-full px-4 py-2 rounded-xl flex items-center gap-2 transition-colors ${
                   isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-secondary"
+                    ? "bg-violet-500/40 text-gray-900 font-medium"
+                    : "text-gray-700 hover:bg-white/20"
                 }`}
                 data-testid={`menu-item-${item.id}`}
               >
@@ -1264,10 +1267,10 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
             );
           })}
 
-          <div className="pt-2 border-t border-border">
+          <div className="pt-2 border-t border-white/20">
             <button
               onClick={() => setShowSettingsMenu(!showSettingsMenu)}
-              className="w-full px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-muted-foreground hover:bg-secondary"
+              className="w-full px-4 py-2 rounded-xl flex items-center gap-2 transition-colors text-gray-700 hover:bg-white/20"
               data-testid="menu-item-settings"
             >
               <Settings className="h-4 w-4" />
@@ -1280,10 +1283,10 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                 {/* Ansicht */}
                 <button
                   onClick={() => { handleSettingsClick("ansicht"); setSidebarOpen(false); }}
-                  className="w-full px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary transition-colors text-left"
+                  className="w-full px-4 py-2 rounded-lg text-sm text-gray-700 hover:bg-white/20 transition-colors text-left"
                   data-testid="submenu-ansicht"
                 >
-                  📐 Ansicht
+                  Ansicht
                 </button>
 
                 {/* Wallet Einstellung - Parent or Child */}
@@ -1291,10 +1294,10 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                   <div>
                     <button
                       onClick={() => setShowWalletSubmenu(!showWalletSubmenu)}
-                      className="w-full px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary transition-colors text-left flex items-center justify-between"
+                      className="w-full px-4 py-2 rounded-lg text-sm text-gray-700 hover:bg-white/20 transition-colors text-left flex items-center justify-between"
                       data-testid="submenu-wallet"
                     >
-                      <span>💰 Wallet Einstellung</span>
+                      <span>Wallet Einstellung</span>
                       <ChevronDown className={`h-3 w-3 transition-transform ${showWalletSubmenu ? "rotate-180" : ""}`} />
                     </button>
                     
@@ -1302,10 +1305,10 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-6 mt-1 space-y-1">
                         <button
                           onClick={() => { setWalletTab("lnbits"); handleSettingsClick("wallet"); setSidebarOpen(false); }}
-                          className="w-full px-4 py-2 rounded-lg text-xs text-muted-foreground hover:bg-secondary transition-colors text-left"
+                          className="w-full px-4 py-2 rounded-lg text-xs text-gray-700 hover:bg-white/20 transition-colors text-left"
                           data-testid="submenu-wallet-lnbits"
                         >
-                          ⚡ LNbits Anbindung
+                          LNbits Anbindung
                         </button>
                       </motion.div>
                     )}
@@ -1313,30 +1316,30 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                 ) : (
                   <button
                     onClick={() => { handleSettingsClick("wallet"); setSidebarOpen(false); }}
-                    className="w-full px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary transition-colors text-left"
+                    className="w-full px-4 py-2 rounded-lg text-sm text-gray-700 hover:bg-white/20 transition-colors text-left"
                     data-testid="submenu-wallet-child"
                   >
-                    💰 Wallet Einstellung
+                    Wallet Einstellung
                   </button>
                 )}
 
                 {/* Peers */}
                 <button
                   onClick={() => { handleSettingsClick("peers"); setSidebarOpen(false); }}
-                  className="w-full px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary transition-colors text-left"
+                  className="w-full px-4 py-2 rounded-lg text-sm text-gray-700 hover:bg-white/20 transition-colors text-left"
                   data-testid="submenu-peers"
                 >
-                  👥 Peers
+                  Peers
                 </button>
 
                 {/* Level-Bonus - nur für Eltern */}
                 {user.role === "parent" && (
                   <button
                     onClick={() => { setCurrentView("level-bonus-settings"); setSidebarOpen(false); setShowSettingsMenu(false); }}
-                    className="w-full px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary transition-colors text-left"
+                    className="w-full px-4 py-2 rounded-lg text-sm text-gray-700 hover:bg-white/20 transition-colors text-left"
                     data-testid="submenu-level-bonus"
                   >
-                    🏆 Level-Bonus
+                    Level-Bonus
                   </button>
                 )}
               </motion.div>
@@ -1344,12 +1347,12 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
           </div>
         </nav>
 
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-white/20">
           <Button
             variant="outline"
             size="sm"
             onClick={onLogout}
-            className="w-full gap-2 text-destructive hover:text-destructive"
+            className="w-full gap-2 bg-red-500/20 border-red-500/40 text-red-700 hover:bg-red-500/30 hover:text-red-800"
             data-testid="button-logout-sidebar"
           >
             <LogOut className="h-4 w-4" /> Abmelden
@@ -2912,68 +2915,57 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     
     return (
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
         
         {user.role === "parent" && (
           <div 
             onClick={() => setCurrentView("allowance-payout")}
             data-testid="card-active-allowances"
-            className="p-6 bg-gradient-to-br from-primary to-primary/80 border border-primary/30 rounded-lg cursor-pointer hover:from-primary hover:to-primary/70 transition-all shadow-lg overflow-hidden relative"
+            className="p-6 bg-gradient-to-br from-violet-500/30 to-cyan-500/30 backdrop-blur-md border border-white/30 rounded-2xl cursor-pointer hover:bg-white/25 transition-all shadow-xl overflow-hidden relative"
           >
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute inset-0 animate-spin" style={{ animationDuration: "8s" }}>
-                <svg className="w-full h-full" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="2" opacity="0.3" />
-                  <circle cx="50" cy="50" r="30" stroke="currentColor" strokeWidth="1.5" opacity="0.2" />
-                  <circle cx="50" cy="50" r="20" stroke="currentColor" strokeWidth="1" opacity="0.15" />
-                </svg>
-              </div>
-            </div>
             <div className="text-center relative z-10">
-              <div className="text-5xl mb-2 animate-pulse">⚡</div>
-              <div className="text-2xl font-bold text-white">Taschengeld</div>
-              <div className="text-sm text-white/80 mt-1">Zahlungen & Terminzahlungen</div>
+              <div className="text-5xl mb-2">⚡</div>
+              <div className="text-2xl font-bold text-gray-900">Taschengeld</div>
+              <div className="text-sm text-gray-700 mt-1">Zahlungen & Terminzahlungen</div>
             </div>
           </div>
         )}
         
         {showConnectionCode && (
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }}>
-            <Card className="border-2 border-primary/40 bg-primary/5">
-              <CardHeader className="flex flex-row items-start justify-between pb-3">
+            <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl p-5 shadow-xl">
+              <div className="flex flex-row items-start justify-between pb-3">
                 <div className="flex-1">
-                  <CardTitle className="flex items-center gap-2">
-                    <LinkIcon className="h-5 w-5 text-primary" /> Verbindungscode für Kinder
-                  </CardTitle>
-                  <CardDescription>Gebe diesen Code deinen Kindern, damit sie sich verbinden können</CardDescription>
+                  <h3 className="flex items-center gap-2 text-lg font-bold text-gray-900">
+                    <LinkIcon className="h-5 w-5 text-violet-600" /> Verbindungscode für Kinder
+                  </h3>
+                  <p className="text-sm text-gray-700">Gebe diesen Code deinen Kindern, damit sie sich verbinden können</p>
                 </div>
                 <Button 
                   variant="ghost" 
                   size="icon" 
                   onClick={hideConnectionCode}
-                  className="ml-2"
+                  className="ml-2 text-gray-700"
                   data-testid="button-hide-connection-code"
                 >
                   <X className="h-4 w-4" />
                 </Button>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-secondary border-2 border-primary/30 rounded-lg p-4 text-center">
-                  <p className="text-xs text-muted-foreground mb-2 uppercase tracking-widest">Dein Code:</p>
-                  <p className="text-3xl font-mono font-bold text-primary tracking-wider break-words word-break mb-3" data-testid="text-connection-code">
-                    {user.connectionId}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Später findest du diesen Code in den Wallet-Einstellungen</p>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+              <div className="bg-white/30 border border-white/40 rounded-xl p-4 text-center">
+                <p className="text-xs text-gray-600 mb-2 uppercase tracking-widest">Dein Code:</p>
+                <p className="text-3xl font-mono font-bold text-violet-700 tracking-wider break-words word-break mb-3" data-testid="text-connection-code">
+                  {user.connectionId}
+                </p>
+                <p className="text-xs text-gray-600">Später findest du diesen Code in den Wallet-Einstellungen</p>
+              </div>
+            </div>
           </motion.div>
         )}
         
         <motion.div 
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black border border-border p-8 cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
+          className="relative overflow-hidden rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 p-8 cursor-pointer hover:bg-white/25 transition-colors shadow-xl"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -2983,11 +2975,11 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <div className="relative z-10">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div className="flex-1">
-                <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest mb-2">⚡ Ausgegeben</p>
-                <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-primary" data-testid="text-sats-spent">
-                  {(satsSpent || 0).toLocaleString()} <span className="text-2xl opacity-50 text-white">SATS</span>
+                <p className="text-gray-700 font-mono text-sm uppercase tracking-widest mb-2">Ausgegeben</p>
+                <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-orange-500" data-testid="text-sats-spent">
+                  {(satsSpent || 0).toLocaleString()} <span className="text-2xl opacity-70 text-gray-700">SATS</span>
                 </h2>
-                <p className="text-xs text-muted-foreground mt-2">Klick zum Anzeigen der Aufschlüsselung pro Kind</p>
+                <p className="text-xs text-gray-600 mt-2">Klick zum Anzeigen der Aufschlüsselung pro Kind</p>
               </div>
             </div>
           </div>
@@ -2998,85 +2990,76 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             if (cardId === "tasks-open") {
               return createDraggableCard(
                 cardId,
-                <Card 
-                  className="bg-gradient-to-br from-gray-900 to-black border border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors h-full"
+                <div 
+                  className="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl cursor-pointer hover:bg-white/25 transition-colors h-full shadow-lg p-6"
                   onClick={() => setCurrentView("tasks-open")}
                   data-testid="card-open-tasks"
                 >
-                  <CardContent className="pt-6">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-primary">{openTasks.length}</div>
-                      <p className="text-sm text-muted-foreground mt-2">Offene Aufgaben</p>
-                    </div>
-                  </CardContent>
-                </Card>,
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-violet-600">{openTasks.length}</div>
+                    <p className="text-sm text-gray-700 mt-2">Offene Aufgaben</p>
+                  </div>
+                </div>,
                 index * 0.1
               );
             } else if (cardId === "tasks-pending") {
               return createDraggableCard(
                 cardId,
-                <Card 
-                  className="bg-gradient-to-br from-gray-900 to-black border border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors h-full"
+                <div 
+                  className="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl cursor-pointer hover:bg-white/25 transition-colors h-full shadow-lg p-6"
                   onClick={() => setCurrentView("tasks-pending")}
                   data-testid="card-submitted-tasks"
                 >
-                  <CardContent className="pt-6">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-amber-500">{submittedTasks.length}</div>
-                      <p className="text-sm text-muted-foreground mt-2">Zur Bestätigung</p>
-                    </div>
-                  </CardContent>
-                </Card>,
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-amber-500">{submittedTasks.length}</div>
+                    <p className="text-sm text-gray-700 mt-2">Zur Bestätigung</p>
+                  </div>
+                </div>,
                 index * 0.1
               );
             } else if (cardId === "tasks-completed") {
               return createDraggableCard(
                 cardId,
-                <Card 
-                  className="bg-gradient-to-br from-gray-900 to-black border border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors h-full"
+                <div 
+                  className="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl cursor-pointer hover:bg-white/25 transition-colors h-full shadow-lg p-6"
                   onClick={() => setCurrentView("tasks-completed")}
                   data-testid="card-completed-tasks"
                 >
-                  <CardContent className="pt-6">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-green-500">{completedTasks.length}</div>
-                      <p className="text-sm text-muted-foreground mt-2">Abgeschlossen</p>
-                    </div>
-                  </CardContent>
-                </Card>,
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-green-500">{completedTasks.length}</div>
+                    <p className="text-sm text-gray-700 mt-2">Abgeschlossen</p>
+                  </div>
+                </div>,
                 index * 0.1
               );
             } else if (cardId === "wallet-balance") {
               return createDraggableCard(
                 cardId,
-                <Card className={`border-border bg-gradient-to-br from-gray-900 to-black ${displayBalance !== null ? "hover:from-gray-800 hover:to-gray-950" : "opacity-60"} transition-colors h-full`}>
-                  <CardContent className="pt-6">
-                    <div className="space-y-4">
-                      <div className="text-center">
-                        <div className="text-3xl font-bold text-primary flex items-center justify-center gap-1">
-                          {displayBalance !== null && displayBalance !== undefined ? (
-                            <>
-                              ⚡ {(displayBalance / 1000).toLocaleString("de-DE", { maximumFractionDigits: 0 })} Sats
-                            </>
-                          ) : (
-                            "⚠️ ---"
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-2">LNbits Wallet</p>
+                <div className={`bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl ${displayBalance !== null ? "hover:bg-white/25" : "opacity-60"} transition-colors h-full shadow-lg p-6`}>
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-orange-500 flex items-center justify-center gap-1">
+                        {displayBalance !== null && displayBalance !== undefined ? (
+                          <>
+                            {(displayBalance / 1000).toLocaleString("de-DE", { maximumFractionDigits: 0 })} Sats
+                          </>
+                        ) : (
+                          "---"
+                        )}
                       </div>
+                      <p className="text-sm text-gray-700 mt-2">LNbits Wallet</p>
                     </div>
-                  </CardContent>
-                </Card>,
+                  </div>
+                </div>,
                 index * 0.1
               );
             }
           })}
           
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }} className="col-span-full">
-            <Card className="bg-gradient-to-br from-gray-900 to-black border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors" onClick={() => setCurrentView("calendar-view")} data-testid="card-calendar">
-              <CardContent className="p-2 md:p-4">
-                <h3 className="text-sm font-bold mb-2 flex items-center gap-1">
-                  <Calendar className="h-4 w-4 text-primary" /> Kalender
+            <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl cursor-pointer hover:bg-white/25 transition-colors shadow-lg p-4" onClick={() => setCurrentView("calendar-view")} data-testid="card-calendar">
+                <h3 className="text-sm font-bold mb-2 flex items-center gap-1 text-gray-900">
+                  <Calendar className="h-4 w-4 text-violet-600" /> Kalender
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <div className="col-span-1">
@@ -3199,8 +3182,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+            </div>
           </motion.div>
         </div>
 
@@ -5128,28 +5110,28 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
 
     return (
       <div className="max-w-4xl space-y-2">
-        <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
+        <h1 className="text-3xl font-bold mb-4 text-gray-900">Dashboard</h1>
         <motion.section 
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black border border-border p-8"
+          className="relative overflow-hidden rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 p-8 shadow-xl"
         >
           <div className="relative z-10 space-y-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest mb-2">Erhaltene Sats</p>
-                <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-primary" data-testid="text-earned-sats">
-                  {(user.balance || 0).toLocaleString()} <span className="text-2xl opacity-50 text-white">SATS</span>
+                <p className="text-gray-700 font-mono text-sm uppercase tracking-widest mb-2">Erhaltene Sats</p>
+                <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-orange-500" data-testid="text-earned-sats">
+                  {(user.balance || 0).toLocaleString()} <span className="text-2xl opacity-70 text-gray-700">SATS</span>
                 </h2>
                 {satsBreakdown && (
                   <div className="flex gap-4 mt-3 text-xs">
                     <div>
-                      <span className="text-muted-foreground">Verdient:</span>
-                      <span className="font-mono text-yellow-400 ml-1">{satsBreakdown.taskSats.toLocaleString()}</span>
+                      <span className="text-gray-600">Verdient:</span>
+                      <span className="font-mono text-yellow-600 ml-1">{satsBreakdown.taskSats.toLocaleString()}</span>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Taschengeld:</span>
-                      <span className="font-mono text-green-400 ml-1">{satsBreakdown.allowanceSats.toLocaleString()}</span>
+                      <span className="text-gray-600">Taschengeld:</span>
+                      <span className="font-mono text-green-600 ml-1">{satsBreakdown.allowanceSats.toLocaleString()}</span>
                     </div>
                   </div>
                 )}
@@ -5158,8 +5140,8 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                 onClick={() => setShowTrackerChart(!showTrackerChart)}
                 className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-all flex-shrink-0 ${
                   showTrackerChart 
-                    ? 'bg-primary/20 border-primary/50 text-primary' 
-                    : 'bg-slate-800/50 border-slate-700/50 text-muted-foreground hover:text-white'
+                    ? 'bg-violet-500/30 border-violet-500/50 text-violet-700' 
+                    : 'bg-white/30 border-white/40 text-gray-700 hover:text-gray-900'
                 }`}
                 data-testid="toggle-tracker-chart"
               >
