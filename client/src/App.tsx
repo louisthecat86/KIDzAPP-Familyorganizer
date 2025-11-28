@@ -1270,6 +1270,17 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                 >
                   👥 Peers
                 </button>
+
+                {/* Level-Bonus - nur für Eltern */}
+                {user.role === "parent" && (
+                  <button
+                    onClick={() => { setCurrentView("level-bonus-settings"); setSidebarOpen(false); setShowSettingsMenu(false); }}
+                    className="w-full px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary transition-colors text-left"
+                    data-testid="submenu-level-bonus"
+                  >
+                    🏆 Level-Bonus
+                  </button>
+                )}
               </motion.div>
             )}
           </div>
@@ -4009,6 +4020,197 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 </Button>
               </div>
             )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (currentView === "level-bonus-settings" && user.role === "parent") {
+    const [bonusSats, setBonusSats] = useState(210);
+    const [milestoneInterval, setMilestoneInterval] = useState(5);
+    const [isActive, setIsActive] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    const { data: settings } = useQuery({
+      queryKey: ["level-bonus-settings", user.connectionId],
+      queryFn: async () => {
+        const res = await fetch(`/api/level-bonus/settings/${user.connectionId}`);
+        if (!res.ok) throw new Error("Failed to fetch settings");
+        return res.json();
+      }
+    });
+
+    useEffect(() => {
+      if (settings && !isLoaded) {
+        setBonusSats(settings.bonusSats || 210);
+        setMilestoneInterval(settings.milestoneInterval || 5);
+        setIsActive(settings.isActive !== false);
+        setIsLoaded(true);
+      }
+    }, [settings, isLoaded]);
+
+    const handleSave = async () => {
+      setIsSaving(true);
+      try {
+        const res = await fetch("/api/level-bonus/settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            parentId: user.id,
+            connectionId: user.connectionId,
+            bonusSats,
+            milestoneInterval,
+            isActive
+          }),
+        });
+        if (!res.ok) throw new Error("Failed to save settings");
+        toast({ title: "Erfolg", description: "Level-Bonus Einstellungen gespeichert!" });
+        queryClient.invalidateQueries({ queryKey: ["level-bonus-settings"] });
+      } catch (error) {
+        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      } finally {
+        setIsSaving(false);
+      }
+    };
+
+    return (
+      <div className="max-w-4xl space-y-6">
+        <div className="flex items-center gap-3 mb-8">
+          <button 
+            onClick={() => setCurrentView("dashboard")} 
+            className="text-muted-foreground hover:text-foreground"
+            data-testid="button-back-from-level-bonus-settings"
+          >
+            ← Zurück
+          </button>
+          <h1 className="text-3xl font-bold">🏆 Level-Bonus Einstellungen</h1>
+        </div>
+        
+        <Card className="border-2 border-amber-500/40 bg-amber-500/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              ⭐ Level-Bonus aktivieren
+            </CardTitle>
+            <CardDescription>
+              Belohne deine Kinder mit einem Bonus, wenn sie bestimmte Level erreichen!
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/50 border border-border">
+              <div>
+                <p className="font-semibold">Level-Bonus aktiviert</p>
+                <p className="text-sm text-muted-foreground">Kinder erhalten Bonus-Sats bei Meilensteinen</p>
+              </div>
+              <Switch 
+                checked={isActive} 
+                onCheckedChange={setIsActive}
+                data-testid="switch-level-bonus-active"
+              />
+            </div>
+
+            {isActive && (
+              <>
+                <div className="space-y-3">
+                  <Label htmlFor="bonus-sats" className="text-base font-semibold">Bonus-Betrag (Sats)</Label>
+                  <div className="flex items-center gap-3">
+                    <Input 
+                      id="bonus-sats"
+                      type="number"
+                      min="1"
+                      value={bonusSats}
+                      onChange={(e) => setBonusSats(parseInt(e.target.value) || 0)}
+                      className="w-32 text-lg font-bold text-center"
+                      data-testid="input-level-bonus-sats"
+                    />
+                    <span className="text-xl text-orange-500 font-bold">⚡ Sats</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Dieser Betrag wird bei jedem Meilenstein gezahlt
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="milestone-interval" className="text-base font-semibold">Meilenstein-Intervall</Label>
+                  <div className="flex items-center gap-3">
+                    <span className="text-muted-foreground">Alle</span>
+                    <Select 
+                      value={String(milestoneInterval)} 
+                      onValueChange={(v) => setMilestoneInterval(parseInt(v))}
+                    >
+                      <SelectTrigger className="w-24" data-testid="select-milestone-interval">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1</SelectItem>
+                        <SelectItem value="2">2</SelectItem>
+                        <SelectItem value="3">3</SelectItem>
+                        <SelectItem value="5">5</SelectItem>
+                        <SelectItem value="10">10</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <span className="text-muted-foreground">Level</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Beispiel: Bei "alle 5 Level" gibt es Bonus bei Level 5, 10, 15, 20...
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-lg bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30">
+                  <p className="font-semibold mb-2">🎯 Vorschau</p>
+                  <p className="text-sm">
+                    Deine Kinder erhalten <span className="text-orange-500 font-bold">{bonusSats} Sats</span> Bonus
+                    bei Level {Array.from({length: 5}, (_, i) => (i + 1) * milestoneInterval).join(", ")}...
+                  </p>
+                </div>
+              </>
+            )}
+
+            <Button 
+              onClick={handleSave}
+              className="w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold"
+              disabled={isSaving}
+              data-testid="button-save-level-bonus"
+            >
+              {isSaving ? "Speichere..." : "Einstellungen speichern"}
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="border border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              📖 So funktioniert das Level-System
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+              {[
+                { level: 1, tasks: 3, emoji: "✨" },
+                { level: 2, tasks: 6, emoji: "🔍" },
+                { level: 3, tasks: 9, emoji: "🤝" },
+                { level: 4, tasks: 12, emoji: "🚀" },
+                { level: 5, tasks: 15, emoji: "⚡" },
+                { level: 6, tasks: 18, emoji: "🦸" },
+                { level: 7, tasks: 21, emoji: "🎯" },
+                { level: 8, tasks: 24, emoji: "🏆" },
+                { level: 9, tasks: 27, emoji: "⭐" },
+                { level: 10, tasks: 30, emoji: "👑" },
+              ].map(l => (
+                <div 
+                  key={l.level} 
+                  className={`p-2 rounded text-center ${l.level % milestoneInterval === 0 ? "bg-amber-500/20 border border-amber-500/50" : "bg-secondary/30"}`}
+                >
+                  <div className="text-lg">{l.emoji}</div>
+                  <div className="font-semibold">Level {l.level}</div>
+                  <div className="text-xs text-muted-foreground">{l.tasks} Aufgaben</div>
+                  {l.level % milestoneInterval === 0 && (
+                    <div className="text-xs text-amber-500 font-bold mt-1">+{bonusSats} ⚡</div>
+                  )}
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>
