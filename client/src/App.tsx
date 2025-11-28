@@ -357,6 +357,15 @@ export default function App() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    // Load theme globally
+    const savedTheme = localStorage.getItem('theme-mode');
+    if (savedTheme === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.add('dark');
+    }
+
+    // Load user
     const stored = localStorage.getItem("sats-user");
     if (stored) {
       try {
