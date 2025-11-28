@@ -5643,8 +5643,8 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
           </div>
 
           {/* Value Display */}
-          <p className={`text-lg font-mono font-bold ${
-            viewMode === "bitcoin" ? "text-yellow-400" : "text-blue-400"
+          <p className={`text-2xl font-mono font-bold ${
+            viewMode === "bitcoin" ? "text-yellow-300" : "text-blue-300"
           }`} data-testid="text-sats-current-value">
             €{viewMode === "bitcoin" ? bitcoinValueEur.toFixed(2) : savingsValueEur.toFixed(2)}
           </p>
