@@ -4,39 +4,29 @@ import { queryClient } from "./lib/queryClient";
 import App from "./App";
 import "./index.css";
 
-// Initialize and maintain theme from localStorage
-const applyTheme = () => {
-  if (typeof localStorage !== 'undefined' && typeof document !== 'undefined') {
-    const saved = localStorage.getItem('theme-mode');
-    if (saved === 'light') {
-      document.documentElement.classList.remove('dark');
-    } else {
-      document.documentElement.classList.add('dark');
-    }
+// Aggressive theme sync - ensures dark class is ALWAYS present when needed
+const syncTheme = () => {
+  if (typeof localStorage === 'undefined' || typeof document === 'undefined') return;
+  
+  const saved = localStorage.getItem('theme-mode');
+  const isDarkMode = saved !== 'light'; // default to dark if not explicitly light
+  const hasDarkClass = document.documentElement.classList.contains('dark');
+  
+  if (isDarkMode && !hasDarkClass) {
+    document.documentElement.classList.add('dark');
+  } else if (!isDarkMode && hasDarkClass) {
+    document.documentElement.classList.remove('dark');
   }
 };
 
-applyTheme();
+// Initial sync
+syncTheme();
 
-// Watch for localStorage changes (from other tabs)
-window.addEventListener('storage', applyTheme);
+// Continuous sync every 50ms to catch any changes
+setInterval(syncTheme, 50);
 
-// Watch for manual theme changes via ThemeToggle
-const observer = new MutationObserver(() => {
-  const saved = localStorage.getItem('theme-mode');
-  const htmlHasDark = document.documentElement.classList.contains('dark');
-  
-  if (saved === 'light' && htmlHasDark) {
-    document.documentElement.classList.remove('dark');
-  } else if (saved !== 'light' && !htmlHasDark) {
-    document.documentElement.classList.add('dark');
-  }
-});
-
-observer.observe(document.documentElement, {
-  attributes: true,
-  attributeFilter: ['class']
-});
+// Listen for storage changes
+window.addEventListener('storage', syncTheme);
 
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
