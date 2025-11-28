@@ -1178,19 +1178,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/btc-price", async (req, res) => {
     try {
       const response = await fetch(
-        "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,eur&include_market_cap=true"
+        "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,eur"
       );
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      
       const data = await response.json();
-      if (data.bitcoin) {
+      console.log("[BTC Price] Data:", JSON.stringify(data).substring(0, 100));
+      
+      if (data?.bitcoin?.usd && data?.bitcoin?.eur) {
         return res.json({
           usd: data.bitcoin.usd,
           eur: data.bitcoin.eur,
           timestamp: new Date().toISOString()
         });
       }
-      throw new Error("Invalid price data");
+      console.log("[BTC Price] Missing fields:", Object.keys(data));
+      throw new Error(`Missing Bitcoin price data`);
     } catch (error) {
-      console.error("Error fetching BTC price:", error);
+      console.error("[BTC Price Error]:", error);
       res.status(500).json({ error: "Failed to fetch BTC price" });
     }
   });
@@ -1198,26 +1203,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get historical BTC prices for comparison charts
   app.get("/api/btc-history", async (req, res) => {
     try {
-      const days = req.query.days || "30"; // 30, 60, or 90 days
+      const days = req.query.days || "30";
       const response = await fetch(
-        `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=eur&days=${days}&interval=daily`
+        `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=eur&days=${days}`
       );
-      const data = await response.json();
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       
-      if (data.prices && Array.isArray(data.prices)) {
-        // Transform timestamps and prices
+      const data = await response.json();
+      console.log("[BTC History] Got data with keys:", Object.keys(data), "prices length:", data?.prices?.length);
+      
+      if (data?.prices && Array.isArray(data.prices) && data.prices.length > 0) {
         const chartData = data.prices.map((price: [number, number]) => ({
           date: new Date(price[0]).toLocaleDateString("de-DE", { month: "short", day: "numeric" }),
           timestamp: price[0],
-          price: Math.round(price[1] * 100) / 100 // EUR price of 1 BTC
+          price: Math.round(price[1] * 100) / 100
         }));
         
         return res.json(chartData);
       }
-      
-      throw new Error("Invalid historical data");
+      console.log("[BTC History] Invalid data structure");
+      throw new Error(`No price data found`);
     } catch (error) {
-      console.error("Error fetching historical BTC prices:", error);
+      console.error("[BTC History Error]:", error);
       res.status(500).json({ error: "Failed to fetch historical data" });
     }
   });
