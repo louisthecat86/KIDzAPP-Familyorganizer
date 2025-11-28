@@ -4336,31 +4336,31 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
 
     return (
       <div className="max-w-4xl">
-        <h1 className="text-3xl font-bold mb-8">Familienkalender</h1>
+        <h1 className="text-3xl font-bold mb-8 text-gray-900">Familienkalender</h1>
         <div className="grid gap-4">
           {events.length === 0 ? (
-            <Card className="border-dashed border-border p-8 text-center">
-              <p className="text-muted-foreground">Noch keine Termine geplant</p>
-            </Card>
+            <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl p-8 text-center shadow-lg">
+              <p className="text-gray-700">Noch keine Termine geplant</p>
+            </div>
           ) : (
             events.map((event: FamilyEvent) => (
-              <Card key={event.id} className="border-border bg-gradient-to-br from-gray-900 to-black hover:from-gray-800 hover:to-gray-950 transition-colors">
-                <CardContent className="p-5">
+              <div key={event.id} className="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl hover:bg-white/30 transition-colors shadow-lg">
+                <div className="p-5">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg" data-testid={`text-event-title-child-${event.id}`}>{event.title}</h3>
-                      <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                      <h3 className="font-bold text-lg text-gray-900" data-testid={`text-event-title-child-${event.id}`}>{event.title}</h3>
+                      <p className="text-xs text-gray-700 mt-2 flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
                         {new Date(event.startDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
                       </p>
-                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <p className="text-xs text-gray-700 flex items-center gap-1">
                         <span>⏰</span>
                         {new Date(event.startDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
                         {event.endDate && ` - ${new Date(event.endDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`}
                       </p>
-                      {event.description && <p className="text-muted-foreground text-sm mt-3">{event.description}</p>}
+                      {event.description && <p className="text-gray-600 text-sm mt-3">{event.description}</p>}
                       {event.location && (
-                        <p className="text-sm text-muted-foreground flex items-center gap-1 mt-2">
+                        <p className="text-sm text-gray-700 flex items-center gap-1 mt-2">
                           <MapPin className="h-4 w-4" /> {event.location}
                         </p>
                       )}
@@ -4368,7 +4368,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                         <Button
                           onClick={() => handleRsvp(event.id, "accepted")}
                           disabled={loading[event.id] || rsvps[event.id] === "declined"}
-                          className={`flex-1 ${rsvps[event.id] === "accepted" ? "bg-green-600 hover:bg-green-700" : "bg-primary"}`}
+                          className={`flex-1 ${rsvps[event.id] === "accepted" ? "bg-green-600 hover:bg-green-700" : "bg-violet-600 hover:bg-violet-700"} text-white`}
                           data-testid={`button-accept-event-${event.id}`}
                         >
                           {rsvps[event.id] === "accepted" ? "✓ Zusage" : "Zusagen"}
@@ -4385,8 +4385,8 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))
           )}
         </div>
@@ -4441,21 +4441,21 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     
     return (
       <div className="max-w-2xl">
-        <h1 className="text-3xl font-bold mb-8">Familienchat</h1>
-        <Card className="border-border bg-gradient-to-br from-gray-900 to-black">
-          <CardContent className="p-6">
+        <h1 className="text-3xl font-bold mb-8 text-gray-900">Familienchat</h1>
+        <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl shadow-lg">
+          <div className="p-6">
             <div className="space-y-4">
-              <div className="h-96 overflow-y-auto bg-secondary/20 rounded-lg p-4 space-y-3">
+              <div className="h-96 overflow-y-auto bg-white/30 rounded-lg p-4 space-y-3">
                 {messages.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">Noch keine Nachrichten</p>
+                  <p className="text-gray-600 text-center py-8">Noch keine Nachrichten</p>
                 ) : (
                   messages.map((msg, idx) => (
                     <div key={idx} className={`flex ${msg.fromPeerId === user.id ? "justify-end" : "justify-start"}`}>
                       <div
                         className={`max-w-xs rounded-lg px-4 py-2 border ${
                           msg.fromPeerId === user.id
-                            ? "bg-primary text-primary-foreground"
-                            : getMessageColor(msg.senderName)
+                            ? "bg-violet-600 text-white border-violet-500"
+                            : "bg-white/50 text-gray-800 border-white/40"
                         }`}
                       >
                         <p className="text-xs font-semibold mb-1">{msg.senderName}</p>
@@ -4474,21 +4474,21 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Nachricht eingeben..."
                   disabled={isLoadingMessage}
-                  className="flex-1"
+                  className="flex-1 bg-white/50 border-white/60 text-gray-900 placeholder:text-gray-500"
                   data-testid="input-chat-message"
                 />
                 <Button
                   type="submit"
                   disabled={!newMessage.trim() || isLoadingMessage}
-                  className="bg-primary hover:bg-primary/90"
+                  className="bg-violet-600 hover:bg-violet-700 text-white"
                   data-testid="button-send-message"
                 >
                   <Send className="h-4 w-4" />
                 </Button>
               </form>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
@@ -5181,73 +5181,73 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         {connectedParents.length > 0 && (
           <div className="space-y-4">
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-              <Card 
-                className="bg-gradient-to-br from-gray-900 to-black border-border"
+              <div 
+                className="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl shadow-lg"
                 data-testid="card-task-overview"
               >
-                <CardContent className="pt-6">
+                <div className="pt-6 px-6 pb-6">
                   <div className="grid grid-cols-2 gap-3">
                     {/* Verfügbar - oben links */}
                     <div 
                       onClick={() => setCurrentView("tasks-open")}
-                      className="border border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-transparent rounded-lg p-3 cursor-pointer hover:from-blue-500/10 hover:border-blue-500/50 transition-all"
+                      className="border border-blue-400/40 bg-blue-500/20 backdrop-blur-sm rounded-xl p-3 cursor-pointer hover:bg-blue-500/30 hover:border-blue-400/60 transition-all"
                       data-testid="card-available-tasks"
                     >
                       <div className="text-center">
-                        <div className="text-lg md:text-3xl font-bold text-blue-500">{availableTasks.length}</div>
-                        <p className="text-[10px] md:text-xs text-muted-foreground mt-1 md:mt-2 uppercase tracking-widest">Verfügbar</p>
+                        <div className="text-lg md:text-3xl font-bold text-blue-600">{availableTasks.length}</div>
+                        <p className="text-[10px] md:text-xs text-gray-700 mt-1 md:mt-2 uppercase tracking-widest">Verfügbar</p>
                       </div>
                     </div>
                     
                     {/* In Arbeit - oben rechts */}
                     <div 
                       onClick={() => setCurrentView("tasks-my")}
-                      className="border border-primary/30 bg-gradient-to-br from-primary/5 to-transparent rounded-lg p-3 cursor-pointer hover:from-primary/10 hover:border-primary/50 transition-all"
+                      className="border border-violet-400/40 bg-violet-500/20 backdrop-blur-sm rounded-xl p-3 cursor-pointer hover:bg-violet-500/30 hover:border-violet-400/60 transition-all"
                       data-testid="card-my-tasks"
                     >
                       <div className="text-center">
-                        <div className="text-lg md:text-3xl font-bold text-primary">{assignedTasks.length}</div>
-                        <p className="text-[10px] md:text-xs text-muted-foreground mt-1 md:mt-2 uppercase tracking-widest">In Arbeit</p>
+                        <div className="text-lg md:text-3xl font-bold text-violet-600">{assignedTasks.length}</div>
+                        <p className="text-[10px] md:text-xs text-gray-700 mt-1 md:mt-2 uppercase tracking-widest">In Arbeit</p>
                       </div>
                     </div>
                     
                     {/* Zur Bestätigung - unten links */}
                     <div 
                       onClick={() => setCurrentView("tasks-pending")}
-                      className="border border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-transparent rounded-lg p-3 cursor-pointer hover:from-amber-500/10 hover:border-amber-500/50 transition-all"
+                      className="border border-amber-400/40 bg-amber-500/20 backdrop-blur-sm rounded-xl p-3 cursor-pointer hover:bg-amber-500/30 hover:border-amber-400/60 transition-all"
                       data-testid="card-pending-tasks"
                     >
                       <div className="text-center">
-                        <div className="text-lg md:text-3xl font-bold text-amber-500">{submittedTasks.length}</div>
-                        <p className="text-[10px] md:text-xs text-muted-foreground mt-1 md:mt-2 uppercase tracking-widest">Zur Bestätigung</p>
+                        <div className="text-lg md:text-3xl font-bold text-amber-600">{submittedTasks.length}</div>
+                        <p className="text-[10px] md:text-xs text-gray-700 mt-1 md:mt-2 uppercase tracking-widest">Zur Bestätigung</p>
                       </div>
                     </div>
                     
                     {/* Erledigt - unten rechts */}
                     <div 
                       onClick={() => setCurrentView("tasks-completed")}
-                      className="border border-green-500/30 bg-gradient-to-br from-green-500/5 to-transparent rounded-lg p-3 cursor-pointer hover:from-green-500/10 hover:border-green-500/50 transition-all"
+                      className="border border-green-400/40 bg-green-500/20 backdrop-blur-sm rounded-xl p-3 cursor-pointer hover:bg-green-500/30 hover:border-green-400/60 transition-all"
                       data-testid="card-completed-tasks"
                     >
                       <div className="text-center">
-                        <div className="text-lg md:text-3xl font-bold text-green-500">{completedTasks.length}</div>
-                        <p className="text-[10px] md:text-xs text-muted-foreground mt-1 md:mt-2 uppercase tracking-widest">Erledigt</p>
+                        <div className="text-lg md:text-3xl font-bold text-green-600">{completedTasks.length}</div>
+                        <p className="text-[10px] md:text-xs text-gray-700 mt-1 md:mt-2 uppercase tracking-widest">Erledigt</p>
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </motion.div>
 
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
-            <Card 
-              className="bg-gradient-to-br from-gray-900 to-black border-border cursor-pointer hover:from-gray-800 hover:to-gray-950 transition-colors"
+            <div 
+              className="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl shadow-lg cursor-pointer hover:bg-white/30 transition-colors"
               onClick={() => setCurrentView("calendar")}
               data-testid="card-child-calendar"
             >
-              <CardContent className="p-2 md:p-4">
-                <h3 className="text-sm font-bold mb-2 flex items-center gap-1">
-                  <Calendar className="h-4 w-4 text-primary" /> Kalender
+              <div className="p-2 md:p-4">
+                <h3 className="text-sm font-bold mb-2 flex items-center gap-1 text-gray-900">
+                  <Calendar className="h-4 w-4 text-violet-600" /> Kalender
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <div className="col-span-1">
@@ -5365,60 +5365,60 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                           </div>
                         ))}
                       {events.filter(e => new Date(e.startDate).toDateString() === selectedDate.toDateString()).length === 0 && (
-                        <p className="text-xs text-muted-foreground text-center py-1">Keine Termine</p>
+                        <p className="text-xs text-gray-600 text-center py-1">Keine Termine</p>
                       )}
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
             </motion.div>
           </div>
         )}
 
         {connectedParents.length === 0 && (
-          <Card className="border-primary/30 bg-primary/5 p-6 -mt-2">
+          <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl p-6 -mt-2 shadow-lg">
             <div className="flex gap-4">
-              <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              <Info className="h-5 w-5 text-violet-600 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-bold mb-1">Noch nicht verbunden</h3>
-                <p className="text-sm text-muted-foreground mb-3">
+                <h3 className="font-bold mb-1 text-gray-900">Noch nicht verbunden</h3>
+                <p className="text-sm text-gray-700 mb-3">
                   Verbinde dich mit deinen Eltern, um Aufgaben zu sehen
                 </p>
                 <Button 
                   size="sm"
                   onClick={() => setShowLink(true)}
-                  className="bg-primary hover:bg-primary/90"
+                  className="bg-violet-600 hover:bg-violet-700 text-white"
                   data-testid="button-link-parent"
                 >
                   <LinkIcon className="h-4 w-4 mr-2" /> Mit Eltern verbinden
                 </Button>
               </div>
             </div>
-          </Card>
+          </div>
         )}
 
         {showLink && (
-          <Card className="border-primary/30 bg-primary/5 p-6">
-            <h3 className="font-bold mb-4">Mit Eltern verbinden</h3>
+          <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl p-6 shadow-lg">
+            <h3 className="font-bold mb-4 text-gray-900">Mit Eltern verbinden</h3>
             <div className="space-y-3">
               <div>
-                <Label htmlFor="parent-code">Verbindungscode von Eltern</Label>
+                <Label htmlFor="parent-code" className="text-gray-800">Verbindungscode von Eltern</Label>
                 <Input 
                   id="parent-code"
                   placeholder="z.B. BTC-XYZ123"
                   value={parentConnectionId}
                   onChange={(e) => setParentConnectionId(e.target.value.toUpperCase())}
-                  className="bg-secondary border-border font-mono text-center"
+                  className="bg-white/50 border-white/60 text-gray-900 font-mono text-center"
                   data-testid="input-parent-code"
                 />
-                <p className="text-xs text-muted-foreground mt-1">Frage deine Eltern nach dem Code!</p>
+                <p className="text-xs text-gray-600 mt-1">Frage deine Eltern nach dem Code!</p>
               </div>
               <div className="flex gap-2">
                 <Button 
                   onClick={handleLink}
                   disabled={!parentConnectionId || isLinking}
-                  className="bg-primary hover:bg-primary/90"
+                  className="bg-violet-600 hover:bg-violet-700 text-white"
                   data-testid="button-confirm-link"
                 >
                   {isLinking ? "Wird verbunden..." : "Verbinden"}
@@ -5427,13 +5427,14 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                   variant="outline"
                   onClick={() => setShowLink(false)}
                   disabled={isLinking}
+                  className="bg-white/30 border-white/40 text-gray-800"
                   data-testid="button-cancel-link"
                 >
                   Abbrechen
                 </Button>
               </div>
             </div>
-          </Card>
+          </div>
         )}
 
 
