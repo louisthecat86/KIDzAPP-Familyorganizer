@@ -6032,7 +6032,8 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     const [showQuiz, setShowQuiz] = useState<string | null>(null);
     const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
     const [quizSubmitted, setQuizSubmitted] = useState<Record<string, boolean>>({});
-    const [educationTab, setEducationTab] = useState<"modules" | "converter" | "challenges" | "resources">("modules");
+    const [educationTab, setEducationTab] = useState<"modules" | "converter" | "challenges" | "resources" | "glossar">("modules");
+    const [glossarSearch, setGlossarSearch] = useState("");
     const [satoshiInput, setSatoshiInput] = useState("100000");
     const [bitcoinInput, setBitcoinInput] = useState("0.001");
     const [euroInput, setEuroInput] = useState("50");
@@ -6153,6 +6154,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
               <button onClick={() => setEducationTab("converter")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "converter" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-converter">🔄 Konverter</button>
               <button onClick={() => setEducationTab("challenges")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "challenges" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-challenges">🎯 Challenge</button>
               <button onClick={() => setEducationTab("resources")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "resources" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-resources">🌐 Ressourcen</button>
+              <button onClick={() => setEducationTab("glossar")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "glossar" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-glossar">📖 Glossar</button>
             </div>
           </div>
         </div>
@@ -6449,6 +6451,45 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
             </Card>
           </div>
         ) : null}
+
+        {educationTab === "glossar" && (
+          <div className="space-y-4">
+            <Input placeholder="Glossar durchsuchen..." value={glossarSearch} onChange={(e) => setGlossarSearch(e.target.value)} className="text-base" data-testid="input-glossar-search" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {[
+                { term: "Bitcoin", def: "Digitale Währung, erste erfolgreiche Kryptowährung, dezentralisiert" },
+                { term: "Satoshi", def: "Die kleinste Einheit von Bitcoin (100 Millionen pro Bitcoin)" },
+                { term: "Blockchain", def: "Dezentralisierte Datenbank mit verketteten Blöcken von Transaktionen" },
+                { term: "Mining", def: "Prozess, um neue Bitcoin zu erstellen und Transaktionen zu validieren" },
+                { term: "Private Key", def: "Geheimer Schlüssel um dein Geld auszugeben - NIEMALS weitergeben!" },
+                { term: "Public Address", def: "Öffentliche Wallet-Adresse um Geld zu empfangen - safe zu teilen" },
+                { term: "Wallet", def: "Digitale Geldbörse um Bitcoin zu speichern und zu verwalten" },
+                { term: "Transaction", def: "Überweisung von Bitcoin von einer Adresse zu einer anderen" },
+                { term: "Lightning Network", def: "Schnelles Zahlungsnetzwerk ON TOP von Bitcoin - Sekunden statt Minuten" },
+                { term: "Halving", def: "Event alle 4 Jahre, wo die Mining-Belohnung halbiert wird" },
+                { term: "Proof of Work", def: "Sicherheitsmechanismus where Miners komplexe Aufgaben lösen" },
+                { term: "Node", def: "Computer der die komplette Blockchain speichert und validiert" },
+                { term: "Merkle Tree", def: "Datenstruktur die alle Transaktionen in einem Block verkettet" },
+                { term: "Hash", def: "Eindeutige digitale Identität eines Blocks - ändert sich wenn Daten ändern" },
+                { term: "Smart Contract", def: "Automatisierte Verträge auf der Blockchain" },
+                { term: "UTXO", def: "Unspent Transaction Output - dein verfügbares Bitcoin Geld" },
+                { term: "Fee", def: "Gebühr um eine Bitcoin-Transaktion ins Netzwerk zu senden" },
+                { term: "Lightning Address", def: "Einfache Adresse im Lightning Format (z.B. name@wallet.com)" },
+                { term: "DeFi", def: "Dezentralisierte Finanzierung - Finanzdienstleistungen ohne Bank" },
+                { term: "Altcoin", def: "Alle Kryptowährungen außer Bitcoin (Ethereum, Cardano, etc)" }
+              ]
+                .filter(g => g.term.toLowerCase().includes(glossarSearch.toLowerCase()) || g.def.toLowerCase().includes(glossarSearch.toLowerCase()))
+                .map((glossar, idx) => (
+                  <Card key={idx} className="border-slate-200 hover:border-violet-300 transition-all">
+                    <CardContent className="pt-4 pb-4">
+                      <p className="font-bold text-slate-900 mb-2">{glossar.term}</p>
+                      <p className="text-sm text-slate-600">{glossar.def}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+            </div>
+          </div>
+        )}
 
         {passedQuizzes.length === modules.length && (
           <Card className="border-green-500/50 bg-gradient-to-r from-green-500/10 to-blue-500/10">
