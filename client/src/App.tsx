@@ -51,12 +51,9 @@ import {
   BookOpen,
   Zap,
   Flame,
-  TrendingUp,
-  Moon,
-  Sun
+  TrendingUp
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTheme } from "next-themes";
 import { PhotoUpload } from "@/components/PhotoUpload";
 import { ProofViewer } from "@/components/ProofViewer";
 
@@ -83,54 +80,6 @@ function NotificationBadge({ count }: { count: number }) {
   );
 }
 
-function ThemeToggle() {
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof document !== 'undefined') {
-      const hasDark = document.documentElement.classList.contains('dark');
-      return hasDark;
-    }
-    return true;
-  });
-
-  useEffect(() => {
-    if (typeof localStorage !== 'undefined') {
-      const saved = localStorage.getItem('theme-mode');
-      if (saved === 'light') {
-        document.documentElement.classList.remove('dark');
-        setIsDark(false);
-      } else {
-        document.documentElement.classList.add('dark');
-        setIsDark(true);
-      }
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const html = document.documentElement;
-    if (html.classList.contains('dark')) {
-      html.classList.remove('dark');
-      localStorage.setItem('theme-mode', 'light');
-      setIsDark(false);
-    } else {
-      html.classList.add('dark');
-      localStorage.setItem('theme-mode', 'dark');
-      setIsDark(true);
-    }
-  };
-
-  return (
-    <Button
-      onClick={toggleTheme}
-      variant="ghost"
-      size="icon"
-      className="h-10 w-10"
-      data-testid="button-toggle-theme"
-      title={isDark ? "Light Mode" : "Dark Mode"}
-    >
-      {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-    </Button>
-  );
-}
 
 type Peer = {
   id: number;
@@ -373,28 +322,6 @@ export default function App() {
     setSidebarOpen(false);
   }, []);
 
-  // Aggressive theme enforcement - runs continuously
-  useEffect(() => {
-    const enforceTheme = () => {
-      const saved = localStorage.getItem('theme-mode');
-      const isDarkMode = saved !== 'light';
-      
-      if (isDarkMode) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    };
-
-    enforceTheme();
-    const interval = setInterval(enforceTheme, 50);
-    window.addEventListener('storage', enforceTheme);
-    
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('storage', enforceTheme);
-    };
-  }, []);
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -2941,14 +2868,6 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
           {/* ANSICHT TAB */}
           {activeTab === "ansicht" && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 border border-border">
-                <div>
-                  <p className="font-semibold text-sm">Dark Mode</p>
-                  <p className="text-xs text-muted-foreground">Wechsle zwischen Hell und Dunkel</p>
-                </div>
-                <ThemeToggle />
-              </div>
-
               {user.role === "parent" && (
                 <div className="space-y-2 pb-4 border-b border-border">
                   <Label htmlFor="family-name" className="text-sm font-semibold">Familienname</Label>
