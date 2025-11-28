@@ -2325,23 +2325,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const taskTime = new Date(now);
     taskTime.setHours(hours, minutes, 0, 0);
     
+    // Check if current time has passed the task time
+    if (now < taskTime) return false;
+    
     if (recurring.frequency === "daily") {
-      if (!lastCreated || lastCreated.getDate() !== now.getDate()) {
-        return now >= taskTime;
-      }
+      // Daily: Create if not created today
+      const today = new Date(now).toDateString();
+      const lastCreatedDate = lastCreated ? new Date(lastCreated).toDateString() : null;
+      return today !== lastCreatedDate;
     } else if (recurring.frequency === "weekly") {
-      if (!lastCreated || lastCreated.getDate() !== now.getDate() || lastCreated.getDay() !== recurring.dayOfWeek) {
-        return now.getDay() === recurring.dayOfWeek && now >= taskTime;
-      }
-    } else if (recurring.frequency === "biweekly") {
-      if (!lastCreated || lastCreated.getDate() !== now.getDate()) {
-        const daysSinceCreated = lastCreated ? Math.floor((now.getTime() - lastCreated.getTime()) / (1000 * 60 * 60 * 24)) : 14;
-        return daysSinceCreated >= 14 && now >= taskTime;
-      }
+      // Weekly: Create if it's the right day and not created today
+      if (now.getDay() !== recurring.dayOfWeek) return false;
+      const today = new Date(now).toDateString();
+      const lastCreatedDate = lastCreated ? new Date(lastCreated).toDateString() : null;
+      return today !== lastCreatedDate;
     } else if (recurring.frequency === "monthly") {
-      if (!lastCreated || lastCreated.getDate() !== now.getDate() || lastCreated.getMonth() !== now.getMonth()) {
-        return now.getDate() === recurring.dayOfMonth && now >= taskTime;
-      }
+      // Monthly: Create if it's the right day and not created today
+      if (now.getDate() !== recurring.dayOfMonth) return false;
+      const today = new Date(now).toDateString();
+      const lastCreatedDate = lastCreated ? new Date(lastCreated).toDateString() : null;
+      return today !== lastCreatedDate;
     }
     return false;
   }
