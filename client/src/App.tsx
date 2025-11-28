@@ -5632,7 +5632,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
               €{currentValueEur.toFixed(2)}
             </p>
             <div className="space-y-1">
-              {btcChartData.length > 0 ? (
+              {historicalData && historicalData.length > 0 ? (
                 <div className="h-8 -mx-1">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={btcChartData}>

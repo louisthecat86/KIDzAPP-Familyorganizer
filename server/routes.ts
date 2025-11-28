@@ -1262,25 +1262,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const days = req.query.days || "30";
       const cacheKey = `btc-history-${days}`;
       const cached = getCached(cacheKey);
-      if (cached) {
-        console.log(`[BTC History] Returning cached data for ${days} days`);
+      if (cached && cached.length > 0) {
+        console.log(`[BTC History] Returning cached data for ${days} days (${cached.length} points)`);
         return res.json(cached);
       }
 
-      console.log(`[BTC History] Fetching data for ${days} days (no cache)`);
+      console.log(`[BTC History] Fetching data for ${days} days (no valid cache)`);
       const response = await fetch(
         `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=eur&days=${days}`,
         { headers: { 'User-Agent': 'Mozilla/5.0' } }
       );
       
       if (!response.ok) {
-        console.log(`[BTC History] API returned ${response.status}, serving cached or empty data`);
-        // Return what's in cache anyway if available
+        console.log(`[BTC History] API returned ${response.status}, serving old cache only`);
+        // Only return old cache if it has data
         const oldCache = cache[cacheKey];
-        if (oldCache) {
+        if (oldCache && Array.isArray(oldCache.data) && oldCache.data.length > 0) {
           return res.json(oldCache.data);
         }
-        return res.json([]); // Empty array instead of error
+        // Don't cache empty arrays! Just return empty
+        return res.status(500).json({ error: "Unable to fetch data" });
       }
       
       const data = await response.json();
@@ -1294,13 +1295,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }));
         
         setCached(cacheKey, chartData, 1800000); // 30 min cache
+        console.log(`[BTC History] Cached ${chartData.length} data points`);
         return res.json(chartData);
       }
-      console.log("[BTC History] Invalid data structure");
-      res.json([]);
+      console.log("[BTC History] Invalid data structure, not caching");
+      res.status(500).json({ error: "Invalid data from API" });
     } catch (error) {
       console.error("[BTC History Error]:", error);
-      res.json([]); // Return empty array instead of error
+      res.status(500).json({ error: "Failed to fetch history" });
     }
   });
 
