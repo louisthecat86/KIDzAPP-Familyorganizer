@@ -2931,7 +2931,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             className="p-6 bg-gradient-to-br from-violet-500/30 to-cyan-500/30 backdrop-blur-md border border-white/50 rounded-2xl cursor-pointer hover:bg-white/55 transition-all shadow-xl overflow-hidden relative"
           >
             <div className="text-center relative z-10">
-              <div className="text-5xl mb-2">⚡</div>
               <div className="text-2xl font-bold text-slate-900">Taschengeld</div>
               <div className="text-sm text-slate-700 mt-1">Zahlungen & Terminzahlungen</div>
             </div>
