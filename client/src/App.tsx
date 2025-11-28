@@ -5577,7 +5577,7 @@ function TrackerChart({ userId }: { userId: number }) {
             <XAxis dataKey="date" tick={{ fontSize: 8 }} />
             <YAxis width={40} tick={{ fontSize: 8 }} tickFormatter={v => `€${v.toFixed(0)}`} />
             <Tooltip 
-              formatter={v => `€${Number(v).toFixed(2)}`}
+              formatter={(v, name) => [`€${Number(v).toFixed(2)}`, "€-Wert"]}
               labelFormatter={() => ""}
               contentStyle={{ 
                 backgroundColor: "transparent", 
