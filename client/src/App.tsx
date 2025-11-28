@@ -6162,17 +6162,9 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
 
         {educationTab === "home" && (
           <div className="space-y-6 pb-8">
-            {/* Balance Card */}
-            <Card className="border-violet-300/50 bg-gradient-to-br from-violet-500/20 to-cyan-500/20 backdrop-blur-sm">
-              <CardContent className="pt-6 pb-6">
-                <div className="text-center">
-                  <p className="text-sm text-slate-600 mb-2">💰 Dein Balance</p>
-                  <h2 className="text-5xl font-bold text-cyan-600 mb-1">{(user.balance || 0).toLocaleString()} <span className="text-2xl">SATS</span></h2>
-                  <p className="text-xs text-slate-600">Verdient durch Aufgaben & Challenges</p>
-                </div>
-              </CardContent>
-            </Card>
-
+            {/* Header */}
+            <h2 className="text-2xl font-bold text-slate-900">Lern-Übersicht</h2>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Daily Challenge Widget - 3 */}
               <Card className="border-amber-300/50 bg-amber-500/5">
@@ -6241,7 +6233,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-xs text-slate-600">Module bestanden</span>
-                      <span className="text-sm font-bold text-violet-600">7/20</span>
+                      <span className="text-sm font-bold text-violet-600">{passedQuizzes.length}/20</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-xs text-slate-600">Daily Challenges</span>
@@ -6774,6 +6766,101 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
             )}
           </div>
         </motion.section>
+
+        {/* Education Home Widgets */}
+        {user.role === "child" && (
+          <motion.section initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2 }} className="space-y-4">
+            <h2 className="text-lg font-bold text-slate-900">📚 Dein Lernfortschritt</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Daily Challenge */}
+              <Card className="border-amber-300/50 bg-amber-500/5">
+                <CardContent className="pt-4 pb-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm font-bold text-slate-900 mb-1">🎯 Challenge heute</p>
+                      <h3 className="text-base font-bold text-amber-600 mb-1">{(() => {
+                        const challengePool = [
+                          { title: "Bitcoin Quiz", icon: "🧠" },
+                          { title: "Satoshi Konvertierung", icon: "🔄" },
+                          { title: "Lightning Lektion", icon: "⚡" },
+                          { title: "Sicherheits-Challenge", icon: "🔒" },
+                          { title: "Bitcoin Fun", icon: "🎮" },
+                          { title: "Blockchain Basics", icon: "⛓️" }
+                        ];
+                        return challengePool[0].title;
+                      })()}</h3>
+                      <Badge variant="secondary" className="text-xs">⭐⭐ Mittel</Badge>
+                    </div>
+                    <span className="text-3xl">🎯</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Education Progress */}
+              <Card className="border-green-300/50 bg-green-500/5">
+                <CardContent className="pt-4 pb-4">
+                  <p className="text-sm font-bold text-slate-900 mb-2">🧠 Module</p>
+                  <div className="flex justify-between mb-1 text-xs">
+                    <span>Fortschritt</span>
+                    <span className="font-bold text-green-600">0/20</span>
+                  </div>
+                  <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-green-500 to-cyan-500" style={{ width: "0%" }} />
+                  </div>
+                  <p className="text-xs text-slate-600 mt-2">20 Module zum Freischalten</p>
+                </CardContent>
+              </Card>
+
+              {/* Achievements */}
+              <Card className="border-amber-300/50 bg-amber-500/5 md:col-span-2">
+                <CardContent className="pt-4 pb-4">
+                  <p className="text-sm font-bold text-slate-900 mb-2">🏆 Abzeichen</p>
+                  <div className="grid grid-cols-5 gap-2">
+                    {[
+                      { icon: "🌱", title: "Anfänger" },
+                      { icon: "📚", title: "Lernender" },
+                      { icon: "👑", title: "Experte" },
+                      { icon: "⚡", title: "Lightning" },
+                      { icon: "⭐", title: "Rising Star" }
+                    ].map((b, i) => (
+                      <div key={i} className="text-center p-2 rounded-lg border border-slate-300/50 bg-slate-100/30 opacity-50">
+                        <span className="text-xl block">{b.icon}</span>
+                        <p className="text-xs font-bold text-slate-600 mt-1 truncate">{b.title}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Quick Stats */}
+              <Card className="border-violet-300/50 bg-violet-500/5">
+                <CardContent className="pt-4 pb-4">
+                  <p className="text-sm font-bold text-slate-900 mb-2">⭐ Diese Woche</p>
+                  <div className="space-y-1 text-xs">
+                    <div className="flex justify-between"><span>Module:</span><span className="font-bold">0/20</span></div>
+                    <div className="flex justify-between"><span>Challenges:</span><span className="font-bold">0/7</span></div>
+                    <div className="flex justify-between"><span>Quizzes:</span><span className="font-bold">0</span></div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Trend */}
+              <Card className="border-cyan-300/50 bg-cyan-500/5">
+                <CardContent className="pt-4 pb-4">
+                  <p className="text-sm font-bold text-slate-900 mb-2">📊 7-Tage Trend</p>
+                  <div className="space-y-1 text-xs">
+                    {["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"].map((day, i) => (
+                      <div key={day} className="flex justify-between">
+                        <span>{day}</span>
+                        <span className="font-semibold">0 Sats</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </motion.section>
+        )}
 
         {connectedParents.length > 0 && (
           <div className="space-y-4">
