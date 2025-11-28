@@ -2924,7 +2924,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     return (
       <div className="space-y-4">
         <div className="flex flex-col md:flex-row gap-4 items-start">
-          <img src={familyOrganizerLogo} alt="FamilyOrganizer" className="hidden md:block h-64 object-contain flex-shrink-0" />
+          <img src={familyOrganizerLogo} alt="FamilyOrganizer" className="h-32 md:h-64 object-contain flex-shrink-0" />
           
           <div className="flex-1 space-y-4">
             {user.role === "parent" && (
@@ -5124,7 +5124,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     return (
       <div className="max-w-full space-y-2">
         <div className="flex flex-col md:flex-row gap-4 items-start">
-          <img src={familyOrganizerLogo} alt="FamilyOrganizer" className="hidden md:block h-64 object-contain flex-shrink-0" />
+          <img src={familyOrganizerLogo} alt="FamilyOrganizer" className="h-32 md:h-64 object-contain flex-shrink-0" />
           
           <div className="flex-1">
             <motion.section 
