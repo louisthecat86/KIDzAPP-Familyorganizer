@@ -14,6 +14,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
+import { formatDistanceToNow } from "date-fns";
+import { de } from "date-fns/locale";
 import { LineChart, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Line, Area, ResponsiveContainer, defs, linearGradient, stop } from "recharts";
 import { 
   CheckCircle, 
@@ -526,7 +528,7 @@ export default function App() {
         id: taskId,
         updates: { status: "approved" },
       });
-      toast({ title: "Sats ausgezahlt!", description: "Transaktion gesendet." });
+      toast({ title: "🎉⚡ Sats ausgezahlt!", description: "Die Transaktion wurde erfolgreich gesendet! 🚀" });
     } finally {
       // Reset after a delay to allow mutation to complete
       setTimeout(() => setApprovingTaskId(null), 2000);
@@ -884,8 +886,172 @@ export default function App() {
         />
       )}
 
+      {/* Notification Center View */}
+      {currentView === "notifications" && (
+        <NotificationCenterView
+          user={user}
+          tasks={tasks}
+          messages={messages}
+          allowances={allowances}
+          parentChildren={parentChildren}
+          setCurrentView={setCurrentView}
+        />
+      )}
+
       <Toaster />
     </div>
+  );
+}
+
+function NotificationCenterView({ user, tasks, messages, allowances, parentChildren, setCurrentView }: any) {
+  type NotificationItem = {
+    id: string;
+    type: "task" | "allowance" | "message";
+    title: string;
+    description: string;
+    timestamp: Date;
+    sats?: number;
+  };
+
+  const notifications: NotificationItem[] = [];
+
+  const approvedTasks = tasks.filter((t: Task) => t.status === "approved");
+  approvedTasks.forEach((task: Task) => {
+    const child = parentChildren.find((c: any) => c.id === task.assignedTo);
+    notifications.push({
+      id: `task-${task.id}`,
+      type: "task",
+      title: "Aufgabe genehmigt",
+      description: `${task.title} - ${task.sats} Sats ${child ? `an ${child.name}` : "erhalten"}`,
+      timestamp: new Date(),
+      sats: task.sats,
+    });
+  });
+
+  allowances.forEach((allowance: any) => {
+    const child = parentChildren.find((c: any) => c.id === allowance.childId);
+    const freqLabels: Record<string, string> = {
+      daily: "täglich",
+      weekly: "wöchentlich",
+      biweekly: "zweiwöchentlich",
+      monthly: "monatlich",
+    };
+    notifications.push({
+      id: `allowance-${allowance.id}`,
+      type: "allowance",
+      title: "Taschengeld aktiv",
+      description: `${allowance.sats} Sats ${freqLabels[allowance.frequency] || allowance.frequency} für ${child?.name || "Kind"}`,
+      timestamp: new Date(allowance.createdAt || Date.now()),
+      sats: allowance.sats,
+    });
+  });
+
+  const recentMessages = messages.slice(-5);
+  recentMessages.forEach((msg: any) => {
+    notifications.push({
+      id: `message-${msg.id}`,
+      type: "message",
+      title: "Neue Nachricht",
+      description: `${msg.senderName}: ${msg.content?.substring(0, 50)}${msg.content?.length > 50 ? "..." : ""}`,
+      timestamp: new Date(msg.createdAt || Date.now()),
+    });
+  });
+
+  notifications.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+  const getIcon = (type: "task" | "allowance" | "message") => {
+    switch (type) {
+      case "task":
+        return (
+          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white">
+            <CheckCircle className="h-5 w-5" />
+          </div>
+        );
+      case "allowance":
+        return (
+          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white">
+            <Bitcoin className="h-5 w-5" />
+          </div>
+        );
+      case "message":
+        return (
+          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white">
+            <MessageSquare className="h-5 w-5" />
+          </div>
+        );
+    }
+  };
+
+  const getGradient = (type: "task" | "allowance" | "message") => {
+    switch (type) {
+      case "task":
+        return "from-green-500/10 to-emerald-500/10";
+      case "allowance":
+        return "from-amber-500/10 to-orange-500/10";
+      case "message":
+        return "from-violet-500/10 to-purple-500/10";
+    }
+  };
+
+  return (
+    <motion.div
+      key="notifications-view"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+      className="w-full"
+    >
+      <div className="px-4 py-8 space-y-6 flex flex-col items-center">
+        <div className="flex items-center gap-3 mb-4 w-full max-w-md">
+          <Button variant="outline" onClick={() => setCurrentView("dashboard")} className="gap-2" data-testid="button-back-to-dashboard">
+            <ChevronLeft className="h-4 w-4" /> Zurück
+          </Button>
+        </div>
+
+        <div className="w-full max-w-md">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-white">
+              <Bell className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold">Aktivitäten</h2>
+              <p className="text-sm text-muted-foreground">Deine letzten Ereignisse</p>
+            </div>
+          </div>
+
+          {notifications.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="h-16 w-16 rounded-full bg-muted/30 flex items-center justify-center mx-auto mb-4">
+                <Bell className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <p className="text-muted-foreground">Noch keine Aktivitäten vorhanden</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {notifications.map((notification) => (
+                <motion.div
+                  key={notification.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className={`p-4 rounded-xl border border-primary/20 bg-gradient-to-r ${getGradient(notification.type)} flex items-center gap-3`}
+                  data-testid={`notification-${notification.id}`}
+                >
+                  {getIcon(notification.type)}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm">{notification.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">{notification.description}</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground whitespace-nowrap">
+                    {formatDistanceToNow(notification.timestamp, { addSuffix: true, locale: de })}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
@@ -1188,6 +1354,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
     ...(user.role === "parent" ? [{ id: "tasks", label: "Aufgaben", icon: CheckCircle, badge: tasksNotificationCount }] : []),
     { id: "calendar", label: "Familienkalender", icon: Calendar, badge: 0 },
     { id: "chat", label: "Familienchat", icon: MessageSquare, badge: chatNotificationCount },
+    { id: "notifications", label: "Aktivitäten", icon: Bell, badge: 0 },
     { id: "leaderboard", label: "Bestenliste", icon: Trophy, badge: 0 },
   ];
 
