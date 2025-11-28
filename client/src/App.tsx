@@ -4032,6 +4032,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       time: "09:00"
     });
 
+    const weekdays = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+
     const handleCreateRecurring = async () => {
       try {
         const res = await fetch("/api/recurring-tasks", {
@@ -4065,7 +4067,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <Input placeholder="Aufgabentitel" value={newRecurring.title} onChange={(e) => setNewRecurring({ ...newRecurring, title: e.target.value })} data-testid="input-recurring-title" />
             <Input placeholder="Beschreibung" value={newRecurring.description} onChange={(e) => setNewRecurring({ ...newRecurring, description: e.target.value })} data-testid="input-recurring-desc" />
             <div className="grid grid-cols-2 gap-3">
-              <Input type="number" placeholder="Sats" value={newRecurring.sats} onChange={(e) => setNewRecurring({ ...newRecurring, sats: parseInt(e.target.value) })} data-testid="input-recurring-sats" />
+              <Input type="number" placeholder="Sats" value={newRecurring.sats} onChange={(e) => setNewRecurring({ ...newRecurring, sats: parseInt(e.target.value) || 50 })} data-testid="input-recurring-sats" />
               <Select value={newRecurring.frequency} onValueChange={(v) => setNewRecurring({ ...newRecurring, frequency: v })}>
                 <SelectTrigger data-testid="select-frequency">
                   <SelectValue />
@@ -4077,6 +4079,18 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 </SelectContent>
               </Select>
             </div>
+            {newRecurring.frequency === "weekly" && (
+              <Select value={String(newRecurring.dayOfWeek)} onValueChange={(v) => setNewRecurring({ ...newRecurring, dayOfWeek: parseInt(v) })}>
+                <SelectTrigger data-testid="select-weekday">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {weekdays.map((day, idx) => (
+                    <SelectItem key={idx} value={String(idx)}>{day}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <Input type="time" value={newRecurring.time} onChange={(e) => setNewRecurring({ ...newRecurring, time: e.target.value })} data-testid="input-recurring-time" />
             <Button onClick={handleCreateRecurring} className="w-full bg-violet-600 hover:bg-violet-700" data-testid="button-create-recurring">Erstellen</Button>
           </div>
@@ -4086,9 +4100,18 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           {recurringTasks.length > 0 ? recurringTasks.map((task: any) => (
             <Card key={task.id} className="p-4">
               <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="font-bold">{task.title}</h4>
-                  <p className="text-sm text-slate-600">{task.frequency} • {task.time} • {task.sats} Sats</p>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-bold">{task.title}</h4>
+                    <span className="text-xs bg-violet-500/30 px-2 py-1 rounded text-violet-700 font-semibold" data-testid={`badge-sats-${task.id}`}>💜 {task.sats} Sats</span>
+                  </div>
+                  <p className="text-sm text-slate-600 mt-1">
+                    {task.frequency === 'weekly' && weekdays[task.dayOfWeek]} 
+                    {task.frequency === 'daily' && 'Täglich'}
+                    {task.frequency === 'monthly' && `Monatlich am ${task.dayOfMonth || 'Tag'}`}
+                    • {task.time}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">{task.description}</p>
                 </div>
                 <Button variant="destructive" size="sm" onClick={() => {
                   fetch(`/api/recurring-tasks/${task.id}`, { method: "DELETE" });
