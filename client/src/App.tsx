@@ -6034,8 +6034,25 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     const [bitcoinInput, setBitcoinInput] = useState("0.001");
     const [euroInput, setEuroInput] = useState("50");
     const [btcPrice, setBtcPrice] = useState<number | null>(null);
-    const [dailyChallenge, setDailyChallenge] = useState<{ completed: boolean; reward: number } | null>(null);
     const [xp, setXp] = useState(0);
+    
+    // Initialize daily challenge with default value
+    const today = new Date().toDateString();
+    const [dailyChallenge, setDailyChallenge] = useState<{ completed: boolean; reward: number }>(() => {
+      const lastChallengeDay = typeof localStorage !== 'undefined' ? localStorage.getItem("last-challenge-day") : null;
+      if (lastChallengeDay !== today) {
+        const newChallenge = { completed: false, reward: Math.floor(Math.random() * 50) + 25 };
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem("last-challenge-day", today);
+          localStorage.setItem("daily-challenge", JSON.stringify(newChallenge));
+        }
+        return newChallenge;
+      } else {
+        const saved = typeof localStorage !== 'undefined' ? localStorage.getItem("daily-challenge") : null;
+        if (saved) return JSON.parse(saved);
+        return { completed: false, reward: Math.floor(Math.random() * 50) + 25 };
+      }
+    });
     
     useEffect(() => {
       const fetchBtcPrice = async () => {
@@ -6048,16 +6065,6 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         }
       };
       fetchBtcPrice();
-      
-      const today = new Date().toDateString();
-      const lastChallengeDay = localStorage.getItem("last-challenge-day");
-      if (lastChallengeDay !== today) {
-        setDailyChallenge({ completed: false, reward: Math.floor(Math.random() * 50) + 25 });
-        localStorage.setItem("last-challenge-day", today);
-      } else {
-        const saved = localStorage.getItem("daily-challenge");
-        if (saved) setDailyChallenge(JSON.parse(saved));
-      }
     }, []);
     
     const modules = [
@@ -6416,7 +6423,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           </div>
         )}
 
-        {educationTab === "challenges" && dailyChallenge && (
+        {educationTab === "challenges" && dailyChallenge ? (
           <Card className={`border-2 ${dailyChallenge.completed ? "border-green-500/50 bg-green-500/5" : "border-amber-500/50 bg-amber-500/5"}`}>
             <CardContent className="pt-8 pb-8 text-center space-y-4">
               <div className="text-5xl">🎯</div>
@@ -6444,7 +6451,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
               )}
             </CardContent>
           </Card>
-        )}
+        ) : null}
 
         {completedModules.length === modules.length && (
           <Card className="border-green-500/50 bg-gradient-to-r from-green-500/10 to-blue-500/10">
