@@ -5655,7 +5655,7 @@ function TrackerChart({ userId }: { userId: number }) {
             onClick={() => setShowSats(!showSats)}
             className={`text-[11px] px-2 py-1 rounded border transition-all ${
               showSats 
-                ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400 font-semibold' 
+                ? 'bg-orange-500/20 border-orange-500/50 text-orange-400 font-semibold' 
                 : 'bg-slate-800/50 border-slate-700/50 text-slate-400 opacity-60'
             }`}
             data-testid="toggle-sats"
@@ -5700,9 +5700,9 @@ function TrackerChart({ userId }: { userId: number }) {
                 <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
                 <stop offset="95%" stopColor="#10b981" stopOpacity={0.01} />
               </linearGradient>
-              <linearGradient id="trackerGradYellow" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#fbbf24" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#fbbf24" stopOpacity={0.01} />
+              <linearGradient id="trackerGradOrange" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#f97316" stopOpacity={0.01} />
               </linearGradient>
               <linearGradient id="trackerGradBlue" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
@@ -5721,7 +5721,7 @@ function TrackerChart({ userId }: { userId: number }) {
                   return (
                     <div className="bg-slate-950 border border-slate-700 rounded p-2 text-xs">
                       <p className="text-green-400">💶 Wert: €{data.euroValue?.toFixed(2)}</p>
-                      <p className="text-yellow-400">⚡ Satoshi: {data.totalSats?.toLocaleString()}</p>
+                      <p className="text-orange-400">⚡ Satoshi: {data.totalSats?.toLocaleString()}</p>
                       <p className="text-blue-400">₿ Kurs: €{data.btcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0}) || 'N/A'}</p>
                     </div>
                   );
@@ -5731,7 +5731,7 @@ function TrackerChart({ userId }: { userId: number }) {
               cursor={false}
             />
             {showEuro && <Area type="monotone" dataKey="euroValue" stroke="#10b981" fill="url(#trackerGradGreen)" />}
-            {showSats && <Area yAxisId="right" type="monotone" dataKey="totalSats" stroke="#fbbf24" fill="url(#trackerGradYellow)" />}
+            {showSats && <Area yAxisId="right" type="monotone" dataKey="totalSats" stroke="#f97316" fill="url(#trackerGradOrange)" />}
             {showBtcPrice && <Area yAxisId="btcPrice" type="monotone" dataKey="btcPriceScaled" stroke="#3b82f6" fill="url(#trackerGradBlue)" />}
           </AreaChart>
         </ResponsiveContainer>
@@ -5747,8 +5747,8 @@ function TrackerChart({ userId }: { userId: number }) {
               <span><span className="text-green-400 font-semibold">Grüne Linie</span> = Wie viel Euro deine Satsohi zu dem Zeitpunkt wert waren</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-              <span><span className="text-yellow-400 font-semibold">Gelbe Linie</span> = Wie viele Satoshi du insgesamt verdient hast</span>
+              <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+              <span><span className="text-orange-400 font-semibold">Orange Linie</span> = Wie viele Satoshi du insgesamt verdient hast</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
