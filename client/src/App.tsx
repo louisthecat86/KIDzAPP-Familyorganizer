@@ -5648,7 +5648,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,193,7,0.15)" />
                         <XAxis dataKey="date" tick={{ fontSize: 9, fill: "rgba(255,193,7,0.7)" }} />
-                        <YAxis width={35} tick={{ fontSize: 9, fill: "rgba(255,193,7,0.7)" }} />
+                        <YAxis width={40} tick={{ fontSize: 9, fill: "rgba(255,193,7,0.7)" }} tickFormatter={(value) => `€${Number(value).toFixed(0)}`} />
                         <Tooltip 
                           contentStyle={{ fontSize: 11, background: "rgba(0,0,0,0.9)", border: "1px solid rgba(255,193,7,0.5)", borderRadius: "4px" }}
                           formatter={(value) => `€${Number(value).toFixed(2)}`}
@@ -5677,7 +5677,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(34,197,94,0.15)" />
                         <XAxis dataKey="month" tick={{ fontSize: 9, fill: "rgba(34,197,94,0.7)" }} />
-                        <YAxis width={35} tick={{ fontSize: 9, fill: "rgba(34,197,94,0.7)" }} />
+                        <YAxis width={40} tick={{ fontSize: 9, fill: "rgba(34,197,94,0.7)" }} tickFormatter={(value) => `€${Number(value).toFixed(0)}`} />
                         <Tooltip 
                           contentStyle={{ fontSize: 11, background: "rgba(0,0,0,0.9)", border: "1px solid rgba(34,197,94,0.5)", borderRadius: "4px" }}
                           formatter={(value) => `€${Number(value).toFixed(2)}`}
