@@ -2923,8 +2923,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     
     return (
       <div className="space-y-4 relative">
-        <div className="absolute top-0 left-0 right-0 flex justify-center pointer-events-none z-0 opacity-30">
-          <img src={familyOrganizerLogo} alt="FamilyOrganizer" className="h-48 object-contain" />
+        <div className="absolute top-0 left-0 right-0 flex justify-center pointer-events-none z-50">
+          <img src={familyOrganizerLogo} alt="FamilyOrganizer" className="h-64 object-contain drop-shadow-lg" />
         </div>
         
         {user.role === "parent" && (
@@ -5121,8 +5121,8 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
 
     return (
       <div className="max-w-4xl space-y-2 relative">
-        <div className="absolute top-0 left-0 right-0 flex justify-center pointer-events-none z-0 opacity-30">
-          <img src={familyOrganizerLogo} alt="FamilyOrganizer" className="h-48 object-contain" />
+        <div className="absolute top-0 left-0 right-0 flex justify-center pointer-events-none z-50">
+          <img src={familyOrganizerLogo} alt="FamilyOrganizer" className="h-64 object-contain drop-shadow-lg" />
         </div>
         <motion.section 
           initial={{ scale: 0.95, opacity: 0 }}
