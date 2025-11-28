@@ -5503,6 +5503,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
   const [allHistoricalData, setAllHistoricalData] = useState<{ [key: number]: any[] }>({});
   const [dailySnapshots, setDailySnapshots] = useState<any[]>([]);
   const [btcDays, setBtcDays] = useState<number>(30);
+  const [viewMode, setViewMode] = useState<"bitcoin" | "sparbuch">("bitcoin");
 
   const timeframes = [
     { label: "10 Tage", days: 10 },
@@ -5620,77 +5621,109 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
   return (
     <div className="pt-4 border-t border-border/50">
       <div className="space-y-3">
-        {/* Comparison Cards with Mini Charts */}
-        <div className="grid grid-cols-1 gap-2">
-          {/* Bitcoin Card */}
-          <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg p-2 space-y-1">
+        {/* Combined Card with Toggle */}
+        <div className={`rounded-lg p-2 space-y-2 border ${
+          viewMode === "bitcoin" 
+            ? "bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-yellow-500/30" 
+            : "bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/30"
+        }`}>
+          {/* Header with Toggle */}
+          <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1">
-              <span className="text-sm">⚡</span>
-              <p className="text-xs text-muted-foreground font-bold">BITCOIN</p>
+              <span className="text-sm">{viewMode === "bitcoin" ? "⚡" : "🏦"}</span>
+              <p className="text-xs text-muted-foreground font-bold">
+                {viewMode === "bitcoin" ? "BITCOIN" : "SPARBUCH"}
+              </p>
             </div>
-            <p className="text-sm font-mono font-bold text-yellow-400" data-testid="text-sats-current-value">
-              €{currentValueEur.toFixed(2)}
-            </p>
-            <div className="space-y-1">
-              {historicalData && historicalData.length > 0 ? (
-                <div className="h-8 -mx-1">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={btcChartData}>
-                      <CartesianGrid strokeDasharray="0" stroke="rgba(255,193,7,0.1)" />
-                      <XAxis dataKey="date" tick={{ fontSize: 7 }} />
-                      <YAxis width={25} tick={{ fontSize: 7 }} />
-                      <Tooltip contentStyle={{ fontSize: 10, background: "rgba(0,0,0,0.8)", border: "1px solid rgba(255,193,7,0.3)" }} />
-                      <Line type="monotone" dataKey="value" stroke="#facc15" dot={false} strokeWidth={1.5} isAnimationActive={false} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className="h-8 flex items-center justify-center text-xs text-muted-foreground">
-                  Laden...
-                </div>
-              )}
-              <div className="flex flex-wrap gap-0.5">
-                {timeframes.map((tf) => (
-                  <button
-                    key={tf.days}
-                    onClick={() => setBtcDays(tf.days)}
-                    className={`text-xs px-1.5 py-0 rounded border transition-colors ${
-                      btcDays === tf.days
-                        ? "bg-yellow-500/30 border-yellow-500/60 text-yellow-400 font-bold"
-                        : "bg-yellow-500/10 border-yellow-500/20 text-yellow-300 hover:bg-yellow-500/20"
-                    }`}
-                    data-testid={`button-btc-timeframe-${tf.days}`}
-                  >
-                    {tf.label}
-                  </button>
-                ))}
-              </div>
+            <div className="flex gap-1">
+              <button
+                onClick={() => setViewMode("bitcoin")}
+                className={`text-xs px-2 py-0.5 rounded border transition-colors ${
+                  viewMode === "bitcoin"
+                    ? "bg-yellow-500/30 border-yellow-500/60 text-yellow-400 font-bold"
+                    : "bg-yellow-500/10 border-yellow-500/20 text-yellow-300 hover:bg-yellow-500/20"
+                }`}
+                data-testid="button-toggle-bitcoin"
+              >
+                ⚡ BTC
+              </button>
+              <button
+                onClick={() => setViewMode("sparbuch")}
+                className={`text-xs px-2 py-0.5 rounded border transition-colors ${
+                  viewMode === "sparbuch"
+                    ? "bg-blue-500/30 border-blue-500/60 text-blue-400 font-bold"
+                    : "bg-blue-500/10 border-blue-500/20 text-blue-300 hover:bg-blue-500/20"
+                }`}
+                data-testid="button-toggle-sparbuch"
+              >
+                🏦 Sparbuch
+              </button>
             </div>
           </div>
 
-          {/* Sparbuch Card */}
-          <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-lg p-2 space-y-1">
-            <div className="flex items-center gap-1">
-              <span className="text-sm">🏦</span>
-              <p className="text-xs text-muted-foreground font-bold">SPARBUCH</p>
-            </div>
-            <p className="text-sm font-mono font-bold text-blue-400">
-              €{savingsValueEur.toFixed(2)}
-            </p>
-            {savingsProjection.length > 1 && (
-              <div className="h-8 -mx-1">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={savingsProjection}>
-                    <CartesianGrid strokeDasharray="0" stroke="rgba(34,197,94,0.1)" />
-                    <XAxis dataKey="month" tick={{ fontSize: 7 }} />
-                    <YAxis width={25} tick={{ fontSize: 7 }} />
-                    <Tooltip contentStyle={{ fontSize: 10, background: "rgba(0,0,0,0.8)", border: "1px solid rgba(34,197,94,0.3)" }} />
-                    <Line type="monotone" dataKey="value" stroke="#22c55e" dot={false} strokeWidth={1.5} isAnimationActive={false} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+          {/* Value Display */}
+          <p className={`text-sm font-mono font-bold ${
+            viewMode === "bitcoin" ? "text-yellow-400" : "text-blue-400"
+          }`} data-testid="text-sats-current-value">
+            €{viewMode === "bitcoin" ? currentValueEur.toFixed(2) : savingsValueEur.toFixed(2)}
+          </p>
+
+          {/* Chart Section */}
+          <div className="space-y-1">
+            {viewMode === "bitcoin" ? (
+              <>
+                {historicalData && historicalData.length > 0 ? (
+                  <div className="h-8 -mx-1">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={btcChartData}>
+                        <CartesianGrid strokeDasharray="0" stroke="rgba(255,193,7,0.1)" />
+                        <XAxis dataKey="date" tick={{ fontSize: 7 }} />
+                        <YAxis width={25} tick={{ fontSize: 7 }} />
+                        <Tooltip contentStyle={{ fontSize: 10, background: "rgba(0,0,0,0.8)", border: "1px solid rgba(255,193,7,0.3)" }} />
+                        <Line type="monotone" dataKey="value" stroke="#facc15" dot={false} strokeWidth={1.5} isAnimationActive={false} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-8 flex items-center justify-center text-xs text-muted-foreground">
+                    Laden...
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-0.5">
+                  {timeframes.map((tf) => (
+                    <button
+                      key={tf.days}
+                      onClick={() => setBtcDays(tf.days)}
+                      className={`text-xs px-1.5 py-0 rounded border transition-colors ${
+                        btcDays === tf.days
+                          ? "bg-yellow-500/30 border-yellow-500/60 text-yellow-400 font-bold"
+                          : "bg-yellow-500/10 border-yellow-500/20 text-yellow-300 hover:bg-yellow-500/20"
+                      }`}
+                      data-testid={`button-btc-timeframe-${tf.days}`}
+                    >
+                      {tf.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                {savingsProjection.length > 1 && (
+                  <div className="h-8 -mx-1">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={savingsProjection}>
+                        <CartesianGrid strokeDasharray="0" stroke="rgba(34,197,94,0.1)" />
+                        <XAxis dataKey="month" tick={{ fontSize: 7 }} />
+                        <YAxis width={25} tick={{ fontSize: 7 }} />
+                        <Tooltip contentStyle={{ fontSize: 10, background: "rgba(0,0,0,0.8)", border: "1px solid rgba(34,197,94,0.3)" }} />
+                        <Line type="monotone" dataKey="value" stroke="#22c55e" dot={false} strokeWidth={1.5} isAnimationActive={false} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground">0,2% monatlich</p>
+              </>
             )}
-            <p className="text-xs text-muted-foreground">0,2% monatlich</p>
           </div>
         </div>
 
