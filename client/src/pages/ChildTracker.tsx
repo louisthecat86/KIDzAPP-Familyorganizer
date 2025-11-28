@@ -15,9 +15,20 @@ const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-slate-900 border-2 border-green-500 rounded-lg p-3 shadow-lg">
-        <p className="text-sm text-green-400 font-semibold">Euro : €{data.euroValue.toFixed(2)}</p>
-        <p className="text-sm text-yellow-400 font-semibold">Satoshi : {data.totalSats.toLocaleString()}</p>
+      <div style={{
+        backgroundColor: "#1e293b",
+        border: "3px solid #10b981",
+        borderRadius: "12px",
+        padding: "12px 16px",
+        boxShadow: "0 8px 24px rgba(16, 185, 129, 0.4)",
+        minWidth: "180px"
+      }}>
+        <p style={{ color: "#86efac", fontSize: "14px", fontWeight: "600", margin: "4px 0" }}>
+          Euro : €{data.euroValue.toFixed(2)}
+        </p>
+        <p style={{ color: "#fbbf24", fontSize: "14px", fontWeight: "600", margin: "4px 0" }}>
+          Satoshi : {data.totalSats.toLocaleString()}
+        </p>
       </div>
     );
   }
