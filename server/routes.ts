@@ -1195,6 +1195,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get historical BTC prices for comparison charts
+  app.get("/api/btc-history", async (req, res) => {
+    try {
+      const days = req.query.days || "30"; // 30, 60, or 90 days
+      const response = await fetch(
+        `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=eur&days=${days}&interval=daily`
+      );
+      const data = await response.json();
+      
+      if (data.prices && Array.isArray(data.prices)) {
+        // Transform timestamps and prices
+        const chartData = data.prices.map((price: [number, number]) => ({
+          date: new Date(price[0]).toLocaleDateString("de-DE", { month: "short", day: "numeric" }),
+          timestamp: price[0],
+          price: Math.round(price[1] * 100) / 100 // EUR price of 1 BTC
+        }));
+        
+        return res.json(chartData);
+      }
+      
+      throw new Error("Invalid historical data");
+    } catch (error) {
+      console.error("Error fetching historical BTC prices:", error);
+      res.status(500).json({ error: "Failed to fetch historical data" });
+    }
+  });
+
   // Start automatic allowance payout scheduler (runs every minute)
   cron.schedule("* * * * *", async () => {
     try {

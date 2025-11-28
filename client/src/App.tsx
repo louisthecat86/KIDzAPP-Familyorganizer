@@ -4806,7 +4806,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
               </div>
             </div>
 
-            <BitcoinValueWidget sats={user.balance || 0} />
+            <BitcoinValueWidget sats={user.balance || 0} setCurrentView={setCurrentView} />
 
             {user.lightningAddress && (
               <div className="pt-4 border-t border-border/50">
@@ -5193,10 +5193,310 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     );
   }
 
+  // Savings Comparison View
+  if (currentView === "savings-comparison") {
+    return <SavingsComparisonPage sats={user.balance || 0} />;
+  }
+
   return null;
 }
 
-function BitcoinValueWidget({ sats }: { sats: number }) {
+function SavingsComparisonPage({ sats }: { sats: number }) {
+  const [days, setDays] = useState<30 | 60 | 90>(30);
+  const [interestRate, setInterestRate] = useState(0.5);
+  const [btcHistoricalData, setBtcHistoricalData] = useState<any[]>([]);
+  const [btcCurrentPrice, setBtcCurrentPrice] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Fetch historical BTC data
+        const histRes = await fetch(`/api/btc-history?days=${days}`);
+        if (!histRes.ok) throw new Error("Historische Daten konnten nicht geladen werden");
+        const histData = await histRes.json();
+        
+        // Fetch current BTC price
+        const priceRes = await fetch("/api/btc-price");
+        if (!priceRes.ok) throw new Error("Bitcoin-Preis konnte nicht geladen werden");
+        const priceData = await priceRes.json();
+        
+        setBtcHistoricalData(histData);
+        setBtcCurrentPrice(priceData.eur);
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [days]);
+
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto py-8">
+        <div className="text-center">
+          <div className="text-4xl mb-4">⏳</div>
+          <p className="text-muted-foreground">Laden...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !btcCurrentPrice) {
+    return (
+      <div className="max-w-6xl mx-auto py-8">
+        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-6 text-center">
+          <div className="text-3xl mb-2">⚠️</div>
+          <p className="text-red-400 font-bold">{error || "Keine Live-Daten verfügbar"}</p>
+          <p className="text-xs text-muted-foreground mt-2">Bitte später erneut versuchen</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Calculate values
+  const btcAmount = sats / 100_000_000;
+  const currentValueEur = btcAmount * btcCurrentPrice;
+  const monthlyRate = interestRate / 100;
+  
+  // Generate savings account chart data using compound interest
+  const savingsChartData = btcHistoricalData.map((item, index) => {
+    // Days from start = index (assuming daily data)
+    const months = (index / 30);
+    const savingsValue = currentValueEur * Math.pow(1 + monthlyRate, months);
+    return {
+      ...item,
+      savingsValue: Math.round(savingsValue * 100) / 100,
+      bitcoinSatsValue: btcAmount * item.price,
+    };
+  });
+
+  return (
+    <div className="max-w-6xl mx-auto space-y-6">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <span className="text-3xl">🎓</span> Sparen vergleichen
+        </h1>
+        <Button onClick={() => window.history.back()} variant="ghost" data-testid="button-back-savings">
+          ← Zurück
+        </Button>
+      </div>
+
+      {/* Info Card */}
+      <Card className="bg-blue-500/5 border border-blue-500/30">
+        <CardContent className="pt-6">
+          <p className="text-sm">
+            <span className="font-bold text-blue-400">Du hast {sats.toLocaleString()} Sats</span> 
+            <span className="text-muted-foreground"> (€{currentValueEur.toFixed(2)})</span>
+          </p>
+          <p className="text-xs text-muted-foreground mt-2">
+            Vergleiche deinen Bitcoin-Sparplan mit einem klassischen Sparbuch über {days} Tage
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Controls */}
+      <div className="grid md:grid-cols-2 gap-4">
+        {/* Timeframe Selector */}
+        <Card className="border-border">
+          <CardContent className="pt-6">
+            <p className="text-xs font-bold text-muted-foreground mb-3 uppercase">Zeitraum wählen</p>
+            <div className="flex gap-2">
+              {[30, 60, 90].map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setDays(d as 30 | 60 | 90)}
+                  className={`px-4 py-2 text-sm rounded font-bold transition-all ${
+                    days === d
+                      ? "bg-primary/20 text-primary border border-primary/50"
+                      : "bg-secondary text-muted-foreground hover:text-foreground"
+                  }`}
+                  data-testid={`button-days-${d}`}
+                >
+                  {d} Tage
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Interest Rate Slider */}
+        <Card className="border-border">
+          <CardContent className="pt-6">
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <p className="text-xs font-bold text-muted-foreground uppercase">Zinssatz</p>
+                <p className="text-sm font-mono font-bold text-blue-400" data-testid="text-interest-display">
+                  {interestRate.toFixed(2)}% / Monat = {(interestRate * 12).toFixed(1)}% / Jahr
+                </p>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="10"
+                step="0.1"
+                value={interestRate}
+                onChange={(e) => setInterestRate(parseFloat(e.target.value))}
+                className="w-full h-2 bg-slate-700 rounded-lg accent-blue-500"
+                data-testid="slider-interest"
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>0%</span>
+                <span>5%</span>
+                <span>10%</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charts Grid */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Bitcoin Chart */}
+        <Card className="border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span>⚡</span> Bitcoin Wertentwicklung
+            </CardTitle>
+            <CardDescription>Dein Satoshi-Vermögen in Euro</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {savingsChartData.length > 0 && (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={savingsChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis 
+                    dataKey="date" 
+                    tick={{ fontSize: 12, fill: "rgba(255,255,255,0.5)" }}
+                    interval={Math.floor(savingsChartData.length / 5)}
+                  />
+                  <YAxis tick={{ fontSize: 12, fill: "rgba(255,255,255,0.5)" }} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: "rgba(0,0,0,0.8)", border: "1px solid rgba(255,255,255,0.2)" }}
+                    formatter={(value) => `€${(value as number).toFixed(2)}`}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="bitcoinSatsValue" 
+                    stroke="#fbbf24" 
+                    strokeWidth={2.5}
+                    dot={false}
+                    name="Bitcoin Sats"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Savings Account Chart */}
+        <Card className="border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span>🏦</span> Sparbuch mit Zinseszins
+            </CardTitle>
+            <CardDescription>Lineare Zinsentwicklung ({interestRate.toFixed(2)}% monatlich)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {savingsChartData.length > 0 && (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={savingsChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis 
+                    dataKey="date" 
+                    tick={{ fontSize: 12, fill: "rgba(255,255,255,0.5)" }}
+                    interval={Math.floor(savingsChartData.length / 5)}
+                  />
+                  <YAxis tick={{ fontSize: 12, fill: "rgba(255,255,255,0.5)" }} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: "rgba(0,0,0,0.8)", border: "1px solid rgba(255,255,255,0.2)" }}
+                    formatter={(value) => `€${(value as number).toFixed(2)}`}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="savingsValue" 
+                    stroke="#60a5fa" 
+                    strokeWidth={2.5}
+                    dot={false}
+                    name="Sparbuch"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Comparison Table */}
+      <Card className="border-border">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <span>📊</span> Vergleich am Ende
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {savingsChartData.length > 0 && (() => {
+            const finalData = savingsChartData[savingsChartData.length - 1];
+            const bitcoinFinal = finalData.bitcoinSatsValue;
+            const savingsFinal = finalData.savingsValue;
+            const difference = bitcoinFinal - currentValueEur;
+            const savingsDifference = savingsFinal - currentValueEur;
+
+            return (
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                  <p className="text-xs text-muted-foreground mb-2">⚡ Bitcoin</p>
+                  <p className="text-2xl font-mono font-bold text-yellow-400">€{bitcoinFinal.toFixed(2)}</p>
+                  <p className={`text-sm mt-2 font-bold ${difference >= 0 ? "text-green-400" : "text-red-400"}`}>
+                    {difference >= 0 ? "+" : ""}€{difference.toFixed(2)}
+                  </p>
+                </div>
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                  <p className="text-xs text-muted-foreground mb-2">🏦 Sparbuch</p>
+                  <p className="text-2xl font-mono font-bold text-blue-400">€{savingsFinal.toFixed(2)}</p>
+                  <p className="text-sm mt-2 font-bold text-green-400">+€{savingsDifference.toFixed(2)}</p>
+                </div>
+              </div>
+            );
+          })()}
+        </CardContent>
+      </Card>
+
+      {/* Educational Messages */}
+      <div className="space-y-2">
+        <Card className="bg-yellow-500/5 border border-yellow-500/30">
+          <CardContent className="pt-4">
+            <p className="text-sm flex items-start gap-2">
+              <span className="text-lg mt-0.5">📚</span>
+              <span>
+                <span className="font-bold text-yellow-400">Bitcoin schwankt!</span>
+                <span className="text-muted-foreground"> Der Kurs kann hoch und runter gehen. Langfristig kann Bitcoin aber stärker wachsen als Sparbuch-Zinsen.</span>
+              </span>
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="bg-green-500/5 border border-green-500/30">
+          <CardContent className="pt-4">
+            <p className="text-sm flex items-start gap-2">
+              <span className="text-lg mt-0.5">💡</span>
+              <span>
+                <span className="font-bold text-green-400">Zinseszins ist Zauberei!</span>
+                <span className="text-muted-foreground"> Deine Zinsen verdienen wieder Zinsen. Mit höheren Zinsen wächst dein Geld immer schneller! 🚀</span>
+              </span>
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function BitcoinValueWidget({ sats, setCurrentView }: { sats: number; setCurrentView?: (view: string) => void }) {
   const [btcPrice, setBtcPrice] = useState<{ usd: number; eur: number } | null>(null);
   const [interestRate, setInterestRate] = useState(0.5); // Start at 0.5% monthly
 
@@ -5367,11 +5667,21 @@ function BitcoinValueWidget({ sats }: { sats: number }) {
 
           <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg p-3 flex gap-2">
             <span className="text-lg flex-shrink-0">🎁</span>
-            <div className="text-xs">
+            <div className="flex-1">
               <p className="font-bold text-cyan-400 mb-1">Zinseszins Zauberei!</p>
-              <p className="text-muted-foreground">Die Zinsen verdienen selbst wieder Zinsen! Mit {interestRate.toFixed(2)}% Zins pro Monat wachsen deine Sats immer schneller. 🚀</p>
+              <p className="text-muted-foreground text-xs">Die Zinsen verdienen selbst wieder Zinsen! Mit {interestRate.toFixed(2)}% Zins pro Monat wachsen deine Sats immer schneller. 🚀</p>
             </div>
           </div>
+
+          {setCurrentView && (
+            <Button 
+              onClick={() => setCurrentView("savings-comparison")}
+              className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold"
+              data-testid="button-open-savings-comparison"
+            >
+              📊 Sparen vergleichen →
+            </Button>
+          )}
 
           <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3 flex gap-2">
             <span className="text-lg flex-shrink-0">🎯</span>
