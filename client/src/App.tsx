@@ -5543,7 +5543,10 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
           const snapshotsRes = await fetch(`/api/bitcoin-snapshots/${user.id}`);
           if (snapshotsRes.ok) {
             const snapshots = await snapshotsRes.json();
+            console.log("[Bitcoin Snapshots] Fetched from API:", snapshots);
             setDailySnapshots(snapshots);
+          } else {
+            console.log("[Bitcoin Snapshots] API returned error:", snapshotsRes.status);
           }
         }
 
