@@ -64,6 +64,9 @@ function getBerlinTime(date: Date = new Date()): Date {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // DEBUG: Test if recurring scheduler is working
+  console.log("[Startup] Registering recurring tasks scheduler...");
+  
   // Test LNBits connection - with multiple endpoint attempts
   app.post("/api/wallet/test", async (req, res) => {
     try {
@@ -2313,26 +2316,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Recurring tasks scheduler (checks every 1 minute)
-  cron.schedule("*/1 * * * *", async () => {
+  // Manual endpoint to test recurring tasks (DEBUG)
+  app.post("/api/recurring-tasks/test-create", async (req, res) => {
     try {
       const allRecurringTasks = await db.select().from(recurringTasks).where(eq(recurringTasks.isActive, true));
+      console.log(`[DEBUG] Found ${allRecurringTasks.length} recurring tasks`);
       
-      if (allRecurringTasks.length === 0) {
-        console.log(`[Recurring Tasks Scheduler] No active recurring tasks`);
-        return;
-      }
-      
-      console.log(`[Recurring Tasks Scheduler] ⏰ Running at ${new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}... Found ${allRecurringTasks.length} active recurring tasks`);
+      let created = 0;
       const now = new Date();
       
       for (const recurring of allRecurringTasks) {
-        console.log(`[Recurring Tasks Scheduler] 🔍 Checking: "${recurring.title}" (${recurring.frequency}, time: ${recurring.time})`);
+        const shouldCreate = checkIfTaskShouldBeCreated(recurring, now);
+        if (shouldCreate) {
+          const newTask = await storage.createTask({
+            connectionId: recurring.connectionId,
+            createdBy: recurring.createdBy,
+            title: recurring.title,
+            description: recurring.description || "",
+            sats: recurring.sats || 0,
+            status: "open"
+          });
+          await storage.updateRecurringTask(recurring.id, { lastCreatedDate: new Date() });
+          created++;
+          console.log(`[DEBUG] Created: ${recurring.title}`);
+        }
+      }
+      
+      res.json({ checked: allRecurringTasks.length, created });
+    } catch (error) {
+      console.error("[DEBUG ERROR]:", error);
+      res.status(500).json({ error: String(error) });
+    }
+  });
+
+  // Recurring tasks scheduler (checks every 1 minute) - using setInterval as fallback
+  console.log("[Startup] Cron scheduler registered for recurring tasks");
+  
+  // Fallback: Check every 60 seconds using setInterval
+  setInterval(async () => {
+    try {
+      const allRecurringTasks = await db.select().from(recurringTasks).where(eq(recurringTasks.isActive, true));
+      
+      if (allRecurringTasks.length === 0) return;
+      
+      console.log(`[RECURRING CHECK] ${new Date().toLocaleTimeString('de-DE')} - Tasks: ${allRecurringTasks.length}`);
+      const now = new Date();
+      
+      for (const recurring of allRecurringTasks) {
         const shouldCreate = checkIfTaskShouldBeCreated(recurring, now);
         
         if (shouldCreate) {
           try {
-            // Create new task
             const newTask = await storage.createTask({
               connectionId: recurring.connectionId,
               createdBy: recurring.createdBy,
@@ -2342,18 +2376,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
               status: "open"
             });
             
-            // Update lastCreatedDate with ISO string
             await storage.updateRecurringTask(recurring.id, { lastCreatedDate: new Date() });
-            console.log(`[Recurring Tasks] ✅ CREATED! Task: "${recurring.title}" (ID: ${newTask.id})`);
-          } catch (createError) {
-            console.error(`[Recurring Tasks] ❌ Failed to create task "${recurring.title}":`, createError);
+            console.log(`[RECURRING] ✅ Created: "${recurring.title}"`);
+          } catch (err) {
+            console.error(`[RECURRING ERROR] ${recurring.title}:`, err);
           }
         }
       }
     } catch (error) {
-      console.error("[Recurring Tasks Scheduler] ❌ Fatal error:", error);
+      console.error("[RECURRING FATAL]:", error);
     }
-  });
+  }, 60000);
+  
+  console.log("[Startup] Recurring tasks scheduler ACTIVE with setInterval");
 
   function checkIfTaskShouldBeCreated(recurring: any, now: Date): boolean {
     // Convert to Berlin timezone
