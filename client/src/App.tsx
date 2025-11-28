@@ -5616,7 +5616,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
                 {viewMode === "bitcoin" ? "BITCOIN" : "SPARBUCH"}
               </p>
               {viewMode === "sparbuch" && (
-                <span className="text-xs text-muted-foreground ml-1">0,2% monatlich</span>
+                <span className="text-[10px] text-muted-foreground ml-1">0,2% monatlich</span>
               )}
             </div>
             <div className="flex gap-1">
