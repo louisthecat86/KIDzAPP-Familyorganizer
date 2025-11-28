@@ -5615,6 +5615,9 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
               <p className="text-xs text-muted-foreground font-bold">
                 {viewMode === "bitcoin" ? "BITCOIN" : "SPARBUCH"}
               </p>
+              {viewMode === "sparbuch" && (
+                <span className="text-xs text-muted-foreground ml-1">0,2% monatlich</span>
+              )}
             </div>
             <div className="flex gap-1">
               <button
@@ -5682,35 +5685,32 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
               </>
             ) : (
               <>
-                <div className="relative">
-                  {savingsChartData && savingsChartData.length > 0 ? (
-                    <div className="h-20 -mx-2">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={savingsChartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
-                          <defs>
-                            <linearGradient id="savingsGradient" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.01} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(59,130,246,0.15)" />
-                          <XAxis dataKey="date" tick={{ fontSize: 9, fill: "rgba(59,130,246,0.7)" }} />
-                          <YAxis width={40} tick={{ fontSize: 9, fill: "rgba(59,130,246,0.7)" }} tickFormatter={(value) => `€${Number(value).toFixed(0)}`} />
-                          <Tooltip 
-                            contentStyle={{ fontSize: 11, background: "rgba(0,0,0,0.9)", border: "1px solid rgba(59,130,246,0.5)", borderRadius: "4px" }}
-                            formatter={(value) => `€${Number(value).toFixed(2)}`}
-                          />
-                          <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2} fill="url(#savingsGradient)" isAnimationActive={true} animationDuration={800} />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
-                  ) : (
-                    <div className="h-20 flex items-center justify-center text-xs text-muted-foreground">
-                      Daten werden gesammelt...
-                    </div>
-                  )}
-                  <p className="absolute top-1 right-2 text-xs text-muted-foreground bg-gradient-to-br from-blue-500/10 to-cyan-500/10 px-2 py-1 rounded">0,2% monatlich</p>
-                </div>
+                {savingsChartData && savingsChartData.length > 0 ? (
+                  <div className="h-20 -mx-2">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={savingsChartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                        <defs>
+                          <linearGradient id="savingsGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.01} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(59,130,246,0.15)" />
+                        <XAxis dataKey="date" tick={{ fontSize: 9, fill: "rgba(59,130,246,0.7)" }} />
+                        <YAxis width={40} tick={{ fontSize: 9, fill: "rgba(59,130,246,0.7)" }} tickFormatter={(value) => `€${Number(value).toFixed(0)}`} />
+                        <Tooltip 
+                          contentStyle={{ fontSize: 11, background: "rgba(0,0,0,0.9)", border: "1px solid rgba(59,130,246,0.5)", borderRadius: "4px" }}
+                          formatter={(value) => `€${Number(value).toFixed(2)}`}
+                        />
+                        <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2} fill="url(#savingsGradient)" isAnimationActive={true} animationDuration={800} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-20 flex items-center justify-center text-xs text-muted-foreground">
+                    Daten werden gesammelt...
+                  </div>
+                )}
               </>
             )}
           </div>
