@@ -5672,7 +5672,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
           <div className="space-y-2">
             {viewMode === "bitcoin" ? (
               <>
-                {historicalData && historicalData.length > 0 ? (
+                {btcChartData && btcChartData.length > 0 ? (
                   <div className="h-20 -mx-2">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={btcChartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
