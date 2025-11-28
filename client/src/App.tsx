@@ -5261,6 +5261,18 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     const saved = typeof localStorage !== 'undefined' ? localStorage.getItem("passed-quizzes") : null;
     return saved ? JSON.parse(saved) : [];
   });
+  const [showQuiz, setShowQuiz] = useState<string | null>(null);
+  const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
+  const [quizSubmitted, setQuizSubmitted] = useState<Record<string, boolean>>({});
+  const [educationTab, setEducationTab] = useState<"modules" | "converter" | "challenges" | "resources" | "glossar">("modules");
+  const [glossarSearch, setGlossarSearch] = useState("");
+  const [satoshiInput, setSatoshiInput] = useState("100000");
+  const [bitcoinInput, setBitcoinInput] = useState("0.001");
+  const [euroInput, setEuroInput] = useState("50");
+  const [btcPrice, setBtcPrice] = useState<number | null>(null);
+  const [xp, setXp] = useState(0);
+  const [rsvps, setRsvps] = useState<Record<number, string>>({});
+  const [loading, setLoading] = useState<Record<number, boolean>>({});
   const { toast } = useToast();
 
   const { data: connectedPeers = [] } = useQuery({
@@ -5300,8 +5312,6 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
   };
 
   if (currentView === "calendar") {
-    const [rsvps, setRsvps] = useState<Record<number, string>>({});
-    const [loading, setLoading] = useState<Record<number, boolean>>({});
 
     const handleRsvp = async (eventId: number, response: string) => {
       setLoading({ ...loading, [eventId]: true });
@@ -6033,16 +6043,6 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
   }
 
   if (currentView === "bitcoin-education" && user.role === "child") {
-    const [showQuiz, setShowQuiz] = useState<string | null>(null);
-    const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
-    const [quizSubmitted, setQuizSubmitted] = useState<Record<string, boolean>>({});
-    const [educationTab, setEducationTab] = useState<"modules" | "converter" | "challenges" | "resources" | "glossar">("modules");
-    const [glossarSearch, setGlossarSearch] = useState("");
-    const [satoshiInput, setSatoshiInput] = useState("100000");
-    const [bitcoinInput, setBitcoinInput] = useState("0.001");
-    const [euroInput, setEuroInput] = useState("50");
-    const [btcPrice, setBtcPrice] = useState<number | null>(null);
-    const [xp, setXp] = useState(0);
     
     // Challenge pool with different types
     const challengePool = [
@@ -6118,9 +6118,13 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
       const passScore = Math.ceil(module.quiz.length * 0.7);
       
       if (score >= passScore) {
-        const newPassedQuizzes = [...passedQuizzes, moduleId];
-        setPassedQuizzes(newPassedQuizzes);
-        localStorage.setItem("passed-quizzes", JSON.stringify(newPassedQuizzes));
+        // Only add if not already passed
+        if (!passedQuizzes.includes(moduleId)) {
+          const newPassedQuizzes = [...passedQuizzes, moduleId];
+          setPassedQuizzes(newPassedQuizzes);
+          localStorage.setItem("passed-quizzes", JSON.stringify(newPassedQuizzes));
+          console.log("✅ Quiz passed!", { moduleId, newPassedQuizzes: newPassedQuizzes.length });
+        }
         toast({ title: "🎉 Quiz bestanden!", description: `${score}/${module.quiz.length} richtig!` });
       } else {
         toast({ title: "Probier nochmal!", description: `Du brauchst ${passScore} von ${module.quiz.length}. Du hattest ${score}.`, variant: "destructive" });
