@@ -699,15 +699,14 @@ export default function App() {
         >
           <div className="px-4 py-8 max-w-4xl space-y-6">
             <div className="flex items-center gap-3 mb-8">
-              <Button variant="outline" onClick={() => setCurrentView("dashboard")} className="gap-2" data-testid="button-back-to-dashboard">
+              <Button variant="outline" onClick={() => setCurrentView("allowance-payout")} className="gap-2" data-testid="button-back-to-dashboard">
                 <ChevronLeft className="h-4 w-4" /> Zurück
               </Button>
-              <h1 className="text-3xl font-bold">💰 Taschengeld-Verwaltung</h1>
             </div>
 
             <Card className="border-2 border-primary/40 bg-primary/5">
               <CardHeader>
-                <CardTitle>Neues Taschengeld hinzufügen</CardTitle>
+                <CardTitle>Neue Terminzahlung hinzufügen</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
