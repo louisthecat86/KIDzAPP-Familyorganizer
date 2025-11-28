@@ -5507,6 +5507,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log("[BitcoinValueWidget] fetchData called, user:", user?.id, "sats:", sats);
         const priceRes = await fetch("/api/btc-price");
         const priceData = await priceRes.json();
         setBtcPrice(priceData);
