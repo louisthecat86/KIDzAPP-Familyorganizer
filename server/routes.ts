@@ -628,6 +628,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const newBalance = (child.balance || 0) + task.sats;
         await storage.updateBalance(child.id, newBalance);
 
+        // Create a new Bitcoin snapshot when child receives sats
+        try {
+          let btcPrice = lastKnownPrice;
+          if (!btcPrice) {
+            // If we don't have a cached price, try to fetch one
+            try {
+              const priceResponse = await fetch(
+                "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur"
+              );
+              if (priceResponse.ok) {
+                const priceData = await priceResponse.json();
+                if (priceData?.bitcoin?.eur) {
+                  btcPrice = { usd: 0, eur: priceData.bitcoin.eur };
+                  lastKnownPrice = btcPrice;
+                }
+              }
+            } catch (e) {
+              console.warn("Failed to fetch BTC price for snapshot, using fallback");
+              btcPrice = { usd: 0, eur: 78000 }; // Reasonable fallback
+            }
+          }
+          
+          const valueEur = (newBalance / 1e8) * btcPrice!.eur;
+          await storage.createDailyBitcoinSnapshot({
+            peerId: child.id,
+            connectionId: child.connectionId,
+            valueEur: Math.round(valueEur * 100), // Convert to cents
+            satoshiAmount: newBalance
+          });
+          console.log(`[Snapshot] Created new snapshot for ${child.name}: ${newBalance} sats = €${valueEur.toFixed(2)}`);
+        } catch (snapshotError) {
+          console.warn("Failed to create Bitcoin snapshot (continuing anyway):", snapshotError);
+        }
+
         let paymentHash = "";
 
         // Try to send payment if both wallet and lightning address are configured
