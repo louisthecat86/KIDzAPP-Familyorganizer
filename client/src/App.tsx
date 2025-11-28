@@ -3035,7 +3035,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     refetchInterval: 10000
   });
 
-  const displayBalance = walletBalance?.lnbitsBalance;
+  const activeWalletType = user.walletType || (user.hasNwcConfigured ? "nwc" : user.hasLnbitsConfigured ? "lnbits" : null);
+  const displayBalance = activeWalletType === "nwc" ? walletBalance?.nwcBalance : walletBalance?.lnbitsBalance;
+  const walletLabel = activeWalletType === "nwc" ? "NWC Wallet" : "LNbits Wallet";
 
   if (currentView === "dashboard") {
     const openTasks = tasks.filter((t: Task) => t.status === "open" || t.status === "assigned");
@@ -3201,7 +3203,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                           "---"
                         )}
                       </div>
-                      <p className="text-sm text-slate-700 mt-2">LNbits Wallet</p>
+                      <p className="text-sm text-slate-700 mt-2">{walletLabel}</p>
                     </div>
                   </div>
                 </div>,
