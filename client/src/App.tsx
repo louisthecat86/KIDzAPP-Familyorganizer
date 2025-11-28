@@ -6025,7 +6025,10 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
   }
 
   if (currentView === "bitcoin-education" && user.role === "child") {
-    const [completedModules, setCompletedModules] = useState<string[]>([]);
+    const [passedQuizzes, setPassedQuizzes] = useState<string[]>(() => {
+      const saved = typeof localStorage !== 'undefined' ? localStorage.getItem("passed-quizzes") : null;
+      return saved ? JSON.parse(saved) : [];
+    });
     const [showQuiz, setShowQuiz] = useState<string | null>(null);
     const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
     const [quizSubmitted, setQuizSubmitted] = useState<Record<string, boolean>>({});
@@ -6080,138 +6083,26 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     }, []);
     
     const modules = [
-      {
-        id: "what-is-bitcoin",
-        level: "Anfänger",
-        levelColor: "text-green-600",
-        title: "Was ist Bitcoin?",
-        icon: "₿",
-        content: [
-          "Bitcoin ist digitales Geld - wie elektronische Münzen die du sammeln kannst!",
-          "Es wurde 2009 erfunden und es gibt maximal 21 Millionen Bitcoin.",
-          "Bitcoin wird von vielen Menschen auf der ganzen Welt verwenden, nicht von einer Bank.",
-          "Jeder Bitcoin kann in 100 Millionen Satoshis (Sats) aufgeteilt werden.",
-          "Satoshi Nakamoto ist der anonyme Erfinder von Bitcoin - der Name ist bis heute geheim!",
-          "Das Bitcoin Netzwerk sichert über 1 Billiarde Euro an Werten.",
-          "Es werden ca. 10 Minuten benötigt um einen neuen Block zu erstellen.",
-          "Bitcoin Transaktionen sind transparent - jeder kann die Blockchain sehen, aber nicht wer wo ist."
-        ],
-        quiz: [
-          { question: "Wann wurde Bitcoin erfunden?", options: ["2009", "2015", "2001"], correct: 0 },
-          { question: "Wie viele Bitcoin gibt es maximal?", options: ["21 Millionen", "Unbegrenzt", "1 Milliarde"], correct: 0 },
-          { question: "Wer ist Satoshi Nakamoto?", options: ["Der anonyme Bitcoin Erfinder", "Ein Kryptograph", "Ein Unternehmer"], correct: 0 }
-        ]
-      },
-      {
-        id: "what-is-sats",
-        level: "Anfänger",
-        levelColor: "text-green-600",
-        title: "Was sind Satoshis (Sats)?",
-        icon: "⚡",
-        content: [
-          "Satoshis sind die kleinste Einheit von Bitcoin - wie Cent für Euro!",
-          "1 Bitcoin = 100.000.000 Satoshis (das ist 10^8 Sats)",
-          "Die Bezeichnung 'Satoshi' ehrt den Erfinder von Bitcoin (Satoshi Nakamoto)",
-          "Sats sind perfekt für kleine Transaktionen und Zahlungen.",
-          "Ein Satoshi ist 0,00000001 Bitcoin - unglaublich klein!",
-          "Bei 100 Euro = ca. 200.000 Sats (je nach Bitcoin Kurs)",
-          "Der Name 'Satoshi' wurde zur Ehre des Erfinders gewählt.",
-          "Sats machen Bitcoin praktisch für den Alltag - keine riesigen Zahlen nötig!"
-        ],
-        quiz: [
-          { question: "1 Bitcoin = ?", options: ["100.000.000 Sats", "1.000.000 Sats", "10.000 Sats"], correct: 0 },
-          { question: "Wer war Satoshi Nakamoto?", options: ["Der anonyme Bitcoin Erfinder", "Ein Astronaut", "Ein Kryptograph"], correct: 0 },
-          { question: "Wie viel ist ein Satoshi?", options: ["0,00000001 Bitcoin", "0,01 Bitcoin", "0,001 Bitcoin"], correct: 0 }
-        ]
-      },
-      {
-        id: "lightning-network",
-        level: "Mittelstufe",
-        levelColor: "text-yellow-600",
-        title: "Lightning Network ⚡",
-        icon: "🌩️",
-        content: [
-          "Lightning ist ein Netzwerk auf top von Bitcoin für SUPER schnelle Zahlungen!",
-          "Transaktionen im Lightning Netzwerk dauern Sekunden statt Minuten.",
-          "Du kannst sofort Bitcoin (über Sats) senden und empfangen.",
-          "Es ist wie der Unterschied zwischen SMS und Telefonanruf.",
-          "Lightning Kanäle ermöglichen sofortige Zahlungen zwischen zwei Parteien.",
-          "Gebühren im Lightning sind extrem niedrig - oft unter 1 Sat!",
-          "Lightning wurde 2015 vorgeschlagen um Bitcoin zu skalieren.",
-          "Millionen von Transaktionen pro Sekunde sind theoretisch möglich!"
-        ],
-        quiz: [
-          { question: "Wie lange dauert eine Lightning Transaktion?", options: ["Sekunden", "Minuten", "Stunden"], correct: 0 },
-          { question: "Was ist Lightning?", options: ["Zahlungsnetzwerk auf Bitcoin", "Eine Kryptowährung", "Eine Bank"], correct: 0 },
-          { question: "Wann wurde Lightning vorgeschlagen?", options: ["2015", "2009", "2020"], correct: 0 }
-        ]
-      },
-      {
-        id: "blockchain",
-        level: "Mittelstufe",
-        levelColor: "text-yellow-600",
-        title: "Blockchain erklärt",
-        icon: "🔗",
-        content: [
-          "Eine Blockchain ist eine Kette von Blöcken mit Transaktionsdaten.",
-          "Jeder Block ist mit dem vorherigen verbunden - wie eine Kette.",
-          "Das macht es unmöglich, alte Transaktionen zu fälschen.",
-          "Viele Computer speichern die gleiche Blockchain - ultra sicher!",
-          "Ein neuer Block wird alle 10 Minuten hinzugefügt.",
-          "Jeder Block enthält tausende von Transaktionen.",
-          "Wenn jemand einen Block ändern möchte, müsste er 51% der Computer kontrollieren!",
-          "Die Bitcoin Blockchain hat seit 2009 kein einziges Mal einen Fehler gehabt."
-        ],
-        quiz: [
-          { question: "Warum ist Blockchain sicher?", options: ["Blöcke sind verkettet & verteilt", "Es ist verschlüsselt", "Nur eine Person hat Zugriff"], correct: 0 },
-          { question: "Wie lange braucht es für einen Block?", options: ["10 Minuten", "1 Minute", "1 Stunde"], correct: 0 },
-          { question: "Wie viele Computer müssten einen Block ändern?", options: ["51% der Computer", "Nur eine", "Alle"], correct: 0 }
-        ]
-      },
-      {
-        id: "security",
-        level: "Fortgeschritten",
-        levelColor: "text-red-600",
-        title: "Sicherheit & private Keys",
-        icon: "🔐",
-        content: [
-          "Deine Lightning Adresse ist wie deine Kontonummer - sie ist öffentlich.",
-          "Aber dein privater Schlüssel ist wie dein Passwort - NIEMALS weitergeben!",
-          "Mit deinem privaten Schlüssel kann jemand dein Geld nehmen.",
-          "Bewahre deine Keys immer geheim auf!",
-          "Ein privater Key ist eine 256-bit Zahl - fast unmöglich zu erraten.",
-          "Es gibt 2^256 mögliche private Keys - mehr als Sterne im Universum!",
-          "Wenn du deinen Key verlierst, kann keine Bank dir helfen - es ist weg.",
-          "Schreibe deine Keys niemals auf Papier auf das andere sehen können - Cold Storage ist wichtig!"
-        ],
-        quiz: [
-          { question: "Kann deine Lightning Adresse öffentlich sein?", options: ["Ja, sie ist öffentlich", "Nein, geheim halten", "Optional"], correct: 0 },
-          { question: "Was passiert wenn man seinen private Key verliert?", options: ["Du kannst nicht mehr auf dein Geld zugreifen", "Bitcoin sendet es zurück", "Es ist automatisch gesichert"], correct: 0 },
-          { question: "Ein privater Key ist wie...", options: ["Dein Passwort", "Deine Kontonummer", "Dein Name"], correct: 0 }
-        ]
-      },
-      {
-        id: "future",
-        level: "Fortgeschritten",
-        levelColor: "text-red-600",
-        title: "Die Zukunft von Bitcoin",
-        icon: "🚀",
-        content: [
-          "Bitcoin wird immer beliebter und mehr Menschen verwenden es.",
-          "Der Wert von Bitcoin kann steigen und fallen - aber langfristig ist es interessant.",
-          "Lightning macht Bitcoin für tägliche Zahlungen nutzbar.",
-          "Du lernst heute die Finanz-Technologie der Zukunft!",
-          "2024: Über 50 Millionen Menschen besitzen Bitcoin weltweit.",
-          "El Salvador hat Bitcoin als gesetzliches Zahlungsmittel anerkannt.",
-          "Länder wie Argentinien nutzen Bitcoin gegen Inflation.",
-          "Große Unternehmen wie MicroStrategy und Marathon halten Bitcoin als Vermögensanlage."
-        ],
-        quiz: [
-          { question: "Ist Bitcoin riskant?", options: ["Ja, Wert schwankt stark", "Nein, 100% sicher", "Moderates Risiko"], correct: 0 },
-          { question: "Welches Land hat Bitcoin als gesetzliches Zahlungsmittel?", options: ["El Salvador", "Deutschland", "USA"], correct: 0 },
-          { question: "Wie viele Menschen besitzen Bitcoin (2024)?", options: ["Über 50 Millionen", "1 Million", "500.000"], correct: 0 }
-        ]
-      }
+      { id: "m1", level: "Anfänger", levelColor: "text-green-600", title: "Was ist Bitcoin?", icon: "₿", content: ["Bitcoin ist digitales Geld - wie elektronische Münzen", "Es wurde 2009 von Satoshi Nakamoto erfunden", "Es gibt maximal 21 Millionen Bitcoin", "Bitcoin ist dezentralisiert - keine Bank kontrolliert es", "Jeder Bitcoin kann in 100.000.000 Satoshis aufgeteilt werden", "Das Bitcoin Netzwerk wird von tausenden Computern gesichert", "Transaktionen sind transparent und nicht rückgängig zu machen", "Bitcoin ist das erste erfolgreiche digitale Geld"], quiz: [{ question: "Wann wurde Bitcoin erfunden?", options: ["2009", "2015", "2001"], correct: 0 }, { question: "Wie viele Bitcoin gibt es maximal?", options: ["21 Millionen", "Unbegrenzt", "1 Milliarde"], correct: 0 }, { question: "Wer ist Satoshi Nakamoto?", options: ["Der anonyme Bitcoin Erfinder", "Ein YouTuber", "Ein Politiker"], correct: 0 }] },
+      { id: "m2", level: "Anfänger", levelColor: "text-green-600", title: "Was sind Satoshis (Sats)?", icon: "⚡", content: ["Satoshis sind die kleinste Einheit von Bitcoin", "1 Bitcoin = 100.000.000 Satoshis (10^8)", "Ein Satoshi ist 0,00000001 Bitcoin", "Der Name ehrt Satoshi Nakamoto, den Bitcoin Erfinder", "Sats sind perfekt für kleine alltägliche Transaktionen", "Gerade du verdienst Sats mit deinen Aufgaben!", "Mit Sats vermeidest du große unhandliche Zahlen", "Sats machen Bitcoin praktisch für Kinder und kleine Payments"], quiz: [{ question: "1 Bitcoin = ? Satoshis", options: ["100.000.000", "1.000.000", "10.000"], correct: 0 }, { question: "Wie viel ist ein Satoshi?", options: ["0,00000001 Bitcoin", "0,01 Bitcoin", "0,1 Bitcoin"], correct: 0 }, { question: "Wer war Satoshi?", options: ["Bitcoin Erfinder", "Ein Astronaut", "Ein Sänger"], correct: 0 }] },
+      { id: "m3", level: "Anfänger", levelColor: "text-green-600", title: "Wie funktioniert Bitcoin?", icon: "🔄", content: ["Bitcoin funktioniert ohne Mittelsmann oder Bank", "Du sendest Bitcoin direkt an andere Menschen", "Das Netzwerk bestätigt jede Transaktion automatisch", "Deine Adresse ist öffentlich, dein Key ist geheim", "Jede Transaktion wird in der Blockchain gespeichert", "Das Netzwerk prüft ob du genug Bitcoin hast", "Du brauchst keine Erlaubnis von niemand um zu zahlen", "Bitcoin ist zensurresistent - niemand kann es stoppen"], quiz: [{ question: "Wer bestätigt Bitcoin Transaktionen?", options: ["Das Netzwerk", "Eine Bank", "Der Staat"], correct: 0 }, { question: "Braucht du eine Bank für Bitcoin?", options: ["Nein, nie", "Ja immer", "Manchmal"], correct: 0 }, { question: "Wo werden Bitcoin Transaktionen gespeichert?", options: ["In der Blockchain", "In einer App", "Bei Amazon"], correct: 0 }] },
+      { id: "m4", level: "Anfänger", levelColor: "text-green-600", title: "Adressen & Wallets", icon: "📍", content: ["Eine Bitcoin Adresse ist deine öffentliche Kontonummer", "Sie sieht aus wie: bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh", "Du kannst deine Adresse jedem geben - sie ist öffentlich", "Ein Wallet ist deine digitale Geldbörse", "Dein Wallet speichert deine privaten Keys sicher", "Es gibt verschiedene Wallet-Typen: Mobile, Desktop, Hardware", "Lightning Adressen sehen anders aus als Bitcoin Adressen", "Deine Lightning Adresse ist zB: spikylip55@walletofsatoshi.com"], quiz: [{ question: "Kann ich meine Bitcoin Adresse öffentlich machen?", options: ["Ja, immer", "Nein, geheim halten", "Nur für Freunde"], correct: 0 }, { question: "Was ist ein Wallet?", options: ["Eine digitale Geldbörse", "Ein echtes Portemonnaie", "Ein Bank-Konto"], correct: 0 }, { question: "Sind Bitcoin Adressen wiederverwendbar?", options: ["Ja", "Nein", "Nur einmal"], correct: 0 }] },
+      { id: "m5", level: "Anfänger", levelColor: "text-green-600", title: "Bitcoin Kurse verstehen", icon: "📈", content: ["Bitcoin hat einen Marktpreis wie Aktien", "Einen Tag kostet Bitcoin mehr, anderswo weniger", "Der Kurs schwankt weil Angebot & Nachfrage sich ändert", "Es gibt keine zentrale Stelle die den Kurs kontrolliert", "Der Preis ist fair weil der Markt es bestimmt", "Du kannst Bitcoin zu unterschiedlichen Preisen kaufen", "Jede Börse kann unterschiedliche Kurse haben", "Charts zeigen die Preisentwicklung über Zeit"], quiz: [{ question: "Wer setzt den Bitcoin Preis fest?", options: ["Der Markt (Angebot & Nachfrage)", "Die Regierung", "Eine Firma"], correct: 0 }, { question: "Kann der Bitcoin Preis schwanken?", options: ["Ja, täglich", "Nein, immer gleich", "Nur im Winter"], correct: 0 }, { question: "Warum gibt es verschiedene Kurse?", options: ["Verschiedene Börsen & Märkte", "Technische Fehler", "Zufall"], correct: 0 }] },
+      { id: "m6", level: "Mittelstufe", levelColor: "text-yellow-600", title: "Lightning Network Basics", icon: "⚡", content: ["Lightning ist ein Netzwerk ÜBER Bitcoin für schnelle Zahlungen", "Normale Bitcoin Transaktionen dauern ~10 Minuten", "Lightning Transaktionen dauern Sekunden!", "Lightning Kanäle ermöglichen sofortige Payments", "Gebühren sind extrem niedrig - oft unter 1 Sat", "Du brauchst Lightning für tägliche Zahlungen", "Das ist wie der Unterschied zwischen Brief und E-Mail", "Lightning wurde erfunden um Bitcoin zu skalieren"], quiz: [{ question: "Wie schnell sind Lightning Transaktionen?", options: ["Sekunden", "Minuten", "Stunden"], correct: 0 }, { question: "Sind Lightning Gebühren hoch?", options: ["Nein, sehr niedrig", "Ja, teuer", "Kostenlos immer"], correct: 0 }, { question: "Wann wurde Lightning vorgeschlagen?", options: ["2015", "2009", "2020"], correct: 0 }] },
+      { id: "m7", level: "Mittelstufe", levelColor: "text-yellow-600", title: "Blockchain Technologie", icon: "🔗", content: ["Eine Blockchain ist eine Kette von Blöcken", "Jeder Block speichert viele Transaktionen", "Blöcke sind kryptographisch miteinander verbunden", "Das macht Fälschungen unmöglich", "Das komplette Bitcoin Ledger ist öffentlich", "Tausende Nodes speichern die ganze Blockchain", "Ein neuer Block wird ca. alle 10 Minuten hinzugefügt", "Die Bitcoin Blockchain läuft seit 2009 ununterbrochen"], quiz: [{ question: "Warum ist Blockchain sicher?", options: ["Blöcke sind verkettet & verteilt", "Ist verschlüsselt", "Nur eine Person hat Zugriff"], correct: 0 }, { question: "Wie oft kommt ein neuer Block?", options: ["Alle 10 Minuten", "Jede Sekunde", "Jede Stunde"], correct: 0 }, { question: "Wer kontrolliert die Blockchain?", options: ["Das Netzwerk dezentral", "Eine Firma", "Ein Land"], correct: 0 }] },
+      { id: "m8", level: "Mittelstufe", levelColor: "text-yellow-600", title: "Mining erklärt", icon: "⛏️", content: ["Mining ist das Erstellen neuer Bitcoin Blöcke", "Miners lösen komplexe mathematische Probleme", "Der erste Miner bekommt eine Belohnung in Bitcoin", "Das Netzwerk wird durch Mining gesichert", "Mining ist schwer und braucht viel Elektrizität", "Die Belohnung wird alle 4 Jahre halbiert (Halving)", "2024: Ein Block gibt 6.25 Bitcoin", "Früher waren es 50 Bitcoin pro Block (2009)", "Mining macht das Netzwerk dezentralisiert"], quiz: [{ question: "Was ist Mining?", options: ["Neue Blöcke erstellen & Bitcoin verdienen", "Mit einer Spitzhacke arbeiten", "Bitcoin abbauen"], correct: 0 }, { question: "Wann wird die Miner-Belohnung halbiert?", options: ["Alle 4 Jahre", "Täglich", "Nie"], correct: 0 }, { question: "Wie viel Bitcoin pro Block heute?", options: ["6.25", "50", "100"], correct: 0 }] },
+      { id: "m9", level: "Mittelstufe", levelColor: "text-yellow-600", title: "Smart Contracts & DeFi", icon: "🤖", content: ["Smart Contracts sind automatische Verträge auf der Blockchain", "Sie führen sich selbst aus wenn Bedingungen erfüllt sind", "DeFi = Dezentralisierte Finanzierung", "DeFi Apps laufen auf Blockchains wie Bitcoin/Ethereum", "Du brauchst keine Bank für DeFi Dienste", "DeFi ist transparent - jeder kann den Code sehen", "Risiken: Code Fehler, Scams, Marktvolatilität", "DeFi Apps werden immer beliebter"], quiz: [{ question: "Was ist ein Smart Contract?", options: ["Automatischer digitaler Vertrag", "Ein normales Stück Papier", "Ein Anwalt"], correct: 0 }, { question: "DeFi braucht Banken?", options: ["Nein", "Ja", "Manchmal"], correct: 0 }, { question: "Ist DeFi transparent?", options: ["Ja, komplett", "Nein, geheim", "Teilweise"], correct: 0 }] },
+      { id: "m10", level: "Mittelstufe", levelColor: "text-yellow-600", title: "Bitcoin vs Gold", icon: "🏆", content: ["Bitcoin wird oft mit Gold verglichen", "Beide sind selten: 21 Millionen Bitcoin, begrenzte Goldmenge", "Gold lagert man physisch, Bitcoin digital", "Bitcoin ist schneller zu senden als Gold", "Gold ist älter und bekannter als Bitcoin", "Bitcoin braucht kein Lagerhaus", "Gold ist greifbar, Bitcoin ist nur digital", "Beide sind gute Wertspeicher"], quiz: [{ question: "Ist Bitcoin wie Gold?", options: ["Ja, beides Wertspeicher", "Nein, ganz anders", "Nur ähnlich"], correct: 0 }, { question: "Wieviel Bitcoin gibt es maximal?", options: ["21 Millionen", "Unbegrenzt", "Unbekannt"], correct: 0 }, { question: "Kann man Bitcoin anfassen?", options: ["Nein, nur digital", "Ja, überall", "Manchmal"], correct: 0 }] },
+      { id: "m11", level: "Fortgeschritten", levelColor: "text-red-600", title: "Kryptographie in Bitcoin", icon: "🔐", content: ["Bitcoin nutzt Kryptographie um sicher zu sein", "Öffentliche & private Keys basieren auf Mathematik", "SHA-256 ist der Hashing Algorithmus von Bitcoin", "ECDSA wird für digitale Signaturen benutzt", "Dein privater Key generiert deine öffentliche Adresse", "Das ist mathematisch einfach in eine Richtung", "Aber fast unmöglich umzukehren", "Das macht Bitcoin Adressen sicher"], quiz: [{ question: "Was ist SHA-256?", options: ["Bitcoin Hashing Algorithmus", "Eine Währung", "Ein Wallet"], correct: 0 }, { question: "Kann man aus der Adresse den privaten Key bekommen?", options: ["Nein, mathematisch unmöglich", "Ja, mit Zeit", "Nur mit Supercomputer"], correct: 0 }, { question: "Wofür werden private Keys genutzt?", options: ["Um Transaktionen zu signieren", "Um Bitcoin zu sehen", "Um Geld zu senden"], correct: 0 }] },
+      { id: "m12", level: "Fortgeschritten", levelColor: "text-red-600", title: "Private & Public Keys", icon: "🔑", content: ["Dein privater Key ist dein Passwort - ABSOLUTE GEHEIM!", "Der private Key als lange Zahl: z.B. 48 Zeichen Hex", "Dein privater Key generiert deine öffentliche Adresse", "Öffentliche Adressen sind für alle sichtbar", "Mit deinem privaten Key kannst du Geld ausgeben", "Ohne Private Key: Niemand kann es für dich tun", "Wenn du deinen Key verlierst: Dein Geld ist für immer weg", "Es gibt keine 'Passwort zurücksetzen' Funktion"], quiz: [{ question: "Sollte man seinen privaten Key weitergeben?", options: ["NEIN, niemals", "Ja, mit Freunden", "Nur im Notfall"], correct: 0 }, { question: "Was passiert wenn du deinen Key verlierst?", options: ["Dein Geld ist weg", "Bitcoin sendet es zurück", "Die Bank hilft dir"], correct: 0 }, { question: "Kann man zwei verschiedene Private Keys zu einer Adresse haben?", options: ["Nein", "Ja", "Manchmal"], correct: 0 }] },
+      { id: "m13", level: "Fortgeschritten", levelColor: "text-red-600", title: "Wallet Sicherheit", icon: "🛡️", content: ["Wallets speichern deine privaten Keys", "Es gibt verschiedene Sicherheitsstufen: Hot & Cold Wallets", "Hot Wallets sind online - schneller aber risikoreicher", "Cold Wallets sind offline - sicherer aber weniger praktisch", "Hardware Wallets sind Mini-Computer für deine Keys", "Multi-Sig Wallets brauchen 2 von 3 Keys um Geld zu senden", "Backup deine Seeds/Keys an mehreren sicheren Orten", "Nutze Passwörter die niemand erraten kann"], quiz: [{ question: "Was ist ein Hot Wallet?", options: ["Online Wallet", "Warmes Wallet", "Ein physisches Wallet"], correct: 0 }, { question: "Sind Hardware Wallets sicher?", options: ["Ja, sehr", "Nein", "Manchmal"], correct: 0 }, { question: "Was ist Multi-Sig?", options: ["Mehrere Keys für eine Transaktion", "Eine Signatur", "Ein Name"], correct: 0 }] },
+      { id: "m14", level: "Fortgeschritten", levelColor: "text-red-600", title: "Bitcoin Transaktionen", icon: "💸", content: ["Eine Bitcoin Transaktion hat Inputs & Outputs", "Input: Woher kommt das Bitcoin Geld", "Output: Wohin geht das Bitcoin Geld", "Du brauchst einen Private Key um eine Transaktion zu signieren", "Die Gebühr (Fee) ist der Unterschied zwischen Input & Output", "Höhere Gebühr = schnellere Bestätigung", "Du zahlst für die Blocksize den die Transaktion nutzt", "Jede Transaktion ist permanent und nicht rückgängig"], quiz: [{ question: "Was ist Input einer Transaktion?", options: ["Woher das Geld kommt", "Wohin das Geld geht", "Die Gebühr"], correct: 0 }, { question: "Kann man eine Bitcoin Transaktion rückgängig machen?", options: ["Nein, permanent", "Ja, mit Passwort", "Nur die Bank kann"], correct: 0 }, { question: "Wer entscheidet die Transaktionsgebühr?", options: ["Du selbst", "Bitcoin Netzwerk", "Die Miner"], correct: 0 }] },
+      { id: "m15", level: "Fortgeschritten", levelColor: "text-red-600", title: "Proof of Work", icon: "💪", content: ["Proof of Work ist der Consensus Mechanismus von Bitcoin", "Miners müssen eine schwere mathematische Aufgabe lösen", "Der erste der die Lösung findet bekommt Belohnung", "Die Aufgabe wird schwerer je mehr Miners es gibt", "Das macht Bitcoin Attacks sehr teuer", "Um 51% Attack zu machen braucht man 51% der Rechenpower", "Das ist nahezu unmöglich und sehr teuer", "Proof of Work schützt die Blockchain"], quiz: [{ question: "Was ist Proof of Work?", options: ["Miners lösen schwere Aufgaben", "Arbeitsnachweis auf Papier", "Ein Mining Job"], correct: 0 }, { question: "Wird die Mining Aufgabe leichter oder schwerer?", options: ["Schwerer mit mehr Miners", "Immer leicht", "Zufällig"], correct: 0 }, { question: "Was schützt Proof of Work?", options: ["Die Blockchain vor Attacks", "Die Wallets", "Die Addresses"], correct: 0 }] },
+      { id: "m16", level: "Fortgeschritten", levelColor: "text-red-600", title: "51% Attack", icon: "☠️", content: ["Ein 51% Attack ist wenn jemand >50% der Mining Power kontrolliert", "Dann könnte diese Person Transaktionen ändern", "Sie könnte Bitcoin doppelt ausgeben", "Das ist theoretisch möglich aber praktisch fast unmöglich", "Kostet Milliarden von Euro an Hardware & Elektrizität", "Die Bitcoin Community würde das sofort merken", "Die angegriffene Chain würde geforkt (geteilt)", "Bitcoin ist dadurch extrem sicher"], quiz: [{ question: "Was braucht man für einen 51% Attack?", options: [">50% der Mining Power", "Den privaten Key", "Ein Wallet"], correct: 0 }, { question: "Ist ein 51% Attack wahrscheinlich?", options: ["Nein, sehr teuer", "Ja, leicht", "Unmöglich"], correct: 0 }, { question: "Was würde die Community bei 51% Attack tun?", options: ["Fork die Chain", "Weiter machen", "Panick verkaufen"], correct: 0 }] },
+      { id: "m17", level: "Fortgeschritten", levelColor: "text-red-600", title: "Bitcoin Regulierung", icon: "⚖️", content: ["Verschiedene Länder regeln Bitcoin unterschiedlich", "Manche Länder verbieten Bitcoin, andere erlauben es", "El Salvador hat Bitcoin als gesetzliches Zahlungsmittel", "Länder wie Argentinien nutzen Bitcoin gegen Inflation", "Regulierung ist wichtig für Stabilität & Verbraucherschutz", "Aber zu viel Regulierung könnte Bitcoin schwächen", "Die Balance ist schwer zu finden", "Regulierung ändert sich ständig"], quiz: [{ question: "Welches Land hat Bitcoin als offizielles Zahlungsmittel?", options: ["El Salvador", "Deutschland", "USA"], correct: 0 }, { question: "Ist Bitcoin überall erlaubt?", options: ["Nein, variiert pro Land", "Ja überall", "Nur in USA"], correct: 0 }, { question: "Gibt es Regulierung für Bitcoin?", options: ["Ja, variiert", "Nein", "Nur in Europa"], correct: 0 }] },
+      { id: "m18", level: "Fortgeschritten", levelColor: "text-red-600", title: "Bitcoin Halving", icon: "📉", content: ["Halving ist wenn die Miner Belohnung halbiert wird", "Passiert alle 4 Jahre oder ~210.000 Blöcke", "2009: 50 BTC pro Block → 2012: 25 BTC → 2016: 12.5 BTC → 2020: 6.25 BTC", "2024 war das Halving zu 3.125 BTC", "Irgendwann wird die Belohnung 0", "Das gibt es nur 64 Mal in der Bitcoin Geschichte", "Nach dem letzten Halving verdienen Miners nur durch Gebühren", "Halving reduziert die Inflation"], quiz: [{ question: "Was ist Halving?", options: ["Belohnung wird halbiert", "Der Preis wird halbiert", "Die Blockchain wird geteilt"], correct: 0 }, { question: "Wie oft gibt es Halving?", options: ["Alle 4 Jahre", "Täglich", "Jede Woche"], correct: 0 }, { question: "Was ist die nächste Belohnung nach Halving?", options: ["1.5625 BTC", "6.25 BTC", "3.125 BTC"], correct: 0 }] },
+      { id: "m19", level: "Fortgeschritten", levelColor: "text-red-600", title: "Altcoins vs Bitcoin", icon: "🪙", content: ["Altcoins sind alle Kryptowährungen außer Bitcoin", "Es gibt Tausende von Altcoins", "Manche sind innovativ, manche sind Scams", "Bitcoin ist die älteste und sicherste", "Bitcoin hat die größte Netzwerk Kraft", "Andere Coins haben oft bessere Technologie aber weniger Sicherheit", "Diversifikation ist wichtig für Anfänger", "Bitcoin ist der safest bet für Anfänger"], quiz: [{ question: "Was ist ein Altcoin?", options: ["Alle Kryptowährungen außer Bitcoin", "Eine spezifische Währung", "Ein Scam"], correct: 0 }, { question: "Ist Bitcoin die sicherste Krypto?", options: ["Ja", "Nein, Ethereum ist besser", "Alle gleich"], correct: 0 }, { question: "Wie viele Altcoins gibt es?", options: ["Tausende", "Hundert", "Zehn"], correct: 0 }] },
+      { id: "m20", level: "Fortgeschritten", levelColor: "text-red-600", title: "Zukunft des Bitcoin", icon: "🚀", content: ["Bitcoin wird immer wichtiger für die Weltwirtschaft", "2024: >50 Millionen Menschen besitzen Bitcoin", "Große Unternehmen halten Bitcoin als Vermögensanlage", "Länder könnten Bitcoin als Reservewährung nutzen", "Lightning macht Bitcoin praktisch für tägliche Nutzung", "Du lernst heute die Technologie der Zukunft", "Bitcoin könnte die Finanzwelt revolutionieren", "Die Zukunft ist spannend für Bitcoin Nutzer"], quiz: [{ question: "Wie viele Menschen besitzen Bitcoin 2024?", options: [">50 Millionen", "1 Million", "Niemand"], correct: 0 }, { question: "Welche großen Firmen halten Bitcoin?", options: ["MicroStrategy, Tesla, Marathon", "Keine", "Nur Banken"], correct: 0 }, { question: "Wird Bitcoin in Zukunft wichtiger?", options: ["Wahrscheinlich ja", "Nein", "Vielleicht"], correct: 0 }] }
     ];
 
     const handleQuizSubmit = (moduleId: string) => {
@@ -6219,27 +6110,37 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
       if (!module) return;
       
       const score = module.quiz.filter((q, idx) => quizAnswers[`${moduleId}-${idx}`] === q.correct).length;
+      const passScore = Math.ceil(module.quiz.length * 0.7);
       
-      if (score >= Math.ceil(module.quiz.length * 0.7)) {
-        setCompletedModules([...completedModules, moduleId]);
+      if (score >= passScore) {
+        const newPassedQuizzes = [...passedQuizzes, moduleId];
+        setPassedQuizzes(newPassedQuizzes);
+        localStorage.setItem("passed-quizzes", JSON.stringify(newPassedQuizzes));
         toast({ title: "🎉 Quiz bestanden!", description: `${score}/${module.quiz.length} richtig!` });
       } else {
-        toast({ title: "Probier nochmal!", description: `Du brauchst ${Math.ceil(module.quiz.length * 0.7)} von ${module.quiz.length}. Du hattest ${score}.`, variant: "destructive" });
+        toast({ title: "Probier nochmal!", description: `Du brauchst ${passScore} von ${module.quiz.length}. Du hattest ${score}.`, variant: "destructive" });
       }
       setQuizSubmitted({ ...quizSubmitted, [moduleId]: true });
     };
 
     const achievements = [
-      { id: "first-module", title: "Anfänger", icon: "🌱", condition: completedModules.length >= 1 },
-      { id: "half-done", title: "Lernender", icon: "📚", condition: completedModules.length >= 3 },
-      { id: "all-done", title: "Experte", icon: "👑", condition: completedModules.length === modules.length },
-      { id: "beginner-master", title: "Anfänger-Meister", icon: "🟢", condition: modules.filter(m => m.level === "Anfänger").every(m => completedModules.includes(m.id)) },
-      { id: "advanced-master", title: "Fortgeschritten-Meister", icon: "🔴", condition: modules.filter(m => m.level === "Fortgeschritten").every(m => completedModules.includes(m.id)) }
+      { id: "first-module", title: "Anfänger", icon: "🌱", condition: passedQuizzes.length >= 1 },
+      { id: "half-done", title: "Lernender", icon: "📚", condition: passedQuizzes.length >= 10 },
+      { id: "all-done", title: "Experte", icon: "👑", condition: passedQuizzes.length === modules.length },
+      { id: "beginner-master", title: "Anfänger-Meister", icon: "🟢", condition: modules.filter(m => m.level === "Anfänger").every(m => passedQuizzes.includes(m.id)) },
+      { id: "advanced-master", title: "Fortgeschritten-Meister", icon: "🔴", condition: modules.filter(m => m.level === "Fortgeschritten").every(m => passedQuizzes.includes(m.id)) }
     ];
 
     const xpPerModule = 100;
-    const userXp = completedModules.length * xpPerModule;
+    const userXp = passedQuizzes.length * xpPerModule;
     const userLevel = Math.floor(userXp / 300) + 1;
+    
+    const isModuleUnlocked = (moduleId: string) => {
+      const idx = modules.findIndex(m => m.id === moduleId);
+      if (idx === 0) return true;
+      const prevModule = modules[idx - 1];
+      return passedQuizzes.includes(prevModule.id);
+    };
     
     return (
       <div className="max-w-6xl space-y-6">
@@ -6284,55 +6185,64 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                 <h3 className={`text-sm font-semibold uppercase tracking-wide ${level === "Anfänger" ? "text-green-600" : level === "Mittelstufe" ? "text-yellow-600" : "text-red-600"}`}>{level} Level</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {modules.filter(m => m.level === level).map(module => {
-                    const isCompleted = completedModules.includes(module.id);
-                    const isQuizOpen = showQuiz === module.id;
+                    const isPassed = passedQuizzes.includes(module.id);
+                    const isUnlocked = isModuleUnlocked(module.id);
+                    const isQuizOpen = showQuiz === module.id && isUnlocked;
                     return (
-                      <Card key={module.id} className={`transition-all ${isCompleted ? "border-green-500/50 bg-green-500/5" : "border-slate-200"} ${isQuizOpen ? "ring-2 ring-blue-500/50" : ""}`}>
+                      <Card key={module.id} className={`transition-all ${isPassed ? "border-green-500/50 bg-green-500/5" : !isUnlocked ? "border-red-300/50 bg-red-50/50 opacity-60" : "border-slate-200"} ${isQuizOpen ? "ring-2 ring-blue-500/50" : ""}`}>
                         <CardHeader className="pb-2">
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
-                                <span className="text-2xl">{module.icon}</span>
+                                <span className="text-2xl">{isUnlocked ? module.icon : "🔒"}</span>
                                 <div>
                                   <CardTitle className="text-base">{module.title}</CardTitle>
-                                  {isCompleted && <p className="text-xs text-green-600 font-semibold">+{xpPerModule} XP</p>}
+                                  {isPassed && <p className="text-xs text-green-600 font-semibold">+{xpPerModule} XP</p>}
+                                  {!isUnlocked && <p className="text-xs text-red-600 font-semibold">Vorige Modul zuerst!</p>}
                                 </div>
                               </div>
                               <Badge variant="outline" className={`${module.levelColor} text-xs`}>{module.level}</Badge>
                             </div>
-                            {isCompleted && <span className="text-2xl">✅</span>}
+                            {isPassed && <span className="text-2xl">✅</span>}
+                            {!isUnlocked && <span className="text-2xl">🔒</span>}
                           </div>
                         </CardHeader>
-                        {!isQuizOpen ? (
-                          <>
-                            <CardContent className="pb-3"><div className="space-y-2 mb-4">{module.content.map((text, idx) => (<p key={idx} className="text-sm text-slate-600">• {text}</p>))}</div></CardContent>
-                            <CardFooter className="gap-2">
-                              {!isCompleted ? (
-                                <Button onClick={() => setShowQuiz(module.id)} className="flex-1 bg-blue-600 hover:bg-blue-700" size="sm" data-testid={`button-quiz-${module.id}`}>Quiz starten →</Button>
-                              ) : (
-                                <Button onClick={() => setShowQuiz(module.id)} variant="outline" className="flex-1" size="sm">Quiz wiederholen</Button>
-                              )}
-                            </CardFooter>
-                          </>
-                        ) : (
-                          <CardContent className="space-y-4">
-                            {modules.find(m => m.id === module.id)?.quiz.map((q, idx) => (
-                              <div key={idx} className="space-y-2 pb-3 border-b last:border-0">
-                                <p className="text-sm font-semibold text-slate-900">{idx + 1}. {q.question}</p>
-                                <div className="space-y-2">
-                                  {q.options.map((option, optIdx) => (
-                                    <label key={optIdx} className="flex items-center gap-3 p-2 rounded-lg border border-slate-200/50 hover:bg-slate-50/50 cursor-pointer">
-                                      <input type="radio" name={`${module.id}-q${idx}`} checked={quizAnswers[`${module.id}-${idx}`] === optIdx} onChange={() => setQuizAnswers({...quizAnswers, [`${module.id}-${idx}`]: optIdx})} className="h-4 w-4" />
-                                      <span className="text-sm text-slate-700">{option}</span>
-                                    </label>
-                                  ))}
+                        {isUnlocked ? (
+                          !isQuizOpen ? (
+                            <>
+                              <CardContent className="pb-3"><div className="space-y-2 mb-4">{module.content.map((text, idx) => (<p key={idx} className="text-sm text-slate-600">• {text}</p>))}</div></CardContent>
+                              <CardFooter className="gap-2">
+                                {!isPassed ? (
+                                  <Button onClick={() => setShowQuiz(module.id)} className="flex-1 bg-blue-600 hover:bg-blue-700" size="sm" data-testid={`button-quiz-${module.id}`}>Quiz starten →</Button>
+                                ) : (
+                                  <Button onClick={() => setShowQuiz(module.id)} variant="outline" className="flex-1" size="sm">Quiz wiederholen</Button>
+                                )}
+                              </CardFooter>
+                            </>
+                          ) : (
+                            <CardContent className="space-y-4">
+                              {modules.find(m => m.id === module.id)?.quiz.map((q, idx) => (
+                                <div key={idx} className="space-y-2 pb-3 border-b last:border-0">
+                                  <p className="text-sm font-semibold text-slate-900">{idx + 1}. {q.question}</p>
+                                  <div className="space-y-2">
+                                    {q.options.map((option, optIdx) => (
+                                      <label key={optIdx} className="flex items-center gap-3 p-2 rounded-lg border border-slate-200/50 hover:bg-slate-50/50 cursor-pointer">
+                                        <input type="radio" name={`${module.id}-q${idx}`} checked={quizAnswers[`${module.id}-${idx}`] === optIdx} onChange={() => setQuizAnswers({...quizAnswers, [`${module.id}-${idx}`]: optIdx})} className="h-4 w-4" />
+                                        <span className="text-sm text-slate-700">{option}</span>
+                                      </label>
+                                    ))}
+                                  </div>
                                 </div>
+                              ))}
+                              <div className="flex gap-2 pt-3">
+                                <Button onClick={() => setShowQuiz(null)} variant="outline" className="flex-1" size="sm">Zurück</Button>
+                                <Button onClick={() => handleQuizSubmit(module.id)} className="flex-1 bg-green-600 hover:bg-green-700" size="sm" data-testid={`button-submit-quiz-${module.id}`}>Einreichen</Button>
                               </div>
-                            ))}
-                            <div className="flex gap-2 pt-3">
-                              <Button onClick={() => setShowQuiz(null)} variant="outline" className="flex-1" size="sm">Zurück</Button>
-                              <Button onClick={() => handleQuizSubmit(module.id)} className="flex-1 bg-green-600 hover:bg-green-700" size="sm" data-testid={`button-submit-quiz-${module.id}`}>Einreichen</Button>
-                            </div>
+                            </CardContent>
+                          )
+                        ) : (
+                          <CardContent className="pt-4 pb-4 text-center">
+                            <p className="text-sm text-slate-600">🔒 Schließ zuerst das vorherige Modul ab!</p>
                           </CardContent>
                         )}
                       </Card>
