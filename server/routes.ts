@@ -38,6 +38,31 @@ function sanitizePeersForClient(peers: any[]): any[] {
   return peers.map(sanitizePeerForClient);
 }
 
+// Helper to get Berlin time
+function getBerlinTime(date: Date = new Date()): Date {
+  const formatter = new Intl.DateTimeFormat('de-DE', {
+    timeZone: 'Europe/Berlin',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+  
+  const parts = formatter.formatToParts(date);
+  const partMap = Object.fromEntries(parts.map(p => [p.type, p.value]));
+  
+  return new Date(
+    parseInt(partMap.year),
+    parseInt(partMap.month) - 1,
+    parseInt(partMap.day),
+    parseInt(partMap.hour),
+    parseInt(partMap.minute),
+    parseInt(partMap.second)
+  );
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Test LNBits connection - with multiple endpoint attempts
   app.post("/api/wallet/test", async (req, res) => {
@@ -2322,27 +2347,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   function checkIfTaskShouldBeCreated(recurring: any, now: Date): boolean {
-    const lastCreated = recurring.lastCreatedDate ? new Date(recurring.lastCreatedDate) : null;
+    // Convert to Berlin timezone
+    const berlinTime = getBerlinTime(now);
+    const lastCreated = recurring.lastCreatedDate ? getBerlinTime(new Date(recurring.lastCreatedDate)) : null;
+    
     const [hours, minutes] = recurring.time.split(":").map(Number);
     
-    const taskTime = new Date(now);
+    const taskTime = new Date(berlinTime);
     taskTime.setHours(hours, minutes, 0, 0);
     
-    const today = new Date(now).toDateString();
-    const lastCreatedDate = lastCreated ? new Date(lastCreated).toDateString() : null;
+    const today = berlinTime.toDateString();
+    const lastCreatedDate = lastCreated ? lastCreated.toDateString() : null;
     
     // Only proceed if we haven't created today yet
     if (today === lastCreatedDate) return false;
     
     // Check if current time has passed the scheduled time
-    if (now < taskTime) return false;
+    if (berlinTime < taskTime) return false;
     
     if (recurring.frequency === "daily") {
       return true;
     } else if (recurring.frequency === "weekly") {
-      return now.getDay() === recurring.dayOfWeek;
+      return berlinTime.getDay() === recurring.dayOfWeek;
     } else if (recurring.frequency === "monthly") {
-      return now.getDate() === (recurring.dayOfMonth || 1);
+      return berlinTime.getDate() === (recurring.dayOfMonth || 1);
     }
     return false;
   }
