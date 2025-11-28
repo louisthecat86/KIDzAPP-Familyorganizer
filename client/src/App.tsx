@@ -6749,7 +6749,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                             <BookOpen className="h-4 w-4 text-green-600" />
                           </div>
                           <p className="text-xs text-slate-600 mb-1 font-medium">Module</p>
-                          <p className="text-2xl font-bold text-green-600">0/20</p>
+                          <p className="text-2xl font-bold text-green-600">{passedQuizzes.length}/20</p>
                         </div>
                         
                         <div className="rounded-lg bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200/50 p-4 text-center">
@@ -6757,7 +6757,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                             <Trophy className="h-4 w-4 text-purple-600" />
                           </div>
                           <p className="text-xs text-slate-600 mb-1 font-medium">Abzeichen</p>
-                          <p className="text-2xl font-bold text-purple-600">0/5</p>
+                          <p className="text-2xl font-bold text-purple-600">{achievements.filter(a => a.condition).length}/5</p>
                         </div>
                         
                         <div className="rounded-lg bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-200/50 p-4 text-center">
@@ -6765,7 +6765,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                             <Flame className="h-4 w-4 text-violet-600" />
                           </div>
                           <p className="text-xs text-slate-600 mb-1 font-medium">Diese Woche</p>
-                          <p className="text-2xl font-bold text-violet-600">0/7</p>
+                          <p className="text-2xl font-bold text-violet-600">{passedQuizzes.length}/7</p>
                         </div>
                         
                         <div className="rounded-lg bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200/50 p-4 text-center">
@@ -6773,7 +6773,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                             <TrendingUp className="h-4 w-4 text-cyan-600" />
                           </div>
                           <p className="text-xs text-slate-600 mb-1 font-medium">7-Tage</p>
-                          <p className="text-2xl font-bold text-cyan-600">0 Sats</p>
+                          <p className="text-2xl font-bold text-cyan-600">{(passedQuizzes.length * 100).toLocaleString()} Sats</p>
                         </div>
                       </div>
                     </DialogContent>
