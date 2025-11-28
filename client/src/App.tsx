@@ -330,6 +330,7 @@ export default function App() {
     queryKey: ["tasks", user?.connectionId],
     queryFn: () => fetchTasks(user!.connectionId),
     enabled: !!user?.connectionId,
+    refetchInterval: 15000,
   });
 
   const { data: events = [] } = useQuery({
