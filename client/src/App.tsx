@@ -1362,76 +1362,64 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
 
 function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-600 via-purple-500 to-cyan-400 p-4 sm:p-6 relative overflow-hidden flex items-center justify-center">
-      <div className="w-full max-w-5xl z-10">
-        {/* Header - Logo Image */}
-        <div className="text-center mb-12">
-          <img 
-            src="/logo.png" 
-            alt="KID⚡APP - Family Organizer" 
-            className="max-w-md mx-auto w-full h-auto"
-          />
-        </div>
-
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Left Column */}
-          <div className="space-y-6">
-            <div className="mt-8 bg-white/20 backdrop-blur-sm rounded-2xl p-6">
-              <h3 className="text-2xl font-bold mb-4 text-gray-900">So funktioniert's</h3>
-              <div className="space-y-3 text-gray-800">
-                <div className="flex gap-2">
-                  <span className="flex-shrink-0 text-yellow-500">⚡</span>
-                  <span>Eltern erstellen Aufgaben mit Sats-Belohnung</span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="flex-shrink-0 text-yellow-500">⚡</span>
-                  <span>Kinder erledigen Aufgaben & laden Foto-Beweis hoch</span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="flex-shrink-0 text-yellow-500">⚡</span>
-                  <span>Eltern bestätigen & zahlen sofort aus</span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="flex-shrink-0 text-yellow-500">⚡</span>
-                  <span>Familienkalender für gemeinsame Termine</span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="flex-shrink-0 text-yellow-500">⚡</span>
-                  <span>Familienchat für direkten Austausch</span>
-                </div>
-              </div>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-violet-600 via-purple-500 to-cyan-400 flex items-center justify-center p-4">
+      {/* Centered Glass Card */}
+      <div className="w-full max-w-lg">
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-[0_20px_60px_-20px_rgba(60,0,120,0.5)]">
+          {/* Logo */}
+          <div className="text-center mb-8">
+            <img 
+              src="/logo.png" 
+              alt="KID⚡APP - Family Organizer" 
+              className="max-w-[280px] mx-auto w-full h-auto"
+            />
           </div>
 
-          {/* Right Column - Buttons */}
-          <div className="space-y-4">
+          {/* Features - Compact */}
+          <div className="mb-8 space-y-2">
+            {[
+              "Aufgaben erstellen & Sats verdienen",
+              "Foto-Beweis hochladen",
+              "Sofort-Auszahlung per Lightning",
+              "Familienkalender & Chat"
+            ].map((text, i) => (
+              <div key={i} className="flex items-center gap-3 text-white/90 text-sm">
+                <span className="text-yellow-400 text-base">⚡</span>
+                <span>{text}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Role Selection Buttons */}
+          <div className="space-y-3">
             <button 
-              className="w-full h-auto p-6 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg hover:bg-white hover:scale-[1.02] transition-all group flex items-center"
+              className="w-full p-4 bg-white/15 backdrop-blur-sm border border-white/30 rounded-2xl hover:bg-white/25 hover:border-white/50 transition-all flex items-center gap-4 group"
               onClick={() => onSelect("parent")}
               data-testid="button-select-parent"
             >
-              <div className="mr-4 h-14 w-14 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-md">
-                <UserIcon className="h-7 w-7 text-white" />
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                <UserIcon className="h-6 w-6 text-white" />
               </div>
-              <div className="min-w-0 text-left">
-                <h3 className="font-bold text-xl text-gray-900">Eltern</h3>
-                <p className="text-sm text-gray-600">Aufgaben & Wallet verwalten</p>
+              <div className="text-left">
+                <h3 className="font-bold text-lg text-white tracking-wide">ELTERN</h3>
+                <p className="text-sm text-white/70">Aufgaben & Wallet verwalten</p>
               </div>
+              <span className="ml-auto text-yellow-400 text-xl opacity-0 group-hover:opacity-100 transition-opacity">⚡</span>
             </button>
 
             <button 
-              className="w-full h-auto p-6 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg hover:bg-white hover:scale-[1.02] transition-all group flex items-center"
+              className="w-full p-4 bg-white/15 backdrop-blur-sm border border-white/30 rounded-2xl hover:bg-white/25 hover:border-white/50 transition-all flex items-center gap-4 group"
               onClick={() => onSelect("child")}
               data-testid="button-select-child"
             >
-              <div className="mr-4 h-14 w-14 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center flex-shrink-0 shadow-md">
-                <Sparkles className="h-7 w-7 text-white" />
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                <Sparkles className="h-6 w-6 text-white" />
               </div>
-              <div className="min-w-0 text-left">
-                <h3 className="font-bold text-xl text-gray-900">Kind</h3>
-                <p className="text-sm text-gray-600">Aufgaben erledigen & Sats verdienen</p>
+              <div className="text-left">
+                <h3 className="font-bold text-lg text-white tracking-wide">KIND</h3>
+                <p className="text-sm text-white/70">Aufgaben erledigen & Sats verdienen</p>
               </div>
+              <span className="ml-auto text-yellow-400 text-xl opacity-0 group-hover:opacity-100 transition-opacity">⚡</span>
             </button>
           </div>
         </div>
