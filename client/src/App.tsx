@@ -51,9 +51,12 @@ import {
   BookOpen,
   Zap,
   Flame,
-  TrendingUp
+  TrendingUp,
+  Moon,
+  Sun
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTheme } from "next-themes";
 import { PhotoUpload } from "@/components/PhotoUpload";
 import { ProofViewer } from "@/components/ProofViewer";
 
@@ -77,6 +80,21 @@ function NotificationBadge({ count }: { count: number }) {
         </motion.span>
       )}
     </AnimatePresence>
+  );
+}
+
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+  return (
+    <Button
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      variant="ghost"
+      size="icon"
+      className="h-10 w-10"
+      data-testid="button-toggle-theme"
+    >
+      {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+    </Button>
   );
 }
 
@@ -2263,6 +2281,7 @@ function NavBar({ user, onLogout, onSettings }: { user: User; onLogout: () => vo
               <Settings className="h-5 w-5" />
             </Button>
           )}
+          <ThemeToggle />
           <Button 
             variant="ghost" 
             size="icon" 
