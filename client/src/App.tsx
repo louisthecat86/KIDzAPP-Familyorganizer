@@ -5578,8 +5578,14 @@ function TrackerChart({ userId }: { userId: number }) {
             <YAxis width={40} tick={{ fontSize: 8 }} tickFormatter={v => `€${v.toFixed(0)}`} />
             <Tooltip 
               formatter={v => `€${Number(v).toFixed(2)}`}
-              labelFormatter={() => "Wert"}
-              contentStyle={{ display: "none" }}
+              labelFormatter={() => ""}
+              contentStyle={{ 
+                backgroundColor: "transparent", 
+                border: "none",
+                boxShadow: "none",
+                padding: "0"
+              }}
+              cursor={false}
             />
             <Area type="monotone" dataKey="euroValue" stroke="#10b981" fill="url(#trackerGrad)" />
           </AreaChart>
