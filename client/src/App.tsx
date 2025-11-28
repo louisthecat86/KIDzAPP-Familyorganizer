@@ -5936,10 +5936,10 @@ function TrackerChart({ userId }: { userId: number }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-bold text-white">Dein Verdienst</h3>
+        <h3 className="text-lg font-bold text-slate-900">Dein Verdienst</h3>
         <button
           onClick={() => setShowInfo(!showInfo)}
-          className="text-xs text-muted-foreground hover:text-white transition-colors"
+          className="text-xs text-slate-600 hover:text-slate-900 transition-colors"
           data-testid="toggle-info"
         >
           {showInfo ? "Ausblenden" : "Was bedeutet das?"}
@@ -5947,17 +5947,17 @@ function TrackerChart({ userId }: { userId: number }) {
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-600/5 border border-yellow-500/30 rounded-xl p-4">
-          <p className="text-xs text-yellow-600/70 uppercase tracking-wide mb-1">Satoshi</p>
-          <p className="text-2xl font-bold text-amber-600">{latest.totalSats.toLocaleString()}</p>
+        <div className="bg-gradient-to-br from-cyan-500/20 to-cyan-600/5 border border-cyan-500/40 rounded-xl p-4">
+          <p className="text-xs text-cyan-700 uppercase tracking-wide mb-1">Satoshi</p>
+          <p className="text-2xl font-bold text-cyan-600">{latest.totalSats.toLocaleString()}</p>
           {satsChange > 0 && (
-            <p className="text-xs text-yellow-600/60 mt-1">+{satsChange.toLocaleString()} verdient</p>
+            <p className="text-xs text-cyan-600/70 mt-1">+{satsChange.toLocaleString()} verdient</p>
           )}
         </div>
-        <div className="bg-gradient-to-br from-green-500/20 to-green-600/5 border border-green-500/30 rounded-xl p-4">
-          <p className="text-xs text-green-300/70 uppercase tracking-wide mb-1">Euro-Wert</p>
-          <p className="text-2xl font-bold text-green-400">€{liveEuroValue.toFixed(2)}</p>
-          <p className="text-xs text-green-300/60 mt-1">Live-Kurs</p>
+        <div className="bg-gradient-to-br from-violet-500/20 to-violet-600/5 border border-violet-500/40 rounded-xl p-4">
+          <p className="text-xs text-violet-700 uppercase tracking-wide mb-1">Euro-Wert</p>
+          <p className="text-2xl font-bold text-violet-600">€{liveEuroValue.toFixed(2)}</p>
+          <p className="text-xs text-violet-600/70 mt-1">Live-Kurs</p>
         </div>
       </div>
 
@@ -5966,8 +5966,8 @@ function TrackerChart({ userId }: { userId: number }) {
           onClick={() => setShowEuro(!showEuro)}
           className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
             showEuro 
-              ? 'bg-green-500/20 border-green-500/50 text-green-400' 
-              : 'bg-slate-800/50 border-slate-700/50 text-slate-500'
+              ? 'bg-violet-500/20 border-violet-500/50 text-violet-600' 
+              : 'bg-white/30 border-slate-300/50 text-slate-500'
           }`}
           data-testid="toggle-euro"
         >
@@ -5977,8 +5977,8 @@ function TrackerChart({ userId }: { userId: number }) {
           onClick={() => setShowSats(!showSats)}
           className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
             showSats 
-              ? 'bg-yellow-500/20 border-yellow-500/50 text-amber-600' 
-              : 'bg-slate-800/50 border-slate-700/50 text-slate-500'
+              ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-600' 
+              : 'bg-white/30 border-slate-300/50 text-slate-500'
           }`}
           data-testid="toggle-sats"
         >
@@ -5988,8 +5988,8 @@ function TrackerChart({ userId }: { userId: number }) {
           onClick={() => setShowBtcPrice(!showBtcPrice)}
           className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
             showBtcPrice 
-              ? 'bg-blue-500/20 border-blue-500/50 text-blue-400' 
-              : 'bg-slate-800/50 border-slate-700/50 text-slate-500'
+              ? 'bg-amber-500/20 border-amber-500/50 text-amber-600' 
+              : 'bg-white/30 border-slate-300/50 text-slate-500'
           }`}
           data-testid="toggle-btc-price"
         >
@@ -5997,35 +5997,35 @@ function TrackerChart({ userId }: { userId: number }) {
         </button>
       </div>
 
-      <div className="h-48 bg-slate-900/50 rounded-xl p-3 border border-slate-800/50">
+      <div className="h-48 bg-white/40 backdrop-blur-md rounded-xl p-3 border border-white/50">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={trackerData.map(d => ({ 
             ...d, 
             btcPriceScaled: d.btcPrice ? d.btcPrice / 1000 : 0 
           }))} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
             <defs>
-              <linearGradient id="trackerGradGreen" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#10b981" stopOpacity={0.4} />
-                <stop offset="100%" stopColor="#10b981" stopOpacity={0.05} />
+              <linearGradient id="trackerGradViolet" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#7c3aed" stopOpacity={0.4} />
+                <stop offset="100%" stopColor="#7c3aed" stopOpacity={0.05} />
               </linearGradient>
-              <linearGradient id="trackerGradOrange" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f97316" stopOpacity={0.4} />
-                <stop offset="100%" stopColor="#f97316" stopOpacity={0.05} />
+              <linearGradient id="trackerGradCyan" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.4} />
+                <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.05} />
               </linearGradient>
-              <linearGradient id="trackerGradBlue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.05} />
+              <linearGradient id="trackerGradAmber" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#d97706" stopOpacity={0.3} />
+                <stop offset="100%" stopColor="#d97706" stopOpacity={0.05} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(100,116,139,0.15)" vertical={false} />
             <XAxis 
               dataKey="date" 
-              tick={{ fontSize: 10, fill: '#64748b' }} 
-              axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+              tick={{ fontSize: 10, fill: '#475569' }} 
+              axisLine={{ stroke: 'rgba(100,116,139,0.2)' }}
               tickLine={false}
             />
             <YAxis 
-              tick={{ fontSize: 10, fill: '#64748b' }} 
+              tick={{ fontSize: 10, fill: '#475569' }} 
               axisLine={false}
               tickLine={false}
               tickFormatter={v => `€${v.toFixed(0)}`} 
@@ -6033,7 +6033,7 @@ function TrackerChart({ userId }: { userId: number }) {
             <YAxis 
               yAxisId="right" 
               orientation="right" 
-              tick={{ fontSize: 10, fill: '#64748b' }} 
+              tick={{ fontSize: 10, fill: '#475569' }} 
               axisLine={false}
               tickLine={false}
               tickFormatter={v => v.toLocaleString()} 
@@ -6042,7 +6042,7 @@ function TrackerChart({ userId }: { userId: number }) {
               <YAxis 
                 yAxisId="btcPrice" 
                 orientation="right" 
-                tick={{ fontSize: 9, fill: '#3b82f6' }} 
+                tick={{ fontSize: 9, fill: '#d97706' }} 
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={v => `${(v * 1000 / 1000).toFixed(0)}k`} 
@@ -6053,13 +6053,13 @@ function TrackerChart({ userId }: { userId: number }) {
                 if (active && payload && payload.length > 0) {
                   const data = payload[0].payload;
                   return (
-                    <div className="bg-slate-900 border border-slate-700 rounded-lg p-3 shadow-xl">
-                      <p className="text-xs text-slate-400 mb-2">{data.date}</p>
+                    <div className="bg-white/90 backdrop-blur-md border border-slate-200 rounded-lg p-3 shadow-xl">
+                      <p className="text-xs text-slate-500 mb-2">{data.date}</p>
                       <div className="space-y-1">
-                        <p className="text-sm text-green-400 font-medium">💶 €{data.euroValue?.toFixed(2)}</p>
-                        <p className="text-sm text-amber-600 font-medium">⚡ {data.totalSats?.toLocaleString()} sats</p>
+                        <p className="text-sm text-violet-600 font-medium">€{data.euroValue?.toFixed(2)}</p>
+                        <p className="text-sm text-cyan-600 font-medium">⚡ {data.totalSats?.toLocaleString()} sats</p>
                         {showBtcPrice && (
-                          <p className="text-sm text-blue-400 font-medium">₿ €{data.btcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0})}</p>
+                          <p className="text-sm text-amber-600 font-medium">₿ €{data.btcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0})}</p>
                         )}
                       </div>
                     </div>
@@ -6067,15 +6067,15 @@ function TrackerChart({ userId }: { userId: number }) {
                 }
                 return null;
               }}
-              cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
+              cursor={{ stroke: 'rgba(100,116,139,0.2)', strokeWidth: 1 }}
             />
             {showEuro && (
               <Area 
                 type="monotone" 
                 dataKey="euroValue" 
-                stroke="#10b981" 
+                stroke="#7c3aed" 
                 strokeWidth={2}
-                fill="url(#trackerGradGreen)" 
+                fill="url(#trackerGradViolet)" 
               />
             )}
             {showSats && (
@@ -6083,9 +6083,9 @@ function TrackerChart({ userId }: { userId: number }) {
                 yAxisId="right" 
                 type="monotone" 
                 dataKey="totalSats" 
-                stroke="#f97316" 
+                stroke="#06b6d4" 
                 strokeWidth={2}
-                fill="url(#trackerGradOrange)" 
+                fill="url(#trackerGradCyan)" 
               />
             )}
             {showBtcPrice && (
@@ -6093,10 +6093,10 @@ function TrackerChart({ userId }: { userId: number }) {
                 yAxisId="btcPrice" 
                 type="monotone" 
                 dataKey="btcPriceScaled" 
-                stroke="#3b82f6" 
+                stroke="#d97706" 
                 strokeWidth={2}
                 strokeDasharray="5 5"
-                fill="url(#trackerGradBlue)" 
+                fill="url(#trackerGradAmber)" 
               />
             )}
           </AreaChart>
@@ -6104,22 +6104,22 @@ function TrackerChart({ userId }: { userId: number }) {
       </div>
 
       {showInfo && (
-        <div className="bg-slate-800/40 border border-slate-700/30 rounded-xl p-4 space-y-3">
-          <p className="text-sm font-semibold text-white flex items-center gap-2">
-            <span>📖</span> So liest du das Diagramm:
+        <div className="bg-white/40 backdrop-blur-md border border-white/50 rounded-xl p-4 space-y-3">
+          <p className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+            So liest du das Diagramm:
           </p>
           <div className="grid gap-2">
-            <div className="flex items-center gap-3 bg-green-500/10 rounded-lg px-3 py-2">
-              <div className="w-4 h-1 bg-green-500 rounded-full"></div>
-              <span className="text-xs"><span className="text-green-400 font-medium">Grün</span> = Wert deiner Satoshi in Euro</span>
+            <div className="flex items-center gap-3 bg-violet-500/15 rounded-lg px-3 py-2">
+              <div className="w-4 h-1 bg-violet-500 rounded-full"></div>
+              <span className="text-xs text-slate-700"><span className="text-violet-600 font-medium">Violett</span> = Wert deiner Satoshi in Euro</span>
             </div>
-            <div className="flex items-center gap-3 bg-yellow-500/10 rounded-lg px-3 py-2">
-              <div className="w-4 h-1 bg-yellow-500 rounded-full"></div>
-              <span className="text-xs"><span className="text-amber-600 font-medium">Gelb</span> = Anzahl deiner Satoshi</span>
+            <div className="flex items-center gap-3 bg-cyan-500/15 rounded-lg px-3 py-2">
+              <div className="w-4 h-1 bg-cyan-500 rounded-full"></div>
+              <span className="text-xs text-slate-700"><span className="text-cyan-600 font-medium">Cyan</span> = Anzahl deiner Satoshi</span>
             </div>
-            <div className="flex items-center gap-3 bg-blue-500/10 rounded-lg px-3 py-2">
-              <div className="w-4 h-1 bg-blue-500 rounded-full" style={{background: 'repeating-linear-gradient(90deg, #3b82f6 0px, #3b82f6 4px, transparent 4px, transparent 8px)'}}></div>
-              <span className="text-xs"><span className="text-blue-400 font-medium">Blau (gestrichelt)</span> = Bitcoin Kurs zum Zeitpunkt des Erhaltes</span>
+            <div className="flex items-center gap-3 bg-amber-500/15 rounded-lg px-3 py-2">
+              <div className="w-4 h-1 rounded-full" style={{background: 'repeating-linear-gradient(90deg, #d97706 0px, #d97706 4px, transparent 4px, transparent 8px)'}}></div>
+              <span className="text-xs text-slate-700"><span className="text-amber-600 font-medium">Orange (gestrichelt)</span> = Bitcoin Kurs</span>
             </div>
           </div>
         </div>
