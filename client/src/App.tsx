@@ -6125,7 +6125,7 @@ function TrackerChart({ userId }: { userId: number }) {
             </div>
             <div className="flex items-center gap-3 bg-blue-500/10 rounded-lg px-3 py-2">
               <div className="w-4 h-1 bg-blue-500 rounded-full" style={{background: 'repeating-linear-gradient(90deg, #3b82f6 0px, #3b82f6 4px, transparent 4px, transparent 8px)'}}></div>
-              <span className="text-xs"><span className="text-blue-400 font-medium">Blau (gestrichelt)</span> = Bitcoin-Kurs</span>
+              <span className="text-xs"><span className="text-blue-400 font-medium">Blau (gestrichelt)</span> = Bitcoin Kurs zum Zeitpunkt des Erhaltes</span>
             </div>
           </div>
         </div>
