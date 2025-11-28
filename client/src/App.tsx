@@ -1369,10 +1369,11 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
   const [activeSettingsTab, setActiveSettingsTab] = useState<"ansicht" | "wallet" | "peers" | null>(null);
   const [walletTab, setWalletTab] = useState("lnbits");
   
+  const [showTasksSubmenu, setShowTasksSubmenu] = useState(false);
+  
   const menuItems = [
     { id: "dashboard", label: user.role === "parent" ? "Dashboard" : "Mein Dashboard", icon: Home, badge: 0 },
-    ...(user.role === "parent" ? [{ id: "tasks", label: "Aufgaben", icon: CheckCircle, badge: tasksNotificationCount }] : []),
-    ...(user.role === "parent" ? [{ id: "recurring-tasks", label: "Wiederh. Aufgaben", icon: Clock, badge: 0 }] : []),
+    ...(user.role === "parent" ? [{ id: "tasks", label: "Aufgaben", icon: CheckCircle, badge: tasksNotificationCount, submenu: true }] : []),
     ...(user.role === "parent" ? [{ id: "children-overview", label: "Kinder-Übersicht", icon: Users, badge: 0 }] : []),
     { id: "calendar", label: "Familienkalender", icon: Calendar, badge: 0 },
     { id: "chat", label: "Familienchat", icon: MessageSquare, badge: chatNotificationCount },
@@ -1438,6 +1439,64 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
         <nav className="flex-1 overflow-y-auto p-4 space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
+            
+            // Tasks Dropdown (Parent only)
+            if (item.id === "tasks" && user.role === "parent") {
+              const isTasksActive = currentView === "tasks" || currentView === "recurring-tasks";
+              return (
+                <div key={item.id}>
+                  <button
+                    onClick={() => setShowTasksSubmenu(!showTasksSubmenu)}
+                    className={`w-full px-4 py-2 rounded-xl flex items-center gap-2 transition-colors ${
+                      isTasksActive
+                        ? "bg-violet-500/40 text-slate-900 font-medium"
+                        : "text-slate-700 hover:bg-white/20"
+                    }`}
+                    data-testid="menu-item-tasks"
+                  >
+                    <div className="relative">
+                      <Icon className="h-4 w-4" />
+                      <NotificationBadge count={item.badge} />
+                    </div>
+                    <span>{item.label}</span>
+                    <ChevronDown className={`h-4 w-4 ml-auto transition-transform ${showTasksSubmenu ? "rotate-180" : ""}`} />
+                  </button>
+                  
+                  {showTasksSubmenu && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-4 mt-1 space-y-1">
+                      <button
+                        onClick={() => {
+                          setCurrentView("tasks");
+                          setSidebarOpen(false);
+                        }}
+                        className={`w-full px-4 py-2 rounded-lg text-sm transition-colors text-left ${
+                          currentView === "tasks"
+                            ? "bg-violet-500/40 text-slate-900 font-medium"
+                            : "text-slate-700 hover:bg-white/20"
+                        }`}
+                        data-testid="submenu-tasks-normal"
+                      >
+                        Normale Aufgaben
+                      </button>
+                      <button
+                        onClick={() => {
+                          setCurrentView("recurring-tasks");
+                          setSidebarOpen(false);
+                        }}
+                        className={`w-full px-4 py-2 rounded-lg text-sm transition-colors text-left ${
+                          currentView === "recurring-tasks"
+                            ? "bg-violet-500/40 text-slate-900 font-medium"
+                            : "text-slate-700 hover:bg-white/20"
+                        }`}
+                        data-testid="submenu-tasks-recurring"
+                      >
+                        Wiederkehrende Aufgaben
+                      </button>
+                    </motion.div>
+                  )}
+                </div>
+              );
+            }
             
             // Calendar Dropdown
             if (item.id === "calendar") {
