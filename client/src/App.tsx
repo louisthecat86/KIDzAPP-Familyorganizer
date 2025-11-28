@@ -392,6 +392,7 @@ export default function App() {
       if (!res.ok) throw new Error("Failed to fetch children");
       return res.json();
     },
+    refetchInterval: 5000,
     enabled: user?.role === "parent"
   });
 
