@@ -293,6 +293,7 @@ export default function App() {
       localStorage.setItem("sats-user", JSON.stringify(user));
       toast({ title: "Aufgabe erstellt", description: "Sats in Escrow hinterlegt!" });
       setNewTask({ title: "", description: "", sats: 50 });
+      setCurrentView("dashboard");
     },
     onError: (error) => {
       toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
