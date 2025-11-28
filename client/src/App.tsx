@@ -5621,8 +5621,8 @@ function TrackerChart({ userId }: { userId: number }) {
       </div>
 
       {/* Chart-Steuerung mit besseren Labels */}
-      <div>
-        <div className="flex gap-2 flex-wrap">
+      <div className="flex justify-center">
+        <div className="flex gap-2 flex-wrap justify-center">
           <button
             onClick={() => setShowEuro(!showEuro)}
             className={`text-[11px] px-2 py-1 rounded border transition-all ${
@@ -5633,7 +5633,7 @@ function TrackerChart({ userId }: { userId: number }) {
             data-testid="toggle-euro"
             title="Zeige wie viel Euro deine Satoshi aktuell wert sind"
           >
-            💶 Euro
+            Euro
           </button>
           <button
             onClick={() => setShowSats(!showSats)}
@@ -5645,7 +5645,7 @@ function TrackerChart({ userId }: { userId: number }) {
             data-testid="toggle-sats"
             title="Zeige wie viele Satoshi du verdient hast"
           >
-            ⚡ Satoshi
+            Satoshi
           </button>
           <button
             onClick={() => setShowBtcPrice(!showBtcPrice)}
@@ -5657,7 +5657,7 @@ function TrackerChart({ userId }: { userId: number }) {
             data-testid="toggle-btc-price"
             title="Zeige den Bitcoin-Kurs über Zeit"
           >
-            ₿ Kurs
+            Kurs
           </button>
         </div>
       </div>
