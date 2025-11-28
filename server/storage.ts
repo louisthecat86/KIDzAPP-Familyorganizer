@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts } from "@shared/schema";
+import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks } from "@shared/schema";
 import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
@@ -76,6 +76,13 @@ export interface IStorage {
   getLevelBonusPayouts(childId: number): Promise<LevelBonusPayout[]>;
   createLevelBonusPayout(payout: InsertLevelBonusPayout): Promise<LevelBonusPayout>;
   hasLevelBonusBeenPaid(childId: number, level: number): Promise<boolean>;
+
+  // Recurring Tasks operations
+  getRecurringTasks(connectionId: string): Promise<RecurringTask[]>;
+  getRecurringTask(id: number): Promise<RecurringTask | undefined>;
+  createRecurringTask(task: InsertRecurringTask): Promise<RecurringTask>;
+  updateRecurringTask(id: number, task: Partial<RecurringTask>): Promise<RecurringTask | undefined>;
+  deleteRecurringTask(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {

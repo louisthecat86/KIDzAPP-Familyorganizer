@@ -246,3 +246,31 @@ export const insertLevelBonusPayoutSchema = createInsertSchema(levelBonusPayouts
 
 export type InsertLevelBonusPayout = z.infer<typeof insertLevelBonusPayoutSchema>;
 export type LevelBonusPayout = typeof levelBonusPayouts.$inferSelect;
+
+// Recurring Tasks Table
+export const recurringTasks = pgTable("recurring_tasks", {
+  id: serial("id").primaryKey(),
+  connectionId: text("connection_id").notNull(), // Family ID
+  createdBy: integer("created_by").notNull(), // Parent ID
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  sats: integer("sats").notNull(),
+  frequency: text("frequency").notNull(), // 'daily', 'weekly', 'biweekly', 'monthly'
+  dayOfWeek: integer("day_of_week"), // 0-6 (Sunday-Saturday) for weekly tasks
+  dayOfMonth: integer("day_of_month"), // 1-31 for monthly tasks
+  time: text("time").default("09:00").notNull(), // HH:mm format (24-hour)
+  isActive: boolean("is_active").default(true).notNull(),
+  lastCreatedDate: timestamp("last_created_date"), // Track when last task was created
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertRecurringTaskSchema = createInsertSchema(recurringTasks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastCreatedDate: true,
+});
+
+export type InsertRecurringTask = z.infer<typeof insertRecurringTaskSchema>;
+export type RecurringTask = typeof recurringTasks.$inferSelect;
