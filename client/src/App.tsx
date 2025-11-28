@@ -2980,7 +2980,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div className="flex-1">
                 <p className="text-slate-700 font-mono text-sm uppercase tracking-widest mb-2">Ausgegeben</p>
-                <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-amber-600" data-testid="text-sats-spent">
+                <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-cyan-600" data-testid="text-sats-spent">
                   {(satsSpent || 0).toLocaleString()} <span className="text-2xl opacity-70 text-slate-700">SATS</span>
                 </h2>
                 <p className="text-xs text-slate-600 mt-2">Klick zum Anzeigen der Aufschlüsselung pro Kind</p>
@@ -5124,7 +5124,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-slate-700 font-mono text-sm uppercase tracking-widest mb-2">Erhaltene Sats</p>
-                <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-amber-600" data-testid="text-earned-sats">
+                <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-cyan-600" data-testid="text-earned-sats">
                   {(user.balance || 0).toLocaleString()} <span className="text-2xl opacity-70 text-slate-700">SATS</span>
                 </h2>
                 {satsBreakdown && (
