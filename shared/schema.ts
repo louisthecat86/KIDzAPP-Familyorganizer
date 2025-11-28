@@ -205,3 +205,42 @@ export const insertMonthlySavingsSnapshotSchema = createInsertSchema(monthlySavi
 
 export type InsertMonthlySavingsSnapshot = z.infer<typeof insertMonthlySavingsSnapshotSchema>;
 export type MonthlySavingsSnapshot = typeof monthlySavingsSnapshots.$inferSelect;
+
+// Level Bonus Settings (per family - set by parent)
+export const levelBonusSettings = pgTable("level_bonus_settings", {
+  id: serial("id").primaryKey(),
+  parentId: integer("parent_id").notNull(), // Parent who set this
+  connectionId: text("connection_id").notNull(), // Family ID
+  bonusSats: integer("bonus_sats").notNull().default(210), // Amount of sats for bonus
+  milestoneInterval: integer("milestone_interval").notNull().default(5), // Every X levels
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertLevelBonusSettingsSchema = createInsertSchema(levelBonusSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertLevelBonusSettings = z.infer<typeof insertLevelBonusSettingsSchema>;
+export type LevelBonusSettings = typeof levelBonusSettings.$inferSelect;
+
+// Level Bonus Payouts (tracks which bonuses have been paid out)
+export const levelBonusPayouts = pgTable("level_bonus_payouts", {
+  id: serial("id").primaryKey(),
+  childId: integer("child_id").notNull(), // Child who received bonus
+  connectionId: text("connection_id").notNull(), // Family ID
+  level: integer("level").notNull(), // Level that triggered the bonus
+  sats: integer("sats").notNull(), // Amount paid
+  paidAt: timestamp("paid_at").defaultNow().notNull(),
+});
+
+export const insertLevelBonusPayoutSchema = createInsertSchema(levelBonusPayouts).omit({
+  id: true,
+  paidAt: true,
+});
+
+export type InsertLevelBonusPayout = z.infer<typeof insertLevelBonusPayoutSchema>;
+export type LevelBonusPayout = typeof levelBonusPayouts.$inferSelect;

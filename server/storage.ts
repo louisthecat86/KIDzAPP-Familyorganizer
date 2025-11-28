@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots } from "@shared/schema";
+import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts } from "@shared/schema";
 import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
@@ -66,6 +66,13 @@ export interface IStorage {
   getMonthlySavingsSnapshots(peerId: number): Promise<MonthlySavingsSnapshot[]>;
   createMonthlySavingsSnapshot(snapshot: InsertMonthlySavingsSnapshot): Promise<MonthlySavingsSnapshot>;
   getLastMonthlySavingsSnapshot(peerId: number): Promise<MonthlySavingsSnapshot | undefined>;
+
+  // Level Bonus operations
+  getLevelBonusSettings(connectionId: string): Promise<LevelBonusSettings | undefined>;
+  createOrUpdateLevelBonusSettings(settings: InsertLevelBonusSettings): Promise<LevelBonusSettings>;
+  getLevelBonusPayouts(childId: number): Promise<LevelBonusPayout[]>;
+  createLevelBonusPayout(payout: InsertLevelBonusPayout): Promise<LevelBonusPayout>;
+  hasLevelBonusBeenPaid(childId: number, level: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -518,6 +525,55 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(monthlySavingsSnapshots.createdAt))
       .limit(1);
     return result[0];
+  }
+
+  // Level Bonus operations
+  async getLevelBonusSettings(connectionId: string): Promise<LevelBonusSettings | undefined> {
+    const result = await db.select().from(levelBonusSettings)
+      .where(eq(levelBonusSettings.connectionId, connectionId))
+      .limit(1);
+    return result[0];
+  }
+
+  async createOrUpdateLevelBonusSettings(settings: InsertLevelBonusSettings): Promise<LevelBonusSettings> {
+    const existing = await this.getLevelBonusSettings(settings.connectionId);
+    
+    if (existing) {
+      const result = await db.update(levelBonusSettings)
+        .set({ 
+          bonusSats: settings.bonusSats,
+          milestoneInterval: settings.milestoneInterval,
+          isActive: settings.isActive,
+          updatedAt: new Date()
+        })
+        .where(eq(levelBonusSettings.id, existing.id))
+        .returning();
+      return result[0];
+    } else {
+      const result = await db.insert(levelBonusSettings).values(settings).returning();
+      return result[0];
+    }
+  }
+
+  async getLevelBonusPayouts(childId: number): Promise<LevelBonusPayout[]> {
+    return await db.select().from(levelBonusPayouts)
+      .where(eq(levelBonusPayouts.childId, childId))
+      .orderBy(desc(levelBonusPayouts.paidAt));
+  }
+
+  async createLevelBonusPayout(payout: InsertLevelBonusPayout): Promise<LevelBonusPayout> {
+    const result = await db.insert(levelBonusPayouts).values(payout).returning();
+    return result[0];
+  }
+
+  async hasLevelBonusBeenPaid(childId: number, level: number): Promise<boolean> {
+    const result = await db.select().from(levelBonusPayouts)
+      .where(and(
+        eq(levelBonusPayouts.childId, childId),
+        eq(levelBonusPayouts.level, level)
+      ))
+      .limit(1);
+    return result.length > 0;
   }
 
 }
