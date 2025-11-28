@@ -109,22 +109,28 @@ export function ChildTracker({ childId }: { childId: number }) {
                 <YAxis 
                   yAxisId="left"
                   width={50} 
-                  tick={{ fontSize: 9, fill: "rgba(34,197,94,0.7)" }} 
-                  tickFormatter={(value) => `€${Number(value).toFixed(0)}`} 
+                  domain={[0, 'auto']}
+                  tick={{ fontSize: 9, fill: "rgba(34,197,94,1)" }} 
+                  tickFormatter={(value) => `€${Number(value).toFixed(1)}`} 
+                  label={{ value: "Euro", angle: -90, position: 'insideLeft', offset: 10, fill: "rgba(34,197,94,1)" }}
                 />
                 <YAxis 
                   yAxisId="middle"
                   orientation="right"
-                  width={50}
-                  tick={{ fontSize: 9, fill: "rgba(250,204,21,0.7)" }}
-                  tickFormatter={(value) => `${Number(value).toLocaleString()}`}
+                  width={60}
+                  domain={[0, 'auto']}
+                  tick={{ fontSize: 9, fill: "rgba(250,204,21,1)" }}
+                  tickFormatter={(value) => `${Math.round(Number(value))}`}
+                  label={{ value: "Satoshi", angle: 90, position: 'insideRight', offset: -10, fill: "rgba(250,204,21,1)" }}
                 />
                 <YAxis 
                   yAxisId="right"
                   orientation="right"
-                  width={50}
-                  tick={{ fontSize: 9, fill: "rgba(59,130,246,0.7)" }}
-                  tickFormatter={(value) => `€${Number(value).toLocaleString()}`}
+                  width={70}
+                  domain={[0, 'auto']}
+                  tick={{ fontSize: 9, fill: "rgba(59,130,246,1)" }}
+                  tickFormatter={(value) => `€${Math.round(Number(value))}`}
+                  label={{ value: "BTC Preis", angle: 90, position: 'right', fill: "rgba(59,130,246,1)" }}
                 />
                 <Tooltip content={<CustomTooltip />} cursor={false} />
                 <Area 
@@ -132,6 +138,7 @@ export function ChildTracker({ childId }: { childId: number }) {
                   type="monotone" 
                   dataKey="euroValue" 
                   stroke="#22c55e" 
+                  strokeWidth={3}
                   fill="url(#trackerGradient)" 
                   isAnimationActive={false}
                 />
@@ -141,7 +148,7 @@ export function ChildTracker({ childId }: { childId: number }) {
                   dataKey="totalSats" 
                   stroke="#facc15" 
                   dot={false}
-                  strokeWidth={2}
+                  strokeWidth={3}
                   isAnimationActive={false}
                 />
                 <Line 
@@ -150,7 +157,7 @@ export function ChildTracker({ childId }: { childId: number }) {
                   dataKey="btcPrice" 
                   stroke="#3b82f6" 
                   dot={false}
-                  strokeWidth={2}
+                  strokeWidth={3}
                   isAnimationActive={false}
                 />
               </ComposedChart>
