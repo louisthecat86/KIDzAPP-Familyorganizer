@@ -6419,9 +6419,15 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                   </div>
                 )}
                 
-                <div className="bg-green-100/50 p-3 rounded-lg text-center">
-                  <p className="text-xs text-slate-600 mb-1">Belohnung für diese Challenge</p>
-                  <p className="text-2xl font-bold text-green-600">+{dailyChallenge.reward} Sats ⚡</p>
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div className="bg-violet-100/50 p-4 rounded-lg text-center border-2 border-violet-300/50">
+                    <p className="text-xs text-slate-600 mb-1">Challenge Typ</p>
+                    <p className="text-lg font-bold text-violet-600">{dailyChallenge.type === "quiz" ? "🧠" : dailyChallenge.type === "conversion" ? "🔄" : dailyChallenge.type === "lightning" ? "⚡" : dailyChallenge.type === "security" ? "🔒" : dailyChallenge.type === "fun" ? "🎮" : "⛓️"}</p>
+                  </div>
+                  <div className="bg-amber-100/50 p-4 rounded-lg text-center border-2 border-amber-300/50">
+                    <p className="text-xs text-slate-600 mb-1">Schwierigkeit</p>
+                    <p className="text-lg font-bold text-amber-600">{dailyChallenge.type === "quiz" || dailyChallenge.type === "conversion" ? "⭐" : dailyChallenge.type === "lightning" || dailyChallenge.type === "security" ? "⭐⭐" : "⭐⭐⭐"}</p>
+                  </div>
                 </div>
                 
                 {!dailyChallenge.completed && (
@@ -6430,19 +6436,20 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                       const newChallenge = { ...dailyChallenge, completed: true };
                       setDailyChallenge(newChallenge);
                       localStorage.setItem("daily-challenge", JSON.stringify(newChallenge));
-                      toast({ title: "🎉 Challenge bestanden!", description: `+${dailyChallenge.reward} Sats verdient!` });
+                      toast({ title: "🎉 Challenge bestanden!", description: `Zurück morgen für eine neue Challenge!` });
                     }}
-                    className="w-full bg-green-600 hover:bg-green-700 h-12 text-lg"
+                    className="w-full bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-700 hover:to-cyan-700 h-12 text-lg font-bold"
                     data-testid="button-complete-challenge"
                   >
-                    Challenge bestanden
+                    Challenge bestanden! 🎉
                   </Button>
                 )}
                 
                 {dailyChallenge.completed && (
-                  <div className="text-center p-4 bg-green-500/10 rounded-lg">
-                    <p className="text-lg font-bold text-green-600">✅ Challenge bestanden!</p>
-                    <p className="text-sm text-green-700 mt-1">Morgen wartet eine neue Challenge auf dich! 🚀</p>
+                  <div className="text-center p-5 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-lg border-2 border-green-400/50">
+                    <p className="text-2xl mb-2">🏆</p>
+                    <p className="text-lg font-bold text-green-700 mb-1">Challenge bestanden!</p>
+                    <p className="text-xs text-green-600">Komm morgen zurück für eine neue Challenge!</p>
                   </div>
                 )}
               </CardContent>
