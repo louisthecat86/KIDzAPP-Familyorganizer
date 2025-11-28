@@ -5580,6 +5580,7 @@ function TrackerChart({ userId }: { userId: number }) {
   const [showSats, setShowSats] = useState(true);
   const [showBtcPrice, setShowBtcPrice] = useState(true);
   const [liveBtcPrice, setLiveBtcPrice] = useState<number | null>(null);
+  const [showInfo, setShowInfo] = useState(false);
 
   useEffect(() => {
     const fetchTrackerData = async () => {
@@ -5724,24 +5725,38 @@ function TrackerChart({ userId }: { userId: number }) {
         </ResponsiveContainer>
       </div>
 
-      {/* Erklärung für die Linien */}
-      <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3 space-y-2">
-        <p className="text-xs font-semibold text-white">📖 Das bedeuten die Linien:</p>
-        <div className="space-y-1 text-xs text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span><span className="text-green-400 font-semibold">Grüne Linie</span> = Wie viel Euro deine Satsohi zu dem Zeitpunkt wert waren</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-            <span><span className="text-yellow-400 font-semibold">Gelbe Linie</span> = Wie viele Satoshi du insgesamt verdient hast</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-            <span><span className="text-blue-400 font-semibold">Blaue Linie</span> = Bitcoinpreis zum Zeitpunkt des erhaltes</span>
+      {/* Info Button */}
+      <div className="flex justify-center">
+        <button
+          onClick={() => setShowInfo(!showInfo)}
+          className="w-6 h-6 rounded-full border border-blue-500/50 bg-blue-500/10 text-blue-400 text-xs font-bold flex items-center justify-center hover:bg-blue-500/20 transition-all"
+          data-testid="toggle-info"
+          title="Erklärung der Linien anzeigen"
+        >
+          i
+        </button>
+      </div>
+
+      {/* Erklärung für die Linien - versteckt hinter Button */}
+      {showInfo && (
+        <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3 space-y-2">
+          <p className="text-xs font-semibold text-white">📖 Das bedeuten die Linien:</p>
+          <div className="space-y-1 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <span><span className="text-green-400 font-semibold">Grüne Linie</span> = Wie viel Euro deine Satsohi zu dem Zeitpunkt wert waren</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+              <span><span className="text-yellow-400 font-semibold">Gelbe Linie</span> = Wie viele Satoshi du insgesamt verdient hast</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+              <span><span className="text-blue-400 font-semibold">Blaue Linie</span> = Bitcoinpreis zum Zeitpunkt des erhaltes</span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
