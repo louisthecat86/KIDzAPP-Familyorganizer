@@ -479,9 +479,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getDailyBitcoinSnapshots(peerId: number): Promise<DailyBitcoinSnapshot[]> {
-    return await db.select().from(dailyBitcoinSnapshots)
+    const result = await db.select().from(dailyBitcoinSnapshots)
       .where(eq(dailyBitcoinSnapshots.peerId, peerId))
       .orderBy(desc(dailyBitcoinSnapshots.createdAt));
+    // Reverse to get oldest first for chart display
+    return result.reverse();
   }
 
   async createDailyBitcoinSnapshot(snapshot: InsertDailyBitcoinSnapshot): Promise<DailyBitcoinSnapshot> {
