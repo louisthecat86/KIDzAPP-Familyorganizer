@@ -5579,6 +5579,7 @@ function TrackerChart({ userId }: { userId: number }) {
   const [showEuro, setShowEuro] = useState(true);
   const [showSats, setShowSats] = useState(true);
   const [showBtcPrice, setShowBtcPrice] = useState(true);
+  const [liveBtcPrice, setLiveBtcPrice] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchTrackerData = async () => {
@@ -5595,10 +5596,28 @@ function TrackerChart({ userId }: { userId: number }) {
     fetchTrackerData();
   }, [userId]);
 
+  useEffect(() => {
+    const fetchBtcPrice = async () => {
+      try {
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur');
+        const data = await response.json();
+        setLiveBtcPrice(data.bitcoin.eur);
+      } catch (error) {
+        console.error("[BTC Price] Failed to fetch:", error);
+      }
+    };
+    fetchBtcPrice();
+    const interval = setInterval(fetchBtcPrice, 60000); // Update every 60 seconds
+    return () => clearInterval(interval);
+  }, []);
+
   if (loading) return <div className="text-xs text-muted-foreground">Wird geladen...</div>;
   if (trackerData.length === 0) return <p className="text-xs text-muted-foreground">Noch keine genehmigten Tasks</p>;
 
   const latest = trackerData[trackerData.length - 1];
+  // Calculate live euro value using current BTC price
+  const liveEuroValue = liveBtcPrice ? (latest.totalSats * liveBtcPrice) / 1e8 : latest.euroValue;
+  
   return (
     <div className="space-y-3">
       {/* Titel */}
@@ -5615,8 +5634,8 @@ function TrackerChart({ userId }: { userId: number }) {
         </div>
         <div className="bg-green-500/10 border border-green-500/30 rounded p-2">
           <p className="text-[9px] text-muted-foreground uppercase tracking-wider">💶 Euro-Wert</p>
-          <p className="text-base font-bold text-green-300 mt-0.5">€{latest.euroValue.toFixed(2)}</p>
-          <p className="text-[8px] text-muted-foreground mt-0.5">aktueller Wert</p>
+          <p className="text-base font-bold text-green-300 mt-0.5">€{liveEuroValue.toFixed(2)}</p>
+          <p className="text-[8px] text-muted-foreground mt-0.5">live aktuell</p>
         </div>
       </div>
 
