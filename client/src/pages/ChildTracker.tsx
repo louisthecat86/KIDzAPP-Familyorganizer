@@ -7,6 +7,7 @@ interface TrackerEntry {
   timestamp: string;
   earnedSats?: number;
   btcPrice: number;
+  btcPriceScaled: number;
   totalSats: number;
   euroValue: number;
 }
@@ -42,13 +43,12 @@ export function ChildTracker({ childId }: { childId: number }) {
       try {
         const response = await fetch(`/api/tracker/${childId}`);
         const data = await response.json();
-        // Skaliere btcPrice /1000 um in sichtbarem Bereich zu sein
+        // Speichere original btcPrice UND skalierte Version für Chart
         const scaledData = data.map((entry: any) => ({
           ...entry,
-          btcPrice: entry.btcPrice / 1000
+          btcPriceScaled: entry.btcPrice / 1000
         }));
         console.log("🔵 TRACKER DATA WITH BTC PRICE:", scaledData);
-        console.log("🔵 Last entry btcPrice:", scaledData[scaledData.length - 1]?.btcPrice);
         setTrackerData(scaledData || []);
       } catch (error) {
         console.error("Failed to fetch tracker data:", error);
@@ -135,7 +135,7 @@ export function ChildTracker({ childId }: { childId: number }) {
           <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t border-border/50">
             <p>✓ {trackerData.length} genehmigte Aufgaben</p>
             <p>⚡ Verdient: {trackerData.reduce((sum, e) => sum + (e.earnedSats || 0), 0).toLocaleString()} Satoshi</p>
-            <p className="text-blue-300 font-semibold">💙 BTC Preis aktuell: €{(latestEntry.btcPrice * 1000).toLocaleString('de-DE', {maximumFractionDigits: 0})}</p>
+            <p className="text-blue-300 font-semibold">💙 BTC Preis aktuell: €{latestEntry.btcPrice.toLocaleString('de-DE', {maximumFractionDigits: 0})}</p>
           </div>
         </CardContent>
       </Card>
