@@ -6772,15 +6772,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
 
         {/* Learning Stats Widget - Elegant */}
         {user.role === "child" && (
-          <motion.section initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="grid grid-cols-2 md:grid-cols-5 gap-2">
-            <div className="rounded-lg bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/50 p-3 text-center">
-              <div className="h-8 w-8 bg-amber-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <Zap className="h-4 w-4 text-amber-600" />
-              </div>
-              <p className="text-xs text-slate-600 mb-1 font-medium">Challenge</p>
-              <p className="text-xs font-bold text-amber-600 truncate">Quiz</p>
-            </div>
-            
+          <motion.section initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <div className="rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200/50 p-3 text-center">
               <div className="h-8 w-8 bg-green-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
                 <BookOpen className="h-4 w-4 text-green-600" />
