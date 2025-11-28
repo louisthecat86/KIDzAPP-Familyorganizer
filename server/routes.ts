@@ -617,6 +617,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // If approving, send sats to child's lightning address if wallet is configured
       if (updates.status === "approved" && task.status !== "approved") {
+        console.log(`[Task Approval] Approving task ${id}, assigning sats to child ${task.assignedTo}`);
         const child = await storage.getPeer(task.assignedTo!);
         const parent = await storage.getPeer(task.createdBy);
         
@@ -626,6 +627,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Update child's balance IMMEDIATELY
         const newBalance = (child.balance || 0) + task.sats;
+        console.log(`[Task Approval] New balance for ${child.name}: ${newBalance} sats (was ${child.balance}, +${task.sats})`);
         await storage.updateBalance(child.id, newBalance);
 
         // Create a new Bitcoin snapshot when child receives sats

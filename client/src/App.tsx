@@ -303,6 +303,8 @@ export default function App() {
     mutationFn: ({ id, updates }: { id: number; updates: Partial<Task> }) => updateTask(id, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["bitcoin-snapshots"] });
+      queryClient.invalidateQueries({ queryKey: ["savings-snapshots"] });
     },
   });
 
