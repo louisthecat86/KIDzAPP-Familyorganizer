@@ -84,16 +84,37 @@ function NotificationBadge({ count }: { count: number }) {
 }
 
 function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof document !== 'undefined') {
+      return document.documentElement.classList.contains('dark');
+    }
+    return true;
+  });
+
+  const toggleTheme = () => {
+    if (typeof document !== 'undefined') {
+      const html = document.documentElement;
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+        setIsDark(false);
+      } else {
+        html.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+        setIsDark(true);
+      }
+    }
+  };
+
   return (
     <Button
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      onClick={toggleTheme}
       variant="ghost"
       size="icon"
       className="h-10 w-10"
       data-testid="button-toggle-theme"
     >
-      {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+      {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
     </Button>
   );
 }
