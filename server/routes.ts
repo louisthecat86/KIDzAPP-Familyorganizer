@@ -1175,7 +1175,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get tracker data for a child (virtual from tasks)
+  // Get tracker data for a child (from daily Bitcoin snapshots for accurate historical data)
   app.get("/api/tracker/:childId", async (req, res) => {
     try {
       const childId = parseInt(req.params.childId);
@@ -1185,37 +1185,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Child not found" });
       }
 
-      const tasks = await storage.getTasks(child.connectionId);
-      const approvedTasks = tasks.filter(t => t.status === "approved" && t.assignedTo === childId);
+      // Use daily snapshots - they already have the correct historical BTC price
+      const snapshots = await storage.getDailyBitcoinSnapshots(childId);
       
-      if (approvedTasks.length === 0) {
+      if (snapshots.length === 0) {
         return res.json([]);
       }
 
-      // Sort by createdAt to build cumulative totals
-      const sortedTasks = approvedTasks.sort((a, b) => 
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-      );
-
-      // Build tracker entries with cumulative sats
-      const trackerEntries = [];
-      let totalSats = 0;
-      
-      for (const task of sortedTasks) {
-        totalSats += task.sats;
-        // For now use current BTC price (ideally would store historical price)
-        const btcPrice = lastKnownPrice?.eur || 79000;
-        const euroValue = (totalSats / 1e8) * btcPrice;
-        
-        trackerEntries.push({
-          date: new Date(task.createdAt).toLocaleDateString("de-DE", { month: "short", day: "numeric" }),
-          timestamp: task.createdAt,
-          earnedSats: task.sats,
+      // Convert snapshots to tracker format with calculated BTC price
+      const trackerEntries = snapshots.map(s => {
+        const euroValue = s.valueEur / 100; // Convert from cents to euros
+        const btcPrice = (euroValue * 1e8) / s.satoshiAmount; // Reverse calculate BTC price from snapshot
+        return {
+          date: new Date(s.createdAt).toLocaleDateString("de-DE", { month: "short", day: "numeric" }),
+          timestamp: s.createdAt,
+          totalSats: s.satoshiAmount,
           btcPrice: btcPrice,
-          totalSats: totalSats,
           euroValue: euroValue
-        });
-      }
+        };
+      });
       
       res.json(trackerEntries);
     } catch (error) {

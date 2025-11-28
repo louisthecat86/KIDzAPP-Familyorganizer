@@ -10,7 +10,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ChildTracker as ChildTrackerComponent } from "@/pages/ChildTracker";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { LineChart, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Line, Area, ResponsiveContainer, defs, linearGradient, stop } from "recharts";
@@ -4812,7 +4811,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
 
             {/* Tracker Chart */}
             <div className="pt-4 border-t border-border/50">
-              <ChildTrackerComponent childId={user.id} />
+              <TrackerChart userId={user.id} />
             </div>
 
             {user.lightningAddress && (
@@ -5498,6 +5497,62 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
             </p>
           </CardContent>
         </Card>
+      </div>
+    </div>
+  );
+}
+
+function TrackerChart({ userId }: { userId: number }) {
+  const [trackerData, setTrackerData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTrackerData = async () => {
+      try {
+        const response = await fetch(`/api/tracker/${userId}`);
+        const data = await response.json();
+        setTrackerData(data || []);
+      } catch (error) {
+        console.error("[Tracker] Failed to fetch:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTrackerData();
+  }, [userId]);
+
+  if (loading) return <div className="text-xs text-muted-foreground">Wird geladen...</div>;
+  if (trackerData.length === 0) return <p className="text-xs text-muted-foreground">Noch keine genehmigten Tasks</p>;
+
+  const latest = trackerData[trackerData.length - 1];
+  return (
+    <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-2">
+          <p className="text-[11px] text-muted-foreground">Gesamt</p>
+          <p className="text-sm font-bold text-yellow-300">{latest.totalSats.toLocaleString()}</p>
+        </div>
+        <div className="bg-green-500/10 border border-green-500/30 rounded p-2">
+          <p className="text-[11px] text-muted-foreground">Euro</p>
+          <p className="text-sm font-bold text-green-300">€{latest.euroValue.toFixed(2)}</p>
+        </div>
+      </div>
+      <div className="h-32 -mx-2">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={trackerData}>
+            <defs>
+              <linearGradient id="trackerGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#10b981" stopOpacity={0.01} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(16,185,129,0.1)" />
+            <XAxis dataKey="date" tick={{ fontSize: 8 }} />
+            <YAxis width={40} tick={{ fontSize: 8 }} tickFormatter={v => `€${v.toFixed(0)}`} />
+            <Tooltip formatter={v => `€${Number(v).toFixed(2)}`} />
+            <Area type="monotone" dataKey="euroValue" stroke="#10b981" fill="url(#trackerGrad)" />
+          </AreaChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );
