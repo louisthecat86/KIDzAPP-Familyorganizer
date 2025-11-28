@@ -1,21 +1,24 @@
 {
-  "name": "Meine Replit App",
-  "short_name": "ReplitApp",
+  "name": "KID APP FAMILYORGANIZER",
+  "short_name": "KidApp",
+  "description": "Familie organisieren mit Bitcoin-Belohnungen",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#0f172a",
+  "theme_color": "#7c3aed",
   "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
