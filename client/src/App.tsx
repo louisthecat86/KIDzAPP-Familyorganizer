@@ -4067,7 +4067,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <Input placeholder="Aufgabentitel" value={newRecurring.title} onChange={(e) => setNewRecurring({ ...newRecurring, title: e.target.value })} data-testid="input-recurring-title" />
             <Input placeholder="Beschreibung" value={newRecurring.description} onChange={(e) => setNewRecurring({ ...newRecurring, description: e.target.value })} data-testid="input-recurring-desc" />
             <div className="grid grid-cols-2 gap-3">
-              <Input type="number" placeholder="Betrag" value={newRecurring.sats} onChange={(e) => setNewRecurring({ ...newRecurring, sats: parseInt(e.target.value) || 50 })} data-testid="input-recurring-sats" />
+              <Input type="number" placeholder="Betrag" value={newRecurring.sats} onChange={(e) => setNewRecurring({ ...newRecurring, sats: e.target.value === '' ? 0 : parseInt(e.target.value) })} data-testid="input-recurring-sats" />
               <Select value={newRecurring.frequency} onValueChange={(v) => setNewRecurring({ ...newRecurring, frequency: v })}>
                 <SelectTrigger data-testid="select-frequency">
                   <SelectValue />
