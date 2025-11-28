@@ -1309,6 +1309,13 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                         >
                           LNbits Anbindung
                         </button>
+                        <button
+                          onClick={() => { setWalletTab("nwc"); handleSettingsClick("wallet"); setSidebarOpen(false); }}
+                          className="w-full px-4 py-2 rounded-lg text-xs text-slate-700 hover:bg-white/20 transition-colors text-left"
+                          data-testid="submenu-wallet-nwc"
+                        >
+                          NWC Anbindung
+                        </button>
                       </motion.div>
                     )}
                   </div>
@@ -2312,6 +2319,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
   const queryClient = useQueryClient();
   const [editLnbitsUrl, setEditLnbitsUrl] = useState("");
   const [editLnbitsAdminKey, setEditLnbitsAdminKey] = useState("");
+  const [editNwcConnectionString, setEditNwcConnectionString] = useState("");
   const [editFamilyName, setEditFamilyName] = useState(user.familyName || "");
   const [showAdminKey, setShowAdminKey] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -2321,6 +2329,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
   useEffect(() => {
     setEditLnbitsUrl("");
     setEditLnbitsAdminKey("");
+    setEditNwcConnectionString("");
     setEditFamilyName(user.familyName || "");
     setShowAdminKey(false);
   }, [user]);
@@ -2404,7 +2413,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
       setUser({ ...user, hasLnbitsConfigured: false });
       
       useToastFn({ 
-        title: "❌ LNbits Verbindung getrennt", 
+        title: "LNbits Verbindung getrennt", 
         description: "Die Wallet-Verbindung wurde entfernt",
         duration: 3000
       });
@@ -2414,6 +2423,47 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
         description: (error as Error).message, 
         variant: "destructive" 
       });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const saveNwc = async () => {
+    if (!editNwcConnectionString || !editNwcConnectionString.startsWith("nostr+walletconnect://")) {
+      useToastFn({ title: "Fehler", description: "Gültiger NWC Connection String erforderlich", variant: "destructive" });
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/wallet/setup-nwc", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ peerId: user.id, nwcConnectionString: editNwcConnectionString }),
+      });
+      if (!res.ok) throw new Error("Failed to save NWC configuration");
+      setUser({ ...user, hasNwcConfigured: true, walletType: "nwc" });
+      setEditNwcConnectionString("");
+      useToastFn({ title: "NWC verbunden!", description: "Nostr Wallet Connect ist jetzt aktiv", duration: 3000 });
+      setTimeout(() => onClose(), 1500);
+    } catch (error) {
+      useToastFn({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const deleteNwc = async () => {
+    setIsSaving(true);
+    try {
+      await fetch("/api/wallet/nwc", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ peerId: user.id }),
+      });
+      setUser({ ...user, hasNwcConfigured: false, walletType: user.hasLnbitsConfigured ? "lnbits" : null });
+      useToastFn({ title: "NWC getrennt", description: "Nostr Wallet Connect wurde entfernt", duration: 3000 });
+    } catch (error) {
+      useToastFn({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
     } finally {
       setIsSaving(false);
     }
@@ -2644,6 +2694,54 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                           data-testid="button-save-lnbits"
                         >
                           {isSaving ? "Wird gespeichert..." : "LNbits verbinden"}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  )}
+                  
+                  {walletTab === "nwc" && (
+                  <div className="space-y-4 mt-4 border-2 border-cyan-500/40 bg-cyan-500/5 rounded-lg p-4">
+                    {user.hasNwcConfigured ? (
+                      <div className="space-y-3">
+                        <div className="p-3 rounded-lg border border-green-500/30 bg-green-500/10">
+                          <p className="text-sm font-semibold text-green-300">NWC verbunden</p>
+                          <p className="text-sm text-muted-foreground mt-1">Deine NWC Wallet ist konfiguriert und einsatzbereit</p>
+                        </div>
+                        <Button
+                          onClick={deleteNwc}
+                          variant="destructive"
+                          size="sm"
+                          disabled={isSaving}
+                          className="w-full"
+                          data-testid="button-delete-nwc"
+                        >
+                          NWC trennen
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="space-y-2">
+                          <Label htmlFor="nwc-connection">NWC Connection String</Label>
+                          <Input 
+                            id="nwc-connection"
+                            placeholder="nostr+walletconnect://..."
+                            value={editNwcConnectionString}
+                            onChange={(e) => setEditNwcConnectionString(e.target.value)}
+                            className="font-mono text-xs"
+                            data-testid="input-nwc-connection"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Den Connection String erhältst du von deiner NWC-kompatiblen Wallet (z.B. Alby, Mutiny)
+                          </p>
+                        </div>
+                        <Button 
+                          onClick={saveNwc}
+                          disabled={isSaving || !editNwcConnectionString || !editNwcConnectionString.startsWith("nostr+walletconnect://")}
+                          className="w-full bg-cyan-600 hover:bg-cyan-600/90"
+                          data-testid="button-setup-nwc"
+                        >
+                          {isSaving ? "Wird gespeichert..." : "NWC verbinden"}
                         </Button>
                       </div>
                     )}
