@@ -6036,12 +6036,23 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     const [btcPrice, setBtcPrice] = useState<number | null>(null);
     const [xp, setXp] = useState(0);
     
+    // Challenge pool with different types
+    const challengePool = [
+      { type: "quiz", title: "Bitcoin Quiz", description: "Beantworte eine Bitcoin Frage richtig", icon: "🧠", reward: 50, question: "Was sind die maximalen Bitcoin?", options: ["21 Millionen", "Unbegrenzt", "1 Milliarde"], correct: 0 },
+      { type: "conversion", title: "Satoshi Konvertierung", description: "Konvertiere 100.000 Sats zu Bitcoin", icon: "🔄", reward: 40, challenge: "Wie viel Bitcoin sind 100.000 Satoshis?" },
+      { type: "lightning", title: "Lightning Lektion", description: "Lerne über das Lightning Network", icon: "⚡", reward: 45, question: "Was ist das Hauptvorteil von Lightning?", options: ["Schnelle & billige Transaktionen", "Hohe Sicherheit", "Dezentralisierung"], correct: 0 },
+      { type: "security", title: "Sicherheits-Challenge", description: "Teste dein Bitcoin Sicherheitswissen", icon: "🔒", reward: 55, question: "Was ist ein Private Key?", options: ["Dein Secret Password für die Wallet", "Die öffentliche Addresse", "Ein Bitcoin"], correct: 0 },
+      { type: "fun", title: "Bitcoin Fun Challenge", description: "Finde die richtige Satoshi-Definition", icon: "🎮", reward: 35, question: "Wer ist Satoshi Nakamoto?", options: ["Der anonyme Bitcoin Erfinder", "Ein Unternehmer", "Ein YouTuber"], correct: 0 },
+      { type: "blockchain", title: "Blockchain Basics", description: "Teste dein Blockchain Wissen", icon: "⛓️", reward: 48, question: "Wie lange dauert es einen Bitcoin Block zu erstellen?", options: ["Ca. 10 Minuten", "Ca. 1 Minute", "Ca. 1 Stunde"], correct: 0 }
+    ];
+    
     // Initialize daily challenge with default value
     const today = new Date().toDateString();
-    const [dailyChallenge, setDailyChallenge] = useState<{ completed: boolean; reward: number }>(() => {
+    const [dailyChallenge, setDailyChallenge] = useState<{ completed: boolean; reward: number; type: string; title: string; description: string; icon: string; [key: string]: any }>(() => {
       const lastChallengeDay = typeof localStorage !== 'undefined' ? localStorage.getItem("last-challenge-day") : null;
       if (lastChallengeDay !== today) {
-        const newChallenge = { completed: false, reward: Math.floor(Math.random() * 50) + 25 };
+        const selectedChallenge = challengePool[Math.floor(Math.random() * challengePool.length)];
+        const newChallenge = { ...selectedChallenge, completed: false };
         if (typeof localStorage !== 'undefined') {
           localStorage.setItem("last-challenge-day", today);
           localStorage.setItem("daily-challenge", JSON.stringify(newChallenge));
@@ -6050,7 +6061,8 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
       } else {
         const saved = typeof localStorage !== 'undefined' ? localStorage.getItem("daily-challenge") : null;
         if (saved) return JSON.parse(saved);
-        return { completed: false, reward: Math.floor(Math.random() * 50) + 25 };
+        const selectedChallenge = challengePool[Math.floor(Math.random() * challengePool.length)];
+        return { ...selectedChallenge, completed: false };
       }
     });
     
@@ -6424,33 +6436,108 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         )}
 
         {educationTab === "challenges" && dailyChallenge ? (
-          <Card className={`border-2 ${dailyChallenge.completed ? "border-green-500/50 bg-green-500/5" : "border-amber-500/50 bg-amber-500/5"}`}>
-            <CardContent className="pt-8 pb-8 text-center space-y-4">
-              <div className="text-5xl">🎯</div>
-              <div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">Tägliche Challenge</h3>
-                <p className="text-slate-600">{dailyChallenge.completed ? "Challenge abgeschlossen! 🎉" : "Lerne heute ein neues Bitcoin-Modul!"}</p>
-              </div>
-              <div className="bg-slate-100/50 p-4 rounded-lg">
-                <p className="text-sm text-slate-600 mb-1">Belohnung für heute</p>
-                <p className="text-3xl font-bold text-green-600">+{dailyChallenge.reward} Sats ⚡</p>
-              </div>
-              {!dailyChallenge.completed && (
-                <Button 
-                  onClick={() => {
-                    const newChallenge = { ...dailyChallenge, completed: true };
-                    setDailyChallenge(newChallenge);
-                    localStorage.setItem("daily-challenge", JSON.stringify(newChallenge));
-                    toast({ title: "🎉 Challenge bestanden!", description: `+${dailyChallenge.reward} Sats verdient!` });
-                  }}
-                  className="w-full bg-green-600 hover:bg-green-700 h-12 text-lg"
-                  data-testid="button-complete-challenge"
-                >
-                  Challenge abschließen
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+          <div className="space-y-4">
+            <Card className={`border-2 ${dailyChallenge.completed ? "border-green-500/50 bg-green-500/5" : "border-amber-500/50 bg-amber-500/5"}`}>
+              <CardContent className="pt-8 pb-8 space-y-4">
+                <div className="text-center">
+                  <div className="text-5xl mb-3">{dailyChallenge.icon}</div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-1">{dailyChallenge.title}</h3>
+                  <p className="text-slate-600 text-sm">{dailyChallenge.description}</p>
+                </div>
+                
+                {/* Quiz Challenge */}
+                {dailyChallenge.type === "quiz" && dailyChallenge.question && (
+                  <div className="bg-slate-100/30 p-4 rounded-lg space-y-3">
+                    <p className="font-semibold text-slate-900">{dailyChallenge.question}</p>
+                    <div className="grid grid-cols-1 gap-2">
+                      {dailyChallenge.options?.map((option: string, idx: number) => (
+                        <button key={idx} className={`p-2 rounded border-2 text-sm font-medium transition-all ${idx === dailyChallenge.correct ? "border-green-500 bg-green-500/10 text-green-700" : "border-slate-300 hover:border-slate-400"}`}>
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Conversion Challenge */}
+                {dailyChallenge.type === "conversion" && (
+                  <div className="bg-slate-100/30 p-4 rounded-lg space-y-2">
+                    <p className="font-semibold text-slate-900">{dailyChallenge.challenge}</p>
+                    <p className="text-sm text-slate-600">💡 Tipp: 100.000 Sats = 0.001 BTC</p>
+                  </div>
+                )}
+                
+                {/* Lightning Challenge */}
+                {dailyChallenge.type === "lightning" && dailyChallenge.question && (
+                  <div className="bg-slate-100/30 p-4 rounded-lg space-y-3">
+                    <p className="font-semibold text-slate-900">{dailyChallenge.question}</p>
+                    <div className="grid grid-cols-1 gap-2">
+                      {dailyChallenge.options?.map((option: string, idx: number) => (
+                        <button key={idx} className={`p-2 rounded border-2 text-sm font-medium transition-all ${idx === dailyChallenge.correct ? "border-green-500 bg-green-500/10 text-green-700" : "border-slate-300 hover:border-slate-400"}`}>
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Security Challenge */}
+                {dailyChallenge.type === "security" && dailyChallenge.question && (
+                  <div className="bg-slate-100/30 p-4 rounded-lg space-y-3">
+                    <p className="font-semibold text-slate-900">{dailyChallenge.question}</p>
+                    <div className="grid grid-cols-1 gap-2">
+                      {dailyChallenge.options?.map((option: string, idx: number) => (
+                        <button key={idx} className={`p-2 rounded border-2 text-sm font-medium transition-all ${idx === dailyChallenge.correct ? "border-green-500 bg-green-500/10 text-green-700" : "border-slate-300 hover:border-slate-400"}`}>
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Fun & Blockchain Challenges */}
+                {(dailyChallenge.type === "fun" || dailyChallenge.type === "blockchain") && dailyChallenge.question && (
+                  <div className="bg-slate-100/30 p-4 rounded-lg space-y-3">
+                    <p className="font-semibold text-slate-900">{dailyChallenge.question}</p>
+                    <div className="grid grid-cols-1 gap-2">
+                      {dailyChallenge.options?.map((option: string, idx: number) => (
+                        <button key={idx} className={`p-2 rounded border-2 text-sm font-medium transition-all ${idx === dailyChallenge.correct ? "border-green-500 bg-green-500/10 text-green-700" : "border-slate-300 hover:border-slate-400"}`}>
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <div className="bg-green-100/50 p-3 rounded-lg text-center">
+                  <p className="text-xs text-slate-600 mb-1">Belohnung für diese Challenge</p>
+                  <p className="text-2xl font-bold text-green-600">+{dailyChallenge.reward} Sats ⚡</p>
+                </div>
+                
+                {!dailyChallenge.completed && (
+                  <Button 
+                    onClick={() => {
+                      const newChallenge = { ...dailyChallenge, completed: true };
+                      setDailyChallenge(newChallenge);
+                      localStorage.setItem("daily-challenge", JSON.stringify(newChallenge));
+                      toast({ title: "🎉 Challenge bestanden!", description: `+${dailyChallenge.reward} Sats verdient!` });
+                    }}
+                    className="w-full bg-green-600 hover:bg-green-700 h-12 text-lg"
+                    data-testid="button-complete-challenge"
+                  >
+                    Challenge bestanden
+                  </Button>
+                )}
+                
+                {dailyChallenge.completed && (
+                  <div className="text-center p-4 bg-green-500/10 rounded-lg">
+                    <p className="text-lg font-bold text-green-600">✅ Challenge bestanden!</p>
+                    <p className="text-sm text-green-700 mt-1">Morgen wartet eine neue Challenge auf dich! 🚀</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         ) : null}
 
         {completedModules.length === modules.length && (
