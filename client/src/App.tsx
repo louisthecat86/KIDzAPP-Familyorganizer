@@ -2281,7 +2281,6 @@ function NavBar({ user, onLogout, onSettings }: { user: User; onLogout: () => vo
               <Settings className="h-5 w-5" />
             </Button>
           )}
-          <ThemeToggle />
           <Button 
             variant="ghost" 
             size="icon" 
@@ -2884,6 +2883,14 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
           {/* ANSICHT TAB */}
           {activeTab === "ansicht" && (
             <div className="space-y-6">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 border border-border">
+                <div>
+                  <p className="font-semibold text-sm">Dark Mode</p>
+                  <p className="text-xs text-muted-foreground">Wechsle zwischen Hell und Dunkel</p>
+                </div>
+                <ThemeToggle />
+              </div>
+
               {user.role === "parent" && (
                 <div className="space-y-2 pb-4 border-b border-border">
                   <Label htmlFor="family-name" className="text-sm font-semibold">Familienname</Label>
