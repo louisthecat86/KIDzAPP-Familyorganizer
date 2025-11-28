@@ -5620,7 +5620,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
     <div className="pt-4 border-t border-border/50">
       <div className="space-y-3">
         {/* Comparison Cards with Mini Charts */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 gap-2">
           {/* Bitcoin Card */}
           <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg p-3 space-y-2">
             <div className="flex items-center gap-1">
