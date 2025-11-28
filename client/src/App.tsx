@@ -5137,23 +5137,9 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black border border-border p-8"
         >
           <div className="relative z-10 space-y-6">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-              <div className="flex-1">
-                <div className="flex items-start justify-between">
-                  <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest mb-2">Erhaltene Sats</p>
-                  <button
-                    onClick={() => setShowTrackerChart(!showTrackerChart)}
-                    className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded-full border transition-all ${
-                      showTrackerChart 
-                        ? 'bg-primary/20 border-primary/50 text-primary' 
-                        : 'bg-slate-800/50 border-slate-700/50 text-muted-foreground hover:text-white'
-                    }`}
-                    data-testid="toggle-tracker-chart"
-                  >
-                    <span className="text-[10px]">{showTrackerChart ? "▼" : "▶"}</span>
-                    <span>Statistik</span>
-                  </button>
-                </div>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-muted-foreground font-mono text-sm uppercase tracking-widest mb-2">Erhaltene Sats</p>
                 <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-primary" data-testid="text-earned-sats">
                   {(user.balance || 0).toLocaleString()} <span className="text-2xl opacity-50 text-white">SATS</span>
                 </h2>
@@ -5170,6 +5156,18 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                   </div>
                 )}
               </div>
+              <button
+                onClick={() => setShowTrackerChart(!showTrackerChart)}
+                className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-all flex-shrink-0 ${
+                  showTrackerChart 
+                    ? 'bg-primary/20 border-primary/50 text-primary' 
+                    : 'bg-slate-800/50 border-slate-700/50 text-muted-foreground hover:text-white'
+                }`}
+                data-testid="toggle-tracker-chart"
+              >
+                <span className="text-[10px]">{showTrackerChart ? "▼" : "▶"}</span>
+                <span>Statistik</span>
+              </button>
             </div>
 
             {/* Tracker Chart */}
