@@ -1363,17 +1363,20 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
 function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void }) {
   return (
     <div 
-      className="min-h-screen flex flex-col items-center justify-center p-6 bg-cover bg-center bg-no-repeat"
+      className="min-h-screen flex flex-col items-center p-6 bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: 'url(/background.png)' }}
     >
-      {/* All content centered */}
-      <div className="flex flex-col items-center gap-5 w-full max-w-md">
-        {/* Logo */}
+      {/* Logo at top */}
+      <div className="pt-4">
         <img 
           src="/logo-transparent.png" 
           alt="KID⚡APP - Family Organizer" 
-          className="max-w-sm w-full h-auto"
+          className="max-w-xs w-full h-auto"
         />
+      </div>
+      
+      {/* Center content */}
+      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md gap-5">
         
         {/* Info Box */}
         <div className="bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl p-5 w-full shadow-lg">
