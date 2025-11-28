@@ -961,7 +961,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
             <div className="flex flex-col gap-3 w-80 items-stretch">
               <Button 
                 onClick={() => setPayoutTab("plans")}
-                className="h-32 text-lg bg-blue-600 hover:bg-blue-700"
+                className="h-32 text-lg bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 border-0"
                 data-testid="button-choose-scheduled"
               >
                 <div className="flex flex-col items-center gap-3">
@@ -971,7 +971,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
               </Button>
               <Button 
                 onClick={() => setPayoutTab("instant")}
-                className="h-32 text-lg bg-green-600 hover:bg-green-700"
+                className="h-32 text-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border-0"
                 data-testid="button-choose-instant"
               >
                 <div className="flex flex-col items-center gap-3">
@@ -988,7 +988,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
                 <div className="text-center">
                   <Button 
                     onClick={() => setCurrentView("allowances")}
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className="bg-primary hover:bg-primary/90"
                     data-testid="button-create-new-allowance"
                   >
                     + Neue Terminzahlung erstellen
@@ -1028,7 +1028,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
                                 onClick={() => handlePayout(allowance.id, item.child.id, allowance.sats)}
                                 disabled={!item.child.lightningAddress || isProcessingPayout}
                                 size="sm"
-                                className="bg-green-600 hover:bg-green-700"
+                                className="bg-primary hover:bg-primary/90"
                                 data-testid={`button-payout-${allowance.id}`}
                               >
                                 {isProcessingPayout ? "..." : "Zahlen"}
