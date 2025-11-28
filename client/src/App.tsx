@@ -1366,8 +1366,8 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
       className="min-h-screen flex flex-col items-center justify-between p-6 bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: 'url(/background.png)' }}
     >
-      {/* Logo at top */}
-      <div className="flex-1 flex flex-col items-center justify-center pt-8 gap-8">
+      {/* Logo and Info */}
+      <div className="flex-1 flex flex-col items-center justify-center gap-6">
         <img 
           src="/logo-transparent.png" 
           alt="KID⚡APP - Family Organizer" 
@@ -1398,8 +1398,8 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
         </div>
       </div>
 
-      {/* Buttons at bottom */}
-      <div className="w-full max-w-md pb-8 space-y-3">
+      {/* Buttons */}
+      <div className="w-full max-w-md space-y-3 mb-4">
         <button 
           className="w-full p-4 bg-white/25 backdrop-blur-md border border-white/40 rounded-2xl hover:bg-white/35 hover:border-white/60 transition-all flex items-center gap-4 group shadow-xl"
           onClick={() => onSelect("parent")}
