@@ -1410,6 +1410,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Simulate 30 days of savings with varying daily rates
+  app.post("/api/simulate-savings/:peerId", async (req, res) => {
+    try {
+      const peerId = parseInt(req.params.peerId);
+      const child = await storage.getPeer(peerId);
+      
+      if (!child || child.role !== "child") {
+        return res.status(404).json({ error: "Child not found" });
+      }
+
+      // Different daily savings rates for 30 days (varying amounts)
+      const dailyRates = [
+        5, 8, 3, 12, 6, 4, 10, 7, 9, 5,    // Week 1
+        15, 6, 8, 4, 11, 7, 9, 5, 13, 6,   // Week 2
+        7, 10, 5, 8, 12, 6, 4, 9, 7, 11    // Week 3-4
+      ];
+
+      let cumulativeValue = 0;
+      const monthlyRate = 0.2 / 100; // 0.2% per month
+
+      // Create weekly snapshots (4 snapshots for ~30 days)
+      for (let week = 0; week < 4; week++) {
+        let weekValue = 0;
+        for (let day = 0; day < 7.5; day++) {
+          const dayIndex = Math.floor(week * 7.5 + day);
+          if (dayIndex < dailyRates.length) {
+            weekValue += dailyRates[dayIndex];
+          }
+        }
+        cumulativeValue += weekValue;
+
+        // Add weekly interest
+        const weekInterest = cumulativeValue * (monthlyRate / 4);
+        cumulativeValue += weekInterest;
+
+        // Create snapshot
+        const now = new Date();
+        const snapshotDate = new Date(now.getTime() - (4 - week - 1) * 7 * 24 * 60 * 60 * 1000);
+
+        await storage.createMonthlySavingsSnapshot({
+          peerId,
+          connectionId: child.connectionId,
+          valueEur: Math.round(cumulativeValue * 100),
+          satoshiAmount: child.balance || 0,
+          interestEarned: Math.round(weekInterest * 100)
+        });
+      }
+
+      // Final month-end snapshot with full interest
+      const finalInterest = cumulativeValue * monthlyRate;
+      const finalValue = cumulativeValue + finalInterest;
+
+      await storage.createMonthlySavingsSnapshot({
+        peerId,
+        connectionId: child.connectionId,
+        valueEur: Math.round(finalValue * 100),
+        satoshiAmount: child.balance || 0,
+        interestEarned: Math.round(finalInterest * 100)
+      });
+
+      res.json({
+        success: true,
+        totalSaved: cumulativeValue,
+        totalInterest: finalInterest,
+        finalValue,
+        snapshotsCreated: 5,
+        message: `Simuliert: €${cumulativeValue.toFixed(2)} Ersparnisse + €${finalInterest.toFixed(2)} Zinsen = €${finalValue.toFixed(2)} Gesamtwert`
+      });
+    } catch (error) {
+      console.error("[Simulate Savings Error]:", error);
+      res.status(500).json({ error: String(error) });
+    }
+  });
+
   // Monthly savings snapshot scheduler (runs on the 1st of each month at 00:01)
   cron.schedule("1 0 1 * *", async () => {
     try {
