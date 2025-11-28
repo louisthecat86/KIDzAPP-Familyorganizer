@@ -454,6 +454,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get sats breakdown for a child (task sats vs allowance/instant payout sats)
+  app.get("/api/peers/:childId/sats-breakdown", async (req, res) => {
+    try {
+      const childId = parseInt(req.params.childId);
+      const child = await storage.getPeer(childId);
+      
+      if (!child || child.role !== "child") {
+        return res.status(404).json({ error: "Child not found" });
+      }
+
+      // Get all approved tasks for this child to calculate task sats
+      const tasks = await storage.getTasks(child.connectionId);
+      const approvedTasks = tasks.filter(t => t.status === "approved" && t.assignedTo === childId);
+      const taskSats = approvedTasks.reduce((sum, t) => sum + t.sats, 0);
+      
+      // Allowance/Instant payout sats = total balance - task sats
+      const allowanceSats = Math.max(0, (child.balance || 0) - taskSats);
+      
+      res.json({
+        totalSats: child.balance || 0,
+        taskSats: taskSats,
+        allowanceSats: allowanceSats
+      });
+    } catch (error) {
+      console.error("[Sats Breakdown Error]:", error);
+      res.status(500).json({ error: "Failed to fetch sats breakdown" });
+    }
+  });
+
   // Get parent wallet balances (LNbits only)
   app.get("/api/parent/:peerId/wallet-balance", async (req, res) => {
     try {

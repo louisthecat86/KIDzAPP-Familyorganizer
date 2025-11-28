@@ -4790,6 +4790,22 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
       }
     };
 
+    const [satsBreakdown, setSatsBreakdown] = useState<any>(null);
+
+    useEffect(() => {
+      const fetchBreakdown = async () => {
+        try {
+          const res = await fetch(`/api/peers/${user.id}/sats-breakdown`);
+          if (res.ok) {
+            setSatsBreakdown(await res.json());
+          }
+        } catch (e) {
+          console.error("Failed to fetch sats breakdown:", e);
+        }
+      };
+      fetchBreakdown();
+    }, [user.id]);
+
     return (
       <div className="max-w-4xl space-y-2">
         <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
@@ -4805,7 +4821,18 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                 <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-primary" data-testid="text-earned-sats">
                   {(user.balance || 0).toLocaleString()} <span className="text-2xl opacity-50 text-white">SATS</span>
                 </h2>
-                <p className="text-xs text-muted-foreground mt-2">Gesamt verdient durch erledigte Aufgaben</p>
+                {satsBreakdown && (
+                  <div className="flex gap-4 mt-3 text-xs">
+                    <div>
+                      <span className="text-muted-foreground">📋 Tasks:</span>
+                      <span className="font-mono text-yellow-400 ml-1">{satsBreakdown.taskSats.toLocaleString()}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">💰 Taschengeld:</span>
+                      <span className="font-mono text-green-400 ml-1">{satsBreakdown.allowanceSats.toLocaleString()}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
