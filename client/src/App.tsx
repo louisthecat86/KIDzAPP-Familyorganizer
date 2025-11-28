@@ -1515,8 +1515,10 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
               </button>
             );
           })}
+        </nav>
 
-          <div className="pt-2 border-t border-white/20">
+        <div className="p-4 border-t border-white/20">
+          <div className="relative">
             <button
               onClick={() => setShowSettingsMenu(!showSettingsMenu)}
               className="w-full px-4 py-2 rounded-xl flex items-center gap-2 transition-colors text-slate-700 hover:bg-white/20"
@@ -1528,7 +1530,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
             </button>
             
             {showSettingsMenu && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-4 mt-1 space-y-1">
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-4 mt-1 space-y-1 relative z-50">
                 {/* Ansicht */}
                 <button
                   onClick={() => { handleSettingsClick("ansicht"); setSidebarOpen(false); }}
@@ -1601,7 +1603,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
               </motion.div>
             )}
           </div>
-        </nav>
+        </div>
 
         <div className="p-4 border-t border-white/20">
           <Button
