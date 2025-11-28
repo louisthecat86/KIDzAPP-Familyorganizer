@@ -6147,7 +6147,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         {/* Header with XP + Level */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-4xl font-bold text-slate-900">Bitcoin Bildungszentrum 📚⚡</h1>
+            <h1 className="text-4xl font-bold text-slate-900">Bitcoin Bildungszentrum</h1>
             <div className="text-center">
               <div className="text-4xl font-bold text-violet-600">{userLevel}</div>
               <p className="text-xs text-slate-600">Level</p>
