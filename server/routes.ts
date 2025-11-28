@@ -1486,6 +1486,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Simulate 30 days of Bitcoin price growth
+  app.post("/api/simulate-bitcoin/:peerId", async (req, res) => {
+    try {
+      const peerId = parseInt(req.params.peerId);
+      const child = await storage.getPeer(peerId);
+      
+      if (!child || child.role !== "child") {
+        return res.status(404).json({ error: "Child not found" });
+      }
+
+      // Bitcoin price per satoshi (in EUR) - simulating daily price changes
+      const dailyBtcPrices = [
+        0.022, 0.023, 0.021, 0.024, 0.025, 0.024, 0.026, // Week 1
+        0.027, 0.025, 0.026, 0.028, 0.027, 0.029, 0.030, // Week 2
+        0.031, 0.030, 0.032, 0.033, 0.032, 0.034, 0.035, // Week 3
+        0.036, 0.035, 0.037, 0.038, 0.037, 0.039, 0.040  // Week 4
+      ];
+
+      // Create daily snapshots (one per day for 28 days)
+      for (let day = 0; day < Math.min(dailyBtcPrices.length, 28); day++) {
+        const pricePerSat = dailyBtcPrices[day];
+        const valueEur = (child.balance || 2100) * pricePerSat; // Calculate value based on balance
+        
+        const now = new Date();
+        const snapshotDate = new Date(now.getTime() - (28 - day) * 24 * 60 * 60 * 1000);
+
+        await storage.createDailyBitcoinSnapshot({
+          peerId,
+          connectionId: child.connectionId,
+          valueEur: Math.round(valueEur * 100), // Convert to cents
+          satoshiAmount: child.balance || 2100
+        });
+      }
+
+      const finalValue = (child.balance || 2100) * dailyBtcPrices[dailyBtcPrices.length - 1];
+      const initialValue = (child.balance || 2100) * dailyBtcPrices[0];
+      const gainEur = finalValue - initialValue;
+
+      res.json({
+        success: true,
+        snapshotsCreated: Math.min(dailyBtcPrices.length, 28),
+        initialValue: initialValue.toFixed(2),
+        finalValue: finalValue.toFixed(2),
+        gainEur: gainEur.toFixed(2),
+        message: `Simuliert: 28 Tage Bitcoin-Preisveränderung - Start: €${initialValue.toFixed(2)} → Ende: €${finalValue.toFixed(2)} (Gewinn: €${gainEur.toFixed(2)})`
+      });
+    } catch (error) {
+      console.error("[Simulate Bitcoin Error]:", error);
+      res.status(500).json({ error: String(error) });
+    }
+  });
+
   // Monthly savings snapshot scheduler (runs on the 1st of each month at 00:01)
   cron.schedule("1 0 1 * *", async () => {
     try {
