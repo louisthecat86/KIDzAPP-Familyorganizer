@@ -168,3 +168,21 @@ export const insertAllowanceSchema = createInsertSchema(allowances).omit({
 
 export type InsertAllowance = z.infer<typeof insertAllowanceSchema>;
 export type Allowance = typeof allowances.$inferSelect;
+
+// Daily Bitcoin Snapshots (for tracking savings value over time)
+export const dailyBitcoinSnapshots = pgTable("daily_bitcoin_snapshots", {
+  id: serial("id").primaryKey(),
+  peerId: integer("peer_id").notNull(), // Child ID
+  connectionId: text("connection_id").notNull(), // Family ID
+  valueEur: integer("value_eur").notNull(), // Value in cents (to avoid decimals)
+  satoshiAmount: integer("satoshi_amount").notNull(), // Sats at time of snapshot
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertDailyBitcoinSnapshotSchema = createInsertSchema(dailyBitcoinSnapshots).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertDailyBitcoinSnapshot = z.infer<typeof insertDailyBitcoinSnapshotSchema>;
+export type DailyBitcoinSnapshot = typeof dailyBitcoinSnapshots.$inferSelect;

@@ -5196,7 +5196,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
 
   // Savings Comparison View
   if (currentView === "savings-comparison") {
-    return <SavingsComparisonPage sats={user.balance || 0} setCurrentView={setCurrentView} />;
+    return <SavingsComparisonPage sats={user.balance || 0} setCurrentView={setCurrentView} user={user} />;
   }
 
   return null;
@@ -5497,10 +5497,11 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
   );
 }
 
-function BitcoinValueWidget({ sats, setCurrentView }: { sats: number; setCurrentView?: (view: string) => void }) {
+function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setCurrentView?: (view: string) => void; user?: any }) {
   const [btcPrice, setBtcPrice] = useState<{ usd: number; eur: number } | null>(null);
   const [interestRate, setInterestRate] = useState(0.2); // Start at 0.2% monthly
   const [allHistoricalData, setAllHistoricalData] = useState<{ [key: number]: any[] }>({});
+  const [dailySnapshots, setDailySnapshots] = useState<any[]>([]);
   const [btcDays, setBtcDays] = useState<number>(30);
 
   const timeframes = [
@@ -5517,6 +5518,41 @@ function BitcoinValueWidget({ sats, setCurrentView }: { sats: number; setCurrent
         const priceRes = await fetch("/api/btc-price");
         const priceData = await priceRes.json();
         setBtcPrice(priceData);
+
+        // Daily snapshot save logic
+        if (user && user.id && sats > 0) {
+          const lastSaveKey = `btc-snapshot-last-save-${user.id}`;
+          const lastSave = localStorage.getItem(lastSaveKey);
+          const now = new Date();
+          const today = now.toDateString();
+          
+          // Only save once per day
+          if (!lastSave || !lastSave.startsWith(today)) {
+            const btcAmount = sats / 100_000_000;
+            const valueEur = btcAmount * priceData.eur;
+            
+            await fetch("/api/bitcoin-snapshots", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                peerId: user.id,
+                connectionId: user.connectionId,
+                valueEur,
+                satoshiAmount: sats
+              })
+            });
+            localStorage.setItem(lastSaveKey, today);
+          }
+        }
+
+        // Fetch daily snapshots
+        if (user && user.id) {
+          const snapshotsRes = await fetch(`/api/bitcoin-snapshots/${user.id}`);
+          if (snapshotsRes.ok) {
+            const snapshots = await snapshotsRes.json();
+            setDailySnapshots(snapshots);
+          }
+        }
 
         // Only fetch missing timeframes with delays to avoid rate limiting
         const needsFetch = timeframes.filter(tf => !allHistoricalData[tf.days]);
@@ -5549,7 +5585,7 @@ function BitcoinValueWidget({ sats, setCurrentView }: { sats: number; setCurrent
     fetchData();
     const interval = setInterval(fetchData, 300000); // Longer interval to avoid rate limits
     return () => clearInterval(interval);
-  }, [sats]);
+  }, [sats, user]);
 
   if (!btcPrice) return null;
 
@@ -5570,13 +5606,15 @@ function BitcoinValueWidget({ sats, setCurrentView }: { sats: number; setCurrent
     };
   });
 
-  // Scale bitcoin data to same scale as current value for comparison
-  const btcChartData = (Array.isArray(historicalData) && historicalData.length > 0)
-    ? historicalData.map((item: any) => ({
-        date: item.date,
-        value: Math.round((btcAmount * item.price) * 100) / 100
-      }))
-    : [];
+  // Use daily snapshots if available, otherwise use historical price data
+  const btcChartData = (dailySnapshots.length > 0)
+    ? dailySnapshots.slice(-10) // Show last 10 days
+    : (Array.isArray(historicalData) && historicalData.length > 0)
+      ? historicalData.map((item: any) => ({
+          date: item.date,
+          value: Math.round((btcAmount * item.price) * 100) / 100
+        }))
+      : [];
 
   return (
     <div className="pt-4 border-t border-border/50">

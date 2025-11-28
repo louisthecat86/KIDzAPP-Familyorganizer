@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances } from "@shared/schema";
+import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots } from "@shared/schema";
 import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
@@ -56,6 +56,11 @@ export interface IStorage {
 
   // Get children for parent
   getChildrenForParent(parentId: number): Promise<Peer[]>;
+
+  // Daily Bitcoin Snapshots operations
+  getDailyBitcoinSnapshots(peerId: number): Promise<DailyBitcoinSnapshot[]>;
+  createDailyBitcoinSnapshot(snapshot: InsertDailyBitcoinSnapshot): Promise<DailyBitcoinSnapshot>;
+  getLastDailySnapshot(peerId: number): Promise<DailyBitcoinSnapshot | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -466,6 +471,25 @@ export class DatabaseStorage implements IStorage {
       }
     }
     return result;
+  }
+
+  async getDailyBitcoinSnapshots(peerId: number): Promise<DailyBitcoinSnapshot[]> {
+    return await db.select().from(dailyBitcoinSnapshots)
+      .where(eq(dailyBitcoinSnapshots.peerId, peerId))
+      .orderBy(desc(dailyBitcoinSnapshots.createdAt));
+  }
+
+  async createDailyBitcoinSnapshot(snapshot: InsertDailyBitcoinSnapshot): Promise<DailyBitcoinSnapshot> {
+    const result = await db.insert(dailyBitcoinSnapshots).values(snapshot).returning();
+    return result[0];
+  }
+
+  async getLastDailySnapshot(peerId: number): Promise<DailyBitcoinSnapshot | undefined> {
+    const result = await db.select().from(dailyBitcoinSnapshots)
+      .where(eq(dailyBitcoinSnapshots.peerId, peerId))
+      .orderBy(desc(dailyBitcoinSnapshots.createdAt))
+      .limit(1);
+    return result[0];
   }
 
 }

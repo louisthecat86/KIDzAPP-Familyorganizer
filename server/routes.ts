@@ -1262,6 +1262,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get daily Bitcoin snapshots for a child
+  app.get("/api/bitcoin-snapshots/:peerId", async (req, res) => {
+    try {
+      const peerId = parseInt(req.params.peerId);
+      const snapshots = await storage.getDailyBitcoinSnapshots(peerId);
+      res.json(snapshots.map(s => ({
+        date: new Date(s.createdAt).toLocaleDateString("de-DE", { month: "short", day: "numeric" }),
+        timestamp: s.createdAt,
+        value: s.valueEur / 100 // Convert from cents to euros
+      })));
+    } catch (error) {
+      console.error("[Bitcoin Snapshots Error]:", error);
+      res.status(500).json({ error: "Failed to fetch snapshots" });
+    }
+  });
+
+  // Create new daily Bitcoin snapshot
+  app.post("/api/bitcoin-snapshots", async (req, res) => {
+    try {
+      const { peerId, connectionId, valueEur, satoshiAmount } = req.body;
+      
+      if (!peerId || !connectionId || valueEur === undefined || !satoshiAmount) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const snapshot = await storage.createDailyBitcoinSnapshot({
+        peerId,
+        connectionId,
+        valueEur: Math.round(valueEur * 100), // Convert to cents
+        satoshiAmount
+      });
+
+      res.json(snapshot);
+    } catch (error) {
+      console.error("[Create Bitcoin Snapshot Error]:", error);
+      res.status(500).json({ error: "Failed to create snapshot" });
+    }
+  });
+
   // Start automatic allowance payout scheduler (runs every minute)
   cron.schedule("* * * * *", async () => {
     try {
