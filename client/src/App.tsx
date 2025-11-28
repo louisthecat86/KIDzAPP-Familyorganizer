@@ -5730,7 +5730,7 @@ function TrackerChart({ userId }: { userId: number }) {
         <div className="space-y-1 text-xs text-muted-foreground">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span><span className="text-green-400 font-semibold">Grüne Linie</span> = Wie viel Euro deine Satoshi aktuell wert sind</span>
+            <span><span className="text-green-400 font-semibold">Grüne Linie</span> = Wie viel Euro deine Satsohi zu dem Zeitpunkt wert waren</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
@@ -5738,7 +5738,7 @@ function TrackerChart({ userId }: { userId: number }) {
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-            <span><span className="text-blue-400 font-semibold">Blaue Linie</span> = Der Bitcoin-Kurs zum Zeitpunkt des Datenpunktes (nicht der aktuelle Preis)</span>
+            <span><span className="text-blue-400 font-semibold">Blaue Linie</span> = Bitcoinpreis zum Zeitpunkt des erhaltes</span>
           </div>
         </div>
       </div>
