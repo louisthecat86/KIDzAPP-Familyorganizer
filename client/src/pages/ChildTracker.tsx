@@ -126,8 +126,8 @@ export function ChildTracker({ childId }: { childId: number }) {
           {/* Summary */}
           <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t border-border/50">
             <p>✓ {trackerData.length} genehmigte Aufgaben</p>
-            <p>⚡ Verdient: {trackerData.reduce((sum, e) => sum + e.earnedSats, 0).toLocaleString()} Satoshi</p>
-            <p>€ Aktueller BTC-Preis: €{latestEntry.btcPrice.toLocaleString()}</p>
+            <p>⚡ Verdient: {trackerData.reduce((sum, e) => sum + (e.earnedSats || 0), 0).toLocaleString()} Satoshi</p>
+            <p className="text-blue-300 font-semibold">💙 BTC Preis aktuell: €{latestEntry.btcPrice.toFixed(2)}</p>
           </div>
         </CardContent>
       </Card>
