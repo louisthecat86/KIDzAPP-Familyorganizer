@@ -3200,7 +3200,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 <div className={`bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl ${displayBalance !== null ? "hover:bg-white/55" : "opacity-60"} transition-colors h-full shadow-lg p-6`}>
                   <div className="space-y-4">
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-amber-600 flex items-center justify-center gap-1">
+                      <div className="text-3xl font-bold text-cyan-600 flex items-center justify-center gap-1">
                         {displayBalance !== null && displayBalance !== undefined ? (
                           <>
                             {(displayBalance / 1000).toLocaleString("de-DE", { maximumFractionDigits: 0 })} Sats
