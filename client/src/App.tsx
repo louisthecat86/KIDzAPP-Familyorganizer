@@ -5568,16 +5568,24 @@ function TrackerChart({ userId }: { userId: number }) {
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={trackerData}>
             <defs>
-              <linearGradient id="trackerGrad" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="trackerGradGreen" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
                 <stop offset="95%" stopColor="#10b981" stopOpacity={0.01} />
+              </linearGradient>
+              <linearGradient id="trackerGradYellow" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#fbbf24" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#fbbf24" stopOpacity={0.01} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(16,185,129,0.1)" />
             <XAxis dataKey="date" tick={{ fontSize: 8 }} />
             <YAxis width={40} tick={{ fontSize: 8 }} tickFormatter={v => `€${v.toFixed(0)}`} />
+            <YAxis yAxisId="right" orientation="right" width={40} tick={{ fontSize: 8 }} tickFormatter={v => `${v.toLocaleString()}`} />
             <Tooltip 
-              formatter={(v, name) => [`€${Number(v).toFixed(2)}`, "Wert"]}
+              formatter={(v, name) => {
+                if (name === "euroValue") return [`€${Number(v).toFixed(2)}`, "Euro"];
+                return [`${Number(v).toLocaleString()}`, "Satoshi"];
+              }}
               labelFormatter={() => ""}
               contentStyle={{ 
                 backgroundColor: "transparent", 
@@ -5587,7 +5595,8 @@ function TrackerChart({ userId }: { userId: number }) {
               }}
               cursor={false}
             />
-            <Area type="monotone" dataKey="euroValue" stroke="#10b981" fill="url(#trackerGrad)" />
+            <Area type="monotone" dataKey="euroValue" stroke="#10b981" fill="url(#trackerGradGreen)" />
+            <Area yAxisId="right" type="monotone" dataKey="totalSats" stroke="#fbbf24" fill="url(#trackerGradYellow)" />
           </AreaChart>
         </ResponsiveContainer>
       </div>
