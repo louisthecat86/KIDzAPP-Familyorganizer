@@ -15,18 +15,17 @@ interface TrackerEntry {
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
-    console.log("Tooltip data:", data);
     
     return (
-      <div className="bg-slate-950 border-8 border-green-500 rounded-lg p-4 shadow-2xl min-w-fit" style={{ pointerEvents: 'none' }}>
+      <div className="bg-slate-950 border border-slate-700 rounded-lg p-3 shadow-2xl min-w-fit" style={{ pointerEvents: 'none' }}>
         <p className="text-green-400 font-bold text-sm">
-          Euro : €{data.euroValue?.toFixed(2) || "N/A"}
+          Euro: €{data.euroValue?.toFixed(2) || "N/A"}
         </p>
         <p className="text-yellow-400 font-bold text-sm">
-          Satoshi : {data.totalSats?.toLocaleString() || "N/A"}
+          Satoshi: {data.totalSats?.toLocaleString() || "N/A"}
         </p>
         <p className="text-blue-400 font-bold text-sm">
-          BTC Preis : €{data.btcPrice ? data.btcPrice.toFixed(2) : "N/A"}
+          BTC Preis: €{data.btcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0}) || "N/A"}
         </p>
       </div>
     );
