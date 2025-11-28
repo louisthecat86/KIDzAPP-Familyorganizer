@@ -5610,13 +5610,13 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
         }`}>
           {/* Header with Toggle */}
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 relative">
               <span className="text-sm">{viewMode === "bitcoin" ? "⚡" : "🏦"}</span>
               <p className="text-xs text-muted-foreground font-bold">
                 {viewMode === "bitcoin" ? "BITCOIN" : "SPARBUCH"}
               </p>
               {viewMode === "sparbuch" && (
-                <span className="text-[10px] text-muted-foreground ml-1">0,2% monatlich</span>
+                <span className="absolute text-[9px] text-muted-foreground/60 top-full -mt-1">0,2% monatlich</span>
               )}
             </div>
             <div className="flex gap-1">
