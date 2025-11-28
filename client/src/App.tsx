@@ -5258,15 +5258,24 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
   const [showTrackerChart, setShowTrackerChart] = useState(false);
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [passedQuizzes, setPassedQuizzes] = useState<string[]>(() => {
-    const saved = typeof localStorage !== 'undefined' ? localStorage.getItem("passed-quizzes") : null;
-    const parsed = saved ? JSON.parse(saved) : [];
-    // Validate - only keep modules that exist (m1-m20)
-    const validModules = parsed.filter((id: string) => /^m\d+$/.test(id) && parseInt(id.slice(1)) >= 1 && parseInt(id.slice(1)) <= 20);
-    if (typeof localStorage !== 'undefined' && validModules.length !== parsed.length) {
-      localStorage.setItem("passed-quizzes", JSON.stringify(validModules));
-      console.log("🧹 Cleaned invalid quiz data:", { before: parsed.length, after: validModules.length });
+    if (typeof localStorage !== 'undefined') {
+      const saved = localStorage.getItem("passed-quizzes");
+      // First time: clear old data
+      if (saved && (saved.includes('"5"') || saved.includes('"false"') || !saved.startsWith('["m'))) {
+        console.log("🧹 Clearing corrupted quiz data");
+        localStorage.setItem("passed-quizzes", JSON.stringify([]));
+        return [];
+      }
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          localStorage.setItem("passed-quizzes", JSON.stringify([]));
+          return [];
+        }
+      }
     }
-    return validModules;
+    return [];
   });
   const [showQuiz, setShowQuiz] = useState<string | null>(null);
   const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
