@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 interface TrackerEntry {
   date: string;
   timestamp: string;
-  earnedSats: number;
+  earnedSats?: number;
   btcPrice: number;
   totalSats: number;
   euroValue: number;
@@ -14,22 +14,18 @@ interface TrackerEntry {
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
-    const btcPriceDisplay = data.btcPrice ? (
-      data.btcPrice > 100000 
-        ? `€${(data.btcPrice / 1).toFixed(0)}`
-        : `€${data.btcPrice.toLocaleString()}`
-    ) : "N/A";
+    console.log("Tooltip data:", data);
     
     return (
       <div className="bg-slate-950 border-8 border-green-500 rounded-lg p-4 shadow-2xl min-w-fit" style={{ pointerEvents: 'none' }}>
         <p className="text-green-400 font-bold text-sm">
-          Euro : €{data.euroValue.toFixed(2)}
+          Euro : €{data.euroValue?.toFixed(2) || "N/A"}
         </p>
         <p className="text-yellow-400 font-bold text-sm">
-          Satoshi : {data.totalSats.toLocaleString()}
+          Satoshi : {data.totalSats?.toLocaleString() || "N/A"}
         </p>
         <p className="text-blue-400 font-bold text-sm">
-          BTC Preis : {btcPriceDisplay}
+          BTC Preis : €{data.btcPrice ? data.btcPrice.toFixed(2) : "N/A"}
         </p>
       </div>
     );
