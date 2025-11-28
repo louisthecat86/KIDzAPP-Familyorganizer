@@ -5578,6 +5578,10 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
   const btcAmount = sats / 100_000_000;
   const currentValueEur = btcAmount * btcPrice.eur;
   
+  // Get Bitcoin value from last daily snapshot or calculate fresh
+  const lastDailySnapshot = dailySnapshots.length > 0 ? dailySnapshots[dailySnapshots.length - 1].value : currentValueEur;
+  const bitcoinValueEur = lastDailySnapshot;
+  
   // Get current savings value from last monthly snapshot or start fresh
   const lastMonthlySaving = monthlySnapshots.length > 0 ? monthlySnapshots[0].value : 0;
   const savingsValueEur = lastMonthlySaving > 0 ? lastMonthlySaving : currentValueEur;
@@ -5642,7 +5646,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
           <p className={`text-sm font-mono font-bold ${
             viewMode === "bitcoin" ? "text-yellow-400" : "text-blue-400"
           }`} data-testid="text-sats-current-value">
-            €{viewMode === "bitcoin" ? currentValueEur.toFixed(2) : savingsValueEur.toFixed(2)}
+            €{viewMode === "bitcoin" ? bitcoinValueEur.toFixed(2) : savingsValueEur.toFixed(2)}
           </p>
 
           {/* Chart Section */}
