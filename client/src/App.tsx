@@ -3070,8 +3070,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     <style>{`
                       .rdp {
                         --rdp-cell-size: 24px;
-                        --rdp-accent-color: rgb(59, 130, 246);
-                        --rdp-background-color: rgba(59, 130, 246, 0.1);
+                        --rdp-accent-color: rgb(124, 58, 237);
+                        --rdp-background-color: rgba(124, 58, 237, 0.15);
                         margin: 0;
                       }
                       @media (min-width: 768px) {
@@ -3080,7 +3080,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         }
                       }
                       .rdp-head_cell {
-                        color: rgb(156, 163, 175);
+                        color: rgb(71, 85, 105);
                         font-weight: 600;
                         font-size: 0.5rem;
                       }
@@ -3090,13 +3090,14 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         }
                       }
                       .rdp-cell {
-                        color: rgb(156, 163, 175);
+                        color: rgb(51, 65, 85);
                         padding: 0;
                       }
                       .rdp-day {
-                        color: rgb(209, 213, 219);
+                        color: rgb(30, 41, 59);
                         border-radius: 2px;
                         font-size: 0.6rem;
+                        font-weight: 500;
                       }
                       @media (min-width: 768px) {
                         .rdp-day {
@@ -3104,15 +3105,15 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         }
                       }
                       .rdp-day_selected {
-                        background-color: rgb(59, 130, 246);
+                        background-color: rgb(124, 58, 237);
                         color: white;
                       }
                       .rdp-day_today {
-                        color: rgb(59, 130, 246);
+                        color: rgb(124, 58, 237);
                         font-weight: bold;
                       }
                       .rdp-caption {
-                        color: rgb(229, 231, 235);
+                        color: rgb(30, 41, 59);
                         font-weight: 600;
                         margin-bottom: 0.25rem;
                         font-size: 0.65rem;
@@ -3129,6 +3130,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         width: 16px;
                         height: 16px;
                         padding: 0;
+                        color: rgb(71, 85, 105);
                       }
                       @media (min-width: 768px) {
                         .rdp-nav_button {
@@ -5254,8 +5256,8 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                     <style>{`
                       .rdp {
                         --rdp-cell-size: 24px;
-                        --rdp-accent-color: rgb(59, 130, 246);
-                        --rdp-background-color: rgba(59, 130, 246, 0.1);
+                        --rdp-accent-color: rgb(124, 58, 237);
+                        --rdp-background-color: rgba(124, 58, 237, 0.15);
                         margin: 0;
                       }
                       @media (min-width: 768px) {
@@ -5264,7 +5266,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                         }
                       }
                       .rdp-head_cell {
-                        color: rgb(156, 163, 175);
+                        color: rgb(71, 85, 105);
                         font-weight: 600;
                         font-size: 0.5rem;
                       }
@@ -5274,13 +5276,14 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                         }
                       }
                       .rdp-cell {
-                        color: rgb(156, 163, 175);
+                        color: rgb(51, 65, 85);
                         padding: 0;
                       }
                       .rdp-day {
-                        color: rgb(209, 213, 219);
+                        color: rgb(30, 41, 59);
                         border-radius: 2px;
                         font-size: 0.6rem;
+                        font-weight: 500;
                       }
                       @media (min-width: 768px) {
                         .rdp-day {
@@ -5288,15 +5291,15 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                         }
                       }
                       .rdp-day_selected {
-                        background-color: rgb(59, 130, 246);
+                        background-color: rgb(124, 58, 237);
                         color: white;
                       }
                       .rdp-day_today {
-                        color: rgb(59, 130, 246);
+                        color: rgb(124, 58, 237);
                         font-weight: bold;
                       }
                       .rdp-caption {
-                        color: rgb(229, 231, 235);
+                        color: rgb(30, 41, 59);
                         font-weight: 600;
                         margin-bottom: 0.25rem;
                         font-size: 0.65rem;
@@ -5313,6 +5316,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                         width: 16px;
                         height: 16px;
                         padding: 0;
+                        color: rgb(71, 85, 105);
                       }
                       @media (min-width: 768px) {
                         .rdp-nav_button {
