@@ -363,6 +363,7 @@ export default function App() {
         }
       }
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["peers"] });
       queryClient.invalidateQueries({ queryKey: ["bitcoin-snapshots"] });
       queryClient.invalidateQueries({ queryKey: ["savings-snapshots"] });
     },
