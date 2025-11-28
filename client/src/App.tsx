@@ -5499,7 +5499,7 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
 
 function BitcoinValueWidget({ sats, setCurrentView }: { sats: number; setCurrentView?: (view: string) => void }) {
   const [btcPrice, setBtcPrice] = useState<{ usd: number; eur: number } | null>(null);
-  const [interestRate, setInterestRate] = useState(0.5); // Start at 0.5% monthly
+  const [interestRate, setInterestRate] = useState(0.2); // Start at 0.2% monthly
   const [historicalData, setHistoricalData] = useState<any[]>([]);
 
   useEffect(() => {
@@ -5597,7 +5597,7 @@ function BitcoinValueWidget({ sats, setCurrentView }: { sats: number; setCurrent
                 </ResponsiveContainer>
               </div>
             )}
-            <p className="text-xs text-muted-foreground">0,5% monatlich</p>
+            <p className="text-xs text-muted-foreground">0,2% monatlich</p>
           </div>
         </div>
 
