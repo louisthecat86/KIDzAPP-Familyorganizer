@@ -5579,7 +5579,6 @@ function TrackerChart({ userId }: { userId: number }) {
   const [showEuro, setShowEuro] = useState(true);
   const [showSats, setShowSats] = useState(true);
   const [showBtcPrice, setShowBtcPrice] = useState(true);
-  const [currentBtcPrice, setCurrentBtcPrice] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchTrackerData = async () => {
@@ -5593,21 +5592,7 @@ function TrackerChart({ userId }: { userId: number }) {
         setLoading(false);
       }
     };
-    
-    const fetchCurrentBtcPrice = async () => {
-      try {
-        const response = await fetch(`/api/btc-price`);
-        const data = await response.json();
-        setCurrentBtcPrice(data.eur || null);
-      } catch (error) {
-        console.error("[Tracker] Failed to fetch current BTC price:", error);
-      }
-    };
-    
     fetchTrackerData();
-    fetchCurrentBtcPrice();
-    const interval = setInterval(fetchCurrentBtcPrice, 60000); // Update every 60 seconds
-    return () => clearInterval(interval);
   }, [userId]);
 
   if (loading) return <div className="text-xs text-muted-foreground">Wird geladen...</div>;
@@ -5635,9 +5620,9 @@ function TrackerChart({ userId }: { userId: number }) {
           <p className="text-[9px] text-muted-foreground mt-1">aktueller Wert</p>
         </div>
         <div className="bg-blue-500/10 border border-blue-500/30 rounded p-3">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">₿ Aktueller Kurs</p>
-          <p className="text-lg font-bold text-blue-300 mt-1">€{currentBtcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0}) || 'Laden...'}</p>
-          <p className="text-[9px] text-muted-foreground mt-1">jetzt gerade</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">₿ BTC-Kurs</p>
+          <p className="text-lg font-bold text-blue-300 mt-1">€{latest.btcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0}) || 'N/A'}</p>
+          <p className="text-[9px] text-muted-foreground mt-1">beim letzten Update</p>
         </div>
       </div>
 
