@@ -517,7 +517,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         // Create escrow invoice if balance is sufficient
-        invoice = await lnbits.createPaylink(data.sats, `Task: ${data.title}`);
+        try {
+          invoice = await lnbits.createPaylink(data.sats, `Task: ${data.title}`);
+        } catch (paylinksError) {
+          console.log("Paylinks failed, trying Invoice API:", paylinksError);
+          // Fallback to Invoice API if Paylinks fails
+          const invoiceData = await lnbits.createInvoice(data.sats, `Task: ${data.title}`);
+          invoice = invoiceData.payment_request || invoiceData.payment_hash;
+        }
         escrowLocked = true;
       } catch (error) {
         if ((error as any).message?.includes("Unzureichende") || (error as any).message?.includes("nicht konfiguriert")) {
