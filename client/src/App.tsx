@@ -5601,10 +5601,9 @@ function TrackerChart({ userId }: { userId: number }) {
   const latest = trackerData[trackerData.length - 1];
   return (
     <div className="space-y-3">
-      {/* Titel mit Erklärung */}
+      {/* Titel */}
       <div>
         <h3 className="text-sm font-bold text-white mb-1">Dein Verdienst-Übersicht</h3>
-        <p className="text-xs text-muted-foreground">So viel hast du bisher mit deinen Tasks verdient:</p>
       </div>
 
       {/* Aktuelle Werte */}
@@ -5623,7 +5622,6 @@ function TrackerChart({ userId }: { userId: number }) {
 
       {/* Chart-Steuerung mit besseren Labels */}
       <div>
-        <p className="text-xs text-muted-foreground mb-2">📊 Klick auf die Linien, um sie zu zeigen/verstecken:</p>
         <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => setShowEuro(!showEuro)}
