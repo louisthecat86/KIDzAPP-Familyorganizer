@@ -2980,7 +2980,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div className="flex-1">
                 <p className="text-gray-700 font-mono text-sm uppercase tracking-widest mb-2">Ausgegeben</p>
-                <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-orange-500" data-testid="text-sats-spent">
+                <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-yellow-500" data-testid="text-sats-spent">
                   {(satsSpent || 0).toLocaleString()} <span className="text-2xl opacity-70 text-gray-700">SATS</span>
                 </h2>
                 <p className="text-xs text-gray-600 mt-2">Klick zum Anzeigen der Aufschlüsselung pro Kind</p>
@@ -3042,7 +3042,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 <div className={`bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl ${displayBalance !== null ? "hover:bg-white/25" : "opacity-60"} transition-colors h-full shadow-lg p-6`}>
                   <div className="space-y-4">
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-orange-500 flex items-center justify-center gap-1">
+                      <div className="text-3xl font-bold text-yellow-500 flex items-center justify-center gap-1">
                         {displayBalance !== null && displayBalance !== undefined ? (
                           <>
                             {(displayBalance / 1000).toLocaleString("de-DE", { maximumFractionDigits: 0 })} Sats
@@ -4166,7 +4166,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       className="w-32 text-lg font-bold text-center"
                       data-testid="input-level-bonus-sats"
                     />
-                    <span className="text-xl text-orange-500 font-bold">⚡ Sats</span>
+                    <span className="text-xl text-yellow-500 font-bold">⚡ Sats</span>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     Dieser Betrag wird bei jedem Meilenstein gezahlt
@@ -4202,7 +4202,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 <div className="p-4 rounded-lg bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30">
                   <p className="font-semibold mb-2">🎯 Vorschau</p>
                   <p className="text-sm">
-                    Deine Kinder erhalten <span className="text-orange-500 font-bold">{bonusSats} Sats</span> Bonus
+                    Deine Kinder erhalten <span className="text-yellow-500 font-bold">{bonusSats} Sats</span> Bonus
                     bei Level {Array.from({length: 5}, (_, i) => (i + 1) * milestoneInterval).join(", ")}...
                   </p>
                 </div>
@@ -4537,8 +4537,8 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
       if (completedTasks >= 24) return { emoji: "🏆", title: "Level 8 – Wochenchampion", color: "text-purple-500" };
       if (completedTasks >= 21) return { emoji: "🎯", title: "Level 7 – Aufgabenprofi", color: "text-blue-600" };
       if (completedTasks >= 18) return { emoji: "🦸", title: "Level 6 – Superheld der Woche", color: "text-blue-500" };
-      if (completedTasks >= 15) return { emoji: "⚡", title: "Level 5 – Blitzbringer", color: "text-orange-500" };
-      if (completedTasks >= 12) return { emoji: "🚀", title: "Level 4 – Alltagsmeister", color: "text-orange-600" };
+      if (completedTasks >= 15) return { emoji: "⚡", title: "Level 5 – Blitzbringer", color: "text-yellow-500" };
+      if (completedTasks >= 12) return { emoji: "🚀", title: "Level 4 – Alltagsmeister", color: "text-amber-500" };
       if (completedTasks >= 9) return { emoji: "🤝", title: "Level 3 – Familienhelfer", color: "text-green-500" };
       if (completedTasks >= 6) return { emoji: "🔍", title: "Level 2 – Aufgabenentdecker", color: "text-green-600" };
       if (completedTasks >= 3) return { emoji: "✨", title: "Level 1 – Funkenstarter", color: "text-slate-500" };
@@ -4591,7 +4591,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                 <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
                   <p className="text-sm font-semibold text-amber-300 mb-1">🏆 Level-Bonus aktiv!</p>
                   <p className="text-xs text-muted-foreground">
-                    Alle {bonusSettings.milestoneInterval} Level gibt es <span className="text-orange-500 font-bold">{bonusSettings.bonusSats} Sats</span> Bonus!
+                    Alle {bonusSettings.milestoneInterval} Level gibt es <span className="text-yellow-500 font-bold">{bonusSettings.bonusSats} Sats</span> Bonus!
                   </p>
                 </div>
               )}
@@ -5124,7 +5124,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-gray-700 font-mono text-sm uppercase tracking-widest mb-2">Erhaltene Sats</p>
-                <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-orange-500" data-testid="text-earned-sats">
+                <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-yellow-500" data-testid="text-earned-sats">
                   {(user.balance || 0).toLocaleString()} <span className="text-2xl opacity-70 text-gray-700">SATS</span>
                 </h2>
                 {satsBreakdown && (
@@ -5169,7 +5169,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Lightning Adresse</p>
-                    <p className="text-sm font-mono text-primary break-all" data-testid="text-child-lightning-address">{user.lightningAddress}</p>
+                    <p className="text-sm font-mono text-cyan-600 break-all" data-testid="text-child-lightning-address">{user.lightningAddress}</p>
                     <p className="text-xs text-muted-foreground mt-1">✓ Zahlungen werden direkt hierhin gesendet</p>
                   </div>
                 </div>
@@ -5947,11 +5947,11 @@ function TrackerChart({ userId }: { userId: number }) {
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/5 border border-orange-500/30 rounded-xl p-4">
-          <p className="text-xs text-orange-300/70 uppercase tracking-wide mb-1">Satoshi</p>
-          <p className="text-2xl font-bold text-orange-400">{latest.totalSats.toLocaleString()}</p>
+        <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-600/5 border border-yellow-500/30 rounded-xl p-4">
+          <p className="text-xs text-yellow-600/70 uppercase tracking-wide mb-1">Satoshi</p>
+          <p className="text-2xl font-bold text-yellow-500">{latest.totalSats.toLocaleString()}</p>
           {satsChange > 0 && (
-            <p className="text-xs text-orange-300/60 mt-1">+{satsChange.toLocaleString()} verdient</p>
+            <p className="text-xs text-yellow-600/60 mt-1">+{satsChange.toLocaleString()} verdient</p>
           )}
         </div>
         <div className="bg-gradient-to-br from-green-500/20 to-green-600/5 border border-green-500/30 rounded-xl p-4">
@@ -5977,7 +5977,7 @@ function TrackerChart({ userId }: { userId: number }) {
           onClick={() => setShowSats(!showSats)}
           className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
             showSats 
-              ? 'bg-orange-500/20 border-orange-500/50 text-orange-400' 
+              ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-500' 
               : 'bg-slate-800/50 border-slate-700/50 text-slate-500'
           }`}
           data-testid="toggle-sats"
@@ -6057,7 +6057,7 @@ function TrackerChart({ userId }: { userId: number }) {
                       <p className="text-xs text-slate-400 mb-2">{data.date}</p>
                       <div className="space-y-1">
                         <p className="text-sm text-green-400 font-medium">💶 €{data.euroValue?.toFixed(2)}</p>
-                        <p className="text-sm text-orange-400 font-medium">⚡ {data.totalSats?.toLocaleString()} sats</p>
+                        <p className="text-sm text-yellow-500 font-medium">⚡ {data.totalSats?.toLocaleString()} sats</p>
                         {showBtcPrice && (
                           <p className="text-sm text-blue-400 font-medium">₿ €{data.btcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0})}</p>
                         )}
@@ -6113,9 +6113,9 @@ function TrackerChart({ userId }: { userId: number }) {
               <div className="w-4 h-1 bg-green-500 rounded-full"></div>
               <span className="text-xs"><span className="text-green-400 font-medium">Grün</span> = Wert deiner Satoshi in Euro</span>
             </div>
-            <div className="flex items-center gap-3 bg-orange-500/10 rounded-lg px-3 py-2">
-              <div className="w-4 h-1 bg-orange-500 rounded-full"></div>
-              <span className="text-xs"><span className="text-orange-400 font-medium">Orange</span> = Anzahl deiner Satoshi</span>
+            <div className="flex items-center gap-3 bg-yellow-500/10 rounded-lg px-3 py-2">
+              <div className="w-4 h-1 bg-yellow-500 rounded-full"></div>
+              <span className="text-xs"><span className="text-yellow-500 font-medium">Gelb</span> = Anzahl deiner Satoshi</span>
             </div>
             <div className="flex items-center gap-3 bg-blue-500/10 rounded-lg px-3 py-2">
               <div className="w-4 h-1 bg-blue-500 rounded-full" style={{background: 'repeating-linear-gradient(90deg, #3b82f6 0px, #3b82f6 4px, transparent 4px, transparent 8px)'}}></div>
