@@ -1372,6 +1372,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
   const menuItems = [
     { id: "dashboard", label: user.role === "parent" ? "Dashboard" : "Mein Dashboard", icon: Home, badge: 0 },
     ...(user.role === "parent" ? [{ id: "tasks", label: "Aufgaben", icon: CheckCircle, badge: tasksNotificationCount }] : []),
+    ...(user.role === "parent" ? [{ id: "children-overview", label: "Kinder-Übersicht", icon: Users, badge: 0 }] : []),
     { id: "calendar", label: "Familienkalender", icon: Calendar, badge: 0 },
     { id: "chat", label: "Familienchat", icon: MessageSquare, badge: chatNotificationCount },
     { id: "notifications", label: "Aktivitäten", icon: Bell, badge: 0 },
@@ -3847,6 +3848,105 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <Users className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
             <p className="text-muted-foreground font-semibold">Noch keine Kinder verbunden</p>
             <p className="text-xs text-muted-foreground mt-2">Teile deinen Verbindungscode mit deinen Kindern, um sie hinzuzufügen</p>
+          </Card>
+        )}
+      </div>
+    );
+  }
+
+  if (currentView === "children-overview" && user.role === "parent") {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Kinder-Übersicht</h1>
+          <p className="text-slate-700 text-sm mt-2">Alle deine Kinder auf einen Blick</p>
+        </div>
+
+        {parentChildren.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {parentChildren.map((child: any) => {
+              const childTasks = tasks.filter((t: Task) => t.assignedTo === child.id);
+              const openTasks = childTasks.filter((t: Task) => t.status === "open");
+              const submittedTasks = childTasks.filter((t: Task) => t.status === "submitted");
+              const approvedTasks = childTasks.filter((t: Task) => t.status === "approved");
+              const totalSatsEarned = approvedTasks.reduce((sum: number, t: Task) => sum + t.sats, 0);
+              
+              return (
+                <motion.div
+                  key={child.id}
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="bg-gradient-to-br from-violet-500/20 to-cyan-500/20 backdrop-blur-md border border-white/50 rounded-2xl p-5 shadow-xl hover:shadow-2xl transition-all"
+                  data-testid={`card-child-${child.id}`}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 text-white flex items-center justify-center font-bold text-lg">
+                        {child.name[0].toUpperCase()}
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg text-slate-900">{child.name}</h3>
+                        <p className="text-xs text-slate-600">Kind</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-amber-600">{child.balance || 0}</p>
+                      <p className="text-xs text-slate-600">Sats</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div className="bg-white/30 rounded-lg p-2">
+                        <p className="text-lg font-bold text-slate-900">{openTasks.length}</p>
+                        <p className="text-xs text-slate-600">Offen</p>
+                      </div>
+                      <div className="bg-white/30 rounded-lg p-2">
+                        <p className="text-lg font-bold text-orange-600">{submittedTasks.length}</p>
+                        <p className="text-xs text-slate-600">Eingereicht</p>
+                      </div>
+                      <div className="bg-white/30 rounded-lg p-2">
+                        <p className="text-lg font-bold text-green-600">{approvedTasks.length}</p>
+                        <p className="text-xs text-slate-600">Vollendet</p>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-white/30 text-sm text-slate-600">
+                      <p>💰 Verdient: {totalSatsEarned} Sats</p>
+                    </div>
+
+                    <div className="flex gap-2 pt-2">
+                      <Button 
+                        size="sm" 
+                        className="flex-1 bg-violet-600 hover:bg-violet-700 text-white"
+                        onClick={() => {
+                          setAllowanceChildId(child.id);
+                          setCurrentView("allowances");
+                        }}
+                        data-testid={`button-allowance-${child.id}`}
+                      >
+                        Taschengeld
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => setCurrentView("tasks")}
+                        data-testid={`button-tasks-${child.id}`}
+                      >
+                        Aufgaben
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        ) : (
+          <Card className="border-dashed border-border p-12 text-center">
+            <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">Keine Kinder verbunden</h3>
+            <p className="text-slate-600 text-sm">Teile deinen Verbindungscode mit deinen Kindern, um sie hinzuzufügen</p>
           </Card>
         )}
       </div>
