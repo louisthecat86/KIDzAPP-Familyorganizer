@@ -6785,7 +6785,6 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                 <Sparkles className="h-6 w-6 text-white" />
               </div>
               <p className="text-lg font-bold text-slate-900">Lern-Statistiken</p>
-              <p className="text-xs text-slate-500 mt-1">📊 Klick für Details</p>
             </motion.button>
 
             {/* Stats Modal */}
