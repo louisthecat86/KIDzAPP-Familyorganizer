@@ -779,6 +779,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Submit task without proof (optional photo)
+  app.put("/api/tasks/:id/submit", async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const taskId = parseInt(id);
+      const task = await storage.getTask(taskId);
+      if (!task) {
+        return res.status(404).json({ error: "Task not found" });
+      }
+
+      // Update task status to submitted (proof remains null if not provided)
+      const updatedTask = await storage.updateTask(taskId, {
+        status: "submitted"
+      });
+
+      res.json({ success: true, task: updatedTask });
+    } catch (error) {
+      console.error("Submit task error:", error);
+      res.status(500).json({ error: "Failed to submit task" });
+    }
+  });
+
   // Withdraw sats via child's Lightning wallet
   app.post("/api/withdraw", async (req, res) => {
     try {

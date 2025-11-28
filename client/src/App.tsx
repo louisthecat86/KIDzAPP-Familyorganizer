@@ -5125,8 +5125,36 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
   }
 
   if (currentView === "tasks-my") {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const handlePhotoUploadSuccess = (proof: string) => {
       queryClient.invalidateQueries({ queryKey: ["tasks", user.connectionId] });
+    };
+
+    const handleQuickSubmit = async (taskId: number) => {
+      setIsSubmitting(true);
+      try {
+        const res = await fetch(`/api/tasks/${taskId}/submit`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!res.ok) throw new Error("Submission failed");
+
+        queryClient.invalidateQueries({ queryKey: ["tasks", user.connectionId] });
+        toast({
+          title: "Erfolg",
+          description: "Aufgabe eingereicht!",
+        });
+      } catch (error) {
+        toast({
+          title: "Fehler",
+          description: (error as Error).message,
+          variant: "destructive",
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
     };
 
     return (
@@ -5135,11 +5163,23 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
         <div className="grid gap-4">
           {myTasks.filter((t: Task) => t.status === "assigned").map((task: Task) => (
             <TaskCard key={task.id} task={task} variant="child">
-              <PhotoUpload 
-                taskId={task.id}
-                onUploadSuccess={handlePhotoUploadSuccess}
-                disabled={false}
-              />
+              <div className="space-y-3">
+                <Button
+                  onClick={() => handleQuickSubmit(task.id)}
+                  disabled={isSubmitting}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  size="sm"
+                  data-testid={`button-submit-task-${task.id}`}
+                >
+                  ✓ Erledigt
+                </Button>
+                <div className="text-xs text-muted-foreground text-center">oder Foto hochladen:</div>
+                <PhotoUpload 
+                  taskId={task.id}
+                  onUploadSuccess={handlePhotoUploadSuccess}
+                  disabled={false}
+                />
+              </div>
             </TaskCard>
           ))}
           {myTasks.filter((t: Task) => t.status === "assigned").length === 0 && (
