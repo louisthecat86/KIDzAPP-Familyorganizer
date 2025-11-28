@@ -1879,13 +1879,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Child not found" });
       }
 
-      // Find parent with LNBits configured
+      // Find parent with LNBits configured (prioritize parent with LNBits)
       console.log(`[Level Bonus] Looking for parent with connectionId: ${connectionId}`);
-      const parent = await db.select().from(peers)
-        .where(and(eq(peers.connectionId, connectionId), eq(peers.role, "parent")))
-        .limit(1);
+      const allParents = await db.select().from(peers)
+        .where(and(eq(peers.connectionId, connectionId), eq(peers.role, "parent")));
       
-      console.log(`[Level Bonus] Found parent: ${JSON.stringify(parent[0] ? { id: parent[0].id, name: parent[0].name, lnbitsUrl: parent[0].lnbitsUrl, hasAdminKey: !!parent[0].lnbitsAdminKey } : 'none')}`);
+      // Find parent with LNBits configured, or fallback to first parent
+      const parentWithLnbits = allParents.find(p => p.lnbitsUrl && p.lnbitsAdminKey);
+      const parent = parentWithLnbits ? [parentWithLnbits] : allParents;
+      
+      console.log(`[Level Bonus] Found ${allParents.length} parents, using: ${JSON.stringify(parent[0] ? { id: parent[0].id, name: parent[0].name, lnbitsUrl: parent[0].lnbitsUrl, hasAdminKey: !!parent[0].lnbitsAdminKey } : 'none')}`);
 
       if (!parent[0] || !parent[0].lnbitsUrl || !parent[0].lnbitsAdminKey) {
         console.log(`[Level Bonus] No LNBits configured, using internal balance`);
