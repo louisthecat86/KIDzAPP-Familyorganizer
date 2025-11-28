@@ -5963,20 +5963,14 @@ function TrackerChart({ userId }: { userId: number }) {
 
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/5 border border-orange-500/30 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-orange-400 text-lg">⚡</span>
-            <span className="text-xs text-orange-300/70 uppercase tracking-wide">Satoshi</span>
-          </div>
+          <p className="text-xs text-orange-300/70 uppercase tracking-wide mb-1">Satoshi</p>
           <p className="text-2xl font-bold text-orange-400">{latest.totalSats.toLocaleString()}</p>
           {satsChange > 0 && (
             <p className="text-xs text-orange-300/60 mt-1">+{satsChange.toLocaleString()} verdient</p>
           )}
         </div>
         <div className="bg-gradient-to-br from-green-500/20 to-green-600/5 border border-green-500/30 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-green-400 text-lg">💶</span>
-            <span className="text-xs text-green-300/70 uppercase tracking-wide">Euro-Wert</span>
-          </div>
+          <p className="text-xs text-green-300/70 uppercase tracking-wide mb-1">Euro-Wert</p>
           <p className="text-2xl font-bold text-green-400">€{liveEuroValue.toFixed(2)}</p>
           <p className="text-xs text-green-300/60 mt-1">Live-Kurs</p>
         </div>
