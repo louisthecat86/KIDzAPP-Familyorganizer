@@ -357,14 +357,6 @@ export default function App() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    // Load theme globally
-    const savedTheme = localStorage.getItem('theme-mode');
-    if (savedTheme === 'light') {
-      document.documentElement.classList.remove('dark');
-    } else {
-      document.documentElement.classList.add('dark');
-    }
-
     // Load user
     const stored = localStorage.getItem("sats-user");
     if (stored) {
@@ -379,6 +371,29 @@ export default function App() {
       }
     }
     setSidebarOpen(false);
+  }, []);
+
+  // Aggressive theme enforcement - runs continuously
+  useEffect(() => {
+    const enforceTheme = () => {
+      const saved = localStorage.getItem('theme-mode');
+      const isDarkMode = saved !== 'light';
+      
+      if (isDarkMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    };
+
+    enforceTheme();
+    const interval = setInterval(enforceTheme, 50);
+    window.addEventListener('storage', enforceTheme);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('storage', enforceTheme);
+    };
   }, []);
 
   useEffect(() => {
