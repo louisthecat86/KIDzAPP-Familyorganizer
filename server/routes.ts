@@ -505,7 +505,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Validate reward against LNbits balance
+      // Try to validate and create escrow invoice, but allow task creation without it
       try {
         const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
         const balance = await lnbits.getBalance();
@@ -516,22 +516,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
 
-        // Create escrow invoice if balance is sufficient
+        // Try to create escrow invoice if balance is sufficient
         try {
           invoice = await lnbits.createPaylink(data.sats, `Task: ${data.title}`);
+          escrowLocked = true;
         } catch (paylinksError) {
           console.log("Paylinks failed, trying Invoice API:", paylinksError);
-          // Fallback to Invoice API if Paylinks fails
-          const invoiceData = await lnbits.createInvoice(data.sats, `Task: ${data.title}`);
-          invoice = invoiceData.payment_request || invoiceData.payment_hash;
+          try {
+            // Fallback to Invoice API if Paylinks fails
+            const invoiceData = await lnbits.createInvoice(data.sats, `Task: ${data.title}`);
+            invoice = invoiceData.payment_request || invoiceData.payment_hash;
+            escrowLocked = true;
+          } catch (invoiceError) {
+            // Invoice also failed - allow task creation anyway without escrow
+            console.warn("Both Paylinks and Invoice APIs failed, creating task without escrow:", invoiceError);
+            escrowLocked = false;
+          }
         }
-        escrowLocked = true;
       } catch (error) {
         if ((error as any).message?.includes("Unzureichende") || (error as any).message?.includes("nicht konfiguriert")) {
           throw error;
         }
-        console.warn("LNbits operation failed:", error);
-        return res.status(400).json({ error: "LNbits-Verbindung fehlgeschlagen. Überprüfe deine Einstellungen." });
+        console.warn("LNbits balance check failed:", error);
+        // Don't fail - let task creation proceed
       }
 
       // Create task
