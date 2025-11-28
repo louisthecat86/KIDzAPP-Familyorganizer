@@ -4283,6 +4283,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
   const [parentConnectionId, setParentConnectionId] = useState("");
   const [isLinking, setIsLinking] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [showTrackerChart, setShowTrackerChart] = useState(false);
   const { toast } = useToast();
 
   const { data: connectedPeers = [] } = useQuery({
@@ -5157,9 +5158,23 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
               </div>
             </div>
 
-            {/* Tracker Chart */}
+            {/* Tracker Chart Toggle */}
             <div className="pt-4 border-t border-border/50">
-              <TrackerChart userId={user.id} />
+              <button
+                onClick={() => setShowTrackerChart(!showTrackerChart)}
+                className="flex items-center gap-2 text-xs text-muted-foreground hover:text-white transition-colors"
+                data-testid="toggle-tracker-chart"
+              >
+                <span className="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px]">
+                  {showTrackerChart ? "−" : "i"}
+                </span>
+                <span>{showTrackerChart ? "Statistik ausblenden" : "Statistik anzeigen"}</span>
+              </button>
+              {showTrackerChart && (
+                <div className="mt-4">
+                  <TrackerChart userId={user.id} />
+                </div>
+              )}
             </div>
 
             {user.lightningAddress && (
