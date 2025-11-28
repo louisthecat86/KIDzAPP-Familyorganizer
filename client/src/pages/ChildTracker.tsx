@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface TrackerEntry {
@@ -94,7 +94,7 @@ export function ChildTracker({ childId }: { childId: number }) {
           {/* Chart */}
           <div className="h-64 -mx-6">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trackerData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+              <ComposedChart data={trackerData} margin={{ top: 5, right: 60, left: -20, bottom: 5 }}>
                 <defs>
                   <linearGradient id="trackerGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
@@ -107,19 +107,37 @@ export function ChildTracker({ childId }: { childId: number }) {
                   tick={{ fontSize: 9, fill: "rgba(16,185,129,0.7)" }} 
                 />
                 <YAxis 
+                  yAxisId="left"
                   width={50} 
                   tick={{ fontSize: 9, fill: "rgba(16,185,129,0.7)" }} 
                   tickFormatter={(value) => `€${Number(value).toFixed(0)}`} 
                 />
+                <YAxis 
+                  yAxisId="right"
+                  orientation="right"
+                  width={50}
+                  tick={{ fontSize: 9, fill: "rgba(59,130,246,0.7)" }}
+                  tickFormatter={(value) => `${Number(value).toLocaleString()}`}
+                />
                 <Tooltip content={<CustomTooltip />} cursor={false} />
                 <Area 
+                  yAxisId="left"
                   type="monotone" 
                   dataKey="euroValue" 
                   stroke="#10b981" 
                   fill="url(#trackerGradient)" 
                   isAnimationActive={false}
                 />
-              </AreaChart>
+                <Line 
+                  yAxisId="right"
+                  type="monotone" 
+                  dataKey="totalSats" 
+                  stroke="#3b82f6" 
+                  dot={false}
+                  strokeWidth={2}
+                  isAnimationActive={false}
+                />
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
 
