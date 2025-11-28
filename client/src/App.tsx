@@ -1058,7 +1058,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
   
   const menuItems = [
     { id: "dashboard", label: user.role === "parent" ? "Dashboard" : "Mein Dashboard", icon: Home },
-    { id: "tasks", label: user.role === "parent" ? "Aufgaben" : "Verfügbare Aufgaben", icon: CheckCircle },
+    ...(user.role === "parent" ? [{ id: "tasks", label: "Aufgaben", icon: CheckCircle }] : []),
     { id: "calendar", label: "Familienkalender", icon: Calendar },
     { id: "chat", label: "Familienchat", icon: MessageSquare },
     { id: "leaderboard", label: "Bestenliste", icon: Trophy },
