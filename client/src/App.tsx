@@ -5977,7 +5977,7 @@ function TrackerChart({ userId }: { userId: number }) {
           }`}
           data-testid="toggle-euro"
         >
-          💶 Euro
+          Euro
         </button>
         <button
           onClick={() => setShowSats(!showSats)}
@@ -5988,7 +5988,7 @@ function TrackerChart({ userId }: { userId: number }) {
           }`}
           data-testid="toggle-sats"
         >
-          ⚡ Satoshi
+          Satoshi
         </button>
         <button
           onClick={() => setShowBtcPrice(!showBtcPrice)}
@@ -5999,7 +5999,7 @@ function TrackerChart({ userId }: { userId: number }) {
           }`}
           data-testid="toggle-btc-price"
         >
-          ₿ Kurs
+          Kurs
         </button>
       </div>
 
