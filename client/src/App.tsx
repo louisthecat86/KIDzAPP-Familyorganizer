@@ -1367,7 +1367,7 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
         {/* Header - Logo Image */}
         <div className="text-center mb-12">
           <img 
-            src="/attached_assets/grafik_1764330832953.png" 
+            src="/logo.png" 
             alt="KID⚡APP - Family Organizer" 
             className="max-w-md mx-auto w-full h-auto"
           />
