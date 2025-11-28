@@ -4881,8 +4881,8 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                       data-testid="card-my-tasks"
                     >
                       <div className="text-center">
-                        <div className="text-3xl font-bold text-primary">{assignedTasks.length}</div>
-                        <p className="text-xs text-muted-foreground mt-2 uppercase tracking-widest">In Arbeit</p>
+                        <div className="text-lg md:text-3xl font-bold text-primary">{assignedTasks.length}</div>
+                        <p className="text-[10px] md:text-xs text-muted-foreground mt-1 md:mt-2 uppercase tracking-widest">In Arbeit</p>
                       </div>
                     </div>
                     
@@ -4893,8 +4893,8 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                       data-testid="card-pending-tasks"
                     >
                       <div className="text-center">
-                        <div className="text-3xl font-bold text-amber-500">{submittedTasks.length}</div>
-                        <p className="text-xs text-muted-foreground mt-2 uppercase tracking-widest">Zur Bestätigung</p>
+                        <div className="text-lg md:text-3xl font-bold text-amber-500">{submittedTasks.length}</div>
+                        <p className="text-[10px] md:text-xs text-muted-foreground mt-1 md:mt-2 uppercase tracking-widest">Zur Bestätigung</p>
                       </div>
                     </div>
                     
@@ -4905,8 +4905,8 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                       data-testid="card-completed-tasks"
                     >
                       <div className="text-center">
-                        <div className="text-3xl font-bold text-green-500">{completedTasks.length}</div>
-                        <p className="text-xs text-muted-foreground mt-2 uppercase tracking-widest">Erledigt</p>
+                        <div className="text-lg md:text-3xl font-bold text-green-500">{completedTasks.length}</div>
+                        <p className="text-[10px] md:text-xs text-muted-foreground mt-1 md:mt-2 uppercase tracking-widest">Erledigt</p>
                       </div>
                     </div>
                     
@@ -4917,8 +4917,8 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                       data-testid="card-available-tasks"
                     >
                       <div className="text-center">
-                        <div className="text-3xl font-bold text-blue-500">{availableTasks.length}</div>
-                        <p className="text-xs text-muted-foreground mt-2 uppercase tracking-widest">Verfügbar</p>
+                        <div className="text-lg md:text-3xl font-bold text-blue-500">{availableTasks.length}</div>
+                        <p className="text-[10px] md:text-xs text-muted-foreground mt-1 md:mt-2 uppercase tracking-widest">Verfügbar</p>
                       </div>
                     </div>
                   </div>
