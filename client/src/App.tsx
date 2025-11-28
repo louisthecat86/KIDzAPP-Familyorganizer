@@ -6133,6 +6133,21 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
     };
 
     fetchData();
+    
+    // Live price updates every 60 seconds
+    const priceInterval = setInterval(async () => {
+      try {
+        const priceRes = await fetch("/api/btc-price");
+        if (priceRes.ok) {
+          const priceData = await priceRes.json();
+          setBtcCurrentPrice(priceData.eur);
+        }
+      } catch (err) {
+        console.error("Fehler beim Aktualisieren des BTC-Preises:", err);
+      }
+    }, 60000);
+    
+    return () => clearInterval(priceInterval);
   }, [days]);
 
   if (loading) {
