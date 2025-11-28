@@ -3428,26 +3428,26 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     
     return (
       <div className="max-w-2xl">
-        <h1 className="text-3xl font-bold mb-8">Familienchat</h1>
-        <Card className="border-border bg-gradient-to-br from-gray-900 to-black">
-          <CardContent className="p-6">
+        <h1 className="text-3xl font-bold mb-8 bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">Familienchat</h1>
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl">
+          <div className="p-6">
             <div className="space-y-4">
-              <div className="h-96 overflow-y-auto bg-secondary/20 rounded-lg p-4 space-y-3">
+              <div className="h-96 overflow-y-auto bg-black/20 backdrop-blur-sm rounded-xl p-4 space-y-3 border border-white/10">
                 {messages.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">Noch keine Nachrichten</p>
+                  <p className="text-white/60 text-center py-8">Noch keine Nachrichten</p>
                 ) : (
                   messages.map((msg, idx) => (
                     <div key={idx} className={`flex ${msg.fromPeerId === user.id ? "justify-end" : "justify-start"}`}>
                       <div
-                        className={`max-w-xs rounded-lg px-4 py-2 border ${
+                        className={`max-w-xs rounded-xl px-4 py-2 ${
                           msg.fromPeerId === user.id
-                            ? "bg-primary text-primary-foreground"
-                            : getMessageColor(msg.senderName)
+                            ? "bg-gradient-to-r from-violet-500 to-cyan-500 text-white"
+                            : "bg-white/15 backdrop-blur-sm border border-white/20 text-white"
                         }`}
                       >
-                        <p className="text-xs font-semibold mb-1">{msg.senderName}</p>
+                        <p className="text-xs font-semibold mb-1 opacity-90">{msg.senderName}</p>
                         <p className="text-sm">{msg.message}</p>
-                        <p className="text-xs opacity-70 mt-1">
+                        <p className="text-xs opacity-60 mt-1">
                           {new Date(msg.createdAt).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
                         </p>
                       </div>
@@ -3461,21 +3461,21 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Nachricht eingeben..."
                   disabled={isLoadingMessage}
-                  className="flex-1"
+                  className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/50"
                   data-testid="input-chat-message"
                 />
                 <Button
                   type="submit"
                   disabled={!newMessage.trim() || isLoadingMessage}
-                  className="bg-primary hover:bg-primary/90"
+                  className="bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-600 hover:to-cyan-600 text-white border-0"
                   data-testid="button-send-message"
                 >
                   <Send className="h-4 w-4" />
                 </Button>
               </form>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
