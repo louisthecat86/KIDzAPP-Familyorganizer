@@ -6146,14 +6146,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
       <div className="max-w-6xl space-y-6">
         {/* Header with XP + Level */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-4xl font-bold text-slate-900">Bitcoin Bildungszentrum</h1>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-violet-600">{userLevel}</div>
-              <p className="text-xs text-slate-600">Level</p>
-              <p className="text-xs text-slate-600 mt-1">{userXp} XP</p>
-            </div>
-          </div>
+          <h1 className="text-4xl font-bold text-slate-900">Bitcoin Bildungszentrum</h1>
           <div className="overflow-x-auto -mx-4 px-4 border-b">
             <div className="flex gap-1 min-w-max md:min-w-0">
               <button onClick={() => setEducationTab("modules")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "modules" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-modules">📚 Module</button>
