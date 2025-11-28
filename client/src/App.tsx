@@ -6650,7 +6650,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Lightning Adresse</p>
-                    <p className="text-sm font-mono text-violet-700 break-all" data-testid="text-child-lightning-address">{user.lightningAddress}</p>
+                    <p className="text-xs font-mono text-violet-700 break-all" data-testid="text-child-lightning-address">{user.lightningAddress}</p>
                     <p className="text-xs text-muted-foreground mt-1">✓ Zahlungen werden direkt hierhin gesendet</p>
                   </div>
                 </div>
