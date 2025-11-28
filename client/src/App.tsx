@@ -103,6 +103,23 @@ type FamilyEvent = {
   eventType: string;
 };
 
+// --- Password Validation Function ---
+function validatePassword(password: string): { valid: boolean; error: string } {
+  if (password.length < 8) {
+    return { valid: false, error: "Passwort muss mindestens 8 Zeichen haben" };
+  }
+  if (password.length > 12) {
+    return { valid: false, error: "Passwort darf maximal 12 Zeichen haben" };
+  }
+  if (!/[A-Z]/.test(password)) {
+    return { valid: false, error: "Passwort muss mindestens einen Großbuchstaben enthalten" };
+  }
+  if (!/[0-9]/.test(password)) {
+    return { valid: false, error: "Passwort muss mindestens eine Zahl enthalten" };
+  }
+  return { valid: true, error: "" };
+}
+
 // --- Color Generation Function ---
 const chatColors = [
   "bg-red-500/20 border-red-500/50 text-red-100",
@@ -1484,8 +1501,13 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
   const { toast } = useToast();
 
   const handleForgotPin = async () => {
-    if (!forgotPinName.trim() || !forgotPinColor.trim() || !forgotPinNewPin || forgotPinNewPin.length !== 4) {
-      toast({ title: "Fehler", description: "Alle Felder ausfüllen (neue PIN = 4 Ziffern)", variant: "destructive" });
+    if (!forgotPinName.trim() || !forgotPinColor.trim() || !forgotPinNewPin) {
+      toast({ title: "Fehler", description: "Bitte alle Felder ausfüllen", variant: "destructive" });
+      return;
+    }
+    const passwordCheck = validatePassword(forgotPinNewPin);
+    if (!passwordCheck.valid) {
+      toast({ title: "Fehler", description: passwordCheck.error, variant: "destructive" });
       return;
     }
     setIsForgotLoading(true);
@@ -1508,7 +1530,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
       const changeData = await changeRes.json();
       if (!changeRes.ok) throw new Error(changeData.error);
       
-      toast({ title: "✅ PIN zurückgesetzt!", description: "Melde dich jetzt mit deiner neuen PIN an" });
+      toast({ title: "✅ Passwort zurückgesetzt!", description: "Melde dich jetzt mit deinem neuen Passwort an" });
       setShowForgotPin(false);
       setForgotPinName("");
       setForgotPinColor("");
@@ -1530,13 +1552,26 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
     const trimmedFamilyName = familyName.trim();
     const trimmedJoinParentId = joinParentId.trim();
     
-    if (!trimmedName || !trimmedPin || trimmedPin.length !== 4) {
+    if (!trimmedName || !trimmedPin) {
       toast({
         title: "Fehler",
-        description: "Bitte fülle alle Felder aus (PIN muss 4 Ziffern sein)",
+        description: "Bitte fülle alle Felder aus",
         variant: "destructive"
       });
       return;
+    }
+    
+    // Validate password for registration only
+    if (!isLogin) {
+      const passwordCheck = validatePassword(trimmedPin);
+      if (!passwordCheck.valid) {
+        toast({
+          title: "Fehler",
+          description: passwordCheck.error,
+          variant: "destructive"
+        });
+        return;
+      }
     }
 
     if (!isLogin && role === "parent" && parentMode === "new" && !trimmedFamilyName) {
@@ -1686,7 +1721,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               {isLogin ? "Anmelden" : "Registrieren"}
             </h2>
             <p className="text-slate-700">
-              {isLogin ? "Melde dich mit Name und PIN an" : "Erstelle einen Account mit Name und PIN"}
+              {isLogin ? "Melde dich mit Name und Passwort an" : "Erstelle einen Account mit Name und Passwort"}
             </p>
           </div>
         </div>
@@ -1739,7 +1774,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             </div>
             {!isLogin && role === "parent" && parentMode === "new" && (
               <div className="space-y-2">
-                <Label htmlFor="favoriteColor" className="text-slate-800">Lieblingsfarbe (für PIN-Vergessen)</Label>
+                <Label htmlFor="favoriteColor" className="text-slate-800">Lieblingsfarbe (für Passwort-Vergessen)</Label>
                 <Input 
                   id="favoriteColor"
                   value={favoriteColor}
@@ -1750,29 +1785,36 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                   placeholder="z.B. Blau"
                   data-testid="input-favorite-color"
                 />
-                <p className="text-xs text-slate-600">Du kannst damit deine PIN später zurücksetzen</p>
+                <p className="text-xs text-slate-600">Du kannst damit dein Passwort später zurücksetzen</p>
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="pin" className="text-slate-800">PIN (4 Ziffern)</Label>
+              <Label htmlFor="pin" className="text-slate-800">{isLogin ? "Passwort" : "Passwort (8-12 Zeichen)"}</Label>
               <Input 
                 id="pin"
                 type="password"
-                placeholder="••••"
+                placeholder={isLogin ? "••••••••" : "Min. 8 Zeichen, 1 Großbuchstabe, 1 Zahl"}
                 value={pin}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, "").slice(0, 4);
-                  setPin(val);
-                }}
-                className="bg-white/50 border-white/60 focus:border-violet-500 focus:bg-white/70 font-mono text-center tracking-widest text-lg text-slate-900 placeholder:text-gray-400"
+                onChange={(e) => setPin(e.target.value.slice(0, 12))}
+                className="bg-white/50 border-white/60 focus:border-violet-500 focus:bg-white/70 text-slate-900 placeholder:text-gray-400"
                 disabled={isLoading}
-                maxLength={4}
+                maxLength={12}
                 autoComplete="off"
                 data-testid="input-pin"
               />
-              <p className="text-xs text-slate-600">
-                {pin.length}/4 Ziffern
-              </p>
+              {!isLogin && (
+                <div className="text-xs text-slate-600 space-y-1">
+                  <p className={pin.length >= 8 && pin.length <= 12 ? "text-green-600" : ""}>
+                    {pin.length >= 8 && pin.length <= 12 ? "✓" : "○"} {pin.length}/8-12 Zeichen
+                  </p>
+                  <p className={/[A-Z]/.test(pin) ? "text-green-600" : ""}>
+                    {/[A-Z]/.test(pin) ? "✓" : "○"} Mindestens 1 Großbuchstabe
+                  </p>
+                  <p className={/[0-9]/.test(pin) ? "text-green-600" : ""}>
+                    {/[0-9]/.test(pin) ? "✓" : "○"} Mindestens 1 Zahl
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="border-t border-white/20 my-4"></div>
@@ -1781,7 +1823,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               <Button 
                 type="submit"
                 className="w-full bg-violet-600 hover:bg-violet-700 text-white"
-                disabled={isLoading || name.trim().length === 0 || pin.length !== 4 || (!isLogin && role === "parent" && parentMode === "new" && (!familyName.trim() || !favoriteColor.trim()))}
+                disabled={isLoading || name.trim().length === 0 || pin.length === 0 || (!isLogin && !validatePassword(pin).valid) || (!isLogin && role === "parent" && parentMode === "new" && (!familyName.trim() || !favoriteColor.trim()))}
                 data-testid={isLogin ? "button-login" : "button-register"}
               >
                 {isLoading ? "Wird verarbeitet..." : isLogin ? "Anmelden" : "Registrieren"}
@@ -1805,7 +1847,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                   disabled={isLoading}
                   data-testid="button-forgot-pin"
                 >
-                  PIN vergessen?
+                  Passwort vergessen?
                 </Button>
               )}
             </div>
@@ -1821,7 +1863,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">
                   <span className="text-base">🔑</span>
                 </div>
-                PIN zurücksetzen
+                Passwort zurücksetzen
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-5 pt-4">
@@ -1851,36 +1893,38 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 <p className="text-xs text-muted-foreground">Die Farbe, die du bei der Registrierung angegeben hast</p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="forgot-new-pin" className="text-sm font-semibold">Neue PIN</Label>
+                <Label htmlFor="forgot-new-pin" className="text-sm font-semibold">Neues Passwort</Label>
                 <Input 
                   id="forgot-new-pin"
                   type="password"
-                  placeholder="••••"
+                  placeholder="8-12 Zeichen"
                   value={forgotPinNewPin}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, "").slice(0, 4);
-                    setForgotPinNewPin(val);
-                  }}
-                  className="bg-secondary/50 border-border font-mono text-center tracking-widest focus:border-primary text-lg"
+                  onChange={(e) => setForgotPinNewPin(e.target.value.slice(0, 12))}
+                  className="bg-secondary/50 border-border focus:border-primary"
                   disabled={isForgotLoading}
-                  maxLength={4}
+                  maxLength={12}
                   data-testid="input-forgot-pin-new"
                 />
-                <div className="flex justify-between items-center">
-                  <p className="text-xs text-muted-foreground">4-stellige Zahlencode</p>
-                  <p className={`text-xs font-medium ${forgotPinNewPin.length === 4 ? "text-green-500" : "text-muted-foreground"}`}>
-                    {forgotPinNewPin.length}/4
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <p className={forgotPinNewPin.length >= 8 && forgotPinNewPin.length <= 12 ? "text-green-500" : ""}>
+                    {forgotPinNewPin.length >= 8 && forgotPinNewPin.length <= 12 ? "✓" : "○"} {forgotPinNewPin.length}/8-12 Zeichen
+                  </p>
+                  <p className={/[A-Z]/.test(forgotPinNewPin) ? "text-green-500" : ""}>
+                    {/[A-Z]/.test(forgotPinNewPin) ? "✓" : "○"} Mindestens 1 Großbuchstabe
+                  </p>
+                  <p className={/[0-9]/.test(forgotPinNewPin) ? "text-green-500" : ""}>
+                    {/[0-9]/.test(forgotPinNewPin) ? "✓" : "○"} Mindestens 1 Zahl
                   </p>
                 </div>
               </div>
               <div className="flex gap-3 pt-6 border-t border-border">
                 <Button 
                   onClick={handleForgotPin}
-                  disabled={isForgotLoading || !forgotPinName.trim() || !forgotPinColor.trim() || forgotPinNewPin.length !== 4}
+                  disabled={isForgotLoading || !forgotPinName.trim() || !forgotPinColor.trim() || !validatePassword(forgotPinNewPin).valid}
                   className="flex-1 bg-primary hover:bg-primary/90 font-semibold"
                   data-testid="button-confirm-forgot-pin"
                 >
-                  {isForgotLoading ? "⏳ Wird verarbeitet..." : "✓ PIN zurücksetzen"}
+                  {isForgotLoading ? "⏳ Wird verarbeitet..." : "✓ Passwort zurücksetzen"}
                 </Button>
                 <Button 
                   variant="outline"
@@ -2009,8 +2053,9 @@ function PeersContent({ user, setUser, queryClient }: any) {
     };
 
     const handleResetPin = async (childId: number) => {
-      if (!resetPinValue || resetPinValue.length !== 4 || !/^\d+$/.test(resetPinValue)) {
-        toast({ title: "Fehler", description: "PIN muss 4 Ziffern sein", variant: "destructive" });
+      const passwordCheck = validatePassword(resetPinValue);
+      if (!passwordCheck.valid) {
+        toast({ title: "Fehler", description: passwordCheck.error, variant: "destructive" });
         return;
       }
 
@@ -2020,11 +2065,11 @@ function PeersContent({ user, setUser, queryClient }: any) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ parentId: user.id, newPin: resetPinValue }),
         });
-        if (!res.ok) throw new Error("Failed to reset PIN");
+        if (!res.ok) throw new Error("Passwort-Änderung fehlgeschlagen");
         setResetPinChildId(null);
         setResetPinValue("");
         queryClient.invalidateQueries({ queryKey: ["peers", user.connectionId] });
-        toast({ title: "Erfolg", description: "PIN wurde zurückgesetzt" });
+        toast({ title: "Erfolg", description: "Passwort wurde zurückgesetzt" });
       } catch (error) {
         toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
       }
@@ -2094,7 +2139,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
                           className="text-xs h-7"
                           data-testid={`button-reset-pin-${child.id}`}
                         >
-                          PIN
+                          🔑
                         </Button>
                         <Button 
                           variant="ghost"
@@ -2109,24 +2154,35 @@ function PeersContent({ user, setUser, queryClient }: any) {
                     </div>
                     {resetPinChildId === child.id && (
                       <div className="p-3 rounded-lg border-2 border-amber-500/50 bg-amber-500/10 space-y-2">
-                        <p className="text-xs font-semibold">Neue 4-stellige PIN für {child.name}:</p>
+                        <p className="text-xs font-semibold">Neues Passwort für {child.name}:</p>
                         <Input
-                          type="text"
-                          inputMode="numeric"
-                          maxLength={4}
-                          placeholder="z.B. 1234"
+                          type="password"
+                          maxLength={12}
+                          placeholder="8-12 Zeichen"
                           value={resetPinValue}
-                          onChange={(e) => setResetPinValue(e.target.value.replace(/\D/g, ''))}
-                          className="font-mono text-center text-sm"
+                          onChange={(e) => setResetPinValue(e.target.value.slice(0, 12))}
+                          className="text-sm"
                           data-testid="input-new-child-pin"
                         />
+                        <div className="text-xs text-muted-foreground space-y-0.5">
+                          <p className={resetPinValue.length >= 8 && resetPinValue.length <= 12 ? "text-green-500" : ""}>
+                            {resetPinValue.length >= 8 && resetPinValue.length <= 12 ? "✓" : "○"} {resetPinValue.length}/8-12 Zeichen
+                          </p>
+                          <p className={/[A-Z]/.test(resetPinValue) ? "text-green-500" : ""}>
+                            {/[A-Z]/.test(resetPinValue) ? "✓" : "○"} 1 Großbuchstabe
+                          </p>
+                          <p className={/[0-9]/.test(resetPinValue) ? "text-green-500" : ""}>
+                            {/[0-9]/.test(resetPinValue) ? "✓" : "○"} 1 Zahl
+                          </p>
+                        </div>
                         <div className="flex gap-2">
                           <Button
                             onClick={() => handleResetPin(child.id)}
                             className="flex-1 bg-primary hover:bg-primary/90 text-xs h-7"
+                            disabled={!validatePassword(resetPinValue).valid}
                             data-testid="button-confirm-reset-pin"
                           >
-                            PIN ändern
+                            Passwort ändern
                           </Button>
                           <Button
                             onClick={() => {
@@ -2176,7 +2232,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
           <p className="text-xs text-muted-foreground mt-2">Teile diese ID mit deinen Kindern, um sie mit der Familie zu verbinden</p>
         </div>
 
-        {/* PIN Change Section for Parent */}
+        {/* Password Change Section for Parent */}
         <div className="space-y-3">
           <Button
             variant="outline"
@@ -2184,44 +2240,54 @@ function PeersContent({ user, setUser, queryClient }: any) {
             className="w-full text-sm"
             data-testid="button-toggle-parent-pin-change"
           >
-            {showParentPinChange ? "PIN-Änderung abbrechen" : "🔑 Meine PIN ändern"}
+            {showParentPinChange ? "Passwort-Änderung abbrechen" : "🔑 Mein Passwort ändern"}
           </Button>
           
           {showParentPinChange && (
             <div className="p-3 rounded-lg border-2 border-amber-500/50 bg-amber-500/10 space-y-2">
               <div className="space-y-2">
-                <Label htmlFor="old-pin">Alte PIN</Label>
+                <Label htmlFor="old-pin">Altes Passwort</Label>
                 <Input
                   id="old-pin"
                   type="password"
-                  inputMode="numeric"
-                  maxLength={4}
-                  placeholder="••••"
+                  maxLength={12}
+                  placeholder="••••••••"
                   value={oldParentPin}
-                  onChange={(e) => setOldParentPin(e.target.value.replace(/\D/g, ''))}
-                  className="font-mono text-center text-sm"
+                  onChange={(e) => setOldParentPin(e.target.value)}
+                  className="text-sm"
                   data-testid="input-old-parent-pin"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="new-pin">Neue PIN (4 Ziffern)</Label>
+                <Label htmlFor="new-pin">Neues Passwort (8-12 Zeichen)</Label>
                 <Input
                   id="new-pin"
                   type="password"
-                  inputMode="numeric"
-                  maxLength={4}
-                  placeholder="••••"
+                  maxLength={12}
+                  placeholder="8-12 Zeichen"
                   value={newParentPin}
-                  onChange={(e) => setNewParentPin(e.target.value.replace(/\D/g, ''))}
-                  className="font-mono text-center text-sm"
+                  onChange={(e) => setNewParentPin(e.target.value.slice(0, 12))}
+                  className="text-sm"
                   data-testid="input-new-parent-pin"
                 />
+                <div className="text-xs text-muted-foreground space-y-0.5">
+                  <p className={newParentPin.length >= 8 && newParentPin.length <= 12 ? "text-green-500" : ""}>
+                    {newParentPin.length >= 8 && newParentPin.length <= 12 ? "✓" : "○"} {newParentPin.length}/8-12 Zeichen
+                  </p>
+                  <p className={/[A-Z]/.test(newParentPin) ? "text-green-500" : ""}>
+                    {/[A-Z]/.test(newParentPin) ? "✓" : "○"} 1 Großbuchstabe
+                  </p>
+                  <p className={/[0-9]/.test(newParentPin) ? "text-green-500" : ""}>
+                    {/[0-9]/.test(newParentPin) ? "✓" : "○"} 1 Zahl
+                  </p>
+                </div>
               </div>
               <div className="flex gap-2">
                 <Button
                   onClick={async () => {
-                    if (!oldParentPin || !newParentPin || newParentPin.length !== 4) {
-                      toast({ title: "Fehler", description: "Bitte fülle beide PIN-Felder aus (4 Ziffern)", variant: "destructive" });
+                    const passwordCheck = validatePassword(newParentPin);
+                    if (!oldParentPin || !passwordCheck.valid) {
+                      toast({ title: "Fehler", description: passwordCheck.error || "Bitte fülle beide Passwort-Felder aus", variant: "destructive" });
                       return;
                     }
                     setIsSavingPin(true);
@@ -2231,11 +2297,11 @@ function PeersContent({ user, setUser, queryClient }: any) {
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ oldPin: oldParentPin, newPin: newParentPin }),
                       });
-                      if (!res.ok) throw new Error("PIN-Änderung fehlgeschlagen");
+                      if (!res.ok) throw new Error("Passwort-Änderung fehlgeschlagen");
                       setShowParentPinChange(false);
                       setOldParentPin("");
                       setNewParentPin("");
-                      toast({ title: "✅ Erfolg", description: "Deine PIN wurde geändert" });
+                      toast({ title: "✅ Erfolg", description: "Dein Passwort wurde geändert" });
                     } catch (error) {
                       toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
                     } finally {
@@ -2243,10 +2309,10 @@ function PeersContent({ user, setUser, queryClient }: any) {
                     }
                   }}
                   className="flex-1 bg-primary hover:bg-primary/90 text-xs h-7"
-                  disabled={isSavingPin}
+                  disabled={isSavingPin || !validatePassword(newParentPin).valid}
                   data-testid="button-confirm-parent-pin-change"
                 >
-                  {isSavingPin ? "⏳ Wird gespeichert..." : "💾 PIN ändern"}
+                  {isSavingPin ? "⏳ Wird gespeichert..." : "💾 Passwort ändern"}
                 </Button>
                 <Button
                   onClick={() => {
@@ -5214,8 +5280,9 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     const [showAdminKey, setShowAdminKey] = useState(false);
 
     const handleResetPin = async (childId: number) => {
-      if (!resetPinValue || resetPinValue.length !== 4 || !/^\d+$/.test(resetPinValue)) {
-        toast({ title: "Fehler", description: "PIN muss 4 Ziffern sein", variant: "destructive" });
+      const passwordCheck = validatePassword(resetPinValue);
+      if (!passwordCheck.valid) {
+        toast({ title: "Fehler", description: passwordCheck.error, variant: "destructive" });
         return;
       }
 
@@ -5225,11 +5292,11 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ parentId: user.id, newPin: resetPinValue }),
         });
-        if (!res.ok) throw new Error("Failed to reset PIN");
+        if (!res.ok) throw new Error("Passwort-Änderung fehlgeschlagen");
         setResetPinChildId(null);
         setResetPinValue("");
         queryClient.invalidateQueries({ queryKey: ["peers"] });
-        toast({ title: "Erfolg", description: "PIN wurde zurückgesetzt" });
+        toast({ title: "Erfolg", description: "Passwort wurde zurückgesetzt" });
       } catch (error) {
         toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
       }
@@ -5341,7 +5408,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                 <CardTitle className="flex items-center gap-2">
                   👶 Kinder-Verwaltung
                 </CardTitle>
-                <CardDescription>Verwalte PINs deiner Kinder</CardDescription>
+                <CardDescription>Verwalte Passwörter deiner Kinder</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -5349,7 +5416,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                     <div key={child.id} className="p-3 rounded-lg border border-border bg-secondary/30 flex items-center justify-between">
                       <div>
                         <p className="font-semibold">{child.name}</p>
-                        <p className="text-xs text-muted-foreground">PIN: ••••</p>
+                        <p className="text-xs text-muted-foreground">Passwort: ••••••••</p>
                       </div>
                       <Button
                         onClick={() => setResetPinChildId(child.id)}
@@ -5357,31 +5424,42 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                         size="sm"
                         data-testid={`button-reset-pin-${child.id}`}
                       >
-                        PIN zurücksetzen
+                        Passwort zurücksetzen
                       </Button>
                     </div>
                   ))}
 
                   {resetPinChildId && (
                     <div className="p-4 rounded-lg border-2 border-amber-500/50 bg-amber-500/10 space-y-3">
-                      <p className="text-sm font-semibold">Neue 4-stellige PIN eingeben:</p>
+                      <p className="text-sm font-semibold">Neues Passwort eingeben:</p>
                       <Input
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={4}
-                        placeholder="z.B. 1234"
+                        type="password"
+                        maxLength={12}
+                        placeholder="8-12 Zeichen"
                         value={resetPinValue}
-                        onChange={(e) => setResetPinValue(e.target.value.replace(/\D/g, ''))}
-                        className="font-mono text-center text-lg"
+                        onChange={(e) => setResetPinValue(e.target.value.slice(0, 12))}
+                        className="text-lg"
                         data-testid="input-new-child-pin"
                       />
+                      <div className="text-xs text-muted-foreground space-y-0.5">
+                        <p className={resetPinValue.length >= 8 && resetPinValue.length <= 12 ? "text-green-500" : ""}>
+                          {resetPinValue.length >= 8 && resetPinValue.length <= 12 ? "✓" : "○"} {resetPinValue.length}/8-12 Zeichen
+                        </p>
+                        <p className={/[A-Z]/.test(resetPinValue) ? "text-green-500" : ""}>
+                          {/[A-Z]/.test(resetPinValue) ? "✓" : "○"} 1 Großbuchstabe
+                        </p>
+                        <p className={/[0-9]/.test(resetPinValue) ? "text-green-500" : ""}>
+                          {/[0-9]/.test(resetPinValue) ? "✓" : "○"} 1 Zahl
+                        </p>
+                      </div>
                       <div className="flex gap-2">
                         <Button
                           onClick={() => handleResetPin(resetPinChildId)}
                           className="flex-1 bg-primary hover:bg-primary/90"
+                          disabled={!validatePassword(resetPinValue).valid}
                           data-testid="button-confirm-reset-pin"
                         >
-                          PIN ändern
+                          Passwort ändern
                         </Button>
                         <Button
                           onClick={() => {

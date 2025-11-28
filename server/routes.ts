@@ -8,6 +8,22 @@ import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 import cron from "node-cron";
 
+function validatePassword(password: string): { valid: boolean; error: string } {
+  if (!password || password.length < 8) {
+    return { valid: false, error: "Passwort muss mindestens 8 Zeichen haben" };
+  }
+  if (password.length > 12) {
+    return { valid: false, error: "Passwort darf maximal 12 Zeichen haben" };
+  }
+  if (!/[A-Z]/.test(password)) {
+    return { valid: false, error: "Passwort muss mindestens einen Großbuchstaben enthalten" };
+  }
+  if (!/[0-9]/.test(password)) {
+    return { valid: false, error: "Passwort muss mindestens eine Zahl enthalten" };
+  }
+  return { valid: true, error: "" };
+}
+
 function sanitizePeerForClient(peer: any): any {
   if (!peer) return peer;
   const { lnbitsAdminKey, lnbitsUrl, nwcConnectionString, ...safePeer } = peer;
@@ -195,8 +211,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { peerId } = req.params;
       const { oldPin, newPin } = req.body;
 
-      if (!oldPin || !newPin || newPin.length !== 4 || !/^\d+$/.test(newPin)) {
-        return res.status(400).json({ error: "Alte PIN und neue 4-stellige PIN erforderlich" });
+      const passwordValidation = validatePassword(newPin);
+      if (!oldPin || !passwordValidation.valid) {
+        return res.status(400).json({ error: passwordValidation.error || "Altes und neues Passwort erforderlich" });
       }
 
       // Verify old PIN
@@ -990,8 +1007,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { childId } = req.params;
       const { parentId, newPin } = req.body;
 
-      if (!parentId || !newPin || newPin.length !== 4 || !/^\d+$/.test(newPin)) {
-        return res.status(400).json({ error: "Valid 4-digit PIN required" });
+      const passwordValidation = validatePassword(newPin);
+      if (!parentId || !passwordValidation.valid) {
+        return res.status(400).json({ error: passwordValidation.error || "Gültiges Passwort erforderlich" });
       }
 
       const child = await storage.getPeer(parseInt(childId));
