@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots } from "@shared/schema";
+import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots } from "@shared/schema";
 import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
@@ -61,6 +61,11 @@ export interface IStorage {
   getDailyBitcoinSnapshots(peerId: number): Promise<DailyBitcoinSnapshot[]>;
   createDailyBitcoinSnapshot(snapshot: InsertDailyBitcoinSnapshot): Promise<DailyBitcoinSnapshot>;
   getLastDailySnapshot(peerId: number): Promise<DailyBitcoinSnapshot | undefined>;
+
+  // Monthly Savings Snapshots operations
+  getMonthlySavingsSnapshots(peerId: number): Promise<MonthlySavingsSnapshot[]>;
+  createMonthlySavingsSnapshot(snapshot: InsertMonthlySavingsSnapshot): Promise<MonthlySavingsSnapshot>;
+  getLastMonthlySavingsSnapshot(peerId: number): Promise<MonthlySavingsSnapshot | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -488,6 +493,25 @@ export class DatabaseStorage implements IStorage {
     const result = await db.select().from(dailyBitcoinSnapshots)
       .where(eq(dailyBitcoinSnapshots.peerId, peerId))
       .orderBy(desc(dailyBitcoinSnapshots.createdAt))
+      .limit(1);
+    return result[0];
+  }
+
+  async getMonthlySavingsSnapshots(peerId: number): Promise<MonthlySavingsSnapshot[]> {
+    return await db.select().from(monthlySavingsSnapshots)
+      .where(eq(monthlySavingsSnapshots.peerId, peerId))
+      .orderBy(desc(monthlySavingsSnapshots.createdAt));
+  }
+
+  async createMonthlySavingsSnapshot(snapshot: InsertMonthlySavingsSnapshot): Promise<MonthlySavingsSnapshot> {
+    const result = await db.insert(monthlySavingsSnapshots).values(snapshot).returning();
+    return result[0];
+  }
+
+  async getLastMonthlySavingsSnapshot(peerId: number): Promise<MonthlySavingsSnapshot | undefined> {
+    const result = await db.select().from(monthlySavingsSnapshots)
+      .where(eq(monthlySavingsSnapshots.peerId, peerId))
+      .orderBy(desc(monthlySavingsSnapshots.createdAt))
       .limit(1);
     return result[0];
   }

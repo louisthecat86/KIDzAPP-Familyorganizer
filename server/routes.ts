@@ -1345,6 +1345,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get monthly savings snapshots for a child
+  app.get("/api/savings-snapshots/:peerId", async (req, res) => {
+    try {
+      const peerId = parseInt(req.params.peerId);
+      const snapshots = await storage.getMonthlySavingsSnapshots(peerId);
+      res.json(snapshots.map(s => ({
+        date: new Date(s.createdAt).toLocaleDateString("de-DE", { month: "short", day: "numeric" }),
+        timestamp: s.createdAt,
+        value: s.valueEur / 100, // Convert from cents to euros
+        interestEarned: s.interestEarned / 100
+      })));
+    } catch (error) {
+      console.error("[Savings Snapshots Error]:", error);
+      res.status(500).json({ error: "Failed to fetch snapshots" });
+    }
+  });
+
+  // Create new monthly savings snapshot
+  app.post("/api/savings-snapshots", async (req, res) => {
+    try {
+      const { peerId, connectionId, valueEur, satoshiAmount, interestEarned } = req.body;
+      
+      if (!peerId || !connectionId || valueEur === undefined || !satoshiAmount) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const snapshot = await storage.createMonthlySavingsSnapshot({
+        peerId,
+        connectionId,
+        valueEur: Math.round(valueEur * 100), // Convert to cents
+        satoshiAmount,
+        interestEarned: Math.round((interestEarned || 0) * 100)
+      });
+
+      res.json(snapshot);
+    } catch (error) {
+      console.error("[Create Savings Snapshot Error]:", error);
+      res.status(500).json({ error: "Failed to create snapshot" });
+    }
+  });
+
   // Start automatic allowance payout scheduler (runs every minute)
   cron.schedule("* * * * *", async () => {
     try {
@@ -1366,6 +1407,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error("[Allowance Scheduler] Error:", error);
+    }
+  });
+
+  // Monthly savings snapshot scheduler (runs on the 1st of each month at 00:01)
+  cron.schedule("1 0 1 * *", async () => {
+    try {
+      console.log("[Monthly Savings Scheduler] Running monthly snapshot calculation");
+      const allPeers = await db.select().from(peers).where(eq(peers.role, "child"));
+      
+      for (const child of allPeers) {
+        const lastSnapshot = await storage.getLastMonthlySavingsSnapshot(child.id);
+        const previousValue = lastSnapshot ? lastSnapshot.valueEur / 100 : 0;
+        
+        // Calculate interest on previous month's value
+        const monthlyRate = 0.2 / 100; // 0.2% per month
+        const interestEarned = previousValue * monthlyRate;
+        const newValue = previousValue + interestEarned;
+        
+        // Create snapshot with accumulated value
+        await storage.createMonthlySavingsSnapshot({
+          peerId: child.id,
+          connectionId: child.connectionId,
+          valueEur: Math.round(newValue * 100),
+          satoshiAmount: child.balance || 0,
+          interestEarned: Math.round(interestEarned * 100)
+        });
+        
+        console.log(`[Monthly Savings Scheduler] Created snapshot for ${child.name}: €${newValue.toFixed(2)} (interest: €${interestEarned.toFixed(2)})`);
+      }
+    } catch (error) {
+      console.error("[Monthly Savings Scheduler] Error:", error);
     }
   });
 

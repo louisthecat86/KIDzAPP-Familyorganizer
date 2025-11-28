@@ -186,3 +186,22 @@ export const insertDailyBitcoinSnapshotSchema = createInsertSchema(dailyBitcoinS
 
 export type InsertDailyBitcoinSnapshot = z.infer<typeof insertDailyBitcoinSnapshotSchema>;
 export type DailyBitcoinSnapshot = typeof dailyBitcoinSnapshots.$inferSelect;
+
+// Monthly Savings Account Snapshots (for tracking savings account with interest)
+export const monthlySavingsSnapshots = pgTable("monthly_savings_snapshots", {
+  id: serial("id").primaryKey(),
+  peerId: integer("peer_id").notNull(), // Child ID
+  connectionId: text("connection_id").notNull(), // Family ID
+  valueEur: integer("value_eur").notNull(), // Value in cents including interest
+  satoshiAmount: integer("satoshi_amount").notNull(), // Sats at time of snapshot
+  interestEarned: integer("interest_earned").notNull(), // Interest in cents earned that month
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertMonthlySavingsSnapshotSchema = createInsertSchema(monthlySavingsSnapshots).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertMonthlySavingsSnapshot = z.infer<typeof insertMonthlySavingsSnapshotSchema>;
+export type MonthlySavingsSnapshot = typeof monthlySavingsSnapshots.$inferSelect;

@@ -5500,9 +5500,8 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
 function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setCurrentView?: (view: string) => void; user?: any }) {
   const [btcPrice, setBtcPrice] = useState<{ usd: number; eur: number } | null>(null);
   const [interestRate, setInterestRate] = useState(0.2); // Start at 0.2% monthly
-  const [allHistoricalData, setAllHistoricalData] = useState<{ [key: number]: any[] }>({});
   const [dailySnapshots, setDailySnapshots] = useState<any[]>([]);
-  const [btcDays, setBtcDays] = useState<number>(30);
+  const [monthlySnapshots, setMonthlySnapshots] = useState<any[]>([]);
   const [viewMode, setViewMode] = useState<"bitcoin" | "sparbuch">("bitcoin");
 
   useEffect(() => {
@@ -5512,7 +5511,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
         const priceData = await priceRes.json();
         setBtcPrice(priceData);
 
-        // Daily snapshot save logic
+        // Daily snapshot save logic for Bitcoin
         if (user && user.id && sats > 0) {
           const lastSaveKey = `btc-snapshot-last-save-${user.id}`;
           const lastSave = localStorage.getItem(lastSaveKey);
@@ -5538,12 +5537,21 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
           }
         }
 
-        // Fetch daily snapshots
+        // Fetch daily snapshots for Bitcoin
         if (user && user.id) {
           const snapshotsRes = await fetch(`/api/bitcoin-snapshots/${user.id}`);
           if (snapshotsRes.ok) {
             const snapshots = await snapshotsRes.json();
             setDailySnapshots(snapshots);
+          }
+        }
+
+        // Fetch monthly snapshots for Savings Account
+        if (user && user.id) {
+          const savingsRes = await fetch(`/api/savings-snapshots/${user.id}`);
+          if (savingsRes.ok) {
+            const snapshots = await savingsRes.json();
+            setMonthlySnapshots(snapshots);
           }
         }
 
@@ -5562,25 +5570,23 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
   // Calculate values in EUR
   const btcAmount = sats / 100_000_000;
   const currentValueEur = btcAmount * btcPrice.eur;
-  const savingsValueEur = currentValueEur * (1 + interestRate / 100);
+  
+  // Get current savings value from last monthly snapshot or start fresh
+  const lastMonthlySaving = monthlySnapshots.length > 0 ? monthlySnapshots[0].value : 0;
+  const savingsValueEur = lastMonthlySaving > 0 ? lastMonthlySaving : currentValueEur;
 
-  // Generate 12 months savings projection
-  const savingsProjection = Array.from({ length: 13 }, (_, month) => {
-    const monthlyRate = interestRate / 100;
-    const value = currentValueEur * Math.pow(1 + monthlyRate, month);
-    return {
-      month: month === 0 ? "Jetzt" : `M${month}`,
-      value: Math.round(value * 100) / 100
-    };
-  });
-
-  // Use all daily snapshots for personalized chart without limit
-  // Each day adds one new datapoin as the app is used
+  // Use all daily snapshots for personalized Bitcoin chart without limit
   const today = new Date();
   const todayFormatted = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: 'short' }).format(today);
   const btcChartData = dailySnapshots.length > 0 
     ? dailySnapshots
-    : [{ date: todayFormatted, value: currentValueEur }]; // Show today's value as starting point
+    : [{ date: todayFormatted, value: currentValueEur }];
+
+  // Use all monthly snapshots for Savings chart without limit
+  // Each month adds one new data point at month end
+  const savingsChartData = monthlySnapshots.length > 0 
+    ? monthlySnapshots
+    : [{ date: todayFormatted, value: currentValueEur }];
 
   return (
     <div className="pt-4 border-t border-border/50">
@@ -5665,26 +5671,30 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
               </>
             ) : (
               <>
-                {savingsProjection.length > 1 && (
+                {savingsChartData && savingsChartData.length > 0 ? (
                   <div className="h-20 -mx-2">
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={savingsProjection} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                      <AreaChart data={savingsChartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
                         <defs>
                           <linearGradient id="savingsGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="#22c55e" stopOpacity={0.01} />
+                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.01} />
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(34,197,94,0.15)" />
-                        <XAxis dataKey="month" tick={{ fontSize: 9, fill: "rgba(34,197,94,0.7)" }} />
-                        <YAxis width={40} tick={{ fontSize: 9, fill: "rgba(34,197,94,0.7)" }} tickFormatter={(value) => `€${Number(value).toFixed(0)}`} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(59,130,246,0.15)" />
+                        <XAxis dataKey="date" tick={{ fontSize: 9, fill: "rgba(59,130,246,0.7)" }} />
+                        <YAxis width={40} tick={{ fontSize: 9, fill: "rgba(59,130,246,0.7)" }} tickFormatter={(value) => `€${Number(value).toFixed(0)}`} />
                         <Tooltip 
-                          contentStyle={{ fontSize: 11, background: "rgba(0,0,0,0.9)", border: "1px solid rgba(34,197,94,0.5)", borderRadius: "4px" }}
+                          contentStyle={{ fontSize: 11, background: "rgba(0,0,0,0.9)", border: "1px solid rgba(59,130,246,0.5)", borderRadius: "4px" }}
                           formatter={(value) => `€${Number(value).toFixed(2)}`}
                         />
-                        <Area type="monotone" dataKey="value" stroke="#22c55e" strokeWidth={2} fill="url(#savingsGradient)" isAnimationActive={true} animationDuration={800} />
+                        <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2} fill="url(#savingsGradient)" isAnimationActive={true} animationDuration={800} />
                       </AreaChart>
                     </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-20 flex items-center justify-center text-xs text-muted-foreground">
+                    Daten werden gesammelt...
                   </div>
                 )}
                 <p className="text-xs text-muted-foreground">0,2% monatlich</p>
