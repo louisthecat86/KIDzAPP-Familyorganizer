@@ -1163,6 +1163,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         throw new Error("No valid payment method available");
       }
 
+      // Update child's balance
+      const newBalance = (child.balance || 0) + sats;
+      await storage.updateBalance(child.id, newBalance);
+
+      // Create Bitcoin snapshot for new balance
+      try {
+        let btcPrice = lastKnownPrice;
+        if (!btcPrice) {
+          try {
+            const priceResponse = await fetch(
+              "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur"
+            );
+            if (priceResponse.ok) {
+              const priceData = await priceResponse.json();
+              if (priceData?.bitcoin?.eur) {
+                btcPrice = { usd: 0, eur: priceData.bitcoin.eur };
+                lastKnownPrice = btcPrice;
+              }
+            }
+          } catch (e) {
+            console.warn("Failed to fetch BTC price for instant payout snapshot");
+            btcPrice = { usd: 0, eur: 78000 };
+          }
+        }
+        const valueEur = (newBalance / 1e8) * btcPrice!.eur;
+        await storage.createDailyBitcoinSnapshot({
+          peerId: child.id,
+          connectionId: child.connectionId,
+          valueEur: Math.round(valueEur * 100),
+          satoshiAmount: newBalance
+        });
+      } catch (snapshotError) {
+        console.warn(`[Instant Payout Snapshot] Failed to create snapshot for ${child.name}:`, snapshotError);
+      }
+
       res.json({ success: true, paymentHash });
     } catch (error) {
       console.error("Instant payout error:", error);
@@ -1215,6 +1250,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         child.lightningAddress,
         `Automatisches Taschengeld für ${child.name}`
       );
+
+      // Update child's balance
+      const newBalance = (child.balance || 0) + allowance.sats;
+      await storage.updateBalance(child.id, newBalance);
+
+      // Create Bitcoin snapshot for new balance
+      try {
+        let btcPrice = lastKnownPrice;
+        if (!btcPrice) {
+          try {
+            const priceResponse = await fetch(
+              "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur"
+            );
+            if (priceResponse.ok) {
+              const priceData = await priceResponse.json();
+              if (priceData?.bitcoin?.eur) {
+                btcPrice = { usd: 0, eur: priceData.bitcoin.eur };
+                lastKnownPrice = btcPrice;
+              }
+            }
+          } catch (e) {
+            console.warn("Failed to fetch BTC price for allowance snapshot");
+            btcPrice = { usd: 0, eur: 78000 };
+          }
+        }
+        const valueEur = (newBalance / 1e8) * btcPrice!.eur;
+        await storage.createDailyBitcoinSnapshot({
+          peerId: child.id,
+          connectionId: child.connectionId,
+          valueEur: Math.round(valueEur * 100),
+          satoshiAmount: newBalance
+        });
+      } catch (snapshotError) {
+        console.warn(`[Allowance Snapshot] Failed to create snapshot for ${child.name}:`, snapshotError);
+      }
 
       // Update allowance lastPaidDate
       await storage.updateAllowance(allowance.id, { lastPaidDate: new Date() });
