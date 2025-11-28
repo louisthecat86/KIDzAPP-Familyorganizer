@@ -6779,13 +6779,13 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
               animate={{ y: 0, opacity: 1 }} 
               transition={{ delay: 0.1 }}
               onClick={() => setShowStatsModal(true)}
-              className="w-full rounded-lg bg-gradient-to-br from-slate-100 to-slate-50 border border-slate-200/50 p-4 text-center hover:border-slate-300 hover:bg-slate-100/80 transition-all cursor-pointer"
+              className="w-full rounded-2xl bg-white/50 backdrop-blur-xl border border-white/50 p-6 text-center hover:bg-white/70 transition-all cursor-pointer shadow-lg"
             >
-              <div className="h-10 w-10 bg-gradient-to-br from-violet-500 to-cyan-500 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <Sparkles className="h-5 w-5 text-white" />
+              <div className="h-12 w-12 bg-gradient-to-br from-violet-500 to-cyan-500 rounded-lg flex items-center justify-center mx-auto mb-3">
+                <Sparkles className="h-6 w-6 text-white" />
               </div>
-              <p className="text-sm font-bold text-slate-900">Lern-Statistiken</p>
-              <p className="text-xs text-slate-600 mt-1">Klick für Details</p>
+              <p className="text-lg font-bold text-slate-900">Lern-Statistiken</p>
+              <p className="text-xs text-slate-500 mt-1">📊 Klick für Details</p>
             </motion.button>
 
             {/* Stats Modal */}
