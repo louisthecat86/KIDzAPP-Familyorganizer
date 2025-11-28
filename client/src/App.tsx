@@ -1580,52 +1580,53 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
   // Wenn Parent registriert sich und muss Modus wählen
   if (!isLogin && role === "parent" && parentMode === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4">
+      <div 
+        className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: 'url(/background.png)' }}
+      >
         <div className="w-full max-w-lg">
           <div className="space-y-4 mb-8">
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={onBack} 
-              className="w-fit mb-2 -ml-2 text-muted-foreground"
+              className="w-fit mb-2 -ml-2 text-gray-700 hover:text-gray-900 hover:bg-white/20"
               data-testid="button-back"
             >
               ← Zurück
             </Button>
             <div>
-              <h1 className="text-2xl font-bold mb-2">Familie auswählen</h1>
-              <p className="text-muted-foreground">Möchtest du eine neue Familie gründen oder einer bestehenden beitreten?</p>
+              <h1 className="text-2xl font-bold mb-2 text-gray-900">Familie auswählen</h1>
+              <p className="text-gray-700">Möchtest du eine neue Familie gründen oder einer bestehenden beitreten?</p>
             </div>
           </div>
           <div className="space-y-3">
-            <Button
+            <button
               onClick={() => setParentMode("new")}
-              variant="outline"
-              className="w-full h-auto px-4 py-3 justify-start text-left"
+              className="w-full h-auto px-4 py-4 bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl hover:bg-white/30 transition-all flex items-center text-left shadow-lg"
               data-testid="button-create-new-family"
             >
-              <div className="mr-3 h-8 w-8 rounded-full bg-primary/30 flex items-center justify-center flex-shrink-0">
-                <Plus className="h-4 w-4" />
+              <div className="mr-3 h-10 w-10 rounded-full bg-violet-500/30 flex items-center justify-center flex-shrink-0">
+                <Plus className="h-5 w-5 text-violet-700" />
               </div>
               <div className="min-w-0">
-                <p className="font-semibold text-sm">Neue Familie gründen</p>
-                <p className="text-xs text-muted-foreground">Erstelle eine neue Familie</p>
+                <p className="font-semibold text-gray-900">Neue Familie gründen</p>
+                <p className="text-xs text-gray-700">Erstelle eine neue Familie</p>
               </div>
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={() => setParentMode("join")}
-              variant="outline"
-              className="w-full h-auto px-4 py-3 justify-start text-left"
+              className="w-full h-auto px-4 py-4 bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl hover:bg-white/30 transition-all flex items-center text-left shadow-lg"
               data-testid="button-join-family"
             >
-              <div className="mr-3 h-8 w-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                <Users className="h-4 w-4" />
+              <div className="mr-3 h-10 w-10 rounded-full bg-cyan-500/30 flex items-center justify-center flex-shrink-0">
+                <Users className="h-5 w-5 text-cyan-700" />
               </div>
               <div className="min-w-0">
-                <p className="font-semibold text-sm">Familie beitreten</p>
-                <p className="text-xs text-muted-foreground">Beitreten mit Familie-ID</p>
+                <p className="font-semibold text-gray-900">Familie beitreten</p>
+                <p className="text-xs text-gray-700">Beitreten mit Familie-ID</p>
               </div>
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -1633,7 +1634,10 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4">
+    <div 
+      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: 'url(/background.png)' }}
+    >
       <div className="w-full max-w-lg">
         <div className="space-y-6 mb-6">
           <Button 
@@ -1646,31 +1650,31 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 onBack();
               }
             }}
-            className="w-fit mb-2 -ml-2 text-muted-foreground"
+            className="w-fit mb-2 -ml-2 text-gray-700 hover:text-gray-900 hover:bg-white/20"
             data-testid="button-back"
           >
             ← Zurück
           </Button>
           <div>
-            <h2 className="text-2xl font-bold mb-2">
+            <h2 className="text-2xl font-bold mb-2 text-gray-900">
               {isLogin ? "Anmelden" : "Registrieren"}
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-gray-700">
               {isLogin ? "Melde dich mit Name und PIN an" : "Erstelle einen Account mit Name und PIN"}
             </p>
           </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl p-6 shadow-xl space-y-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && role === "parent" && parentMode === "new" && (
               <div className="space-y-2">
-                <Label htmlFor="familyName">Familienname</Label>
+                <Label htmlFor="familyName" className="text-gray-800">Familienname</Label>
                 <Input 
                   id="familyName"
                   value={familyName}
                   onChange={(e) => setFamilyName(e.target.value)}
-                  className="bg-sky-500/10 border-sky-500/40 focus:border-sky-400 focus:bg-sky-500/20 text-foreground placeholder:text-sky-300/50"
+                  className="bg-white/50 border-white/60 focus:border-violet-500 focus:bg-white/70 text-gray-900 placeholder:text-gray-500"
                   disabled={isLoading}
                   autoComplete="off"
                   placeholder="z.B. Familie Müller"
@@ -1680,27 +1684,27 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             )}
             {!isLogin && role === "parent" && parentMode === "join" && (
               <div className="space-y-2">
-                <Label htmlFor="joinParentId">Familien-ID</Label>
+                <Label htmlFor="joinParentId" className="text-gray-800">Familien-ID</Label>
                 <Input 
                   id="joinParentId"
                   value={joinParentId}
                   onChange={(e) => setJoinParentId(e.target.value.toUpperCase())}
-                  className="bg-sky-500/10 border-sky-500/40 focus:border-sky-400 focus:bg-sky-500/20 text-foreground placeholder:text-sky-300/50 font-mono text-center"
+                  className="bg-white/50 border-white/60 focus:border-violet-500 focus:bg-white/70 text-gray-900 placeholder:text-gray-500 font-mono text-center"
                   disabled={isLoading}
                   autoComplete="off"
                   placeholder="z.B. BTC-ABC123"
                   data-testid="input-join-parent-id"
                 />
-                <p className="text-xs text-muted-foreground">Frag das andere Elternteil nach der Familie-ID</p>
+                <p className="text-xs text-gray-600">Frag das andere Elternteil nach der Familie-ID</p>
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="name">Dein Name</Label>
+              <Label htmlFor="name" className="text-gray-800">Dein Name</Label>
               <Input 
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="bg-sky-500/10 border-sky-500/40 focus:border-sky-400 focus:bg-sky-500/20 text-foreground placeholder:text-sky-300/50"
+                className="bg-white/50 border-white/60 focus:border-violet-500 focus:bg-white/70 text-gray-900 placeholder:text-gray-500"
                 disabled={isLoading}
                 autoFocus
                 autoComplete="off"
@@ -1709,22 +1713,22 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             </div>
             {!isLogin && role === "parent" && parentMode === "new" && (
               <div className="space-y-2">
-                <Label htmlFor="favoriteColor">Lieblingsfarbe (für PIN-Vergessen)</Label>
+                <Label htmlFor="favoriteColor" className="text-gray-800">Lieblingsfarbe (für PIN-Vergessen)</Label>
                 <Input 
                   id="favoriteColor"
                   value={favoriteColor}
                   onChange={(e) => setFavoriteColor(e.target.value)}
-                  className="bg-sky-500/10 border-sky-500/40 focus:border-sky-400 focus:bg-sky-500/20 text-foreground placeholder:text-sky-300/50"
+                  className="bg-white/50 border-white/60 focus:border-violet-500 focus:bg-white/70 text-gray-900 placeholder:text-gray-500"
                   disabled={isLoading}
                   autoComplete="off"
                   placeholder="z.B. Blau"
                   data-testid="input-favorite-color"
                 />
-                <p className="text-xs text-muted-foreground">Du kannst damit deine PIN später zurücksetzen</p>
+                <p className="text-xs text-gray-600">Du kannst damit deine PIN später zurücksetzen</p>
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="pin">PIN (4 Ziffern)</Label>
+              <Label htmlFor="pin" className="text-gray-800">PIN (4 Ziffern)</Label>
               <Input 
                 id="pin"
                 type="password"
@@ -1734,23 +1738,23 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                   const val = e.target.value.replace(/\D/g, "").slice(0, 4);
                   setPin(val);
                 }}
-                className="bg-sky-500/10 border-sky-500/40 focus:border-sky-400 focus:bg-sky-500/20 font-mono text-center tracking-widest text-lg text-foreground placeholder:text-sky-300/50"
+                className="bg-white/50 border-white/60 focus:border-violet-500 focus:bg-white/70 font-mono text-center tracking-widest text-lg text-gray-900 placeholder:text-gray-400"
                 disabled={isLoading}
                 maxLength={4}
                 autoComplete="off"
                 data-testid="input-pin"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-gray-600">
                 {pin.length}/4 Ziffern
               </p>
             </div>
 
-            <Separator />
+            <div className="border-t border-white/20 my-4"></div>
 
             <div className="space-y-2">
               <Button 
                 type="submit"
-                className="w-full"
+                className="w-full bg-violet-600 hover:bg-violet-700 text-white"
                 disabled={isLoading || name.trim().length === 0 || pin.length !== 4 || (!isLogin && role === "parent" && parentMode === "new" && (!familyName.trim() || !favoriteColor.trim()))}
                 data-testid={isLogin ? "button-login" : "button-register"}
               >
@@ -1759,7 +1763,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               <Button 
                 type="button"
                 variant="outline"
-                className="w-full"
+                className="w-full bg-white/30 border-white/40 text-gray-800 hover:bg-white/40"
                 onClick={() => setIsLogin(!isLogin)}
                 disabled={isLoading}
                 data-testid="button-toggle-mode"
@@ -1770,7 +1774,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 <Button
                   type="button"
                   variant="ghost"
-                  className="w-full text-xs text-muted-foreground hover:text-foreground"
+                  className="w-full text-xs text-gray-600 hover:text-gray-900 hover:bg-white/20"
                   onClick={() => setShowForgotPin(true)}
                   disabled={isLoading}
                   data-testid="button-forgot-pin"
