@@ -697,14 +697,14 @@ export default function App() {
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
         >
-          <div className="px-4 py-8 max-w-4xl space-y-6">
+          <div className="px-4 py-8 max-w-4xl mx-auto space-y-6 flex flex-col items-center">
             <div className="flex items-center gap-3 mb-8">
               <Button variant="outline" onClick={() => setCurrentView("allowance-payout")} className="gap-2" data-testid="button-back-to-dashboard">
                 <ChevronLeft className="h-4 w-4" /> Zurück
               </Button>
             </div>
 
-            <Card className="border-2 border-primary/40 bg-primary/5">
+            <Card className="border-2 border-primary/40 bg-primary/5 w-full max-w-md">
               <CardHeader>
                 <CardTitle>Neue Terminzahlung hinzufügen</CardTitle>
               </CardHeader>
