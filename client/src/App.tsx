@@ -289,9 +289,7 @@ export default function App() {
     mutationFn: createTask,
     onSuccess: (task) => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      setUser(prev => prev ? { ...prev, balance: (prev.balance || 0) - task.sats } : null);
-      localStorage.setItem("sats-user", JSON.stringify(user));
-      toast({ title: "Aufgabe erstellt", description: "Sats in Escrow hinterlegt!" });
+      toast({ title: "Aufgabe erstellt", description: "Warte auf Bestätigung" });
       setNewTask({ title: "", description: "", sats: 50 });
       setCurrentView("dashboard");
     },
@@ -302,7 +300,15 @@ export default function App() {
 
   const updateTaskMutation = useMutation({
     mutationFn: ({ id, updates }: { id: number; updates: Partial<Task> }) => updateTask(id, updates),
-    onSuccess: () => {
+    onSuccess: (updatedTask) => {
+      // If task is approved, reduce parent balance by sats amount
+      if (updatedTask.status === "approved") {
+        setUser(prev => prev ? { ...prev, balance: (prev.balance || 0) - updatedTask.sats } : null);
+        if (user) {
+          const updatedUser = { ...user, balance: (user.balance || 0) - updatedTask.sats };
+          localStorage.setItem("sats-user", JSON.stringify(updatedUser));
+        }
+      }
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       queryClient.invalidateQueries({ queryKey: ["bitcoin-snapshots"] });
       queryClient.invalidateQueries({ queryKey: ["savings-snapshots"] });
