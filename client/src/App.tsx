@@ -5256,6 +5256,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
   const [isLinking, setIsLinking] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showTrackerChart, setShowTrackerChart] = useState(false);
+  const [showStatsModal, setShowStatsModal] = useState(false);
   const [passedQuizzes, setPassedQuizzes] = useState<string[]>(() => {
     const saved = typeof localStorage !== 'undefined' ? localStorage.getItem("passed-quizzes") : null;
     return saved ? JSON.parse(saved) : [];
@@ -6738,10 +6739,6 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
 
                 {/* Stats Modal */}
                 {showStatsModal && (() => {
-                  const passedQuizzes = (() => {
-                    const saved = typeof localStorage !== 'undefined' ? localStorage.getItem("passed-quizzes") : null;
-                    return saved ? JSON.parse(saved) : [];
-                  })();
                   const achievements = [
                     { id: "first", cond: passedQuizzes.length >= 1 },
                     { id: "half", cond: passedQuizzes.length >= 10 },
@@ -6751,8 +6748,6 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                   ];
                   
                   // Calculate weekly stats
-                  const now = new Date();
-                  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
                   const weeklyCompleted = completedTasks.length;
                   const weeklySats = satsBreakdown?.taskSats || 0;
                   
