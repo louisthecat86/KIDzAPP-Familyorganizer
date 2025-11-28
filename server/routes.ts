@@ -615,9 +615,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Task not found" });
       }
 
-      // If approving, send sats to child's lightning address if wallet is configured
-      if (updates.status === "approved" && task.status !== "approved") {
-        console.log(`[Task Approval] Approving task ${id}, assigning sats to child ${task.assignedTo}`);
+      // If status is being set to approved (whether first time or not), create snapshot and process payment
+      if (updates.status === "approved") {
+        console.log(`[Task Approval] Processing approval for task ${id}, assigning sats to child ${task.assignedTo}`);
         const child = await storage.getPeer(task.assignedTo!);
         const parent = await storage.getPeer(task.createdBy);
         
@@ -634,15 +634,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           console.log(`[Task Approval] About to create snapshot for ${child.name}...`);
           const btcPrice = await getFreshBitcoinPrice();
+          console.log(`[getFreshBitcoinPrice] Response: ${JSON.stringify(btcPrice)}`);
           const valueEur = (newBalance / 1e8) * btcPrice.eur;
           console.log(`[Task Approval] Creating snapshot: ${newBalance} sats × €${btcPrice.eur} = €${valueEur.toFixed(2)}`);
-          await storage.createDailyBitcoinSnapshot({
+          const snapshotResult = await storage.createDailyBitcoinSnapshot({
             peerId: child.id,
             connectionId: child.connectionId,
             valueEur: Math.round(valueEur * 100), // Convert to cents
             satoshiAmount: newBalance
           });
-          console.log(`[Task Approval Snapshot] ✓ Created for ${child.name}: €${valueEur.toFixed(2)}`);
+          console.log(`[Task Approval Snapshot] ✓ Created for ${child.name}: €${valueEur.toFixed(2)}, Result:`, JSON.stringify(snapshotResult));
         } catch (snapshotError) {
           console.error("[Task Approval Snapshot] ✗ Failed:", snapshotError);
         }
