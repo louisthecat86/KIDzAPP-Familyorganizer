@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
-import { LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line, ResponsiveContainer } from "recharts";
+import { LineChart, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Line, Area, ResponsiveContainer, defs, linearGradient, stop } from "recharts";
 import { 
   CheckCircle, 
   Circle, 
@@ -5669,23 +5669,32 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
           </p>
 
           {/* Chart Section */}
-          <div className="space-y-1">
+          <div className="space-y-2">
             {viewMode === "bitcoin" ? (
               <>
                 {historicalData && historicalData.length > 0 ? (
-                  <div className="h-8 -mx-1">
+                  <div className="h-20 -mx-2">
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={btcChartData}>
-                        <CartesianGrid strokeDasharray="0" stroke="rgba(255,193,7,0.1)" />
-                        <XAxis dataKey="date" tick={{ fontSize: 7 }} />
-                        <YAxis width={25} tick={{ fontSize: 7 }} />
-                        <Tooltip contentStyle={{ fontSize: 10, background: "rgba(0,0,0,0.8)", border: "1px solid rgba(255,193,7,0.3)" }} />
-                        <Line type="monotone" dataKey="value" stroke="#facc15" dot={false} strokeWidth={1.5} isAnimationActive={false} />
-                      </LineChart>
+                      <AreaChart data={btcChartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                        <defs>
+                          <linearGradient id="btcGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#facc15" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="#facc15" stopOpacity={0.01} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,193,7,0.15)" />
+                        <XAxis dataKey="date" tick={{ fontSize: 9, fill: "rgba(255,193,7,0.7)" }} />
+                        <YAxis width={35} tick={{ fontSize: 9, fill: "rgba(255,193,7,0.7)" }} />
+                        <Tooltip 
+                          contentStyle={{ fontSize: 11, background: "rgba(0,0,0,0.9)", border: "1px solid rgba(255,193,7,0.5)", borderRadius: "4px" }}
+                          formatter={(value) => `€${Number(value).toFixed(2)}`}
+                        />
+                        <Area type="monotone" dataKey="value" stroke="#facc15" strokeWidth={2} fill="url(#btcGradient)" isAnimationActive={true} animationDuration={800} />
+                      </AreaChart>
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <div className="h-8 flex items-center justify-center text-xs text-muted-foreground">
+                  <div className="h-20 flex items-center justify-center text-xs text-muted-foreground">
                     Laden...
                   </div>
                 )}
@@ -5694,7 +5703,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
                     <button
                       key={tf.days}
                       onClick={() => setBtcDays(tf.days)}
-                      className={`text-xs px-1.5 py-0 rounded border transition-colors ${
+                      className={`text-xs px-1.5 py-0.5 rounded border transition-colors ${
                         btcDays === tf.days
                           ? "bg-yellow-500/30 border-yellow-500/60 text-yellow-400 font-bold"
                           : "bg-yellow-500/10 border-yellow-500/20 text-yellow-300 hover:bg-yellow-500/20"
@@ -5709,15 +5718,24 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
             ) : (
               <>
                 {savingsProjection.length > 1 && (
-                  <div className="h-8 -mx-1">
+                  <div className="h-20 -mx-2">
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={savingsProjection}>
-                        <CartesianGrid strokeDasharray="0" stroke="rgba(34,197,94,0.1)" />
-                        <XAxis dataKey="month" tick={{ fontSize: 7 }} />
-                        <YAxis width={25} tick={{ fontSize: 7 }} />
-                        <Tooltip contentStyle={{ fontSize: 10, background: "rgba(0,0,0,0.8)", border: "1px solid rgba(34,197,94,0.3)" }} />
-                        <Line type="monotone" dataKey="value" stroke="#22c55e" dot={false} strokeWidth={1.5} isAnimationActive={false} />
-                      </LineChart>
+                      <AreaChart data={savingsProjection} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                        <defs>
+                          <linearGradient id="savingsGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="#22c55e" stopOpacity={0.01} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(34,197,94,0.15)" />
+                        <XAxis dataKey="month" tick={{ fontSize: 9, fill: "rgba(34,197,94,0.7)" }} />
+                        <YAxis width={35} tick={{ fontSize: 9, fill: "rgba(34,197,94,0.7)" }} />
+                        <Tooltip 
+                          contentStyle={{ fontSize: 11, background: "rgba(0,0,0,0.9)", border: "1px solid rgba(34,197,94,0.5)", borderRadius: "4px" }}
+                          formatter={(value) => `€${Number(value).toFixed(2)}`}
+                        />
+                        <Area type="monotone" dataKey="value" stroke="#22c55e" strokeWidth={2} fill="url(#savingsGradient)" isAnimationActive={true} animationDuration={800} />
+                      </AreaChart>
                     </ResponsiveContainer>
                   </div>
                 )}
