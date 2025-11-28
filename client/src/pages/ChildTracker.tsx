@@ -22,6 +22,9 @@ const CustomTooltip = ({ active, payload }: any) => {
         <p className="text-yellow-400 font-bold text-sm">
           Satoshi : {data.totalSats.toLocaleString()}
         </p>
+        <p className="text-blue-400 font-bold text-sm">
+          BTC Preis : €{data.btcPrice.toLocaleString()}
+        </p>
       </div>
     );
   }
