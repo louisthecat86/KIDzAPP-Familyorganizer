@@ -1728,6 +1728,158 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get Level Bonus Settings for a family
+  app.get("/api/level-bonus/settings/:connectionId", async (req, res) => {
+    try {
+      const settings = await storage.getLevelBonusSettings(req.params.connectionId);
+      res.json(settings || null);
+    } catch (error) {
+      console.error("[Level Bonus Settings Error]:", error);
+      res.status(500).json({ error: String(error) });
+    }
+  });
+
+  // Create or update Level Bonus Settings
+  app.post("/api/level-bonus/settings", async (req, res) => {
+    try {
+      const { parentId, connectionId, bonusSats, milestoneInterval, isActive } = req.body;
+      
+      if (!parentId || !connectionId) {
+        return res.status(400).json({ error: "parentId and connectionId required" });
+      }
+
+      const settings = await storage.createOrUpdateLevelBonusSettings({
+        parentId,
+        connectionId,
+        bonusSats: bonusSats || 210,
+        milestoneInterval: milestoneInterval || 5,
+        isActive: isActive !== false
+      });
+
+      res.json(settings);
+    } catch (error) {
+      console.error("[Level Bonus Settings Error]:", error);
+      res.status(500).json({ error: String(error) });
+    }
+  });
+
+  // Get Level Bonus Payouts for a child
+  app.get("/api/level-bonus/payouts/:childId", async (req, res) => {
+    try {
+      const payouts = await storage.getLevelBonusPayouts(parseInt(req.params.childId));
+      res.json(payouts);
+    } catch (error) {
+      console.error("[Level Bonus Payouts Error]:", error);
+      res.status(500).json({ error: String(error) });
+    }
+  });
+
+  // Check and pay level bonus (called when a child levels up)
+  app.post("/api/level-bonus/check-and-pay", async (req, res) => {
+    try {
+      const { childId, currentLevel, connectionId } = req.body;
+      
+      if (!childId || currentLevel === undefined || !connectionId) {
+        return res.status(400).json({ error: "childId, currentLevel, and connectionId required" });
+      }
+
+      // Get bonus settings for this family
+      const settings = await storage.getLevelBonusSettings(connectionId);
+      if (!settings || !settings.isActive) {
+        return res.json({ bonusPaid: false, reason: "No active level bonus settings" });
+      }
+
+      // Check if this level is a milestone
+      if (currentLevel === 0 || currentLevel % settings.milestoneInterval !== 0) {
+        return res.json({ bonusPaid: false, reason: "Not a milestone level" });
+      }
+
+      // Check if bonus was already paid for this level
+      const alreadyPaid = await storage.hasLevelBonusBeenPaid(childId, currentLevel);
+      if (alreadyPaid) {
+        return res.json({ bonusPaid: false, reason: "Bonus already paid for this level" });
+      }
+
+      // Get child and parent info
+      const child = await storage.getPeer(childId);
+      if (!child) {
+        return res.status(404).json({ error: "Child not found" });
+      }
+
+      // Find parent with LNBits configured
+      const parent = await db.select().from(peers)
+        .where(and(eq(peers.connectionId, connectionId), eq(peers.role, "parent")))
+        .limit(1);
+
+      if (!parent[0] || !parent[0].lnbitsUrl || !parent[0].lnbitsAdminKey) {
+        // No LNBits configured - just update balance internally
+        await storage.updateBalance(childId, (child.balance || 0) + settings.bonusSats);
+        
+        // Record the payout
+        await storage.createLevelBonusPayout({
+          childId,
+          connectionId,
+          level: currentLevel,
+          sats: settings.bonusSats
+        });
+
+        return res.json({ 
+          bonusPaid: true, 
+          sats: settings.bonusSats,
+          level: currentLevel,
+          paymentMethod: "internal"
+        });
+      }
+
+      // Try to pay via Lightning if child has lightning address
+      if (child.lightningAddress) {
+        try {
+          const lnbits = new LNBitsClient(parent[0].lnbitsUrl, parent[0].lnbitsAdminKey);
+          await lnbits.payToLightningAddress(child.lightningAddress, settings.bonusSats, `Level ${currentLevel} Bonus!`);
+          
+          // Record the payout
+          await storage.createLevelBonusPayout({
+            childId,
+            connectionId,
+            level: currentLevel,
+            sats: settings.bonusSats
+          });
+
+          return res.json({ 
+            bonusPaid: true, 
+            sats: settings.bonusSats,
+            level: currentLevel,
+            paymentMethod: "lightning"
+          });
+        } catch (payError) {
+          console.error("[Level Bonus Lightning Payment Error]:", payError);
+          // Fall back to internal balance
+        }
+      }
+
+      // Fallback: update internal balance
+      await storage.updateBalance(childId, (child.balance || 0) + settings.bonusSats);
+      
+      // Record the payout
+      await storage.createLevelBonusPayout({
+        childId,
+        connectionId,
+        level: currentLevel,
+        sats: settings.bonusSats
+      });
+
+      res.json({ 
+        bonusPaid: true, 
+        sats: settings.bonusSats,
+        level: currentLevel,
+        paymentMethod: "internal"
+      });
+    } catch (error) {
+      console.error("[Level Bonus Check Error]:", error);
+      res.status(500).json({ error: String(error) });
+    }
+  });
+
   // Monthly savings snapshot scheduler (runs on the 1st of each month at 00:01)
   cron.schedule("1 0 1 * *", async () => {
     try {
