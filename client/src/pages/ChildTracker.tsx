@@ -92,7 +92,13 @@ export function ChildTracker({ childId }: { childId: number }) {
                 <Tooltip 
                   formatter={(value: any) => [`€${Number(value).toFixed(2)}`, "Euro-Wert"]}
                   labelFormatter={(label) => `Tag: ${label}`}
-                  contentStyle={{ backgroundColor: "#1e293b", border: "1px solid #10b981" }}
+                  contentStyle={{ 
+                    backgroundColor: "#1e293b", 
+                    border: "2px solid #10b981",
+                    borderRadius: "8px",
+                    padding: "8px 12px",
+                    boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)"
+                  }}
                 />
                 <Area 
                   type="monotone" 
