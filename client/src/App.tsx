@@ -6450,7 +6450,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           </div>
         ) : null}
 
-        {completedModules.length === modules.length && (
+        {passedQuizzes.length === modules.length && (
           <Card className="border-green-500/50 bg-gradient-to-r from-green-500/10 to-blue-500/10">
             <CardContent className="pt-8 pb-8 text-center">
               <p className="text-4xl mb-3">🏆👑🚀</p>
