@@ -5617,7 +5617,10 @@ function TrackerChart({ userId }: { userId: number }) {
       </div>
       <div className="h-32 -mx-2">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={trackerData}>
+          <AreaChart data={trackerData.map(d => ({ 
+            ...d, 
+            btcPriceScaled: d.btcPrice ? d.btcPrice / 1000 : 0 
+          }))}>
             <defs>
               <linearGradient id="trackerGradGreen" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
@@ -5627,11 +5630,16 @@ function TrackerChart({ userId }: { userId: number }) {
                 <stop offset="5%" stopColor="#fbbf24" stopOpacity={0.3} />
                 <stop offset="95%" stopColor="#fbbf24" stopOpacity={0.01} />
               </linearGradient>
+              <linearGradient id="trackerGradBlue" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.01} />
+              </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(16,185,129,0.1)" />
             <XAxis dataKey="date" tick={{ fontSize: 8 }} />
             <YAxis width={40} tick={{ fontSize: 8 }} tickFormatter={v => `€${v.toFixed(0)}`} />
             <YAxis yAxisId="right" orientation="right" width={40} tick={{ fontSize: 8 }} tickFormatter={v => `${v.toLocaleString()}`} />
+            <YAxis yAxisId="btcPrice" orientation="right" width={50} tick={{ fontSize: 8 }} tickFormatter={v => `€${(v * 1000).toLocaleString('de-DE', {maximumFractionDigits: 0})}`} />
             <Tooltip 
               content={({ active, payload }) => {
                 if (active && payload && payload.length > 0) {
@@ -5640,7 +5648,7 @@ function TrackerChart({ userId }: { userId: number }) {
                     <div className="bg-slate-950 border border-slate-700 rounded p-2 text-xs">
                       <p className="text-green-400">€{data.euroValue?.toFixed(2)}</p>
                       <p className="text-yellow-400">⚡{data.totalSats?.toLocaleString()}</p>
-                      <p className="text-blue-400">💙 BTC: €{data.btcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0}) || 'N/A'}</p>
+                      <p className="text-blue-400">BTC: €{data.btcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0}) || 'N/A'}</p>
                     </div>
                   );
                 }
@@ -5650,6 +5658,7 @@ function TrackerChart({ userId }: { userId: number }) {
             />
             <Area type="monotone" dataKey="euroValue" stroke="#10b981" fill="url(#trackerGradGreen)" />
             <Area yAxisId="right" type="monotone" dataKey="totalSats" stroke="#fbbf24" fill="url(#trackerGradYellow)" />
+            <Area yAxisId="btcPrice" type="monotone" dataKey="btcPriceScaled" stroke="#3b82f6" fill="url(#trackerGradBlue)" />
           </AreaChart>
         </ResponsiveContainer>
       </div>
