@@ -1363,11 +1363,12 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
 function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void }) {
   return (
     <div 
-      className="min-h-screen flex flex-col items-center justify-between p-6 bg-cover bg-center bg-no-repeat"
+      className="min-h-screen flex flex-col items-center justify-center p-6 bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: 'url(/background.png)' }}
     >
-      {/* Logo and Info */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-6">
+      {/* All content centered */}
+      <div className="flex flex-col items-center gap-5 w-full max-w-md">
+        {/* Logo */}
         <img 
           src="/logo-transparent.png" 
           alt="KID⚡APP - Family Organizer" 
@@ -1375,7 +1376,7 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
         />
         
         {/* Info Box */}
-        <div className="bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl p-5 max-w-md w-full shadow-lg">
+        <div className="bg-white/15 backdrop-blur-md border border-white/30 rounded-2xl p-5 w-full shadow-lg">
           <h3 className="text-lg font-bold mb-3 text-gray-900">So funktioniert's</h3>
           <div className="space-y-2 text-gray-800 text-sm">
             <div className="flex gap-2">
@@ -1396,10 +1397,9 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Buttons */}
-      <div className="w-full max-w-md space-y-3 mb-4">
+        {/* Buttons */}
+        <div className="w-full space-y-3">
         <button 
           className="w-full p-4 bg-white/25 backdrop-blur-md border border-white/40 rounded-2xl hover:bg-white/35 hover:border-white/60 transition-all flex items-center gap-4 group shadow-xl"
           onClick={() => onSelect("parent")}
@@ -1429,6 +1429,7 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
           </div>
           <span className="ml-auto text-yellow-500 text-xl opacity-0 group-hover:opacity-100 transition-opacity">⚡</span>
         </button>
+        </div>
       </div>
     </div>
   );
