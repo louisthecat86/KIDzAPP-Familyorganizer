@@ -6234,11 +6234,13 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
               <p className="text-xs text-slate-600 mt-1">{userXp} XP</p>
             </div>
           </div>
-          <div className="flex gap-3 border-b">
-            <button onClick={() => setEducationTab("modules")} className={`pb-3 px-4 font-medium text-sm border-b-2 transition-all ${educationTab === "modules" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-modules">📚 Module ({completedModules.length}/{modules.length})</button>
-            <button onClick={() => setEducationTab("converter")} className={`pb-3 px-4 font-medium text-sm border-b-2 transition-all ${educationTab === "converter" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-converter">🔄 Konverter</button>
-            <button onClick={() => setEducationTab("challenges")} className={`pb-3 px-4 font-medium text-sm border-b-2 transition-all ${educationTab === "challenges" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-challenges">🎯 Tägliche Challenge</button>
-            <button onClick={() => setEducationTab("resources")} className={`pb-3 px-4 font-medium text-sm border-b-2 transition-all ${educationTab === "resources" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-resources">🌐 Ressourcen</button>
+          <div className="overflow-x-auto -mx-4 px-4 border-b">
+            <div className="flex gap-1 min-w-max md:min-w-0">
+              <button onClick={() => setEducationTab("modules")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "modules" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-modules">📚 Module</button>
+              <button onClick={() => setEducationTab("converter")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "converter" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-converter">🔄 Konverter</button>
+              <button onClick={() => setEducationTab("challenges")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "challenges" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-challenges">🎯 Challenge</button>
+              <button onClick={() => setEducationTab("resources")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "resources" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-resources">🌐 Ressourcen</button>
+            </div>
           </div>
         </div>
 
