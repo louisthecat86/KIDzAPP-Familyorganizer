@@ -44,11 +44,31 @@ import {
   Users,
   MessageSquare,
   Eye,
-  EyeOff
+  EyeOff,
+  Bell
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PhotoUpload } from "@/components/PhotoUpload";
 import { ProofViewer } from "@/components/ProofViewer";
+
+function NotificationBadge({ count }: { count: number }) {
+  if (count <= 0) return null;
+  
+  return (
+    <motion.span
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
+      className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-bold"
+    >
+      <motion.span
+        animate={{ scale: [1, 1.2, 1] }}
+        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+      >
+        {count > 9 ? "9+" : count}
+      </motion.span>
+    </motion.span>
+  );
+}
 
 type Peer = {
   id: number;
@@ -633,6 +653,8 @@ export default function App() {
         layoutView={layoutView}
         setLayoutView={setLayoutView}
         side="right"
+        tasksNotificationCount={tasks.filter((t: Task) => t.status === "submitted").length}
+        chatNotificationCount={messages.filter((m: any) => m.isUnread).length}
       />
       <main className="flex-1 overflow-auto relative">
         <Button
@@ -1154,7 +1176,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
   );
 }
 
-function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setSidebarOpen, onLogout, layoutView, setLayoutView }: any) {
+function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setSidebarOpen, onLogout, layoutView, setLayoutView, tasksNotificationCount = 0, chatNotificationCount = 0 }: any) {
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [showWalletSubmenu, setShowWalletSubmenu] = useState(false);
   const [showCalendarSubmenu, setShowCalendarSubmenu] = useState(false);
@@ -1162,11 +1184,11 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
   const [walletTab, setWalletTab] = useState("lnbits");
   
   const menuItems = [
-    { id: "dashboard", label: user.role === "parent" ? "Dashboard" : "Mein Dashboard", icon: Home },
-    ...(user.role === "parent" ? [{ id: "tasks", label: "Aufgaben", icon: CheckCircle }] : []),
-    { id: "calendar", label: "Familienkalender", icon: Calendar },
-    { id: "chat", label: "Familienchat", icon: MessageSquare },
-    { id: "leaderboard", label: "Bestenliste", icon: Trophy },
+    { id: "dashboard", label: user.role === "parent" ? "Dashboard" : "Mein Dashboard", icon: Home, badge: 0 },
+    ...(user.role === "parent" ? [{ id: "tasks", label: "Aufgaben", icon: CheckCircle, badge: tasksNotificationCount }] : []),
+    { id: "calendar", label: "Familienkalender", icon: Calendar, badge: 0 },
+    { id: "chat", label: "Familienchat", icon: MessageSquare, badge: chatNotificationCount },
+    { id: "leaderboard", label: "Bestenliste", icon: Trophy, badge: 0 },
   ];
 
   const handleSettingsClick = (tab: "ansicht" | "wallet" | "peers") => {
@@ -1298,7 +1320,10 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                 }`}
                 data-testid={`menu-item-${item.id}`}
               >
-                <Icon className="h-4 w-4" />
+                <div className="relative">
+                  <Icon className="h-4 w-4" />
+                  <NotificationBadge count={item.badge} />
+                </div>
                 <span>{item.label}</span>
               </button>
             );
