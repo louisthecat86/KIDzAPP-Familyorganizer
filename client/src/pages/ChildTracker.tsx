@@ -42,7 +42,12 @@ export function ChildTracker({ childId }: { childId: number }) {
       try {
         const response = await fetch(`/api/tracker/${childId}`);
         const data = await response.json();
-        setTrackerData(data || []);
+        // Skaliere btcPrice /1000 um in sichtbarem Bereich zu sein
+        const scaledData = data.map((entry: any) => ({
+          ...entry,
+          btcPrice: entry.btcPrice / 1000
+        }));
+        setTrackerData(scaledData || []);
       } catch (error) {
         console.error("Failed to fetch tracker data:", error);
       } finally {
@@ -129,8 +134,8 @@ export function ChildTracker({ childId }: { childId: number }) {
                   width={70}
                   domain={[0, 'auto']}
                   tick={{ fontSize: 9, fill: "rgba(59,130,246,1)" }}
-                  tickFormatter={(value) => `€${Math.round(Number(value))}`}
-                  label={{ value: "BTC Preis", angle: 90, position: 'right', fill: "rgba(59,130,246,1)" }}
+                  tickFormatter={(value) => `€${(Number(value) * 1000).toLocaleString('de-DE', {maximumFractionDigits: 0})}`}
+                  label={{ value: "BTC Preis (€1000s)", angle: 90, position: 'right', fill: "rgba(59,130,246,1)" }}
                 />
                 <Tooltip content={<CustomTooltip />} cursor={false} />
                 <Area 
@@ -168,7 +173,7 @@ export function ChildTracker({ childId }: { childId: number }) {
           <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t border-border/50">
             <p>✓ {trackerData.length} genehmigte Aufgaben</p>
             <p>⚡ Verdient: {trackerData.reduce((sum, e) => sum + (e.earnedSats || 0), 0).toLocaleString()} Satoshi</p>
-            <p className="text-blue-300 font-semibold">💙 BTC Preis aktuell: €{latestEntry.btcPrice.toFixed(2)}</p>
+            <p className="text-blue-300 font-semibold">💙 BTC Preis aktuell: €{(latestEntry.btcPrice * 1000).toLocaleString('de-DE', {maximumFractionDigits: 0})}</p>
           </div>
         </CardContent>
       </Card>
