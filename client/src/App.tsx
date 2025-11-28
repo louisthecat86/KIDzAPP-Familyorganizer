@@ -5551,7 +5551,10 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
           const savingsRes = await fetch(`/api/savings-snapshots/${user.id}`);
           if (savingsRes.ok) {
             const snapshots = await savingsRes.json();
+            console.log("[Savings Snapshots] Fetched from API:", snapshots);
             setMonthlySnapshots(snapshots);
+          } else {
+            console.log("[Savings Snapshots] API returned error:", savingsRes.status);
           }
         }
 
