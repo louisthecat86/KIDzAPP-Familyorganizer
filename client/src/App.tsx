@@ -6767,30 +6767,47 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           </div>
         </motion.section>
 
-        {/* Learning Stats Widget - Compact */}
+        {/* Learning Stats Widget - Elegant */}
         {user.role === "child" && (
-          <motion.section initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="rounded-lg bg-slate-50/50 border border-slate-200/50 p-3">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-center text-xs">
-              <div>
-                <p className="text-slate-600 mb-1">🎯 Challenge</p>
-                <p className="font-bold text-amber-600">Bitcoin Quiz</p>
+          <motion.section initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="grid grid-cols-2 md:grid-cols-5 gap-2">
+            <div className="rounded-lg bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/50 p-3 text-center">
+              <div className="h-8 w-8 bg-amber-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <Zap className="h-4 w-4 text-amber-600" />
               </div>
-              <div>
-                <p className="text-slate-600 mb-1">📚 Module</p>
-                <p className="font-bold text-green-600">0/20</p>
+              <p className="text-xs text-slate-600 mb-1 font-medium">Challenge</p>
+              <p className="text-xs font-bold text-amber-600 truncate">Quiz</p>
+            </div>
+            
+            <div className="rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200/50 p-3 text-center">
+              <div className="h-8 w-8 bg-green-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <BookOpen className="h-4 w-4 text-green-600" />
               </div>
-              <div>
-                <p className="text-slate-600 mb-1">🏆 Abzeichen</p>
-                <p className="font-bold text-amber-600">0/5</p>
+              <p className="text-xs text-slate-600 mb-1 font-medium">Module</p>
+              <p className="text-xs font-bold text-green-600">0/20</p>
+            </div>
+            
+            <div className="rounded-lg bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200/50 p-3 text-center">
+              <div className="h-8 w-8 bg-purple-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <Trophy className="h-4 w-4 text-purple-600" />
               </div>
-              <div>
-                <p className="text-slate-600 mb-1">⭐ Diese Woche</p>
-                <p className="font-bold text-violet-600">0/7</p>
+              <p className="text-xs text-slate-600 mb-1 font-medium">Abzeichen</p>
+              <p className="text-xs font-bold text-purple-600">0/5</p>
+            </div>
+            
+            <div className="rounded-lg bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-200/50 p-3 text-center">
+              <div className="h-8 w-8 bg-violet-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <Flame className="h-4 w-4 text-violet-600" />
               </div>
-              <div>
-                <p className="text-slate-600 mb-1">📊 7-Tage</p>
-                <p className="font-bold text-cyan-600">0 Sats</p>
+              <p className="text-xs text-slate-600 mb-1 font-medium">Diese Woche</p>
+              <p className="text-xs font-bold text-violet-600">0/7</p>
+            </div>
+            
+            <div className="rounded-lg bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200/50 p-3 text-center">
+              <div className="h-8 w-8 bg-cyan-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <TrendingUp className="h-4 w-4 text-cyan-600" />
               </div>
+              <p className="text-xs text-slate-600 mb-1 font-medium">7-Tage</p>
+              <p className="text-xs font-bold text-cyan-600">0 Sats</p>
             </div>
           </motion.section>
         )}
