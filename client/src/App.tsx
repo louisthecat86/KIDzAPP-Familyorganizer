@@ -6026,10 +6026,15 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
 
   if (currentView === "bitcoin-education" && user.role === "child") {
     const [completedModules, setCompletedModules] = useState<string[]>([]);
+    const [showQuiz, setShowQuiz] = useState<string | null>(null);
+    const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
+    const [quizSubmitted, setQuizSubmitted] = useState<Record<string, boolean>>({});
     
     const modules = [
       {
         id: "what-is-bitcoin",
+        level: "Anfänger",
+        levelColor: "text-green-600",
         title: "Was ist Bitcoin?",
         icon: "₿",
         content: [
@@ -6037,10 +6042,16 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           "Es wurde 2009 erfunden und es gibt maximal 21 Millionen Bitcoin.",
           "Bitcoin wird von vielen Menschen auf der ganzen Welt verwenden, nicht von einer Bank.",
           "Jeder Bitcoin kann in 100 Millionen Satoshis (Sats) aufgeteilt werden."
+        ],
+        quiz: [
+          { question: "Wann wurde Bitcoin erfunden?", options: ["2009", "2015", "2001"], correct: 0 },
+          { question: "Wie viele Bitcoin gibt es maximal?", options: ["21 Millionen", "Unbegrenzt", "1 Milliarde"], correct: 0 }
         ]
       },
       {
         id: "what-is-sats",
+        level: "Anfänger",
+        levelColor: "text-green-600",
         title: "Was sind Satoshis (Sats)?",
         icon: "⚡",
         content: [
@@ -6048,10 +6059,16 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           "1 Bitcoin = 100.000.000 Satoshis",
           "Die Bezeichnung 'Satoshi' ehrt den Erfinder von Bitcoin (Satoshi Nakamoto)",
           "Sats sind perfekt für kleine Transaktionen und Zahlungen"
+        ],
+        quiz: [
+          { question: "1 Bitcoin = ?", options: ["100.000.000 Sats", "1.000.000 Sats", "10.000 Sats"], correct: 0 },
+          { question: "Wer war Satoshi Nakamoto?", options: ["Erfinder von Bitcoin", "Ein Astronaut", "Ein Kryptograph"], correct: 0 }
         ]
       },
       {
         id: "lightning-network",
+        level: "Mittelstufe",
+        levelColor: "text-yellow-600",
         title: "Lightning Network ⚡",
         icon: "🌩️",
         content: [
@@ -6059,10 +6076,16 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           "Transaktionen im Lightning Netzwerk dauern Sekunden statt Minuten",
           "Du kannst sofort Bitcoin (über Sats) senden und empfangen",
           "Es ist wie der Unterschied zwischen SMS und Telefonanruf"
+        ],
+        quiz: [
+          { question: "Wie lange dauert eine Lightning Transaktion?", options: ["Sekunden", "Stunden", "Tage"], correct: 0 },
+          { question: "Was ist Lightning?", options: ["Zahlungsnetzwerk auf Bitcoin", "Eine Kryptowährung", "Eine Bank"], correct: 0 }
         ]
       },
       {
         id: "blockchain",
+        level: "Mittelstufe",
+        levelColor: "text-yellow-600",
         title: "Blockchain erklärt",
         icon: "🔗",
         content: [
@@ -6070,10 +6093,16 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           "Jeder Block ist mit dem vorherigen verbunden - wie eine Kette",
           "Das macht es unmöglich, alte Transaktionen zu fälschen",
           "Viele Computer speichern die gleiche Blockchain - ultra sicher!"
+        ],
+        quiz: [
+          { question: "Warum ist Blockchain sicher?", options: ["Blöcke sind verkettet & verteilt", "Es ist verschlüsselt", "Nur eine Person hat Zugriff"], correct: 0 },
+          { question: "Wie viele Computer speichern die Blockchain?", options: ["Tausende weltweit", "Nur eine", "10"], correct: 0 }
         ]
       },
       {
         id: "security",
+        level: "Fortgeschritten",
+        levelColor: "text-red-600",
         title: "Sicherheit & private Keys",
         icon: "🔐",
         content: [
@@ -6081,10 +6110,16 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           "Aber dein privater Schlüssel ist wie dein Passwort - NIEMALS weitergeben!",
           "Mit deinem privaten Schlüssel kann jemand dein Geld nehmen",
           "Bewahre deine Keys immer geheim auf!"
+        ],
+        quiz: [
+          { question: "Kann deine Lightning Adresse öffentlich sein?", options: ["Ja, sie ist öffentlich", "Nein, geheim halten", "Optional"], correct: 0 },
+          { question: "Was passiert wenn man seinen private Key verliert?", options: ["Du kannst nicht mehr auf dein Geld zugreifen", "Bitcoin sendet es zurück", "Es ist automatisch gesichert"], correct: 0 }
         ]
       },
       {
         id: "future",
+        level: "Fortgeschritten",
+        levelColor: "text-red-600",
         title: "Die Zukunft von Bitcoin",
         icon: "🚀",
         content: [
@@ -6092,63 +6127,167 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           "Der Wert von Bitcoin kann steigen und fallen - aber langfristig ist es interessant",
           "Lightning macht Bitcoin für tägliche Zahlungen nutzbar",
           "Du lernst heute die Finanz-Technologie der Zukunft!"
+        ],
+        quiz: [
+          { question: "Ist Bitcoin riskant?", options: ["Ja, Wert schwankt stark", "Nein, 100% sicher", "Nur Anfänger riskieren"], correct: 0 },
+          { question: "Was macht Bitcoin relevant?", options: ["Dezentral & nicht an Banken gebunden", "Es ist schneller als Geld", "Die Regierung mag es"], correct: 0 }
         ]
       }
     ];
 
+    const handleQuizSubmit = (moduleId: string) => {
+      const module = modules.find(m => m.id === moduleId);
+      if (!module) return;
+      
+      const score = module.quiz.filter((q, idx) => quizAnswers[`${moduleId}-${idx}`] === q.correct).length;
+      
+      if (score >= Math.ceil(module.quiz.length * 0.7)) {
+        setCompletedModules([...completedModules, moduleId]);
+        toast({ title: "🎉 Quiz bestanden!", description: `${score}/${module.quiz.length} richtig!` });
+      } else {
+        toast({ title: "Probier nochmal!", description: `Du brauchst ${Math.ceil(module.quiz.length * 0.7)} von ${module.quiz.length}. Du hattest ${score}.`, variant: "destructive" });
+      }
+      setQuizSubmitted({ ...quizSubmitted, [moduleId]: true });
+    };
+
+    const achievements = [
+      { id: "first-module", title: "Anfänger", icon: "🌱", condition: completedModules.length >= 1 },
+      { id: "half-done", title: "Lernender", icon: "📚", condition: completedModules.length >= 3 },
+      { id: "all-done", title: "Experte", icon: "👑", condition: completedModules.length === modules.length },
+      { id: "beginner-master", title: "Anfänger-Meister", icon: "🟢", condition: modules.filter(m => m.level === "Anfänger").every(m => completedModules.includes(m.id)) },
+      { id: "advanced-master", title: "Fortgeschritten-Meister", icon: "🔴", condition: modules.filter(m => m.level === "Fortgeschritten").every(m => completedModules.includes(m.id)) }
+    ];
+
     return (
-      <div className="max-w-4xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Bitcoin Lernen 📚</h1>
-          <p className="text-slate-600">Verstehe Bitcoin, Lightning und wie du verdienst! {completedModules.length}/{modules.length} Module abgeschlossen</p>
+      <div className="max-w-6xl space-y-8">
+        {/* Header */}
+        <div className="space-y-3">
+          <h1 className="text-4xl font-bold text-slate-900">Bitcoin Bildungszentrum 📚⚡</h1>
+          <div className="flex items-center justify-between">
+            <p className="text-slate-600">Werde ein Bitcoin-Experte! {completedModules.length}/{modules.length} Module meistert</p>
+            <div className="w-64 bg-slate-200/50 rounded-full h-3">
+              <div className="bg-gradient-to-r from-violet-500 to-cyan-500 h-3 rounded-full transition-all" style={{width: `${(completedModules.length / modules.length) * 100}%`}}></div>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {modules.map((module) => {
-            const isCompleted = completedModules.includes(module.id);
-            return (
-              <Card key={module.id} className={`cursor-pointer transition-all hover:shadow-lg ${isCompleted ? "border-green-500/50 bg-green-500/5" : "border-slate-200"}`}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-3xl">{module.icon}</span>
-                      <CardTitle className="text-lg">{module.title}</CardTitle>
-                    </div>
-                    {isCompleted && <span className="text-green-500 font-bold">✓</span>}
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="space-y-2">
-                    {module.content.map((text, idx) => (
-                      <p key={idx} className="text-sm text-slate-600">
-                        • {text}
-                      </p>
-                    ))}
-                  </div>
-                  <Button
-                    onClick={() => {
-                      if (isCompleted) {
-                        setCompletedModules(completedModules.filter(m => m !== module.id));
-                      } else {
-                        setCompletedModules([...completedModules, module.id]);
-                      }
-                    }}
-                    className={`w-full ${isCompleted ? "bg-green-600 hover:bg-green-700" : "bg-blue-600 hover:bg-blue-700"}`}
-                    data-testid={`button-module-${module.id}`}
-                  >
-                    {isCompleted ? "✓ Verstanden!" : "Verstanden! 👍"}
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
+        {/* Achievements */}
+        <div className="space-y-3">
+          <h2 className="text-lg font-bold text-slate-900">Deine Abzeichen 🏆</h2>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            {achievements.map(badge => (
+              <div key={badge.id} className={`p-4 rounded-lg border-2 transition-all text-center ${badge.condition ? "border-amber-400/50 bg-amber-400/10" : "border-slate-300/50 bg-slate-100/30 opacity-50"}`}>
+                <span className="text-3xl block mb-1">{badge.icon}</span>
+                <p className="text-xs font-semibold text-slate-700">{badge.title}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
+        {/* Learning Modules */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-slate-900">Lernmodule</h2>
+          
+          {["Anfänger", "Mittelstufe", "Fortgeschritten"].map(level => (
+            <div key={level} className="space-y-3">
+              <h3 className={`text-sm font-semibold uppercase tracking-wide ${level === "Anfänger" ? "text-green-600" : level === "Mittelstufe" ? "text-yellow-600" : "text-red-600"}`}>
+                {level} Level
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {modules.filter(m => m.level === level).map(module => {
+                  const isCompleted = completedModules.includes(module.id);
+                  const isQuizOpen = showQuiz === module.id;
+                  
+                  return (
+                    <Card key={module.id} className={`transition-all ${isCompleted ? "border-green-500/50 bg-green-500/5" : "border-slate-200"} ${isQuizOpen ? "ring-2 ring-blue-500/50" : ""}`}>
+                      <CardHeader className="pb-2">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-2xl">{module.icon}</span>
+                              <CardTitle className="text-base">{module.title}</CardTitle>
+                            </div>
+                            <Badge variant="outline" className={`${module.levelColor} text-xs`}>{module.level}</Badge>
+                          </div>
+                          {isCompleted && <span className="text-2xl">✅</span>}
+                        </div>
+                      </CardHeader>
+                      
+                      {!isQuizOpen ? (
+                        <>
+                          <CardContent className="pb-3">
+                            <div className="space-y-2 mb-4">
+                              {module.content.map((text, idx) => (
+                                <p key={idx} className="text-sm text-slate-600">
+                                  • {text}
+                                </p>
+                              ))}
+                            </div>
+                          </CardContent>
+                          <CardFooter className="gap-2">
+                            {!isCompleted ? (
+                              <Button onClick={() => setShowQuiz(module.id)} className="flex-1 bg-blue-600 hover:bg-blue-700" size="sm" data-testid={`button-quiz-${module.id}`}>
+                                Quiz starten →
+                              </Button>
+                            ) : (
+                              <Button onClick={() => setShowQuiz(module.id)} variant="outline" className="flex-1" size="sm">
+                                Quiz wiederholen
+                              </Button>
+                            )}
+                          </CardFooter>
+                        </>
+                      ) : (
+                        <CardContent className="space-y-4">
+                          {modules.find(m => m.id === module.id)?.quiz.map((q, idx) => (
+                            <div key={idx} className="space-y-2 pb-3 border-b last:border-0">
+                              <p className="text-sm font-semibold text-slate-900">{idx + 1}. {q.question}</p>
+                              <div className="space-y-2">
+                                {q.options.map((option, optIdx) => (
+                                  <label key={optIdx} className="flex items-center gap-3 p-2 rounded-lg border border-slate-200/50 hover:bg-slate-50/50 cursor-pointer">
+                                    <input
+                                      type="radio"
+                                      name={`${module.id}-q${idx}`}
+                                      checked={quizAnswers[`${module.id}-${idx}`] === optIdx}
+                                      onChange={() => setQuizAnswers({...quizAnswers, [`${module.id}-${idx}`]: optIdx})}
+                                      className="h-4 w-4"
+                                    />
+                                    <span className="text-sm text-slate-700">{option}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                          <div className="flex gap-2 pt-3">
+                            <Button onClick={() => setShowQuiz(null)} variant="outline" className="flex-1" size="sm">
+                              Zurück
+                            </Button>
+                            <Button 
+                              onClick={() => handleQuizSubmit(module.id)} 
+                              className="flex-1 bg-green-600 hover:bg-green-700" 
+                              size="sm"
+                              data-testid={`button-submit-quiz-${module.id}`}
+                            >
+                              Einreichen
+                            </Button>
+                          </div>
+                        </CardContent>
+                      )}
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Completion Message */}
         {completedModules.length === modules.length && (
-          <Card className="mt-8 border-green-500/50 bg-green-500/5">
-            <CardContent className="pt-6 text-center">
-              <p className="text-xl font-bold text-green-600 mb-2">🎉 Gratuliere!</p>
-              <p className="text-slate-600">Du bist jetzt Bitcoin-Experte! Nutze dein Wissen um noch mehr Sats zu verdienen!</p>
+          <Card className="border-green-500/50 bg-gradient-to-r from-green-500/10 to-blue-500/10">
+            <CardContent className="pt-8 pb-8 text-center">
+              <p className="text-4xl mb-3">🏆👑🚀</p>
+              <p className="text-2xl font-bold text-green-600 mb-2">Bitcoin-Meister erreicht!</p>
+              <p className="text-slate-600 mb-4">Du beherrschst alle Bitcoin-Konzepte! Nutze dein Wissen um noch mehr Sats zu verdienen!</p>
+              <Badge className="bg-green-600">Zertifizierter Lernender</Badge>
             </CardContent>
           </Card>
         )}
