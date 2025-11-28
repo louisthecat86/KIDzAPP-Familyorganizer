@@ -4518,6 +4518,25 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
       refetchInterval: 2000
     });
 
+    const { data: bonusSettings } = useQuery({
+      queryKey: ["level-bonus-settings", user.connectionId],
+      queryFn: async () => {
+        const res = await fetch(`/api/level-bonus/settings/${user.connectionId}`);
+        if (!res.ok) return null;
+        return res.json();
+      }
+    });
+
+    const { data: myPayouts = [] } = useQuery({
+      queryKey: ["my-level-bonus-payouts", user.id],
+      queryFn: async () => {
+        const res = await fetch(`/api/level-bonus/payouts/${user.id}`);
+        if (!res.ok) return [];
+        return res.json();
+      },
+      enabled: user.role === "child"
+    });
+
     const getMedalEmoji = (position: number) => {
       if (position === 0) return "🥇";
       if (position === 1) return "🥈";
@@ -4540,18 +4559,27 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
     };
 
     const levels = [
-      { emoji: "🌱", title: "Anfänger", tasks: "0 Aufgaben" },
-      { emoji: "✨", title: "Level 1 – Funkenstarter", tasks: "3 Aufgaben" },
-      { emoji: "🔍", title: "Level 2 – Aufgabenentdecker", tasks: "6 Aufgaben" },
-      { emoji: "🤝", title: "Level 3 – Familienhelfer", tasks: "9 Aufgaben" },
-      { emoji: "🚀", title: "Level 4 – Alltagsmeister", tasks: "12 Aufgaben" },
-      { emoji: "⚡", title: "Level 5 – Blitzbringer", tasks: "15 Aufgaben" },
-      { emoji: "🦸", title: "Level 6 – Superheld der Woche", tasks: "18 Aufgaben" },
-      { emoji: "🎯", title: "Level 7 – Aufgabenprofi", tasks: "21 Aufgaben" },
-      { emoji: "🏆", title: "Level 8 – Wochenchampion", tasks: "24 Aufgaben" },
-      { emoji: "⭐", title: "Level 9 – Familienheld", tasks: "27 Aufgaben" },
-      { emoji: "👑", title: "Level 10 – Großmeister der Blitze", tasks: "30 Aufgaben" },
+      { level: 0, emoji: "🌱", title: "Anfänger", tasks: "0 Aufgaben" },
+      { level: 1, emoji: "✨", title: "Level 1 – Funkenstarter", tasks: "3 Aufgaben" },
+      { level: 2, emoji: "🔍", title: "Level 2 – Aufgabenentdecker", tasks: "6 Aufgaben" },
+      { level: 3, emoji: "🤝", title: "Level 3 – Familienhelfer", tasks: "9 Aufgaben" },
+      { level: 4, emoji: "🚀", title: "Level 4 – Alltagsmeister", tasks: "12 Aufgaben" },
+      { level: 5, emoji: "⚡", title: "Level 5 – Blitzbringer", tasks: "15 Aufgaben" },
+      { level: 6, emoji: "🦸", title: "Level 6 – Superheld der Woche", tasks: "18 Aufgaben" },
+      { level: 7, emoji: "🎯", title: "Level 7 – Aufgabenprofi", tasks: "21 Aufgaben" },
+      { level: 8, emoji: "🏆", title: "Level 8 – Wochenchampion", tasks: "24 Aufgaben" },
+      { level: 9, emoji: "⭐", title: "Level 9 – Familienheld", tasks: "27 Aufgaben" },
+      { level: 10, emoji: "👑", title: "Level 10 – Großmeister der Blitze", tasks: "30 Aufgaben" },
     ];
+
+    const hasBonusForLevel = (level: number) => {
+      if (!bonusSettings || !bonusSettings.isActive || level === 0) return false;
+      return level % bonusSettings.milestoneInterval === 0;
+    };
+
+    const isBonusPaid = (level: number) => {
+      return myPayouts.some((p: any) => p.level === level);
+    };
 
     return (
       <div className="max-w-4xl">
@@ -4572,14 +4600,40 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
           </button>
           {showLevels && (
             <CardContent className="pt-0 pb-4">
+              {bonusSettings && bonusSettings.isActive && (
+                <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                  <p className="text-sm font-semibold text-amber-300 mb-1">🏆 Level-Bonus aktiv!</p>
+                  <p className="text-xs text-muted-foreground">
+                    Alle {bonusSettings.milestoneInterval} Level gibt es <span className="text-orange-500 font-bold">{bonusSettings.bonusSats} Sats</span> Bonus!
+                  </p>
+                </div>
+              )}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-                {levels.map((level, idx) => (
-                  <div key={idx} className="text-center p-2 rounded-lg bg-card/50 border border-border hover:border-primary/50 transition-colors">
-                    <div className="text-2xl mb-1">{level.emoji}</div>
-                    <p className="text-xs font-semibold line-clamp-2">{level.title}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{level.tasks}</p>
-                  </div>
-                ))}
+                {levels.map((level) => {
+                  const hasBonus = hasBonusForLevel(level.level);
+                  const bonusPaid = isBonusPaid(level.level);
+                  return (
+                    <div 
+                      key={level.level} 
+                      className={`text-center p-2 rounded-lg border transition-colors ${
+                        hasBonus 
+                          ? bonusPaid 
+                            ? "bg-green-500/10 border-green-500/50" 
+                            : "bg-amber-500/10 border-amber-500/50"
+                          : "bg-card/50 border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <div className="text-2xl mb-1">{level.emoji}</div>
+                      <p className="text-xs font-semibold line-clamp-2">{level.title}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{level.tasks}</p>
+                      {hasBonus && (
+                        <div className={`text-xs font-bold mt-1 ${bonusPaid ? "text-green-400" : "text-amber-400"}`}>
+                          {bonusPaid ? "✓ Bonus erhalten" : `+${bonusSettings?.bonusSats} ⚡`}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           )}

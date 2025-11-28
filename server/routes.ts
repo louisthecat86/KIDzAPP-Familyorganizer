@@ -644,8 +644,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Task not found" });
       }
 
-      // If status is being set to approved (whether first time or not), create snapshot and process payment
-      if (updates.status === "approved") {
+      // If status is being set to approved AND task was not already approved, process payment
+      if (updates.status === "approved" && task.status !== "approved") {
         console.log(`[Task Approval] Processing approval for task ${id}, assigning sats to child ${task.assignedTo}`);
         const child = await storage.getPeer(task.assignedTo!);
         const parent = await storage.getPeer(task.createdBy);
@@ -654,7 +654,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(404).json({ error: "Child or parent not found" });
         }
 
-        // Update child's balance IMMEDIATELY
+        // Update child's balance IMMEDIATELY (only for first approval)
         const newBalance = (child.balance || 0) + task.sats;
         console.log(`[Task Approval] New balance for ${child.name}: ${newBalance} sats (was ${child.balance}, +${task.sats})`);
         await storage.updateBalance(child.id, newBalance);
@@ -678,6 +678,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         let paymentHash = "";
+
+        // Check for level bonus
+        try {
+          // Get number of completed tasks for this child
+          const allTasks = await storage.getTasks(task.connectionId);
+          const completedTasks = allTasks.filter((t: any) => 
+            t.assignedTo === child.id && 
+            (t.status === "approved" || t.id === task.id)
+          ).length;
+
+          // Calculate level
+          const getLevel = (completed: number) => {
+            if (completed >= 30) return 10;
+            if (completed >= 27) return 9;
+            if (completed >= 24) return 8;
+            if (completed >= 21) return 7;
+            if (completed >= 18) return 6;
+            if (completed >= 15) return 5;
+            if (completed >= 12) return 4;
+            if (completed >= 9) return 3;
+            if (completed >= 6) return 2;
+            if (completed >= 3) return 1;
+            return 0;
+          };
+          
+          const currentLevel = getLevel(completedTasks);
+          console.log(`[Level Bonus] Child ${child.name} now has ${completedTasks} tasks, Level ${currentLevel}`);
+
+          // Check for bonus
+          if (currentLevel > 0) {
+            const bonusSettings = await storage.getLevelBonusSettings(task.connectionId);
+            if (bonusSettings && bonusSettings.isActive) {
+              // Check if this level is a milestone
+              if (currentLevel % bonusSettings.milestoneInterval === 0) {
+                // Check if bonus already paid for this level
+                const alreadyPaid = await storage.hasLevelBonusBeenPaid(child.id, currentLevel);
+                if (!alreadyPaid) {
+                  console.log(`[Level Bonus] Paying ${bonusSettings.bonusSats} sats bonus for Level ${currentLevel} to ${child.name}`);
+                  
+                  // Update child's balance with bonus (newBalance already includes task.sats from earlier)
+                  const bonusBalance = newBalance + bonusSettings.bonusSats;
+                  await storage.updateBalance(child.id, bonusBalance);
+                  console.log(`[Level Bonus] Updated balance to ${bonusBalance} (added ${bonusSettings.bonusSats} bonus to ${newBalance})`);
+
+                  // Record the payout
+                  await storage.createLevelBonusPayout({
+                    childId: child.id,
+                    connectionId: task.connectionId,
+                    level: currentLevel,
+                    sats: bonusSettings.bonusSats
+                  });
+
+                  // Try to send bonus via Lightning if configured
+                  if (child.lightningAddress && parent.lnbitsUrl && parent.lnbitsAdminKey) {
+                    try {
+                      const parentLnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+                      await parentLnbits.payToLightningAddress(
+                        bonusSettings.bonusSats,
+                        child.lightningAddress,
+                        `Level ${currentLevel} Bonus!`
+                      );
+                      console.log(`[Level Bonus] Lightning payment sent for Level ${currentLevel} bonus`);
+                    } catch (bonusPayError) {
+                      console.warn("[Level Bonus] Lightning payment failed:", bonusPayError);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        } catch (bonusError) {
+          console.error("[Level Bonus] Error checking/paying bonus:", bonusError);
+        }
 
         // Try to send payment if both wallet and lightning address are configured
         if (child.lightningAddress && parent.lnbitsUrl && parent.lnbitsAdminKey) {
