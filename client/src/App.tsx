@@ -4873,11 +4873,11 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                 data-testid="card-task-overview"
               >
                 <CardContent className="pt-6">
-                  <div className="space-y-3">
+                  <div className="grid grid-cols-4 gap-3">
                     {/* In Arbeit */}
                     <div 
                       onClick={() => setCurrentView("tasks-my")}
-                      className="border border-primary/30 bg-gradient-to-br from-primary/5 to-transparent rounded-lg p-4 cursor-pointer hover:from-primary/10 hover:border-primary/50 transition-all"
+                      className="border border-primary/30 bg-gradient-to-br from-primary/5 to-transparent rounded-lg p-3 cursor-pointer hover:from-primary/10 hover:border-primary/50 transition-all"
                       data-testid="card-my-tasks"
                     >
                       <div className="text-center">
@@ -4889,7 +4889,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                     {/* Zur Bestätigung */}
                     <div 
                       onClick={() => setCurrentView("tasks-pending")}
-                      className="border border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-transparent rounded-lg p-4 cursor-pointer hover:from-amber-500/10 hover:border-amber-500/50 transition-all"
+                      className="border border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-transparent rounded-lg p-3 cursor-pointer hover:from-amber-500/10 hover:border-amber-500/50 transition-all"
                       data-testid="card-pending-tasks"
                     >
                       <div className="text-center">
@@ -4901,7 +4901,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                     {/* Erledigt */}
                     <div 
                       onClick={() => setCurrentView("tasks-completed")}
-                      className="border border-green-500/30 bg-gradient-to-br from-green-500/5 to-transparent rounded-lg p-4 cursor-pointer hover:from-green-500/10 hover:border-green-500/50 transition-all"
+                      className="border border-green-500/30 bg-gradient-to-br from-green-500/5 to-transparent rounded-lg p-3 cursor-pointer hover:from-green-500/10 hover:border-green-500/50 transition-all"
                       data-testid="card-completed-tasks"
                     >
                       <div className="text-center">
@@ -4913,7 +4913,7 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
                     {/* Verfügbar */}
                     <div 
                       onClick={() => setCurrentView("tasks-open")}
-                      className="border border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-transparent rounded-lg p-4 cursor-pointer hover:from-blue-500/10 hover:border-blue-500/50 transition-all"
+                      className="border border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-transparent rounded-lg p-3 cursor-pointer hover:from-blue-500/10 hover:border-blue-500/50 transition-all"
                       data-testid="card-available-tasks"
                     >
                       <div className="text-center">
