@@ -1905,10 +1905,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Try to pay via Lightning if child has lightning address
+      console.log(`[Level Bonus] Child lightning address: ${child.lightningAddress}`);
+      console.log(`[Level Bonus] Parent LNBits URL: ${parent[0].lnbitsUrl}`);
+      
       if (child.lightningAddress) {
         try {
+          console.log(`[Level Bonus] Attempting Lightning payment of ${settings.bonusSats} sats to ${child.lightningAddress}`);
           const lnbits = new LNBitsClient(parent[0].lnbitsUrl, parent[0].lnbitsAdminKey);
-          await lnbits.payToLightningAddress(settings.bonusSats, child.lightningAddress, `Level ${currentLevel} Bonus!`);
+          const paymentResult = await lnbits.payToLightningAddress(settings.bonusSats, child.lightningAddress, `Level ${currentLevel} Bonus!`);
+          console.log(`[Level Bonus] Lightning payment SUCCESS! Hash: ${paymentResult}`);
           
           // Record the payout
           await storage.createLevelBonusPayout({
@@ -1925,9 +1930,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             paymentMethod: "lightning"
           });
         } catch (payError) {
-          console.error("[Level Bonus Lightning Payment Error]:", payError);
+          console.error("[Level Bonus Lightning Payment FAILED]:", payError);
           // Fall back to internal balance
         }
+      } else {
+        console.log("[Level Bonus] No lightning address configured, using internal balance");
       }
 
       // Fallback: update internal balance
