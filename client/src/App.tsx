@@ -47,7 +47,8 @@ import {
   MessageSquare,
   Eye,
   EyeOff,
-  Bell
+  Bell,
+  BookOpen
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PhotoUpload } from "@/components/PhotoUpload";
@@ -1380,6 +1381,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
     { id: "chat", label: "Familienchat", icon: MessageSquare, badge: chatNotificationCount },
     { id: "notifications", label: "Aktivitäten", icon: Bell, badge: 0 },
     { id: "leaderboard", label: "Bestenliste", icon: Trophy, badge: 0 },
+    ...(user.role === "child" ? [{ id: "bitcoin-education", label: "Bitcoin Lernen", icon: BookOpen, badge: 0 }] : []),
   ];
 
   const handleSettingsClick = (tab: "ansicht" | "wallet" | "peers") => {
@@ -6018,6 +6020,138 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
             </Button>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  if (currentView === "bitcoin-education" && user.role === "child") {
+    const [completedModules, setCompletedModules] = useState<string[]>([]);
+    
+    const modules = [
+      {
+        id: "what-is-bitcoin",
+        title: "Was ist Bitcoin?",
+        icon: "₿",
+        content: [
+          "Bitcoin ist digitales Geld - wie elektronische Münzen die du sammeln kannst!",
+          "Es wurde 2009 erfunden und es gibt maximal 21 Millionen Bitcoin.",
+          "Bitcoin wird von vielen Menschen auf der ganzen Welt verwenden, nicht von einer Bank.",
+          "Jeder Bitcoin kann in 100 Millionen Satoshis (Sats) aufgeteilt werden."
+        ]
+      },
+      {
+        id: "what-is-sats",
+        title: "Was sind Satoshis (Sats)?",
+        icon: "⚡",
+        content: [
+          "Satoshis sind die kleinste Einheit von Bitcoin - wie Cent für Euro!",
+          "1 Bitcoin = 100.000.000 Satoshis",
+          "Die Bezeichnung 'Satoshi' ehrt den Erfinder von Bitcoin (Satoshi Nakamoto)",
+          "Sats sind perfekt für kleine Transaktionen und Zahlungen"
+        ]
+      },
+      {
+        id: "lightning-network",
+        title: "Lightning Network ⚡",
+        icon: "🌩️",
+        content: [
+          "Lightning ist ein Netzwerk auf top von Bitcoin für SUPER schnelle Zahlungen!",
+          "Transaktionen im Lightning Netzwerk dauern Sekunden statt Minuten",
+          "Du kannst sofort Bitcoin (über Sats) senden und empfangen",
+          "Es ist wie der Unterschied zwischen SMS und Telefonanruf"
+        ]
+      },
+      {
+        id: "blockchain",
+        title: "Blockchain erklärt",
+        icon: "🔗",
+        content: [
+          "Eine Blockchain ist eine Kette von Blöcken mit Transaktionsdaten",
+          "Jeder Block ist mit dem vorherigen verbunden - wie eine Kette",
+          "Das macht es unmöglich, alte Transaktionen zu fälschen",
+          "Viele Computer speichern die gleiche Blockchain - ultra sicher!"
+        ]
+      },
+      {
+        id: "security",
+        title: "Sicherheit & private Keys",
+        icon: "🔐",
+        content: [
+          "Deine Lightning Adresse ist wie deine Kontonummer - sie ist öffentlich",
+          "Aber dein privater Schlüssel ist wie dein Passwort - NIEMALS weitergeben!",
+          "Mit deinem privaten Schlüssel kann jemand dein Geld nehmen",
+          "Bewahre deine Keys immer geheim auf!"
+        ]
+      },
+      {
+        id: "future",
+        title: "Die Zukunft von Bitcoin",
+        icon: "🚀",
+        content: [
+          "Bitcoin wird immer beliebter und mehr Menschen verwenden es",
+          "Der Wert von Bitcoin kann steigen und fallen - aber langfristig ist es interessant",
+          "Lightning macht Bitcoin für tägliche Zahlungen nutzbar",
+          "Du lernst heute die Finanz-Technologie der Zukunft!"
+        ]
+      }
+    ];
+
+    return (
+      <div className="max-w-4xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Bitcoin Lernen 📚</h1>
+          <p className="text-slate-600">Verstehe Bitcoin, Lightning und wie du verdienst! {completedModules.length}/{modules.length} Module abgeschlossen</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {modules.map((module) => {
+            const isCompleted = completedModules.includes(module.id);
+            return (
+              <Card key={module.id} className={`cursor-pointer transition-all hover:shadow-lg ${isCompleted ? "border-green-500/50 bg-green-500/5" : "border-slate-200"}`}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-3xl">{module.icon}</span>
+                      <CardTitle className="text-lg">{module.title}</CardTitle>
+                    </div>
+                    {isCompleted && <span className="text-green-500 font-bold">✓</span>}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="space-y-2">
+                    {module.content.map((text, idx) => (
+                      <p key={idx} className="text-sm text-slate-600">
+                        • {text}
+                      </p>
+                    ))}
+                  </div>
+                  <Button
+                    onClick={() => {
+                      if (isCompleted) {
+                        setCompletedModules(completedModules.filter(m => m !== module.id));
+                      } else {
+                        setCompletedModules([...completedModules, module.id]);
+                      }
+                    }}
+                    className={`w-full ${isCompleted ? "bg-green-600 hover:bg-green-700" : "bg-blue-600 hover:bg-blue-700"}`}
+                    data-testid={`button-module-${module.id}`}
+                  >
+                    {isCompleted ? "✓ Verstanden!" : "Verstanden! 👍"}
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        {completedModules.length === modules.length && (
+          <Card className="mt-8 border-green-500/50 bg-green-500/5">
+            <CardContent className="pt-6 text-center">
+              <p className="text-xl font-bold text-green-600 mb-2">🎉 Gratuliere!</p>
+              <p className="text-slate-600">Du bist jetzt Bitcoin-Experte! Nutze dein Wissen um noch mehr Sats zu verdienen!</p>
+            </CardContent>
+          </Card>
+        )}
       </div>
     );
   }
