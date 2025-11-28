@@ -2313,36 +2313,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Recurring tasks scheduler (checks every 2 minutes for testing)
-  cron.schedule("*/2 * * * *", async () => {
+  // Recurring tasks scheduler (checks every 1 minute)
+  cron.schedule("*/1 * * * *", async () => {
     try {
       const allRecurringTasks = await db.select().from(recurringTasks).where(eq(recurringTasks.isActive, true));
-      console.log(`[Recurring Tasks Scheduler] Running... Found ${allRecurringTasks.length} active recurring tasks`);
+      
+      if (allRecurringTasks.length === 0) {
+        console.log(`[Recurring Tasks Scheduler] No active recurring tasks`);
+        return;
+      }
+      
+      console.log(`[Recurring Tasks Scheduler] ⏰ Running at ${new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}... Found ${allRecurringTasks.length} active recurring tasks`);
       const now = new Date();
       
       for (const recurring of allRecurringTasks) {
-        console.log(`[Recurring Tasks Scheduler] Checking: ${recurring.title} (${recurring.frequency}, time: ${recurring.time}, dayOfWeek: ${recurring.dayOfWeek})`);
+        console.log(`[Recurring Tasks Scheduler] 🔍 Checking: "${recurring.title}" (${recurring.frequency}, time: ${recurring.time})`);
         const shouldCreate = checkIfTaskShouldBeCreated(recurring, now);
-        console.log(`[Recurring Tasks Scheduler] ${recurring.title} - shouldCreate: ${shouldCreate}`);
         
         if (shouldCreate) {
-          // Create new task
-          const newTask = await storage.createTask({
-            connectionId: recurring.connectionId,
-            createdBy: recurring.createdBy,
-            title: recurring.title,
-            description: recurring.description,
-            sats: recurring.sats,
-            status: "open"
-          });
-          
-          // Update lastCreatedDate
-          await storage.updateRecurringTask(recurring.id, { lastCreatedDate: now });
-          console.log(`[Recurring Tasks] ✅ Created task from recurring rule: ${recurring.title}`);
+          try {
+            // Create new task
+            const newTask = await storage.createTask({
+              connectionId: recurring.connectionId,
+              createdBy: recurring.createdBy,
+              title: recurring.title,
+              description: recurring.description || "",
+              sats: recurring.sats || 0,
+              status: "open"
+            });
+            
+            // Update lastCreatedDate with ISO string
+            await storage.updateRecurringTask(recurring.id, { lastCreatedDate: new Date() });
+            console.log(`[Recurring Tasks] ✅ CREATED! Task: "${recurring.title}" (ID: ${newTask.id})`);
+          } catch (createError) {
+            console.error(`[Recurring Tasks] ❌ Failed to create task "${recurring.title}":`, createError);
+          }
         }
       }
     } catch (error) {
-      console.error("[Recurring Tasks] ❌ Error:", error);
+      console.error("[Recurring Tasks Scheduler] ❌ Fatal error:", error);
     }
   });
 

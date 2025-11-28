@@ -357,7 +357,11 @@ export class DatabaseStorage implements IStorage {
 
   async getSatsSpentByParent(peerId: number, connectionId: string): Promise<number> {
     const result = await db.select().from(tasks)
-      .where(and(eq(tasks.createdBy, peerId), eq(tasks.connectionId, connectionId)));
+      .where(and(
+        eq(tasks.createdBy, peerId), 
+        eq(tasks.connectionId, connectionId),
+        eq(tasks.status, "approved")  // ONLY count approved tasks!
+      ));
     return result.reduce((sum, t) => sum + t.sats, 0);
   }
 
