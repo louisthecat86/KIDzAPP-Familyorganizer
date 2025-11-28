@@ -1880,11 +1880,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Find parent with LNBits configured
+      console.log(`[Level Bonus] Looking for parent with connectionId: ${connectionId}`);
       const parent = await db.select().from(peers)
         .where(and(eq(peers.connectionId, connectionId), eq(peers.role, "parent")))
         .limit(1);
+      
+      console.log(`[Level Bonus] Found parent: ${JSON.stringify(parent[0] ? { id: parent[0].id, name: parent[0].name, lnbitsUrl: parent[0].lnbitsUrl, hasAdminKey: !!parent[0].lnbitsAdminKey } : 'none')}`);
 
       if (!parent[0] || !parent[0].lnbitsUrl || !parent[0].lnbitsAdminKey) {
+        console.log(`[Level Bonus] No LNBits configured, using internal balance`);
         // No LNBits configured - just update balance internally
         await storage.updateBalance(childId, (child.balance || 0) + settings.bonusSats);
         
