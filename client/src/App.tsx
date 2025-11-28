@@ -4067,7 +4067,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <Input placeholder="Aufgabentitel" value={newRecurring.title} onChange={(e) => setNewRecurring({ ...newRecurring, title: e.target.value })} data-testid="input-recurring-title" />
             <Input placeholder="Beschreibung" value={newRecurring.description} onChange={(e) => setNewRecurring({ ...newRecurring, description: e.target.value })} data-testid="input-recurring-desc" />
             <div className="grid grid-cols-2 gap-3">
-              <Input type="number" placeholder="Sats" value={newRecurring.sats} onChange={(e) => setNewRecurring({ ...newRecurring, sats: parseInt(e.target.value) || 50 })} data-testid="input-recurring-sats" />
+              <Input type="number" placeholder="Betrag" value={newRecurring.sats} onChange={(e) => setNewRecurring({ ...newRecurring, sats: parseInt(e.target.value) || 50 })} data-testid="input-recurring-sats" />
               <Select value={newRecurring.frequency} onValueChange={(v) => setNewRecurring({ ...newRecurring, frequency: v })}>
                 <SelectTrigger data-testid="select-frequency">
                   <SelectValue />
@@ -4103,7 +4103,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <h4 className="font-bold">{task.title}</h4>
-                    <span className="text-xs bg-violet-500/30 px-2 py-1 rounded text-violet-700 font-semibold" data-testid={`badge-sats-${task.id}`}>💜 {task.sats} Sats</span>
+                    <span className="text-xs bg-violet-500/30 px-2 py-1 rounded text-violet-700 font-semibold" data-testid={`badge-sats-${task.id}`}>⚡ {task.sats} Sats</span>
                   </div>
                   <p className="text-sm text-slate-600 mt-1">
                     {task.frequency === 'weekly' && weekdays[task.dayOfWeek]} 
