@@ -1372,6 +1372,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
   const menuItems = [
     { id: "dashboard", label: user.role === "parent" ? "Dashboard" : "Mein Dashboard", icon: Home, badge: 0 },
     ...(user.role === "parent" ? [{ id: "tasks", label: "Aufgaben", icon: CheckCircle, badge: tasksNotificationCount }] : []),
+    ...(user.role === "parent" ? [{ id: "recurring-tasks", label: "Wiederh. Aufgaben", icon: Clock, badge: 0 }] : []),
     ...(user.role === "parent" ? [{ id: "children-overview", label: "Kinder-Übersicht", icon: Users, badge: 0 }] : []),
     { id: "calendar", label: "Familienkalender", icon: Calendar, badge: 0 },
     { id: "chat", label: "Familienchat", icon: MessageSquare, badge: chatNotificationCount },
@@ -3949,6 +3950,95 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <p className="text-slate-600 text-sm">Teile deinen Verbindungscode mit deinen Kindern, um sie hinzuzufügen</p>
           </Card>
         )}
+      </div>
+    );
+  }
+
+  if (currentView === "recurring-tasks" && user.role === "parent") {
+    const { data: recurringTasks = [] } = useQuery({
+      queryKey: ["recurring-tasks", user.connectionId],
+      queryFn: async () => {
+        const res = await fetch(`/api/recurring-tasks/${user.connectionId}`);
+        if (!res.ok) throw new Error("Failed to fetch");
+        return res.json();
+      }
+    });
+
+    const [newRecurring, setNewRecurring] = useState({
+      title: "",
+      description: "",
+      sats: 50,
+      frequency: "weekly",
+      dayOfWeek: 3,
+      time: "09:00"
+    });
+
+    const handleCreateRecurring = async () => {
+      try {
+        const res = await fetch("/api/recurring-tasks", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...newRecurring,
+            connectionId: user.connectionId,
+            createdBy: user.id
+          })
+        });
+        const data = await res.json();
+        queryClient.invalidateQueries({ queryKey: ["recurring-tasks"] });
+        toast({ title: "✅ Aufgabe erstellt", description: `${newRecurring.frequency} Aufgabe erstellt` });
+        setNewRecurring({ title: "", description: "", sats: 50, frequency: "weekly", dayOfWeek: 3, time: "09:00" });
+      } catch (error) {
+        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      }
+    };
+
+    return (
+      <div className="space-y-6 max-w-2xl">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Wiederkehrende Aufgaben</h1>
+          <p className="text-slate-700 text-sm mt-2">Automatisch jede Woche, täglich oder monatlich erstellt</p>
+        </div>
+
+        <Card className="bg-gradient-to-br from-violet-500/20 to-cyan-500/20 border border-white/50 p-6">
+          <h3 className="font-bold mb-4">Neue wiederholende Aufgabe</h3>
+          <div className="space-y-3">
+            <Input placeholder="Aufgabentitel" value={newRecurring.title} onChange={(e) => setNewRecurring({ ...newRecurring, title: e.target.value })} data-testid="input-recurring-title" />
+            <Input placeholder="Beschreibung" value={newRecurring.description} onChange={(e) => setNewRecurring({ ...newRecurring, description: e.target.value })} data-testid="input-recurring-desc" />
+            <div className="grid grid-cols-2 gap-3">
+              <Input type="number" placeholder="Sats" value={newRecurring.sats} onChange={(e) => setNewRecurring({ ...newRecurring, sats: parseInt(e.target.value) })} data-testid="input-recurring-sats" />
+              <Select value={newRecurring.frequency} onValueChange={(v) => setNewRecurring({ ...newRecurring, frequency: v })}>
+                <SelectTrigger data-testid="select-frequency">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">Täglich</SelectItem>
+                  <SelectItem value="weekly">Wöchentlich</SelectItem>
+                  <SelectItem value="monthly">Monatlich</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Input type="time" value={newRecurring.time} onChange={(e) => setNewRecurring({ ...newRecurring, time: e.target.value })} data-testid="input-recurring-time" />
+            <Button onClick={handleCreateRecurring} className="w-full bg-violet-600 hover:bg-violet-700" data-testid="button-create-recurring">Erstellen</Button>
+          </div>
+        </Card>
+
+        <div className="space-y-3">
+          {recurringTasks.length > 0 ? recurringTasks.map((task: any) => (
+            <Card key={task.id} className="p-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h4 className="font-bold">{task.title}</h4>
+                  <p className="text-sm text-slate-600">{task.frequency} • {task.time} • {task.sats} Sats</p>
+                </div>
+                <Button variant="destructive" size="sm" onClick={() => {
+                  fetch(`/api/recurring-tasks/${task.id}`, { method: "DELETE" });
+                  queryClient.invalidateQueries({ queryKey: ["recurring-tasks"] });
+                }} data-testid={`button-delete-recurring-${task.id}`}>✕</Button>
+              </div>
+            </Card>
+          )) : <p className="text-slate-600" data-testid="text-no-recurring">Keine wiederholenden Aufgaben erstellt</p>}
+        </div>
       </div>
     );
   }

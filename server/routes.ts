@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertPeerSchema, insertTaskSchema, insertFamilyEventSchema, insertEventRsvpSchema, insertChatMessageSchema, peers } from "@shared/schema";
+import { insertPeerSchema, insertTaskSchema, insertFamilyEventSchema, insertEventRsvpSchema, insertChatMessageSchema, peers, recurringTasks } from "@shared/schema";
 import { z } from "zod";
 import { LNBitsClient } from "./lnbits";
 import { db } from "./db";
@@ -812,6 +812,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Delete task error:", error);
       res.status(500).json({ error: "Failed to delete task" });
+    }
+  });
+
+  // Get recurring tasks
+  app.get("/api/recurring-tasks/:connectionId", async (req, res) => {
+    try {
+      const tasks = await storage.getRecurringTasks(req.params.connectionId);
+      res.json(tasks);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch recurring tasks" });
+    }
+  });
+
+  // Create recurring task
+  app.post("/api/recurring-tasks", async (req, res) => {
+    try {
+      const data = req.body;
+      const task = await storage.createRecurringTask({
+        connectionId: data.connectionId,
+        createdBy: data.createdBy,
+        title: data.title,
+        description: data.description,
+        sats: data.sats,
+        frequency: data.frequency,
+        dayOfWeek: data.dayOfWeek,
+        dayOfMonth: data.dayOfMonth,
+        time: data.time,
+        isActive: true,
+      });
+      res.json(task);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create recurring task" });
+    }
+  });
+
+  // Update recurring task
+  app.patch("/api/recurring-tasks/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const task = await storage.updateRecurringTask(id, req.body);
+      if (task) {
+        res.json(task);
+      } else {
+        res.status(404).json({ error: "Recurring task not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update recurring task" });
+    }
+  });
+
+  // Delete recurring task
+  app.delete("/api/recurring-tasks/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteRecurringTask(id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete recurring task" });
     }
   });
 
@@ -2230,6 +2288,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Recurring tasks scheduler (checks every hour)
+  cron.schedule("0 * * * *", async () => {
+    try {
+      const allRecurringTasks = await db.select().from(recurringTasks).where(eq(recurringTasks.isActive, true));
+      const now = new Date();
+      
+      for (const recurring of allRecurringTasks) {
+        const shouldCreate = checkIfTaskShouldBeCreated(recurring, now);
+        
+        if (shouldCreate) {
+          // Create new task
+          const newTask = await storage.createTask({
+            connectionId: recurring.connectionId,
+            createdBy: recurring.createdBy,
+            title: recurring.title,
+            description: recurring.description,
+            sats: recurring.sats,
+            status: "open"
+          });
+          
+          // Update lastCreatedDate
+          await storage.updateRecurringTask(recurring.id, { lastCreatedDate: now });
+          console.log(`[Recurring Tasks] Created task from recurring rule: ${recurring.title}`);
+        }
+      }
+    } catch (error) {
+      console.error("[Recurring Tasks] Error:", error);
+    }
+  });
+
+  function checkIfTaskShouldBeCreated(recurring: any, now: Date): boolean {
+    const lastCreated = recurring.lastCreatedDate ? new Date(recurring.lastCreatedDate) : null;
+    const [hours, minutes] = recurring.time.split(":").map(Number);
+    
+    const taskTime = new Date(now);
+    taskTime.setHours(hours, minutes, 0, 0);
+    
+    if (recurring.frequency === "daily") {
+      if (!lastCreated || lastCreated.getDate() !== now.getDate()) {
+        return now >= taskTime;
+      }
+    } else if (recurring.frequency === "weekly") {
+      if (!lastCreated || lastCreated.getDate() !== now.getDate() || lastCreated.getDay() !== recurring.dayOfWeek) {
+        return now.getDay() === recurring.dayOfWeek && now >= taskTime;
+      }
+    } else if (recurring.frequency === "biweekly") {
+      if (!lastCreated || lastCreated.getDate() !== now.getDate()) {
+        const daysSinceCreated = lastCreated ? Math.floor((now.getTime() - lastCreated.getTime()) / (1000 * 60 * 60 * 24)) : 14;
+        return daysSinceCreated >= 14 && now >= taskTime;
+      }
+    } else if (recurring.frequency === "monthly") {
+      if (!lastCreated || lastCreated.getDate() !== now.getDate() || lastCreated.getMonth() !== now.getMonth()) {
+        return now.getDate() === recurring.dayOfMonth && now >= taskTime;
+      }
+    }
+    return false;
+  }
+
+  // Need to import recurringTasks at top
   // Monthly savings snapshot scheduler (runs on the 1st of each month at 00:01)
   cron.schedule("1 0 1 * *", async () => {
     try {

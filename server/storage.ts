@@ -609,6 +609,35 @@ export class DatabaseStorage implements IStorage {
     return result.length > 0;
   }
 
+  async getRecurringTasks(connectionId: string): Promise<RecurringTask[]> {
+    return await db.select().from(recurringTasks)
+      .where(eq(recurringTasks.connectionId, connectionId))
+      .orderBy(desc(recurringTasks.createdAt));
+  }
+
+  async getRecurringTask(id: number): Promise<RecurringTask | undefined> {
+    const result = await db.select().from(recurringTasks).where(eq(recurringTasks.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createRecurringTask(task: InsertRecurringTask): Promise<RecurringTask> {
+    const result = await db.insert(recurringTasks).values(task).returning();
+    return result[0];
+  }
+
+  async updateRecurringTask(id: number, updates: Partial<RecurringTask>): Promise<RecurringTask | undefined> {
+    const result = await db.update(recurringTasks)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(recurringTasks.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteRecurringTask(id: number): Promise<boolean> {
+    const result = await db.delete(recurringTasks).where(eq(recurringTasks.id, id));
+    return true;
+  }
+
 }
 
 export const storage = new DatabaseStorage();
