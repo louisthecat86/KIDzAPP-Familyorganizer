@@ -14,6 +14,8 @@ export const peers = pgTable("peers", {
   balance: integer("balance").default(0).notNull(), // Sats balance
   lnbitsUrl: text("lnbits_url"), // LNBits instance URL (parent)
   lnbitsAdminKey: text("lnbits_admin_key"), // LNBits admin key (parent)
+  nwcConnectionString: text("nwc_connection_string"), // Nostr Wallet Connect connection string (parent)
+  walletType: text("wallet_type"), // 'lnbits' or 'nwc' - which wallet to use for payments
   lightningAddress: text("lightning_address"), // Lightning address for child (receives sats directly)
   favoriteColor: text("favorite_color"), // Favorite color for PIN recovery
   createdAt: timestamp("created_at").defaultNow().notNull(),

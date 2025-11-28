@@ -13,6 +13,9 @@ export interface IStorage {
   createPeer(peer: InsertPeer): Promise<Peer>;
   linkChildToParent(childId: number, parentConnectionId: string): Promise<Peer>;
   updatePeerWallet(peerId: number, lnbitsUrl: string, lnbitsAdminKey: string): Promise<Peer>;
+  updatePeerNwcWallet(peerId: number, nwcConnectionString: string): Promise<Peer>;
+  updatePeerWalletType(peerId: number, walletType: string): Promise<Peer>;
+  clearPeerNwcWallet(peerId: number): Promise<Peer>;
   updateBalance(peerId: number, sats: number): Promise<Peer>;
   updatePeerPin(peerId: number, newPin: string): Promise<Peer>;
   updatePeerFamilyName(peerId: number, familyName: string): Promise<Peer>;
@@ -177,12 +180,35 @@ export class DatabaseStorage implements IStorage {
 
   async updatePeerWallet(peerId: number, lnbitsUrl: string, lnbitsAdminKey: string): Promise<Peer> {
     const result = await db.update(peers)
-      .set({ lnbitsUrl, lnbitsAdminKey })
+      .set({ lnbitsUrl, lnbitsAdminKey, walletType: lnbitsUrl ? "lnbits" : null })
       .where(eq(peers.id, peerId))
       .returning();
     return result[0];
   }
 
+  async updatePeerNwcWallet(peerId: number, nwcConnectionString: string): Promise<Peer> {
+    const result = await db.update(peers)
+      .set({ nwcConnectionString, walletType: nwcConnectionString ? "nwc" : null })
+      .where(eq(peers.id, peerId))
+      .returning();
+    return result[0];
+  }
+
+  async updatePeerWalletType(peerId: number, walletType: string): Promise<Peer> {
+    const result = await db.update(peers)
+      .set({ walletType })
+      .where(eq(peers.id, peerId))
+      .returning();
+    return result[0];
+  }
+
+  async clearPeerNwcWallet(peerId: number): Promise<Peer> {
+    const result = await db.update(peers)
+      .set({ nwcConnectionString: null })
+      .where(eq(peers.id, peerId))
+      .returning();
+    return result[0];
+  }
 
   async updateBalance(peerId: number, sats: number): Promise<Peer> {
     const result = await db.update(peers)

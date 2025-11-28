@@ -338,6 +338,112 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Setup NWC wallet for Parent
+  app.post("/api/wallet/setup-nwc", async (req, res) => {
+    try {
+      const { peerId, nwcConnectionString } = req.body;
+      
+      if (!peerId || !nwcConnectionString) {
+        return res.status(400).json({ error: "peerId und nwcConnectionString erforderlich" });
+      }
+
+      // Validate NWC connection string format
+      if (!nwcConnectionString.startsWith("nostr+walletconnect://")) {
+        return res.status(400).json({ error: "NWC Connection String muss mit nostr+walletconnect:// beginnen" });
+      }
+
+      // Test NWC connection
+      try {
+        const { NWCClient } = await import("./nwc");
+        const nwc = new NWCClient(nwcConnectionString);
+        const connected = await nwc.testConnection();
+        nwc.close();
+        
+        if (!connected) {
+          return res.status(400).json({ 
+            error: "NWC Verbindung fehlgeschlagen. Überprüfe den Connection String." 
+          });
+        }
+      } catch (error) {
+        console.error("NWC connection test failed:", error);
+        return res.status(400).json({ error: `NWC Fehler: ${(error as Error).message}` });
+      }
+
+      // Save NWC credentials
+      const peer = await storage.updatePeerNwcWallet(peerId, nwcConnectionString);
+      console.log("NWC wallet saved successfully for peer:", peerId);
+      res.json(sanitizePeerForClient(peer));
+    } catch (error) {
+      console.error("NWC wallet setup error:", error);
+      res.status(500).json({ error: "NWC Wallet-Setup fehlgeschlagen: " + (error as Error).message });
+    }
+  });
+
+  // Delete NWC wallet connection
+  app.delete("/api/wallet/nwc", async (req, res) => {
+    try {
+      const { peerId } = req.body;
+      
+      if (!peerId) {
+        return res.status(400).json({ error: "peerId erforderlich" });
+      }
+
+      await storage.clearPeerNwcWallet(peerId);
+      console.log("NWC wallet deleted successfully for peer:", peerId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("NWC wallet delete error:", error);
+      res.status(500).json({ error: "Fehler beim Löschen der NWC-Verbindung" });
+    }
+  });
+
+  // Set active wallet type
+  app.post("/api/wallet/set-active", async (req, res) => {
+    try {
+      const { peerId, walletType } = req.body;
+      
+      if (!peerId || !walletType) {
+        return res.status(400).json({ error: "peerId und walletType erforderlich" });
+      }
+
+      if (!["lnbits", "nwc"].includes(walletType)) {
+        return res.status(400).json({ error: "walletType muss 'lnbits' oder 'nwc' sein" });
+      }
+
+      const peer = await storage.updatePeerWalletType(peerId, walletType);
+      res.json(sanitizePeerForClient(peer));
+    } catch (error) {
+      console.error("Set active wallet error:", error);
+      res.status(500).json({ error: "Fehler beim Setzen der aktiven Wallet" });
+    }
+  });
+
+  // Get NWC balance
+  app.get("/api/wallet/nwc-balance/:peerId", async (req, res) => {
+    try {
+      const { peerId } = req.params;
+      const parent = await storage.getPeer(parseInt(peerId));
+      
+      if (!parent) {
+        return res.status(404).json({ error: "Parent nicht gefunden" });
+      }
+
+      if (!parent.nwcConnectionString) {
+        return res.status(400).json({ error: "NWC nicht konfiguriert" });
+      }
+
+      const { NWCClient } = await import("./nwc");
+      const nwc = new NWCClient(parent.nwcConnectionString);
+      const balance = await nwc.getBalance();
+      nwc.close();
+
+      res.json({ balance });
+    } catch (error) {
+      console.error("NWC balance error:", error);
+      res.status(500).json({ error: "Fehler beim Abrufen der NWC Balance" });
+    }
+  });
+
   // Setup Child Lightning Address
   app.post("/api/wallet/setup-child-address", async (req, res) => {
     try {
@@ -497,7 +603,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get parent wallet balances (LNbits only)
+  // Get parent wallet balances (LNbits and NWC)
   app.get("/api/parent/:peerId/wallet-balance", async (req, res) => {
     try {
       const { peerId } = req.params;
@@ -508,6 +614,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       let lnbitsBalance = null;
+      let nwcBalance = null;
 
       // Try to get LNbits balance
       if (parent.lnbitsUrl && parent.lnbitsAdminKey) {
@@ -519,7 +626,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      res.json({ lnbitsBalance });
+      // Try to get NWC balance
+      if (parent.nwcConnectionString) {
+        try {
+          const { NWCClient } = await import("./nwc");
+          const nwc = new NWCClient(parent.nwcConnectionString);
+          nwcBalance = await nwc.getBalance();
+          nwc.close();
+        } catch (error) {
+          console.warn("NWC balance fetch failed:", error);
+        }
+      }
+
+      res.json({ lnbitsBalance, nwcBalance, activeWallet: parent.walletType });
     } catch (error) {
       console.error("Wallet balance error:", error);
       res.status(500).json({ error: "Failed to fetch wallet balance" });
@@ -541,46 +660,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let invoice = "";
       let escrowLocked = false;
 
-      // LNbits must be configured
-      if (!parent.lnbitsUrl || !parent.lnbitsAdminKey) {
+      // Check which wallet is configured
+      const hasLnbits = parent.lnbitsUrl && parent.lnbitsAdminKey;
+      const hasNwc = parent.nwcConnectionString;
+      const activeWallet = parent.walletType || (hasLnbits ? "lnbits" : hasNwc ? "nwc" : null);
+
+      if (!hasLnbits && !hasNwc) {
         return res.status(400).json({ 
-          error: "LNbits ist nicht konfiguriert. Bitte verbinde dein LNbits-Konto in den Einstellungen." 
+          error: "Keine Wallet konfiguriert. Bitte verbinde LNbits oder NWC in den Einstellungen." 
         });
       }
 
-      // Try to validate and create escrow invoice, but allow task creation without it
+      // Try to validate balance with active wallet
       try {
-        const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
-        const balance = await lnbits.getBalance();
+        let balance = 0;
+        
+        if (activeWallet === "nwc" && hasNwc) {
+          const { NWCClient } = await import("./nwc");
+          const nwc = new NWCClient(parent.nwcConnectionString!);
+          balance = await nwc.getBalance();
+          nwc.close();
+        } else if (hasLnbits) {
+          const lnbits = new LNBitsClient(parent.lnbitsUrl!, parent.lnbitsAdminKey!);
+          balance = await lnbits.getBalance();
+          
+          // For LNbits, try to create escrow invoice
+          if (balance >= data.sats) {
+            try {
+              invoice = await lnbits.createPaylink(data.sats, `Task: ${data.title}`);
+              escrowLocked = true;
+            } catch (paylinksError) {
+              console.log("Paylinks failed, trying Invoice API:", paylinksError);
+              try {
+                const invoiceData = await lnbits.createInvoice(data.sats, `Task: ${data.title}`);
+                invoice = invoiceData.payment_request || invoiceData.payment_hash;
+                escrowLocked = true;
+              } catch (invoiceError) {
+                console.warn("Both Paylinks and Invoice APIs failed, creating task without escrow:", invoiceError);
+                escrowLocked = false;
+              }
+            }
+          }
+        }
         
         if (balance < data.sats) {
           return res.status(400).json({ 
             error: `Unzureichende Balance. Benötigt: ${data.sats} Sats, verfügbar: ${balance} Sats` 
           });
         }
-
-        // Try to create escrow invoice if balance is sufficient
-        try {
-          invoice = await lnbits.createPaylink(data.sats, `Task: ${data.title}`);
-          escrowLocked = true;
-        } catch (paylinksError) {
-          console.log("Paylinks failed, trying Invoice API:", paylinksError);
-          try {
-            // Fallback to Invoice API if Paylinks fails
-            const invoiceData = await lnbits.createInvoice(data.sats, `Task: ${data.title}`);
-            invoice = invoiceData.payment_request || invoiceData.payment_hash;
-            escrowLocked = true;
-          } catch (invoiceError) {
-            // Invoice also failed - allow task creation anyway without escrow
-            console.warn("Both Paylinks and Invoice APIs failed, creating task without escrow:", invoiceError);
-            escrowLocked = false;
-          }
-        }
       } catch (error) {
         if ((error as any).message?.includes("Unzureichende") || (error as any).message?.includes("nicht konfiguriert")) {
           throw error;
         }
-        console.warn("LNbits balance check failed:", error);
+        console.warn("Wallet balance check failed:", error);
         // Don't fail - let task creation proceed
       }
 
@@ -745,15 +877,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   });
 
                   // Try to send bonus via Lightning if configured
-                  if (child.lightningAddress && parent.lnbitsUrl && parent.lnbitsAdminKey) {
+                  if (child.lightningAddress) {
+                    const activeWallet = parent.walletType || (parent.lnbitsUrl ? "lnbits" : parent.nwcConnectionString ? "nwc" : null);
                     try {
-                      const parentLnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
-                      await parentLnbits.payToLightningAddress(
-                        bonusSettings.bonusSats,
-                        child.lightningAddress,
-                        `Level ${currentLevel} Bonus!`
-                      );
-                      console.log(`[Level Bonus] Lightning payment sent for Level ${currentLevel} bonus`);
+                      if (activeWallet === "nwc" && parent.nwcConnectionString) {
+                        const { NWCClient } = await import("./nwc");
+                        const nwc = new NWCClient(parent.nwcConnectionString);
+                        await nwc.payToLightningAddress(
+                          child.lightningAddress,
+                          bonusSettings.bonusSats,
+                          `Level ${currentLevel} Bonus!`
+                        );
+                        nwc.close();
+                        console.log(`[Level Bonus] NWC payment sent for Level ${currentLevel} bonus`);
+                      } else if (parent.lnbitsUrl && parent.lnbitsAdminKey) {
+                        const parentLnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+                        await parentLnbits.payToLightningAddress(
+                          bonusSettings.bonusSats,
+                          child.lightningAddress,
+                          `Level ${currentLevel} Bonus!`
+                        );
+                        console.log(`[Level Bonus] LNbits payment sent for Level ${currentLevel} bonus`);
+                      }
                     } catch (bonusPayError) {
                       console.warn("[Level Bonus] Lightning payment failed:", bonusPayError);
                     }
@@ -767,31 +912,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         // Try to send payment if both wallet and lightning address are configured
-        if (child.lightningAddress && parent.lnbitsUrl && parent.lnbitsAdminKey) {
+        if (child.lightningAddress) {
+          const activeWallet = parent.walletType || (parent.lnbitsUrl ? "lnbits" : parent.nwcConnectionString ? "nwc" : null);
           try {
-            const parentLnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
-            paymentHash = await parentLnbits.payToLightningAddress(
-              task.sats,
-              child.lightningAddress,
-              `Task: ${task.title}`
-            );
+            if (activeWallet === "nwc" && parent.nwcConnectionString) {
+              const { NWCClient } = await import("./nwc");
+              const nwc = new NWCClient(parent.nwcConnectionString);
+              paymentHash = await nwc.payToLightningAddress(
+                child.lightningAddress,
+                task.sats,
+                `Task: ${task.title}`
+              );
+              nwc.close();
+              console.log(`[Task Payment] NWC payment sent for task ${task.title}`);
+            } else if (parent.lnbitsUrl && parent.lnbitsAdminKey) {
+              const parentLnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
+              paymentHash = await parentLnbits.payToLightningAddress(
+                task.sats,
+                child.lightningAddress,
+                `Task: ${task.title}`
+              );
+              console.log(`[Task Payment] LNbits payment sent for task ${task.title}`);
+            }
 
-            // Record transaction
-            await storage.createTransaction({
-              fromPeerId: task.createdBy,
-              toPeerId: child.id,
-              sats: task.sats,
-              taskId: task.id,
-              type: "task_payment",
-              status: "completed",
-              paymentHash: paymentHash,
-            });
-
-            updates.paymentHash = paymentHash;
+            if (paymentHash) {
+              await storage.createTransaction({
+                fromPeerId: task.createdBy,
+                toPeerId: child.id,
+                sats: task.sats,
+                taskId: task.id,
+                type: "task_payment",
+                status: "completed",
+                paymentHash: paymentHash,
+              });
+              updates.paymentHash = paymentHash;
+            }
           } catch (error) {
             console.warn("Payment sending warning (but approval continues):", error);
           }
-        } else if (!child.lightningAddress) {
+        } else {
           console.warn(`Child ${child.name} has no lightning address configured`);
         }
       }
@@ -917,13 +1076,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const parent = await storage.getPeer(parentTask.createdBy);
-      if (!parent || !parent.lnbitsUrl || !parent.lnbitsAdminKey) {
+      const hasLnbits = parent?.lnbitsUrl && parent?.lnbitsAdminKey;
+      const hasNwc = parent?.nwcConnectionString;
+      const activeWallet = parent?.walletType || (hasLnbits ? "lnbits" : hasNwc ? "nwc" : null);
+
+      if (!hasLnbits && !hasNwc) {
         return res.status(500).json({ error: "Parent wallet not configured" });
       }
 
-      const parentLnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
       try {
-        paymentHash = await parentLnbits.payInvoice(paymentRequest);
+        if (activeWallet === "nwc" && hasNwc) {
+          const { NWCClient } = await import("./nwc");
+          const nwc = new NWCClient(parent!.nwcConnectionString!);
+          paymentHash = await nwc.payInvoice(paymentRequest);
+          nwc.close();
+        } else if (hasLnbits) {
+          const parentLnbits = new LNBitsClient(parent!.lnbitsUrl!, parent!.lnbitsAdminKey!);
+          paymentHash = await parentLnbits.payInvoice(paymentRequest);
+        }
       } catch (error) {
         console.error("Payment error:", error);
         return res.status(500).json({ error: "Failed to send withdrawal. Invalid Lightning address?" });
@@ -1200,8 +1370,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const parent = await storage.getPeer(parentId);
-      if (!parent || !parent.lnbitsUrl || !parent.lnbitsAdminKey) {
-        return res.status(400).json({ error: "LNbits ist nicht konfiguriert" });
+      const hasLnbits = parent?.lnbitsUrl && parent?.lnbitsAdminKey;
+      const hasNwc = parent?.nwcConnectionString;
+      const activeWallet = parent?.walletType || (hasLnbits ? "lnbits" : hasNwc ? "nwc" : null);
+      
+      if (!hasLnbits && !hasNwc) {
+        return res.status(400).json({ error: "Keine Wallet konfiguriert (LNbits oder NWC)" });
       }
 
       const child = await storage.getPeer(childId);
@@ -1209,9 +1383,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Kind hat keine Lightning-Adresse" });
       }
 
-      console.log("[Payout] Using LNbits for allowance payment");
-      const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
-      const paymentHash = await lnbits.payToLightningAddress(sats, child.lightningAddress, `Taschengeld für ${child.name}`);
+      let paymentHash = "";
+      if (activeWallet === "nwc" && hasNwc) {
+        console.log("[Payout] Using NWC for allowance payment");
+        const { NWCClient } = await import("./nwc");
+        const nwc = new NWCClient(parent!.nwcConnectionString!);
+        paymentHash = await nwc.payToLightningAddress(child.lightningAddress, sats, `Taschengeld für ${child.name}`);
+        nwc.close();
+      } else if (hasLnbits) {
+        console.log("[Payout] Using LNbits for allowance payment");
+        const lnbits = new LNBitsClient(parent!.lnbitsUrl!, parent!.lnbitsAdminKey!);
+        paymentHash = await lnbits.payToLightningAddress(sats, child.lightningAddress, `Taschengeld für ${child.name}`);
+      }
       
       // Update allowance lastPaidDate
       await storage.updateAllowance(allowanceId, { lastPaidDate: new Date() });
@@ -1234,8 +1417,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const parent = await storage.getPeer(parentId);
-      if (!parent || !parent.lnbitsUrl || !parent.lnbitsAdminKey) {
-        return res.status(400).json({ error: "LNbits ist nicht konfiguriert" });
+      const hasLnbits = parent?.lnbitsUrl && parent?.lnbitsAdminKey;
+      const hasNwc = parent?.nwcConnectionString;
+      const activeWallet = parent?.walletType || (hasLnbits ? "lnbits" : hasNwc ? "nwc" : null);
+      
+      if (!hasLnbits && !hasNwc) {
+        return res.status(400).json({ error: "Keine Wallet konfiguriert (LNbits oder NWC)" });
       }
 
       const child = await storage.getPeer(childId);
@@ -1244,9 +1431,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const memo = message || `Sofortzahlung für ${child.name}`;
-      console.log("[Payout] Using LNbits for instant payment");
-      const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
-      const paymentHash = await lnbits.payToLightningAddress(sats, child.lightningAddress, memo);
+      let paymentHash = "";
+      
+      if (activeWallet === "nwc" && hasNwc) {
+        console.log("[Payout] Using NWC for instant payment");
+        const { NWCClient } = await import("./nwc");
+        const nwc = new NWCClient(parent!.nwcConnectionString!);
+        paymentHash = await nwc.payToLightningAddress(child.lightningAddress, sats, memo);
+        nwc.close();
+      } else if (hasLnbits) {
+        console.log("[Payout] Using LNbits for instant payment");
+        const lnbits = new LNBitsClient(parent!.lnbitsUrl!, parent!.lnbitsAdminKey!);
+        paymentHash = await lnbits.payToLightningAddress(sats, child.lightningAddress, memo);
+      }
 
       // Update child's balance
       const newBalance = (child.balance || 0) + sats;
@@ -1367,8 +1564,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const parent = await storage.getPeer(allowance.parentId);
       const child = await storage.getPeer(allowance.childId);
 
-      if (!parent || !parent.lnbitsUrl || !parent.lnbitsAdminKey) {
-        console.error(`Parent ${allowance.parentId} not configured with LNBits`);
+      const hasLnbits = parent?.lnbitsUrl && parent?.lnbitsAdminKey;
+      const hasNwc = parent?.nwcConnectionString;
+      const activeWallet = parent?.walletType || (hasLnbits ? "lnbits" : hasNwc ? "nwc" : null);
+
+      if (!hasLnbits && !hasNwc) {
+        console.error(`Parent ${allowance.parentId} not configured with LNBits or NWC`);
         return;
       }
 
@@ -1377,12 +1578,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return;
       }
 
-      const lnbits = new LNBitsClient(parent.lnbitsUrl, parent.lnbitsAdminKey);
-      const paymentHash = await lnbits.payToLightningAddress(
-        allowance.sats,
-        child.lightningAddress,
-        `Automatisches Taschengeld für ${child.name}`
-      );
+      let paymentHash = "";
+      if (activeWallet === "nwc" && hasNwc) {
+        const { NWCClient } = await import("./nwc");
+        const nwc = new NWCClient(parent!.nwcConnectionString!);
+        paymentHash = await nwc.payToLightningAddress(
+          child.lightningAddress,
+          allowance.sats,
+          `Automatisches Taschengeld für ${child.name}`
+        );
+        nwc.close();
+      } else if (hasLnbits) {
+        const lnbits = new LNBitsClient(parent!.lnbitsUrl!, parent!.lnbitsAdminKey!);
+        paymentHash = await lnbits.payToLightningAddress(
+          allowance.sats,
+          child.lightningAddress,
+          `Automatisches Taschengeld für ${child.name}`
+        );
+      }
 
       // Update child's balance
       const newBalance = (child.balance || 0) + allowance.sats;
@@ -1855,20 +2068,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Child not found" });
       }
 
-      // Find parent with LNBits configured (prioritize parent with LNBits)
+      // Find parent with wallet configured (prioritize parent with wallet)
       console.log(`[Level Bonus] Looking for parent with connectionId: ${connectionId}`);
       const allParents = await db.select().from(peers)
         .where(and(eq(peers.connectionId, connectionId), eq(peers.role, "parent")));
       
-      // Find parent with LNBits configured, or fallback to first parent
-      const parentWithLnbits = allParents.find(p => p.lnbitsUrl && p.lnbitsAdminKey);
-      const parent = parentWithLnbits ? [parentWithLnbits] : allParents;
+      // Find parent with wallet configured (LNBits or NWC)
+      const parentWithWallet = allParents.find(p => (p.lnbitsUrl && p.lnbitsAdminKey) || p.nwcConnectionString);
+      const parent = parentWithWallet ? [parentWithWallet] : allParents;
       
-      console.log(`[Level Bonus] Found ${allParents.length} parents, using: ${JSON.stringify(parent[0] ? { id: parent[0].id, name: parent[0].name, lnbitsUrl: parent[0].lnbitsUrl, hasAdminKey: !!parent[0].lnbitsAdminKey } : 'none')}`);
+      const hasLnbits = parent[0]?.lnbitsUrl && parent[0]?.lnbitsAdminKey;
+      const hasNwc = parent[0]?.nwcConnectionString;
+      const activeWallet = parent[0]?.walletType || (hasLnbits ? "lnbits" : hasNwc ? "nwc" : null);
+      
+      console.log(`[Level Bonus] Found ${allParents.length} parents, using wallet: ${activeWallet}`);
 
-      if (!parent[0] || !parent[0].lnbitsUrl || !parent[0].lnbitsAdminKey) {
-        console.log(`[Level Bonus] No LNBits configured, using internal balance`);
-        // No LNBits configured - just update balance internally
+      if (!hasLnbits && !hasNwc) {
+        console.log(`[Level Bonus] No wallet configured, using internal balance`);
+        // No wallet configured - just update balance internally
         await storage.updateBalance(childId, (child.balance || 0) + settings.bonusSats);
         
         // Record the payout
@@ -1889,13 +2106,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Try to pay via Lightning if child has lightning address
       console.log(`[Level Bonus] Child lightning address: ${child.lightningAddress}`);
-      console.log(`[Level Bonus] Parent LNBits URL: ${parent[0].lnbitsUrl}`);
       
       if (child.lightningAddress) {
         try {
-          console.log(`[Level Bonus] Attempting Lightning payment of ${settings.bonusSats} sats to ${child.lightningAddress}`);
-          const lnbits = new LNBitsClient(parent[0].lnbitsUrl, parent[0].lnbitsAdminKey);
-          const paymentResult = await lnbits.payToLightningAddress(settings.bonusSats, child.lightningAddress, `Level ${currentLevel} Bonus!`);
+          console.log(`[Level Bonus] Attempting Lightning payment of ${settings.bonusSats} sats to ${child.lightningAddress} via ${activeWallet}`);
+          let paymentResult = "";
+          
+          if (activeWallet === "nwc" && hasNwc) {
+            const { NWCClient } = await import("./nwc");
+            const nwc = new NWCClient(parent[0].nwcConnectionString!);
+            paymentResult = await nwc.payToLightningAddress(child.lightningAddress, settings.bonusSats, `Level ${currentLevel} Bonus!`);
+            nwc.close();
+          } else if (hasLnbits) {
+            const lnbits = new LNBitsClient(parent[0].lnbitsUrl!, parent[0].lnbitsAdminKey!);
+            paymentResult = await lnbits.payToLightningAddress(settings.bonusSats, child.lightningAddress, `Level ${currentLevel} Bonus!`);
+          }
+          
           console.log(`[Level Bonus] Lightning payment SUCCESS! Hash: ${paymentResult}`);
           
           // Record the payout

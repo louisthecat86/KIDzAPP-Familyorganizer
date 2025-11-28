@@ -2780,6 +2780,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   const { toast } = useToast();
   const [lnbitsUrl, setLnbitsUrl] = useState("");
   const [lnbitsAdminKey, setLnbitsAdminKey] = useState("");
+  const [nwcConnectionString, setNwcConnectionString] = useState("");
   const [lightningAddress, setLightningAddress] = useState(user.lightningAddress || "");
   const [showConnectionCode, setShowConnectionCode] = useState(() => {
     const stored = localStorage.getItem(`connectionCodeShown_${user.id}`);
@@ -2851,10 +2852,59 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setUser({ ...user, hasLnbitsConfigured: true });
+      setUser({ ...user, hasLnbitsConfigured: true, walletType: "lnbits" });
       setLnbitsUrl("");
       setLnbitsAdminKey("");
       toast({ title: "LNbits verbunden!", description: "LNbits Wallet ist jetzt aktiv" });
+    } catch (error) {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    }
+  };
+
+  const setupNwc = async () => {
+    if (!nwcConnectionString) return;
+    try {
+      const res = await fetch("/api/wallet/setup-nwc", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ peerId: user.id, nwcConnectionString }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setUser({ ...user, hasNwcConfigured: true, walletType: "nwc" });
+      setNwcConnectionString("");
+      toast({ title: "NWC verbunden!", description: "Nostr Wallet Connect ist jetzt aktiv" });
+    } catch (error) {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    }
+  };
+
+  const deleteNwc = async () => {
+    try {
+      const res = await fetch("/api/wallet/nwc", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ peerId: user.id }),
+      });
+      if (!res.ok) throw new Error("Fehler beim Trennen");
+      setUser({ ...user, hasNwcConfigured: false, walletType: user.hasLnbitsConfigured ? "lnbits" : null });
+      toast({ title: "NWC getrennt", description: "Nostr Wallet Connect wurde entfernt" });
+    } catch (error) {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    }
+  };
+
+  const setActiveWallet = async (walletType: string) => {
+    try {
+      const res = await fetch("/api/wallet/set-active", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ peerId: user.id, walletType }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setUser({ ...user, walletType });
+      toast({ title: "Aktive Wallet geändert", description: `${walletType === "nwc" ? "NWC" : "LNbits"} ist jetzt aktiv` });
     } catch (error) {
       toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
     }
@@ -3532,6 +3582,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <TabsList className="bg-secondary p-1 border border-border mb-6">
             <TabsTrigger value="verbindung">Verbindung</TabsTrigger>
             <TabsTrigger value="lnbits">LNbits</TabsTrigger>
+            <TabsTrigger value="nwc">NWC</TabsTrigger>
           </TabsList>
 
           <TabsContent value="verbindung">
@@ -3596,6 +3647,88 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   >
                     Speichern
                   </Button>
+                  {user.hasLnbitsConfigured && user.hasNwcConfigured && (
+                    <Button 
+                      onClick={() => setActiveWallet("lnbits")}
+                      variant={user.walletType === "lnbits" ? "default" : "outline"}
+                      className="w-full mt-2"
+                      data-testid="button-set-active-lnbits"
+                    >
+                      {user.walletType === "lnbits" ? "Aktiv" : "Als aktiv setzen"}
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="nwc">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Nostr Wallet Connect (NWC)</CardTitle>
+                  <CardDescription>Verbinde deine Wallet über das Nostr Wallet Connect Protokoll</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {user.hasNwcConfigured ? (
+                    <div className="space-y-4">
+                      <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                        <p className="text-sm font-semibold text-green-300">NWC verbunden</p>
+                        <p className="text-xs text-muted-foreground mt-1">Deine NWC Wallet ist konfiguriert und einsatzbereit</p>
+                      </div>
+                      <Button 
+                        onClick={deleteNwc}
+                        variant="destructive"
+                        className="w-full"
+                        data-testid="button-delete-nwc"
+                      >
+                        NWC trennen
+                      </Button>
+                      {user.hasLnbitsConfigured && (
+                        <Button 
+                          onClick={() => setActiveWallet("nwc")}
+                          variant={user.walletType === "nwc" ? "default" : "outline"}
+                          className="w-full"
+                          data-testid="button-set-active-nwc"
+                        >
+                          {user.walletType === "nwc" ? "Aktiv" : "Als aktiv setzen"}
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="nwc-connection">NWC Connection String</Label>
+                        <Input 
+                          id="nwc-connection"
+                          placeholder="nostr+walletconnect://..."
+                          value={nwcConnectionString}
+                          onChange={(e) => setNwcConnectionString(e.target.value)}
+                          className="font-mono text-xs"
+                          data-testid="input-nwc-connection"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Den Connection String erhältst du von deiner NWC-kompatiblen Wallet (z.B. Alby, Mutiny)
+                        </p>
+                      </div>
+                      <Button 
+                        onClick={setupNwc}
+                        disabled={!nwcConnectionString || !nwcConnectionString.startsWith("nostr+walletconnect://")}
+                        className="bg-primary hover:bg-primary/90 w-full"
+                        data-testid="button-setup-nwc"
+                      >
+                        NWC verbinden
+                      </Button>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+              <Card className="bg-secondary/30">
+                <CardContent className="p-4">
+                  <p className="text-xs text-muted-foreground">
+                    <strong>Was ist NWC?</strong> Nostr Wallet Connect ist ein offenes Protokoll, das es dir ermöglicht, 
+                    deine Lightning Wallet sicher mit Apps zu verbinden. Unterstützte Wallets: Alby, Mutiny, Zeus und andere.
+                  </p>
                 </CardContent>
               </Card>
             </div>
