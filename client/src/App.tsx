@@ -5505,14 +5505,6 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
   const [btcDays, setBtcDays] = useState<number>(30);
   const [viewMode, setViewMode] = useState<"bitcoin" | "sparbuch">("bitcoin");
 
-  const timeframes = [
-    { label: "10 Tage", days: 10 },
-    { label: "30 Tage", days: 30 },
-    { label: "3 Monate", days: 90 },
-    { label: "6 Monate", days: 180 },
-    { label: "1 Jahr", days: 365 }
-  ];
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -5555,30 +5547,6 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
           }
         }
 
-        // Only fetch missing timeframes with delays to avoid rate limiting
-        const needsFetch = timeframes.filter(tf => !allHistoricalData[tf.days]);
-        
-        if (needsFetch.length > 0) {
-          const newData: { [key: number]: any[] } = { ...allHistoricalData };
-          
-          for (let i = 0; i < needsFetch.length; i++) {
-            const tf = needsFetch[i];
-            // Add delay between requests
-            if (i > 0) await new Promise(r => setTimeout(r, 500));
-            
-            try {
-              const historyRes = await fetch(`/api/btc-history?days=${tf.days}`);
-              if (historyRes.ok) {
-                const historyData = await historyRes.json();
-                newData[tf.days] = historyData;
-              }
-            } catch (error) {
-              console.error(`Failed to fetch ${tf.days} days:`, error);
-            }
-          }
-          // Set all data once after fetching all timeframes
-          setAllHistoricalData(newData);
-        }
       } catch (error) {
         console.error("Failed to fetch data:", error);
       }
@@ -5587,11 +5555,9 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
     fetchData();
     const interval = setInterval(fetchData, 300000); // Longer interval to avoid rate limits
     return () => clearInterval(interval);
-  }, [sats, user, timeframes]);
+  }, [sats, user]);
 
   if (!btcPrice) return null;
-
-  const historicalData = allHistoricalData[btcDays] || [];
 
   // Calculate values in EUR
   const btcAmount = sats / 100_000_000;
@@ -5695,25 +5661,9 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
                   </div>
                 ) : (
                   <div className="h-20 flex items-center justify-center text-xs text-muted-foreground">
-                    Laden...
+                    Daten werden gesammelt...
                   </div>
                 )}
-                <div className="flex flex-wrap gap-0.5">
-                  {timeframes.map((tf) => (
-                    <button
-                      key={tf.days}
-                      onClick={() => setBtcDays(tf.days)}
-                      className={`text-xs px-1.5 py-0.5 rounded border transition-colors ${
-                        btcDays === tf.days
-                          ? "bg-yellow-500/30 border-yellow-500/60 text-yellow-400 font-bold"
-                          : "bg-yellow-500/10 border-yellow-500/20 text-yellow-300 hover:bg-yellow-500/20"
-                      }`}
-                      data-testid={`button-btc-timeframe-${tf.days}`}
-                    >
-                      {tf.label}
-                    </button>
-                  ))}
-                </div>
               </>
             ) : (
               <>
