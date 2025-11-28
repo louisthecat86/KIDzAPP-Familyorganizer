@@ -632,27 +632,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Create a new Bitcoin snapshot when child receives sats
         try {
-          let btcPrice = lastKnownPrice;
-          if (!btcPrice) {
-            // If we don't have a cached price, try to fetch one
-            try {
-              const priceResponse = await fetch(
-                "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur"
-              );
-              if (priceResponse.ok) {
-                const priceData = await priceResponse.json();
-                if (priceData?.bitcoin?.eur) {
-                  btcPrice = { usd: 0, eur: priceData.bitcoin.eur };
-                  lastKnownPrice = btcPrice;
-                }
-              }
-            } catch (e) {
-              console.warn("Failed to fetch BTC price for snapshot, using fallback");
-              btcPrice = { usd: 0, eur: 78000 }; // Reasonable fallback
-            }
-          }
-          
-          const valueEur = (newBalance / 1e8) * btcPrice!.eur;
+          const btcPrice = await getFreshBitcoinPrice();
+          const valueEur = (newBalance / 1e8) * btcPrice.eur;
           await storage.createDailyBitcoinSnapshot({
             peerId: child.id,
             connectionId: child.connectionId,
@@ -1167,27 +1148,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const newBalance = (child.balance || 0) + sats;
       await storage.updateBalance(child.id, newBalance);
 
-      // Create Bitcoin snapshot for new balance
+      // Create Bitcoin snapshot for new balance with FRESH price
       try {
-        let btcPrice = lastKnownPrice;
-        if (!btcPrice) {
-          try {
-            const priceResponse = await fetch(
-              "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur"
-            );
-            if (priceResponse.ok) {
-              const priceData = await priceResponse.json();
-              if (priceData?.bitcoin?.eur) {
-                btcPrice = { usd: 0, eur: priceData.bitcoin.eur };
-                lastKnownPrice = btcPrice;
-              }
-            }
-          } catch (e) {
-            console.warn("Failed to fetch BTC price for instant payout snapshot");
-            btcPrice = { usd: 0, eur: 78000 };
-          }
-        }
-        const valueEur = (newBalance / 1e8) * btcPrice!.eur;
+        const btcPrice = await getFreshBitcoinPrice();
+        const valueEur = (newBalance / 1e8) * btcPrice.eur;
         await storage.createDailyBitcoinSnapshot({
           peerId: child.id,
           connectionId: child.connectionId,
@@ -1204,6 +1168,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: String(error) });
     }
   });
+
+  // Helper function to get FRESH Bitcoin price (always fetch, never cache for snapshots)
+  async function getFreshBitcoinPrice(): Promise<{ eur: number }> {
+    try {
+      const response = await fetch(
+        "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur"
+      );
+      if (response.ok) {
+        const data = await response.json();
+        if (data?.bitcoin?.eur) {
+          return { eur: data.bitcoin.eur };
+        }
+      }
+    } catch (e) {
+      console.warn("[getFreshBitcoinPrice] Failed to fetch");
+    }
+    // Fallback to lastKnownPrice or default
+    if (lastKnownPrice) return { eur: lastKnownPrice.eur };
+    return { eur: 79000 };
+  }
 
   // Helper function to check if payout is due
   function isPayoutDue(lastPaidDate: Date | null, frequency: string): boolean {
@@ -1255,27 +1239,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const newBalance = (child.balance || 0) + allowance.sats;
       await storage.updateBalance(child.id, newBalance);
 
-      // Create Bitcoin snapshot for new balance
+      // Create Bitcoin snapshot for new balance with FRESH price
       try {
-        let btcPrice = lastKnownPrice;
-        if (!btcPrice) {
-          try {
-            const priceResponse = await fetch(
-              "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur"
-            );
-            if (priceResponse.ok) {
-              const priceData = await priceResponse.json();
-              if (priceData?.bitcoin?.eur) {
-                btcPrice = { usd: 0, eur: priceData.bitcoin.eur };
-                lastKnownPrice = btcPrice;
-              }
-            }
-          } catch (e) {
-            console.warn("Failed to fetch BTC price for allowance snapshot");
-            btcPrice = { usd: 0, eur: 78000 };
-          }
-        }
-        const valueEur = (newBalance / 1e8) * btcPrice!.eur;
+        const btcPrice = await getFreshBitcoinPrice();
+        const valueEur = (newBalance / 1e8) * btcPrice.eur;
         await storage.createDailyBitcoinSnapshot({
           peerId: child.id,
           connectionId: child.connectionId,
