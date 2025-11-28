@@ -6778,6 +6778,81 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
               </div>
             </motion.div>
 
+            {/* Learning Stats - Compact Trigger */}
+            {user.role === "child" && (
+              <>
+                <motion.button 
+                  initial={{ y: 20, opacity: 0 }} 
+                  animate={{ y: 0, opacity: 1 }} 
+                  transition={{ delay: 0.2 }}
+                  onClick={() => setShowStatsModal(true)}
+                  className="w-full rounded-2xl bg-white/50 backdrop-blur-xl border border-white/50 p-6 text-center hover:bg-white/70 transition-all cursor-pointer shadow-lg"
+                >
+                  <div className="h-12 w-12 bg-gradient-to-br from-violet-500 to-cyan-500 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <Sparkles className="h-6 w-6 text-white" />
+                  </div>
+                  <p className="text-lg font-bold text-slate-900">Lern-Statistiken</p>
+                </motion.button>
+
+                {/* Stats Modal */}
+                {showStatsModal && (() => {
+                  const passedQuizzes = (() => {
+                    const saved = typeof localStorage !== 'undefined' ? localStorage.getItem("passed-quizzes") : null;
+                    return saved ? JSON.parse(saved) : [];
+                  })();
+                  const achievements = [
+                    { id: "first", cond: passedQuizzes.length >= 1 },
+                    { id: "half", cond: passedQuizzes.length >= 10 },
+                    { id: "master", cond: passedQuizzes.length === 20 },
+                    { id: "lightning", cond: user.lightningAddress?.length > 0 },
+                    { id: "star", cond: (user.balance || 0) > 50000 }
+                  ];
+                  return (
+                    <Dialog open={showStatsModal} onOpenChange={setShowStatsModal}>
+                      <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                          <DialogTitle>Deine Lern-Statistiken</DialogTitle>
+                        </DialogHeader>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200/50 p-4 text-center">
+                            <div className="h-8 w-8 bg-green-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                              <BookOpen className="h-4 w-4 text-green-600" />
+                            </div>
+                            <p className="text-xs text-slate-600 mb-1 font-medium">Module</p>
+                            <p className="text-2xl font-bold text-green-600">{passedQuizzes.length}/20</p>
+                          </div>
+                          
+                          <div className="rounded-lg bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200/50 p-4 text-center">
+                            <div className="h-8 w-8 bg-purple-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                              <Trophy className="h-4 w-4 text-purple-600" />
+                            </div>
+                            <p className="text-xs text-slate-600 mb-1 font-medium">Abzeichen</p>
+                            <p className="text-2xl font-bold text-purple-600">{achievements.filter(a => a.cond).length}/5</p>
+                          </div>
+                          
+                          <div className="rounded-lg bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-200/50 p-4 text-center">
+                            <div className="h-8 w-8 bg-violet-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                              <Flame className="h-4 w-4 text-violet-600" />
+                            </div>
+                            <p className="text-xs text-slate-600 mb-1 font-medium">Diese Woche</p>
+                            <p className="text-2xl font-bold text-violet-600">{passedQuizzes.length}/7</p>
+                          </div>
+                          
+                          <div className="rounded-lg bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200/50 p-4 text-center">
+                            <div className="h-8 w-8 bg-cyan-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                              <TrendingUp className="h-4 w-4 text-cyan-600" />
+                            </div>
+                            <p className="text-xs text-slate-600 mb-1 font-medium">7-Tage</p>
+                            <p className="text-2xl font-bold text-cyan-600">{(passedQuizzes.length * 100).toLocaleString()} Sats</p>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  );
+                })()}
+              </>
+            )}
+
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
             <div 
               className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl shadow-lg cursor-pointer hover:bg-white/60 transition-colors"
