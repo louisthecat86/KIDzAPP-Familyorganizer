@@ -790,6 +790,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Task not found" });
       }
 
+      // IDEMPOTENCY CHECK: If task is already approved OR has a paymentHash, reject duplicate approval
+      if (updates.status === "approved") {
+        if (task.status === "approved") {
+          console.log(`[Task Approval] BLOCKED: Task ${id} already approved, returning existing task`);
+          return res.status(409).json({ error: "Task already approved", task });
+        }
+        if (task.paymentHash) {
+          console.log(`[Task Approval] BLOCKED: Task ${id} already has paymentHash, returning existing task`);
+          return res.status(409).json({ error: "Payment already processed", task });
+        }
+        
+        // ATOMIC: Set status to approved FIRST before any payment processing
+        // This prevents race conditions where multiple requests could pass the check above
+        const immediateUpdate = await storage.updateTask(id, { status: "approved" });
+        if (!immediateUpdate || immediateUpdate.status !== "approved") {
+          console.log(`[Task Approval] BLOCKED: Failed to atomically update task ${id}`);
+          return res.status(409).json({ error: "Task approval conflict" });
+        }
+        console.log(`[Task Approval] Task ${id} status set to approved atomically`);
+      }
+
       // If status is being set to approved AND task was not already approved, process payment
       if (updates.status === "approved" && task.status !== "approved") {
         console.log(`[Task Approval] Processing approval for task ${id}, assigning sats to child ${task.assignedTo}`);

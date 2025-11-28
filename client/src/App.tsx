@@ -250,6 +250,7 @@ export default function App() {
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoadingMessage, setIsLoadingMessage] = useState(false);
+  const [approvingTaskId, setApprovingTaskId] = useState<number | null>(null);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -473,11 +474,25 @@ export default function App() {
   };
 
   const approveTask = async (taskId: number) => {
-    updateTaskMutation.mutate({
-      id: taskId,
-      updates: { status: "approved" },
-    });
-    toast({ title: "Sats ausgezahlt!", description: "Transaktion gesendet." });
+    // Prevent double-click: If already approving this task, ignore
+    if (approvingTaskId === taskId) {
+      console.log(`[Frontend] Ignoring duplicate approval click for task ${taskId}`);
+      return;
+    }
+    
+    // Set approving state immediately to block further clicks
+    setApprovingTaskId(taskId);
+    
+    try {
+      updateTaskMutation.mutate({
+        id: taskId,
+        updates: { status: "approved" },
+      });
+      toast({ title: "Sats ausgezahlt!", description: "Transaktion gesendet." });
+    } finally {
+      // Reset after a delay to allow mutation to complete
+      setTimeout(() => setApprovingTaskId(null), 2000);
+    }
 
     // Check for level bonus after approving task
     const task = tasks.find((t: Task) => t.id === taskId);
@@ -637,6 +652,7 @@ export default function App() {
                   onApprove={approveTask}
                   onDelete={handleDeleteTask}
                   onDeleteEvent={handleDeleteEvent}
+                  approvingTaskId={approvingTaskId}
                   queryClient={queryClient}
                   layoutView={layoutView}
                   setLayoutView={setLayoutView}
@@ -2880,7 +2896,7 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
   );
 }
 
-function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, queryClient, layoutView, setLayoutView, showSpendingStats, setShowSpendingStats, spendingStats, setSpendingStats, messages, setMessages, newMessage, setNewMessage, isLoadingMessage, setIsLoadingMessage, allowances, parentChildren, allowanceChildId, setAllowanceChildId, allowanceSats, setAllowanceSats, allowanceFrequency, setAllowanceFrequency, isCreatingAllowance, handleCreateAllowance, handleDeleteAllowance }: any) {
+function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, approvingTaskId, queryClient, layoutView, setLayoutView, showSpendingStats, setShowSpendingStats, spendingStats, setSpendingStats, messages, setMessages, newMessage, setNewMessage, isLoadingMessage, setIsLoadingMessage, allowances, parentChildren, allowanceChildId, setAllowanceChildId, allowanceSats, setAllowanceSats, allowanceFrequency, setAllowanceFrequency, isCreatingAllowance, handleCreateAllowance, handleDeleteAllowance }: any) {
   const { toast } = useToast();
   const [lnbitsUrl, setLnbitsUrl] = useState("");
   const [lnbitsAdminKey, setLnbitsAdminKey] = useState("");
@@ -3897,17 +3913,28 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     <div className="flex gap-2 w-full sm:w-auto">
                       <Button 
                         onClick={() => onApprove(task.id)} 
-                        className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white"
+                        className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                         data-testid={`button-approve-task-${task.id}`}
                         size="sm"
+                        disabled={approvingTaskId === task.id}
                       >
-                        <CheckCircle className="mr-2 h-4 w-4" /> Genehmigen
+                        {approvingTaskId === task.id ? (
+                          <>
+                            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                            Wird genehmigt...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="mr-2 h-4 w-4" /> Genehmigen
+                          </>
+                        )}
                       </Button>
                       <Button 
                         onClick={() => onDelete(task.id)} 
                         className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white"
                         data-testid={`button-delete-task-${task.id}`}
                         size="sm"
+                        disabled={approvingTaskId === task.id}
                       >
                         <Trash2 className="mr-2 h-4 w-4" /> Löschen
                       </Button>
