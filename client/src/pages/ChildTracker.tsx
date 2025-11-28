@@ -98,56 +98,37 @@ export function ChildTracker({ childId }: { childId: number }) {
             </div>
           </div>
 
-          {/* Chart Container */}
-          <div className="relative h-64 -mx-6">
-            {/* Base Chart */}
-            <div className="absolute inset-0">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trackerData} margin={{ top: 5, right: 30, left: -20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(16,185,129,0.15)" />
-                  <XAxis 
-                    dataKey="date" 
-                    tick={{ fontSize: 9, fill: "rgba(16,185,129,0.7)" }} 
-                  />
-                  <YAxis 
-                    tick={{ fontSize: 9, fill: "rgba(34,197,94,1)" }} 
-                  />
-                  <Tooltip content={<CustomTooltip />} cursor={false} />
-                  <Line 
-                    type="monotone" 
-                    dataKey="euroValue" 
-                    stroke="#22c55e" 
-                    dot={false}
-                    strokeWidth={3}
-                    isAnimationActive={false}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="totalSats" 
-                    stroke="#facc15" 
-                    dot={false}
-                    strokeWidth={3}
-                    isAnimationActive={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Overlay BTC Price Chart (Transparent) */}
-            <div className="absolute inset-0 opacity-60 pointer-events-none">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trackerData} margin={{ top: 5, right: 30, left: -20, bottom: 5 }}>
-                  <Line 
-                    type="monotone" 
-                    dataKey="btcPrice" 
-                    stroke="#3b82f6" 
-                    dot={false}
-                    strokeWidth={3}
-                    isAnimationActive={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+          {/* Chart */}
+          <div className="h-64 -mx-6">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={trackerData} margin={{ top: 5, right: 30, left: -20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(16,185,129,0.15)" />
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 9, fill: "rgba(16,185,129,0.7)" }} 
+                />
+                <YAxis 
+                  tick={{ fontSize: 9, fill: "rgba(34,197,94,1)" }} 
+                />
+                <Tooltip content={<CustomTooltip />} cursor={false} />
+                <Line 
+                  type="monotone" 
+                  dataKey="euroValue" 
+                  stroke="#22c55e" 
+                  dot={false}
+                  strokeWidth={3}
+                  isAnimationActive={false}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="totalSats" 
+                  stroke="#facc15" 
+                  dot={false}
+                  strokeWidth={3}
+                  isAnimationActive={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
 
           {/* Summary */}
