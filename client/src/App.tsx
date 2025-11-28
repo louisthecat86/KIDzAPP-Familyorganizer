@@ -54,21 +54,25 @@ import { PhotoUpload } from "@/components/PhotoUpload";
 import { ProofViewer } from "@/components/ProofViewer";
 
 function NotificationBadge({ count }: { count: number }) {
-  if (count <= 0) return null;
-  
   return (
-    <motion.span
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-bold"
-    >
-      <motion.span
-        animate={{ scale: [1, 1.2, 1] }}
-        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-      >
-        {count > 9 ? "9+" : count}
-      </motion.span>
-    </motion.span>
+    <AnimatePresence mode="wait">
+      {count > 0 && (
+        <motion.span
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          exit={{ scale: 0, opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-bold"
+        >
+          <motion.span
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          >
+            {count > 9 ? "9+" : count}
+          </motion.span>
+        </motion.span>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -110,6 +114,8 @@ type Task = {
   escrowLocked?: boolean;
   paylink?: string;
   withdrawLink?: string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 type FamilyEvent = {
@@ -313,6 +319,12 @@ export default function App() {
   useEffect(() => {
     setSidebarOpen(false);
   }, [user]);
+
+  useEffect(() => {
+    if (currentView === 'chat') {
+      localStorage.setItem('lastMessageViewTime', Date.now().toString());
+    }
+  }, [currentView]);
 
   const { data: tasks = [] } = useQuery({
     queryKey: ["tasks", user?.connectionId],
@@ -656,7 +668,12 @@ export default function App() {
         setLayoutView={setLayoutView}
         side="right"
         tasksNotificationCount={tasks.filter((t: Task) => t.status === "submitted").length}
-        chatNotificationCount={messages.filter((m: any) => m.isUnread).length}
+        chatNotificationCount={(() => {
+          const lastMessageViewTime = localStorage.getItem('lastMessageViewTime') || '0';
+          return messages?.filter((m: any) => 
+            new Date(m.createdAt).getTime() > parseInt(lastMessageViewTime)
+          ).length || 0;
+        })()}
       />
       <main className="flex-1 overflow-auto relative">
         <Button
@@ -918,12 +935,14 @@ function NotificationCenterView({ user, tasks, messages, allowances, parentChild
   const approvedTasks = tasks.filter((t: Task) => t.status === "approved");
   approvedTasks.forEach((task: Task) => {
     const child = parentChildren.find((c: any) => c.id === task.assignedTo);
+    const taskTimestamp = task.updatedAt ? new Date(task.updatedAt) : 
+                          task.createdAt ? new Date(task.createdAt) : new Date();
     notifications.push({
       id: `task-${task.id}`,
       type: "task",
       title: "Aufgabe genehmigt",
       description: `${task.title} - ${task.sats} Sats ${child ? `an ${child.name}` : "erhalten"}`,
-      timestamp: new Date(),
+      timestamp: taskTimestamp,
       sats: task.sats,
     });
   });
