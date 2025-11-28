@@ -14,6 +14,12 @@ interface TrackerEntry {
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
+    const btcPriceDisplay = data.btcPrice ? (
+      data.btcPrice > 100000 
+        ? `€${(data.btcPrice / 1).toFixed(0)}`
+        : `€${data.btcPrice.toLocaleString()}`
+    ) : "N/A";
+    
     return (
       <div className="bg-slate-950 border-8 border-green-500 rounded-lg p-4 shadow-2xl min-w-fit" style={{ pointerEvents: 'none' }}>
         <p className="text-green-400 font-bold text-sm">
@@ -23,7 +29,7 @@ const CustomTooltip = ({ active, payload }: any) => {
           Satoshi : {data.totalSats.toLocaleString()}
         </p>
         <p className="text-blue-400 font-bold text-sm">
-          BTC Preis : €{data.btcPrice.toLocaleString()}
+          BTC Preis : {btcPriceDisplay}
         </p>
       </div>
     );
