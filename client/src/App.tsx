@@ -1383,19 +1383,19 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
           <h3 className="text-lg font-bold mb-3 text-gray-900">So funktioniert's</h3>
           <div className="space-y-2 text-gray-800 text-sm">
             <div className="flex gap-2">
-              <span className="text-yellow-500 flex-shrink-0">⚡</span>
+              <span className="text-violet-600 flex-shrink-0">•</span>
               <span>Eltern erstellen Aufgaben mit Sats-Belohnung</span>
             </div>
             <div className="flex gap-2">
-              <span className="text-yellow-500 flex-shrink-0">⚡</span>
+              <span className="text-violet-600 flex-shrink-0">•</span>
               <span>Kinder erledigen Aufgaben & laden Foto-Beweis hoch</span>
             </div>
             <div className="flex gap-2">
-              <span className="text-yellow-500 flex-shrink-0">⚡</span>
+              <span className="text-violet-600 flex-shrink-0">•</span>
               <span>Eltern bestätigen & zahlen sofort aus</span>
             </div>
             <div className="flex gap-2">
-              <span className="text-yellow-500 flex-shrink-0">⚡</span>
+              <span className="text-violet-600 flex-shrink-0">•</span>
               <span>Familienkalender & Chat für direkten Austausch</span>
             </div>
           </div>
