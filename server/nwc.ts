@@ -155,7 +155,8 @@ export class NWCClient {
   async getBalance(): Promise<number> {
     try {
       const result = await this.sendRequest("get_balance");
-      return Math.floor((result.balance || 0) / 1000);
+      // Return balance in millisats (same unit as LNBits) for consistency
+      return result.balance || 0;
     } catch (error) {
       console.error("NWC getBalance error:", error);
       throw error;
