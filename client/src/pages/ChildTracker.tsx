@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface TrackerEntry {
@@ -47,6 +47,8 @@ export function ChildTracker({ childId }: { childId: number }) {
           ...entry,
           btcPrice: entry.btcPrice / 1000
         }));
+        console.log("🔵 TRACKER DATA WITH BTC PRICE:", scaledData);
+        console.log("🔵 Last entry btcPrice:", scaledData[scaledData.length - 1]?.btcPrice);
         setTrackerData(scaledData || []);
       } catch (error) {
         console.error("Failed to fetch tracker data:", error);
@@ -99,56 +101,25 @@ export function ChildTracker({ childId }: { childId: number }) {
           {/* Chart */}
           <div className="h-64 -mx-6">
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={trackerData} margin={{ top: 5, right: 80, left: -20, bottom: 5 }}>
-                <defs>
-                  <linearGradient id="trackerGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
+              <LineChart data={trackerData} margin={{ top: 5, right: 30, left: -20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(16,185,129,0.15)" />
                 <XAxis 
                   dataKey="date" 
                   tick={{ fontSize: 9, fill: "rgba(16,185,129,0.7)" }} 
                 />
                 <YAxis 
-                  yAxisId="left"
-                  width={50} 
-                  domain={[0, 'auto']}
                   tick={{ fontSize: 9, fill: "rgba(34,197,94,1)" }} 
-                  tickFormatter={(value) => `€${Number(value).toFixed(1)}`} 
-                  label={{ value: "Euro", angle: -90, position: 'insideLeft', offset: 10, fill: "rgba(34,197,94,1)" }}
-                />
-                <YAxis 
-                  yAxisId="middle"
-                  orientation="right"
-                  width={60}
-                  domain={[0, 'auto']}
-                  tick={{ fontSize: 9, fill: "rgba(250,204,21,1)" }}
-                  tickFormatter={(value) => `${Math.round(Number(value))}`}
-                  label={{ value: "Satoshi", angle: 90, position: 'insideRight', offset: -10, fill: "rgba(250,204,21,1)" }}
-                />
-                <YAxis 
-                  yAxisId="right"
-                  orientation="right"
-                  width={70}
-                  domain={[0, 'auto']}
-                  tick={{ fontSize: 9, fill: "rgba(59,130,246,1)" }}
-                  tickFormatter={(value) => `€${(Number(value) * 1000).toLocaleString('de-DE', {maximumFractionDigits: 0})}`}
-                  label={{ value: "BTC Preis (€1000s)", angle: 90, position: 'right', fill: "rgba(59,130,246,1)" }}
                 />
                 <Tooltip content={<CustomTooltip />} cursor={false} />
-                <Area 
-                  yAxisId="left"
+                <Line 
                   type="monotone" 
                   dataKey="euroValue" 
                   stroke="#22c55e" 
+                  dot={false}
                   strokeWidth={3}
-                  fill="url(#trackerGradient)" 
                   isAnimationActive={false}
                 />
                 <Line 
-                  yAxisId="middle"
                   type="monotone" 
                   dataKey="totalSats" 
                   stroke="#facc15" 
@@ -157,7 +128,6 @@ export function ChildTracker({ childId }: { childId: number }) {
                   isAnimationActive={false}
                 />
                 <Line 
-                  yAxisId="right"
                   type="monotone" 
                   dataKey="btcPrice" 
                   stroke="#3b82f6" 
@@ -165,7 +135,7 @@ export function ChildTracker({ childId }: { childId: number }) {
                   strokeWidth={3}
                   isAnimationActive={false}
                 />
-              </ComposedChart>
+              </LineChart>
             </ResponsiveContainer>
           </div>
 
