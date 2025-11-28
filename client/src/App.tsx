@@ -3963,12 +3963,12 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   }
 
   if (currentView === "tasks") {
-    const isLnbitsConfigured = user.hasLnbitsConfigured;
+    const isWalletConfigured = user.hasLnbitsConfigured || user.hasNwcConfigured;
     const availableBalance = displayBalance !== null ? displayBalance / 1000 : 0;
     const isBalanceInsufficient = displayBalance !== null && availableBalance < newTask.sats;
     const balancePercentage = displayBalance !== null && newTask.sats > 0 ? (availableBalance / newTask.sats) * 100 : 100;
 
-    if (!isLnbitsConfigured) {
+    if (!isWalletConfigured) {
       return (
         <div className="space-y-8">
           <h1 className="text-3xl font-bold mb-8">Neue Aufgabe erstellen</h1>
@@ -3977,9 +3977,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               <CardContent className="pt-8">
                 <div className="text-center space-y-4">
                   <div className="text-4xl">⚡</div>
-                  <h2 className="text-xl font-bold text-amber-300">LNbits Verbindung erforderlich</h2>
+                  <h2 className="text-xl font-bold text-amber-300">Wallet-Verbindung erforderlich</h2>
                   <p className="text-sm text-amber-200/80 max-w-md mx-auto">
-                    Um Aufgaben mit Satoshi-Belohnungen zu erstellen, musst du zuerst dein LNbits-Konto verbinden.
+                    Um Aufgaben mit Satoshi-Belohnungen zu erstellen, musst du zuerst dein LNbits-Konto oder Nostr Wallet Connect (NWC) verbinden.
                   </p>
                   <Button 
                     onClick={() => {
@@ -3989,7 +3989,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     data-testid="button-open-lnbits-settings"
                     className="mt-4 bg-primary hover:bg-primary/90 cursor-pointer"
                   >
-                    📱 Zu LNbits Einstellungen
+                    Zu Wallet-Einstellungen
                   </Button>
                 </div>
               </CardContent>
