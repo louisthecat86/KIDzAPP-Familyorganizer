@@ -5675,6 +5675,18 @@ function TrackerChart({ userId }: { userId: number }) {
           >
             Kurs
           </button>
+          <button
+            onClick={() => setShowInfo(!showInfo)}
+            className={`text-[11px] px-2 py-1 rounded border transition-all ${
+              showInfo 
+                ? 'bg-slate-500/20 border-slate-500/50 text-slate-300 font-semibold' 
+                : 'bg-slate-800/50 border-slate-700/50 text-slate-400 opacity-60'
+            }`}
+            data-testid="toggle-info"
+            title="Erklärung der Linien anzeigen"
+          >
+            Info
+          </button>
         </div>
       </div>
       <div className="h-32 -mx-2">
@@ -5723,18 +5735,6 @@ function TrackerChart({ userId }: { userId: number }) {
             {showBtcPrice && <Area yAxisId="btcPrice" type="monotone" dataKey="btcPriceScaled" stroke="#3b82f6" fill="url(#trackerGradBlue)" />}
           </AreaChart>
         </ResponsiveContainer>
-      </div>
-
-      {/* Info Button */}
-      <div className="flex justify-center">
-        <button
-          onClick={() => setShowInfo(!showInfo)}
-          className="w-6 h-6 rounded-full border border-blue-500/50 bg-blue-500/10 text-blue-400 text-xs font-bold flex items-center justify-center hover:bg-blue-500/20 transition-all"
-          data-testid="toggle-info"
-          title="Erklärung der Linien anzeigen"
-        >
-          i
-        </button>
       </div>
 
       {/* Erklärung für die Linien - versteckt hinter Button */}
