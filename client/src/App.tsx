@@ -5601,7 +5601,7 @@ function TrackerChart({ userId }: { userId: number }) {
   const latest = trackerData[trackerData.length - 1];
   return (
     <div className="space-y-2">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-2">
         <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-2">
           <p className="text-[11px] text-muted-foreground">Gesamt</p>
           <p className="text-sm font-bold text-yellow-300">{latest.totalSats.toLocaleString()}</p>
@@ -5609,6 +5609,10 @@ function TrackerChart({ userId }: { userId: number }) {
         <div className="bg-green-500/10 border border-green-500/30 rounded p-2">
           <p className="text-[11px] text-muted-foreground">Euro</p>
           <p className="text-sm font-bold text-green-300">€{latest.euroValue.toFixed(2)}</p>
+        </div>
+        <div className="bg-blue-500/10 border border-blue-500/30 rounded p-2">
+          <p className="text-[11px] text-muted-foreground">BTC Preis</p>
+          <p className="text-sm font-bold text-blue-300">€{latest.btcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0}) || 'N/A'}</p>
         </div>
       </div>
       <div className="h-32 -mx-2">
@@ -5629,16 +5633,18 @@ function TrackerChart({ userId }: { userId: number }) {
             <YAxis width={40} tick={{ fontSize: 8 }} tickFormatter={v => `€${v.toFixed(0)}`} />
             <YAxis yAxisId="right" orientation="right" width={40} tick={{ fontSize: 8 }} tickFormatter={v => `${v.toLocaleString()}`} />
             <Tooltip 
-              formatter={(v, name) => {
-                if (name === "euroValue") return [`€${Number(v).toFixed(2)}`, "Euro"];
-                return [`${Number(v).toLocaleString()}`, "Satoshi"];
-              }}
-              labelFormatter={() => ""}
-              contentStyle={{ 
-                backgroundColor: "transparent", 
-                border: "none",
-                boxShadow: "none",
-                padding: "0"
+              content={({ active, payload }) => {
+                if (active && payload && payload.length > 0) {
+                  const data = payload[0].payload;
+                  return (
+                    <div className="bg-slate-950 border border-slate-700 rounded p-2 text-xs">
+                      <p className="text-green-400">€{data.euroValue?.toFixed(2)}</p>
+                      <p className="text-yellow-400">⚡{data.totalSats?.toLocaleString()}</p>
+                      <p className="text-blue-400">💙 BTC: €{data.btcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0}) || 'N/A'}</p>
+                    </div>
+                  );
+                }
+                return null;
               }}
               cursor={false}
             />
