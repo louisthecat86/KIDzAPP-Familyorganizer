@@ -2328,25 +2328,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const taskTime = new Date(now);
     taskTime.setHours(hours, minutes, 0, 0);
     
-    const nowStr = now.toLocaleString();
-    const taskTimeStr = taskTime.toLocaleString();
-    console.log(`[Task Check] Now: ${nowStr}, TaskTime: ${taskTimeStr}, IsPassed: ${now >= taskTime}`);
-    
-    // Check if current time has passed the task time (with 2 minute window)
-    const timeDiff = Math.abs(now.getTime() - taskTime.getTime()) / (1000 * 60);
-    if (timeDiff > 2) return false; // Only trigger within 2 minutes of scheduled time
-    
     const today = new Date(now).toDateString();
     const lastCreatedDate = lastCreated ? new Date(lastCreated).toDateString() : null;
     
+    // Only proceed if we haven't created today yet
+    if (today === lastCreatedDate) return false;
+    
+    // Check if current time has passed the scheduled time
+    if (now < taskTime) return false;
+    
     if (recurring.frequency === "daily") {
-      return today !== lastCreatedDate;
+      return true;
     } else if (recurring.frequency === "weekly") {
-      if (now.getDay() !== recurring.dayOfWeek) return false;
-      return today !== lastCreatedDate;
+      return now.getDay() === recurring.dayOfWeek;
     } else if (recurring.frequency === "monthly") {
-      if (now.getDate() !== (recurring.dayOfMonth || 1)) return false;
-      return today !== lastCreatedDate;
+      return now.getDate() === (recurring.dayOfMonth || 1);
     }
     return false;
   }
