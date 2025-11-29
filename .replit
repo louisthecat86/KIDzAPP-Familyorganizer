@@ -82,3 +82,8 @@ waitForPort = 5000
 [agent]
 mockupState = "FULLSTACK"
 integrations = ["javascript_database:1.0.0"]
+
+[userenv]
+
+[userenv.shared]
+DEVELOPER_DONATION_ADDRESS = "mw860602@blink.sv"
