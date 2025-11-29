@@ -752,10 +752,13 @@ export default function App() {
                   setUser={setUser}
                   tasks={tasks}
                   events={events}
+                  newEvent={newEvent}
+                  setNewEvent={setNewEvent}
                   currentView={currentView}
                   setCurrentView={setCurrentView}
                   onAccept={acceptTask} 
                   onSubmit={submitProof}
+                  onCreateEvent={handleCreateEvent}
                   onDeleteEvent={handleDeleteEvent}
                   queryClient={queryClient}
                   layoutView={layoutView}
@@ -5253,7 +5256,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   return null;
 }
 
-function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentView, onAccept, onSubmit, onDeleteEvent, queryClient, layoutView, setLayoutView, messages, setMessages, newMessage, setNewMessage, isLoadingMessage, setIsLoadingMessage }: any) {
+function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, currentView, setCurrentView, onAccept, onSubmit, onCreateEvent, onDeleteEvent, queryClient, layoutView, setLayoutView, messages, setMessages, newMessage, setNewMessage, isLoadingMessage, setIsLoadingMessage }: any) {
   const [showLink, setShowLink] = useState(false);
   const [parentConnectionId, setParentConnectionId] = useState("");
   const [isLinking, setIsLinking] = useState(false);
@@ -5329,6 +5332,108 @@ function ChildDashboard({ user, setUser, tasks, events, currentView, setCurrentV
       setIsLinking(false);
     }
   };
+
+  if (currentView === "calendar-create") {
+    return (
+      <div className="space-y-8">
+        <h1 className="text-3xl font-bold mb-8">Neuen Termin anlegen</h1>
+        <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+          <Card className="border border-primary/20 shadow-[0_0_30px_-10px_rgba(247,147,26,0.15)] bg-card/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-primary">
+                <Plus className="h-5 w-5" /> Neuer Familientemin
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={onCreateEvent} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="event-title">Termin</Label>
+                  <Input 
+                    id="event-title"
+                    placeholder="z.B. Familienessen..." 
+                    value={newEvent.title}
+                    onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                    className="bg-secondary border-border"
+                    data-testid="input-event-title"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="event-description">Beschreibung</Label>
+                  <Input 
+                    id="event-description"
+                    placeholder="Details..." 
+                    value={newEvent.description}
+                    onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+                    className="bg-secondary border-border"
+                    data-testid="input-event-description"
+                  />
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="event-start-date">📅 Startdatum</Label>
+                    <Input 
+                      id="event-start-date"
+                      type="datetime-local"
+                      value={newEvent.startDate}
+                      onChange={(e) => setNewEvent({ ...newEvent, startDate: e.target.value })}
+                      className="bg-secondary border-border"
+                      data-testid="input-event-start-date"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="event-end-date">📅 Enddatum (optional)</Label>
+                    <Input 
+                      id="event-end-date"
+                      type="datetime-local"
+                      value={newEvent.endDate}
+                      onChange={(e) => setNewEvent({ ...newEvent, endDate: e.target.value })}
+                      className="bg-secondary border-border"
+                      data-testid="input-event-end-date"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="event-location" className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4" /> Ort (optional)
+                  </Label>
+                  <Input 
+                    id="event-location"
+                    placeholder="z.B. Zuhause..." 
+                    value={newEvent.location}
+                    onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
+                    className="bg-secondary border-border"
+                    data-testid="input-event-location"
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                  disabled={!newEvent.title || !newEvent.startDate}
+                  data-testid="button-create-event"
+                >
+                  Termin hinzufügen
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </motion.section>
+      </div>
+    );
+  }
+
+  if (currentView === "calendar-view") {
+    return (
+      <div className="space-y-8">
+        <h1 className="text-3xl font-bold mb-8">Familienkalender</h1>
+        <section>
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+            <Calendar className="text-primary" /> Alle Termine
+          </h2>
+          <ParentEventsList events={events} onDeleteEvent={onDeleteEvent} />
+        </section>
+      </div>
+    );
+  }
 
   if (currentView === "calendar") {
 
