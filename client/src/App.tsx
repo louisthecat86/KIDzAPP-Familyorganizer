@@ -4772,6 +4772,30 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   }
 
   if (currentView === "calendar-view") {
+    const [eventRsvps, setEventRsvps] = useState<Record<number, any[]>>({});
+    
+    useEffect(() => {
+      const fetchAllRsvps = async () => {
+        const rsvpsData: Record<number, any[]> = {};
+        for (const event of events) {
+          try {
+            const res = await fetch(`/api/events/${event.id}/rsvps`);
+            if (res.ok) {
+              rsvpsData[event.id] = await res.json();
+              const myRsvp = rsvpsData[event.id].find((r: any) => r.peerId === user.id);
+              if (myRsvp) {
+                setRsvps(prev => ({ ...prev, [event.id]: myRsvp.response }));
+              }
+            }
+          } catch (error) {
+            console.error(`Failed to fetch RSVPs for event ${event.id}`, error);
+          }
+        }
+        setEventRsvps(rsvpsData);
+      };
+      if (events.length > 0) fetchAllRsvps();
+    }, [events, user.id]);
+
     const handleRsvp = async (eventId: number, response: string) => {
       setLoading({ ...loading, [eventId]: true });
       try {
@@ -4781,6 +4805,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           body: JSON.stringify({ peerId: user.id, response }),
         });
         setRsvps({ ...rsvps, [eventId]: response });
+        const updated = eventRsvps[eventId] ? eventRsvps[eventId].map((r: any) => r.peerId === user.id ? { ...r, response } : r) : [];
+        setEventRsvps({ ...eventRsvps, [eventId]: updated });
         toast({
           title: response === "accepted" ? "Zusage! 🎉" : "Absage bestätigt",
           description: response === "accepted" ? "Du nimmst am Termin teil!" : "Die Absage wurde registriert"
@@ -4809,51 +4835,77 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 <p className="text-slate-700">Noch keine Termine geplant</p>
               </div>
             ) : (
-              events.map((event: FamilyEvent) => (
-                <div key={event.id} className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl hover:bg-white/60 transition-colors shadow-lg">
-                  <div className="p-5">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="font-bold text-lg text-slate-900" data-testid={`text-event-title-view-${event.id}`}>{event.title}</h3>
-                        <p className="text-xs text-slate-700 mt-2 flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          {new Date(event.startDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-                        </p>
-                        <p className="text-xs text-slate-700 flex items-center gap-1">
-                          <span>⏰</span>
-                          {new Date(event.startDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
-                          {event.endDate && ` - ${new Date(event.endDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`}
-                        </p>
-                        {event.description && <p className="text-slate-600 text-sm mt-3">{event.description}</p>}
-                        {event.location && (
-                          <p className="text-sm text-slate-700 flex items-center gap-1 mt-2">
-                            <MapPin className="h-4 w-4" /> {event.location}
+              events.map((event: FamilyEvent) => {
+                const accepted = (eventRsvps[event.id] || []).filter((r: any) => r.response === "accepted");
+                const declined = (eventRsvps[event.id] || []).filter((r: any) => r.response === "declined");
+                const myRsvp = rsvps[event.id];
+                
+                return (
+                  <div key={event.id} className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl hover:bg-white/60 transition-colors shadow-lg">
+                    <div className="p-5">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h3 className="font-bold text-lg text-slate-900" data-testid={`text-event-title-view-${event.id}`}>{event.title}</h3>
+                          <p className="text-xs text-slate-700 mt-2 flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            {new Date(event.startDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
                           </p>
-                        )}
-                        <div className="flex gap-2 mt-4">
-                          <Button
-                            onClick={() => handleRsvp(event.id, "accepted")}
-                            disabled={loading[event.id] || rsvps[event.id] === "declined"}
-                            className={`flex-1 ${rsvps[event.id] === "accepted" ? "bg-green-600 hover:bg-green-700" : "bg-violet-600 hover:bg-violet-700"} text-white`}
-                            data-testid={`button-accept-event-view-${event.id}`}
-                          >
-                            {rsvps[event.id] === "accepted" ? "✓ Zusage" : "Zusagen"}
-                          </Button>
-                          <Button
-                            onClick={() => handleRsvp(event.id, "declined")}
-                            disabled={loading[event.id] || rsvps[event.id] === "accepted"}
-                            variant="destructive"
-                            className="flex-1"
-                            data-testid={`button-decline-event-view-${event.id}`}
-                          >
-                            {rsvps[event.id] === "declined" ? "✗ Absage" : "Absagen"}
-                          </Button>
+                          <p className="text-xs text-slate-700 flex items-center gap-1">
+                            <span>⏰</span>
+                            {new Date(event.startDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                            {event.endDate && ` - ${new Date(event.endDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`}
+                          </p>
+                          {event.description && <p className="text-slate-600 text-sm mt-3">{event.description}</p>}
+                          {event.location && (
+                            <p className="text-sm text-slate-700 flex items-center gap-1 mt-2">
+                              <MapPin className="h-4 w-4" /> {event.location}
+                            </p>
+                          )}
+                          
+                          {!myRsvp ? (
+                            <div className="flex gap-2 mt-4">
+                              <Button
+                                onClick={() => handleRsvp(event.id, "accepted")}
+                                disabled={loading[event.id]}
+                                className="flex-1 bg-violet-600 hover:bg-violet-700 text-white"
+                                data-testid={`button-accept-event-view-${event.id}`}
+                              >
+                                Zusagen
+                              </Button>
+                              <Button
+                                onClick={() => handleRsvp(event.id, "declined")}
+                                disabled={loading[event.id]}
+                                variant="destructive"
+                                className="flex-1"
+                                data-testid={`button-decline-event-view-${event.id}`}
+                              >
+                                Absagen
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="mt-4 p-3 bg-slate-700/20 rounded-lg">
+                              <p className="text-sm font-semibold text-slate-800">
+                                {myRsvp === "accepted" ? "✓ Du sagst zu" : "✗ Du sagst ab"}
+                              </p>
+                            </div>
+                          )}
+                          
+                          {(accepted.length > 0 || declined.length > 0) && (
+                            <div className="mt-4 space-y-2 border-t border-slate-300/30 pt-3">
+                              {accepted.length > 0 && (
+                                <p className="text-xs text-green-700 font-semibold">✓ Zusagen: {accepted.map((r: any) => r.childName).join(", ")}</p>
+                              )}
+                              {declined.length > 0 && (
+                                <p className="text-xs text-red-700 font-semibold">✗ Absagen: {declined.map((r: any) => r.childName).join(", ")}</p>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </section>
@@ -5500,6 +5552,30 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   }
 
   if (currentView === "calendar-view") {
+    const [eventRsvps, setEventRsvps] = useState<Record<number, any[]>>({});
+    
+    useEffect(() => {
+      const fetchAllRsvps = async () => {
+        const rsvpsData: Record<number, any[]> = {};
+        for (const event of events) {
+          try {
+            const res = await fetch(`/api/events/${event.id}/rsvps`);
+            if (res.ok) {
+              rsvpsData[event.id] = await res.json();
+              const myRsvp = rsvpsData[event.id].find((r: any) => r.peerId === user.id);
+              if (myRsvp) {
+                setRsvps(prev => ({ ...prev, [event.id]: myRsvp.response }));
+              }
+            }
+          } catch (error) {
+            console.error(`Failed to fetch RSVPs for event ${event.id}`, error);
+          }
+        }
+        setEventRsvps(rsvpsData);
+      };
+      if (events.length > 0) fetchAllRsvps();
+    }, [events, user.id]);
+
     const handleRsvp = async (eventId: number, response: string) => {
       setLoading({ ...loading, [eventId]: true });
       try {
@@ -5509,6 +5585,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           body: JSON.stringify({ peerId: user.id, response }),
         });
         setRsvps({ ...rsvps, [eventId]: response });
+        const updated = eventRsvps[eventId] ? eventRsvps[eventId].map((r: any) => r.peerId === user.id ? { ...r, response } : r) : [];
+        setEventRsvps({ ...eventRsvps, [eventId]: updated });
         toast({
           title: response === "accepted" ? "Zusage! 🎉" : "Absage bestätigt",
           description: response === "accepted" ? "Du nimmst am Termin teil!" : "Die Absage wurde registriert"
@@ -5537,51 +5615,77 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 <p className="text-slate-700">Noch keine Termine geplant</p>
               </div>
             ) : (
-              events.map((event: FamilyEvent) => (
-                <div key={event.id} className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl hover:bg-white/60 transition-colors shadow-lg">
-                  <div className="p-5">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="font-bold text-lg text-slate-900" data-testid={`text-event-title-view-${event.id}`}>{event.title}</h3>
-                        <p className="text-xs text-slate-700 mt-2 flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          {new Date(event.startDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-                        </p>
-                        <p className="text-xs text-slate-700 flex items-center gap-1">
-                          <span>⏰</span>
-                          {new Date(event.startDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
-                          {event.endDate && ` - ${new Date(event.endDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`}
-                        </p>
-                        {event.description && <p className="text-slate-600 text-sm mt-3">{event.description}</p>}
-                        {event.location && (
-                          <p className="text-sm text-slate-700 flex items-center gap-1 mt-2">
-                            <MapPin className="h-4 w-4" /> {event.location}
+              events.map((event: FamilyEvent) => {
+                const accepted = (eventRsvps[event.id] || []).filter((r: any) => r.response === "accepted");
+                const declined = (eventRsvps[event.id] || []).filter((r: any) => r.response === "declined");
+                const myRsvp = rsvps[event.id];
+                
+                return (
+                  <div key={event.id} className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl hover:bg-white/60 transition-colors shadow-lg">
+                    <div className="p-5">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h3 className="font-bold text-lg text-slate-900" data-testid={`text-event-title-view-${event.id}`}>{event.title}</h3>
+                          <p className="text-xs text-slate-700 mt-2 flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            {new Date(event.startDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
                           </p>
-                        )}
-                        <div className="flex gap-2 mt-4">
-                          <Button
-                            onClick={() => handleRsvp(event.id, "accepted")}
-                            disabled={loading[event.id] || rsvps[event.id] === "declined"}
-                            className={`flex-1 ${rsvps[event.id] === "accepted" ? "bg-green-600 hover:bg-green-700" : "bg-violet-600 hover:bg-violet-700"} text-white`}
-                            data-testid={`button-accept-event-view-${event.id}`}
-                          >
-                            {rsvps[event.id] === "accepted" ? "✓ Zusage" : "Zusagen"}
-                          </Button>
-                          <Button
-                            onClick={() => handleRsvp(event.id, "declined")}
-                            disabled={loading[event.id] || rsvps[event.id] === "accepted"}
-                            variant="destructive"
-                            className="flex-1"
-                            data-testid={`button-decline-event-view-${event.id}`}
-                          >
-                            {rsvps[event.id] === "declined" ? "✗ Absage" : "Absagen"}
-                          </Button>
+                          <p className="text-xs text-slate-700 flex items-center gap-1">
+                            <span>⏰</span>
+                            {new Date(event.startDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                            {event.endDate && ` - ${new Date(event.endDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`}
+                          </p>
+                          {event.description && <p className="text-slate-600 text-sm mt-3">{event.description}</p>}
+                          {event.location && (
+                            <p className="text-sm text-slate-700 flex items-center gap-1 mt-2">
+                              <MapPin className="h-4 w-4" /> {event.location}
+                            </p>
+                          )}
+                          
+                          {!myRsvp ? (
+                            <div className="flex gap-2 mt-4">
+                              <Button
+                                onClick={() => handleRsvp(event.id, "accepted")}
+                                disabled={loading[event.id]}
+                                className="flex-1 bg-violet-600 hover:bg-violet-700 text-white"
+                                data-testid={`button-accept-event-view-${event.id}`}
+                              >
+                                Zusagen
+                              </Button>
+                              <Button
+                                onClick={() => handleRsvp(event.id, "declined")}
+                                disabled={loading[event.id]}
+                                variant="destructive"
+                                className="flex-1"
+                                data-testid={`button-decline-event-view-${event.id}`}
+                              >
+                                Absagen
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="mt-4 p-3 bg-slate-700/20 rounded-lg">
+                              <p className="text-sm font-semibold text-slate-800">
+                                {myRsvp === "accepted" ? "✓ Du sagst zu" : "✗ Du sagst ab"}
+                              </p>
+                            </div>
+                          )}
+                          
+                          {(accepted.length > 0 || declined.length > 0) && (
+                            <div className="mt-4 space-y-2 border-t border-slate-300/30 pt-3">
+                              {accepted.length > 0 && (
+                                <p className="text-xs text-green-700 font-semibold">✓ Zusagen: {accepted.map((r: any) => r.childName).join(", ")}</p>
+                              )}
+                              {declined.length > 0 && (
+                                <p className="text-xs text-red-700 font-semibold">✗ Absagen: {declined.map((r: any) => r.childName).join(", ")}</p>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </section>
