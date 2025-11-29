@@ -1419,37 +1419,37 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
         className="fixed right-0 top-0 h-screen w-64 bg-white/15 backdrop-blur-xl border-l border-white/50 z-40 flex flex-col pointer-events-none shadow-2xl"
         style={{ pointerEvents: sidebarOpen ? "auto" : "none" }}
       >
-        <div className="p-4 border-b border-white/20 space-y-3">
+        <div className="p-3 md:p-4 border-b border-white/20 space-y-2 md:space-y-3">
           <div className="flex items-center justify-between">
-            <div className="h-8 w-8 bg-yellow-400/30 rounded-lg flex items-center justify-center text-amber-600 text-lg">
+            <div className="h-7 w-7 md:h-8 md:w-8 bg-yellow-400/30 rounded-lg flex items-center justify-center text-amber-600 text-base md:text-lg">
               ⚡
             </div>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setSidebarOpen(false)}
-              className="md:hidden text-slate-800"
+              className="md:hidden text-slate-800 h-8 w-8"
               data-testid="button-close-sidebar"
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1 md:space-y-2">
             <p className="text-xs uppercase tracking-widest text-slate-600 font-semibold">Familie</p>
-            <h2 className="text-2xl font-bold text-slate-900">{user.familyName || "Family"}</h2>
-            <div className="flex items-center gap-2 pt-2">
-              <div className="h-8 w-8 rounded-full bg-violet-500/30 text-violet-700 flex items-center justify-center font-bold text-sm">
+            <h2 className="text-xl md:text-2xl font-bold text-slate-900">{user.familyName || "Family"}</h2>
+            <div className="flex items-center gap-2 pt-1 md:pt-2">
+              <div className="h-7 w-7 md:h-8 md:w-8 rounded-full bg-violet-500/30 text-violet-700 flex items-center justify-center font-bold text-xs md:text-sm">
                 {user.name[0]}
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-800">{user.name}</p>
+                <p className="text-xs md:text-sm font-medium text-slate-800">{user.name}</p>
                 <p className="text-xs text-slate-600 capitalize">{user.role === "child" ? "Kind" : "Eltern"}</p>
               </div>
             </div>
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-4 space-y-2">
+        <nav className="flex-1 overflow-y-auto p-2 md:p-4 space-y-1">
           {menuItems.map((item) => {
             const Icon = item.icon;
             
@@ -1460,7 +1460,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                 <div key={item.id}>
                   <button
                     onClick={() => setShowTasksSubmenu(!showTasksSubmenu)}
-                    className={`w-full px-4 py-2 rounded-xl flex items-center gap-2 transition-colors ${
+                    className={`w-full px-3 md:px-4 py-1.5 md:py-2 rounded-xl flex items-center gap-2 transition-colors text-sm md:text-base ${
                       isTasksActive
                         ? "bg-violet-500/40 text-slate-900 font-medium"
                         : "text-slate-700 hover:bg-white/20"
@@ -1476,13 +1476,13 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                   </button>
                   
                   {showTasksSubmenu && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-4 mt-1 space-y-1">
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-3 md:ml-4 mt-0.5 md:mt-1 space-y-0.5 md:space-y-1">
                       <button
                         onClick={() => {
                           setCurrentView("tasks");
                           setSidebarOpen(false);
                         }}
-                        className={`w-full px-4 py-2 rounded-lg text-sm transition-colors text-left ${
+                        className={`w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm transition-colors text-left ${
                           currentView === "tasks"
                             ? "bg-violet-500/40 text-slate-900 font-medium"
                             : "text-slate-700 hover:bg-white/20"
@@ -1496,7 +1496,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                           setCurrentView("recurring-tasks");
                           setSidebarOpen(false);
                         }}
-                        className={`w-full px-4 py-2 rounded-lg text-sm transition-colors text-left ${
+                        className={`w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm transition-colors text-left ${
                           currentView === "recurring-tasks"
                             ? "bg-violet-500/40 text-slate-900 font-medium"
                             : "text-slate-700 hover:bg-white/20"
@@ -1518,7 +1518,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                 <div key={item.id}>
                   <button
                     onClick={() => setShowCalendarSubmenu(!showCalendarSubmenu)}
-                    className={`w-full px-4 py-2 rounded-xl flex items-center gap-2 transition-colors ${
+                    className={`w-full px-3 md:px-4 py-1.5 md:py-2 rounded-xl flex items-center gap-2 transition-colors text-sm md:text-base ${
                       isCalendarActive
                         ? "bg-violet-500/40 text-slate-900 font-medium"
                         : "text-slate-700 hover:bg-white/20"
@@ -1531,7 +1531,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                   </button>
                   
                   {showCalendarSubmenu && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-4 mt-1 space-y-1">
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-3 md:ml-4 mt-0.5 md:mt-1 space-y-0.5 md:space-y-1">
                       <button
                         onClick={() => {
                           setCurrentView("calendar-create");
@@ -1574,7 +1574,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                   setCurrentView(item.id);
                   setSidebarOpen(false);
                 }}
-                className={`w-full px-4 py-2 rounded-xl flex items-center gap-2 transition-colors ${
+                className={`w-full px-3 md:px-4 py-1.5 md:py-2 rounded-xl flex items-center gap-2 transition-colors text-sm md:text-base ${
                   isActive
                     ? "bg-violet-500/40 text-slate-900 font-medium"
                     : "text-slate-700 hover:bg-white/20"
@@ -1591,11 +1591,11 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
           })}
         </nav>
 
-        <div className="p-4 border-t border-white/20">
+        <div className="p-2 md:p-4 border-t border-white/20">
           <div className="relative">
             <button
               onClick={() => setShowSettingsMenu(!showSettingsMenu)}
-              className="w-full px-4 py-2 rounded-xl flex items-center gap-2 transition-colors text-slate-700 hover:bg-white/20"
+              className="w-full px-3 md:px-4 py-1.5 md:py-2 rounded-xl flex items-center gap-2 transition-colors text-slate-700 hover:bg-white/20 text-sm md:text-base"
               data-testid="menu-item-settings"
             >
               <Settings className="h-4 w-4" />
@@ -1604,11 +1604,11 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
             </button>
             
             {showSettingsMenu && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-4 mt-1 space-y-1 relative z-50">
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-3 md:ml-4 mt-0.5 md:mt-1 space-y-0.5 md:space-y-1 relative z-50">
                 {/* Ansicht */}
                 <button
                   onClick={() => { handleSettingsClick("ansicht"); setSidebarOpen(false); }}
-                  className="w-full px-4 py-2 rounded-lg text-sm text-slate-700 hover:bg-white/20 transition-colors text-left"
+                  className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-slate-700 hover:bg-white/20 transition-colors text-left"
                   data-testid="submenu-ansicht"
                 >
                   Ansicht
@@ -1619,7 +1619,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                   <div>
                     <button
                       onClick={() => setShowWalletSubmenu(!showWalletSubmenu)}
-                      className="w-full px-4 py-2 rounded-lg text-sm text-slate-700 hover:bg-white/20 transition-colors text-left flex items-center justify-between"
+                      className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-slate-700 hover:bg-white/20 transition-colors text-left flex items-center justify-between"
                       data-testid="submenu-wallet"
                     >
                       <span>Wallet Einstellung</span>
@@ -1627,17 +1627,17 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                     </button>
                     
                     {showWalletSubmenu && (
-                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-6 mt-1 space-y-1">
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-4 md:ml-6 mt-0.5 md:mt-1 space-y-0.5 md:space-y-1">
                         <button
                           onClick={() => { setWalletTab("lnbits"); handleSettingsClick("wallet"); setSidebarOpen(false); }}
-                          className="w-full px-4 py-2 rounded-lg text-xs text-slate-700 hover:bg-white/20 transition-colors text-left"
+                          className="w-full px-3 md:px-4 py-0.5 md:py-2 rounded-lg text-xs text-slate-700 hover:bg-white/20 transition-colors text-left"
                           data-testid="submenu-wallet-lnbits"
                         >
                           LNbits Anbindung
                         </button>
                         <button
                           onClick={() => { setWalletTab("nwc"); handleSettingsClick("wallet"); setSidebarOpen(false); }}
-                          className="w-full px-4 py-2 rounded-lg text-xs text-slate-700 hover:bg-white/20 transition-colors text-left"
+                          className="w-full px-3 md:px-4 py-0.5 md:py-2 rounded-lg text-xs text-slate-700 hover:bg-white/20 transition-colors text-left"
                           data-testid="submenu-wallet-nwc"
                         >
                           NWC Anbindung
@@ -1648,7 +1648,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                 ) : (
                   <button
                     onClick={() => { handleSettingsClick("wallet"); setSidebarOpen(false); }}
-                    className="w-full px-4 py-2 rounded-lg text-sm text-slate-700 hover:bg-white/20 transition-colors text-left"
+                    className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-slate-700 hover:bg-white/20 transition-colors text-left"
                     data-testid="submenu-wallet-child"
                   >
                     Wallet Einstellung
@@ -1658,7 +1658,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                 {/* Peers */}
                 <button
                   onClick={() => { handleSettingsClick("peers"); setSidebarOpen(false); }}
-                  className="w-full px-4 py-2 rounded-lg text-sm text-slate-700 hover:bg-white/20 transition-colors text-left"
+                  className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-slate-700 hover:bg-white/20 transition-colors text-left"
                   data-testid="submenu-peers"
                 >
                   Peers
@@ -1668,7 +1668,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                 {user.role === "parent" && (
                   <button
                     onClick={() => { setCurrentView("level-bonus-settings"); setSidebarOpen(false); setShowSettingsMenu(false); }}
-                    className="w-full px-4 py-2 rounded-lg text-sm text-slate-700 hover:bg-white/20 transition-colors text-left"
+                    className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-slate-700 hover:bg-white/20 transition-colors text-left"
                     data-testid="submenu-level-bonus"
                   >
                     Level-Bonus
@@ -1681,24 +1681,24 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
 
         {/* Donate Button - nur für Eltern */}
         {user.role === "parent" && (
-          <div className="p-4 border-t border-white/20">
+          <div className="p-2 md:p-4 border-t border-white/20">
             <button
               onClick={() => { setCurrentView("donate"); setSidebarOpen(false); }}
-              className="w-full px-4 py-2 rounded-xl flex items-center gap-2 transition-colors text-slate-700 hover:bg-white/20"
+              className="w-full px-3 md:px-4 py-1.5 md:py-2 rounded-xl flex items-center gap-2 transition-colors text-slate-700 hover:bg-white/20 text-sm md:text-base"
               data-testid="menu-item-donate"
             >
-              <span className="text-lg">🧡</span>
+              <span className="text-base md:text-lg">🧡</span>
               <span>Spenden</span>
             </button>
           </div>
         )}
 
-        <div className="p-4 border-t border-white/20">
+        <div className="p-2 md:p-4 border-t border-white/20">
           <Button
             variant="outline"
             size="sm"
             onClick={onLogout}
-            className="w-full gap-2 bg-red-500/20 border-red-500/40 text-red-700 hover:bg-red-500/30 hover:text-red-800"
+            className="w-full gap-2 bg-red-500/20 border-red-500/40 text-red-700 hover:bg-red-500/30 hover:text-red-800 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2"
             data-testid="button-logout-sidebar"
           >
             <LogOut className="h-4 w-4" /> Abmelden
