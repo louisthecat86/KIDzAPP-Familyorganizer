@@ -1686,7 +1686,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
             className="w-full px-4 py-2 rounded-xl flex items-center gap-2 transition-colors text-slate-700 hover:bg-white/20"
             data-testid="menu-item-donate"
           >
-            <span className="text-lg">💜</span>
+            <span className="text-lg">🧡</span>
             <span>Spenden</span>
           </button>
         </div>
@@ -8511,7 +8511,7 @@ function DonateView({ user, onClose }: { user: User; onClose: () => void }) {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <h1 className="text-3xl font-bold mb-8">❤️ Spende an Entwickler</h1>
+      <h1 className="text-3xl font-bold mb-8">🧡 Spende an Entwickler</h1>
       <Card className="border-2 border-purple-500/40 bg-purple-500/5">
         <CardHeader>
           <CardTitle>Unterstütze die App Entwicklung</CardTitle>
@@ -8539,8 +8539,8 @@ function DonateView({ user, onClose }: { user: User; onClose: () => void }) {
           >
             {loading ? "Wird gesendet..." : `❤️ ${donationAmount || "0"} Sats spenden`}
           </Button>
-          <div className="p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg text-xs text-muted-foreground">
-            <p>💜 Jede Spende hilft, diese App für Familien besser zu machen!</p>
+          <div className="p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg text-xs text-muted-foreground">
+            <p>🧡 Jede Spende hilft, diese App für Familien besser zu machen!</p>
           </div>
         </CardContent>
       </Card>
