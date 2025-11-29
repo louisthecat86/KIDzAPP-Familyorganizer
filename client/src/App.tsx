@@ -1674,6 +1674,15 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                     Level-Bonus
                   </button>
                 )}
+
+                {/* Spenden */}
+                <button
+                  onClick={() => { setCurrentView("donate"); setSidebarOpen(false); setShowSettingsMenu(false); }}
+                  className="w-full px-4 py-2 rounded-lg text-sm text-slate-700 hover:bg-white/20 transition-colors text-left"
+                  data-testid="submenu-donate"
+                >
+                  💜 Spenden
+                </button>
               </motion.div>
             )}
           </div>
@@ -4211,6 +4220,10 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         )}
       </div>
     );
+  }
+
+  if (currentView === "donate") {
+    return <DonateView user={user} onClose={() => setCurrentView("dashboard")} />;
   }
 
   if (currentView === "nostr") {
@@ -8457,5 +8470,77 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function DonateView({ user, onClose }: { user: User; onClose: () => void }) {
+  const [donationAmount, setDonationAmount] = useState<string>("500");
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleDonate = async () => {
+    if (!donationAmount || parseInt(donationAmount) <= 0) {
+      toast({ title: "Fehler", description: "Gültigen Betrag eingeben", variant: "destructive" });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/donate/${user.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sats: parseInt(donationAmount) })
+      });
+      
+      if (res.ok) {
+        toast({ title: "✨ Danke!", description: `${donationAmount} Sats gespendet!` });
+        setDonationAmount("500");
+      } else {
+        const error = await res.json();
+        toast({ title: "Fehler", description: error.error, variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6 max-w-2xl">
+      <h1 className="text-3xl font-bold mb-8">❤️ Spende an Entwickler</h1>
+      <Card className="border-2 border-purple-500/40 bg-purple-500/5">
+        <CardHeader>
+          <CardTitle>Unterstütze die App Entwicklung</CardTitle>
+          <CardDescription>Deine Unterstützung hilft, die App zu verbessern</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="amount">Satoshi-Betrag</Label>
+            <Input
+              id="amount"
+              type="number"
+              placeholder="500"
+              value={donationAmount}
+              onChange={(e) => setDonationAmount(e.target.value)}
+              className="font-mono text-sm"
+              data-testid="input-donation-amount"
+            />
+            <p className="text-xs text-muted-foreground">Mindestens 100 Sats</p>
+          </div>
+          <Button
+            onClick={handleDonate}
+            disabled={loading || !donationAmount || parseInt(donationAmount) < 100}
+            className="w-full bg-purple-600 hover:bg-purple-700"
+            data-testid="button-donate"
+          >
+            {loading ? "Wird gesendet..." : `❤️ ${donationAmount || "0"} Sats spenden`}
+          </Button>
+          <div className="p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg text-xs text-muted-foreground">
+            <p>💜 Jede Spende hilft, diese App für Familien besser zu machen!</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

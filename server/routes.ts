@@ -2497,6 +2497,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Donation endpoint - send sats to developer
+  const DEVELOPER_DONATION_ADDRESS = process.env.DEVELOPER_DONATION_ADDRESS || "satoshi@stacker.news";
+  
+  app.post("/api/donate/:peerId", async (req, res) => {
+    try {
+      const peerId = parseInt(req.params.peerId);
+      const { sats } = req.body;
+      
+      if (!sats || sats < 100) {
+        return res.status(400).json({ error: "Mindestens 100 Sats erforderlich" });
+      }
+
+      const peer = await storage.getPeer(peerId);
+      if (!peer) {
+        return res.status(404).json({ error: "User nicht gefunden" });
+      }
+
+      const hasLnbits = peer.lnbitsUrl && peer.lnbitsAdminKey;
+      const hasNwc = peer.nwcConnectionString;
+      const activeWallet = peer.walletType || (hasLnbits ? "lnbits" : hasNwc ? "nwc" : null);
+      
+      if (!hasLnbits && !hasNwc) {
+        return res.status(400).json({ error: "Wallet nicht konfiguriert" });
+      }
+
+      let paymentHash = "";
+      const memo = `Spende von ${peer.name}`;
+
+      try {
+        if (activeWallet === "nwc" && hasNwc) {
+          const { NWCClient } = await import("./nwc");
+          const nwc = new NWCClient(peer.nwcConnectionString!);
+          paymentHash = await nwc.payToLightningAddress(DEVELOPER_DONATION_ADDRESS, sats, memo);
+          nwc.close();
+        } else if (hasLnbits) {
+          const lnbits = new LNBitsClient(peer.lnbitsUrl!, peer.lnbitsAdminKey!);
+          paymentHash = await lnbits.payToLightningAddress(sats, DEVELOPER_DONATION_ADDRESS, memo);
+        }
+
+        res.json({ success: true, paymentHash });
+      } catch (walletError) {
+        console.error("Wallet error during donation:", walletError);
+        return res.status(400).json({ error: "Wallet-Fehler: " + (walletError as Error).message });
+      }
+    } catch (error) {
+      console.error("Donation error:", error);
+      res.status(500).json({ error: "Spende fehlgeschlagen" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
