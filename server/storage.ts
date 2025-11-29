@@ -20,6 +20,7 @@ export interface IStorage {
   updatePeerPin(peerId: number, newPin: string): Promise<Peer>;
   updatePeerFamilyName(peerId: number, familyName: string): Promise<Peer>;
   updateChildLightningAddress(peerId: number, lightningAddress: string): Promise<Peer>;
+  updateDonationAddress(peerId: number, donationAddress: string): Promise<Peer>;
   getSatsSpentByChild(parentId: number, connectionId: string): Promise<Array<{ childId: number; childName: string; satSpent: number }>>;
   
   // Task operations
@@ -244,6 +245,14 @@ export class DatabaseStorage implements IStorage {
   async updateChildLightningAddress(peerId: number, lightningAddress: string): Promise<Peer> {
     const result = await db.update(peers)
       .set({ lightningAddress })
+      .where(eq(peers.id, peerId))
+      .returning();
+    return result[0];
+  }
+
+  async updateDonationAddress(peerId: number, donationAddress: string): Promise<Peer> {
+    const result = await db.update(peers)
+      .set({ donationAddress })
       .where(eq(peers.id, peerId))
       .returning();
     return result[0];

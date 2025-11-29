@@ -17,6 +17,7 @@ export const peers = pgTable("peers", {
   nwcConnectionString: text("nwc_connection_string"), // Nostr Wallet Connect connection string (parent)
   walletType: text("wallet_type"), // 'lnbits' or 'nwc' - which wallet to use for payments
   lightningAddress: text("lightning_address"), // Lightning address for child (receives sats directly)
+  donationAddress: text("donation_address"), // Lightning address for parent donations
   favoriteColor: text("favorite_color"), // Favorite color for PIN recovery
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => ({

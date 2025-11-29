@@ -103,6 +103,7 @@ type User = {
   balance?: number;
   hasLnbitsConfigured?: boolean;
   lightningAddress?: string;
+  donationAddress?: string;
   favoriteColor?: string;
 };
 
@@ -4265,6 +4266,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <TabsTrigger value="verbindung">Verbindung</TabsTrigger>
             <TabsTrigger value="lnbits">LNbits</TabsTrigger>
             <TabsTrigger value="nwc">NWC</TabsTrigger>
+            <TabsTrigger value="donation">Spendenlink</TabsTrigger>
           </TabsList>
 
           <TabsContent value="verbindung">
@@ -4338,6 +4340,78 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     >
                       {user.walletType === "lnbits" ? "Aktiv" : "Als aktiv setzen"}
                     </Button>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="donation">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Spendenlink</CardTitle>
+                  <CardDescription>Erhalte Spenden über Lightning Network</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="donation-addr">Lightning Adresse für Spenden</Label>
+                    <Input 
+                      id="donation-addr"
+                      placeholder="deine@lightning.adresse oder Lightning Adresse"
+                      value={user.donationAddress || ""}
+                      onChange={(e) => setUser({ ...user, donationAddress: e.target.value })}
+                      className="font-mono text-sm"
+                      data-testid="input-donation-address"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Gib deine Lightning Adresse ein, um Spenden zu erhalten
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={async () => {
+                      if (!user.donationAddress) {
+                        useToast()({ title: "Fehler", description: "Spendendadresse erforderlich", variant: "destructive" });
+                        return;
+                      }
+                      try {
+                        const res = await fetch("/api/donation/set-address", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ peerId: user.id, donationAddress: user.donationAddress })
+                        });
+                        const data = await res.json();
+                        if (res.ok) {
+                          useToast()({ title: "Erfolg", description: "Spendendadresse gespeichert!" });
+                        }
+                      } catch (error) {
+                        useToast()({ title: "Fehler", description: "Fehler beim Speichern", variant: "destructive" });
+                      }
+                    }}
+                    className="bg-primary hover:bg-primary/90 w-full"
+                    data-testid="button-save-donation-address"
+                  >
+                    Speichern
+                  </Button>
+                  {user.donationAddress && (
+                    <div className="p-4 bg-primary/10 border border-primary/30 rounded-lg space-y-2">
+                      <p className="text-xs font-semibold text-primary">Dein Spendenlink:</p>
+                      <code className="text-xs break-all text-muted-foreground font-mono">
+                        lightning:{user.donationAddress}
+                      </code>
+                      <Button 
+                        onClick={() => {
+                          navigator.clipboard.writeText(`lightning:${user.donationAddress}`);
+                          useToast()({ title: "Kopiert", description: "Spendenlink in Zwischenablage" });
+                        }}
+                        size="sm"
+                        variant="outline"
+                        className="w-full"
+                        data-testid="button-copy-donation-link"
+                      >
+                        <Copy className="h-4 w-4 mr-2" /> Spendenlink kopieren
+                      </Button>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -4996,6 +5070,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <TabsList className="bg-secondary p-1 border border-border mb-6">
             <TabsTrigger value="lnbits">LNbits</TabsTrigger>
             <TabsTrigger value="nwc">NWC</TabsTrigger>
+            <TabsTrigger value="donation">Spendenlink</TabsTrigger>
           </TabsList>
 
           <TabsContent value="lnbits">

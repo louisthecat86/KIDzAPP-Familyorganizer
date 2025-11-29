@@ -483,6 +483,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Set donation address for parent (to receive donations)
+  app.post("/api/donation/set-address", async (req, res) => {
+    try {
+      const { peerId, donationAddress } = req.body;
+      
+      if (!peerId || !donationAddress) {
+        return res.status(400).json({ error: "peerId und donationAddress erforderlich" });
+      }
+
+      const peer = await storage.updateDonationAddress(peerId, donationAddress.trim());
+      res.json({ 
+        success: true, 
+        donationAddress: peer.donationAddress,
+        donationLink: `lightning:${peer.donationAddress}`
+      });
+    } catch (error) {
+      console.error("Set donation address error:", error);
+      res.status(500).json({ error: "Fehler beim Speichern der Spendendadresse" });
+    }
+  });
+
+  // Get donation link for parent
+  app.get("/api/donation/link/:parentId", async (req, res) => {
+    try {
+      const parentId = parseInt(req.params.parentId);
+      const peer = await storage.getPeer(parentId);
+      
+      if (!peer || peer.role !== "parent") {
+        return res.status(404).json({ error: "Parent nicht gefunden" });
+      }
+
+      if (!peer.donationAddress) {
+        return res.status(400).json({ error: "Keine Spendendadresse konfiguriert" });
+      }
+
+      res.json({
+        donationAddress: peer.donationAddress,
+        donationLink: `lightning:${peer.donationAddress}`,
+        lightningDeepLink: `lightning:${peer.donationAddress}`
+      });
+    } catch (error) {
+      console.error("Get donation link error:", error);
+      res.status(500).json({ error: "Fehler beim Abrufen des Spendenlinks" });
+    }
+  });
+
   // Get NWC balance
   app.get("/api/wallet/nwc-balance/:peerId", async (req, res) => {
     try {
