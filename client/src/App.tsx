@@ -1674,18 +1674,21 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                     Level-Bonus
                   </button>
                 )}
-
-                {/* Spenden */}
-                <button
-                  onClick={() => { setCurrentView("donate"); setSidebarOpen(false); setShowSettingsMenu(false); }}
-                  className="w-full px-4 py-2 rounded-lg text-sm text-slate-700 hover:bg-white/20 transition-colors text-left"
-                  data-testid="submenu-donate"
-                >
-                  💜 Spenden
-                </button>
               </motion.div>
             )}
           </div>
+        </div>
+
+        {/* Donate Button - eigener Menüpunkt */}
+        <div className="p-4 border-t border-white/20">
+          <button
+            onClick={() => { setCurrentView("donate"); setSidebarOpen(false); }}
+            className="w-full px-4 py-2 rounded-xl flex items-center gap-2 transition-colors text-slate-700 hover:bg-white/20"
+            data-testid="menu-item-donate"
+          >
+            <span className="text-lg">💜</span>
+            <span>Spenden</span>
+          </button>
         </div>
 
         <div className="p-4 border-t border-white/20">
