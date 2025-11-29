@@ -1900,9 +1900,6 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
           );
       
       const user = response as User;
-
-      
-      console.log("Erfolg:", user);
       
       toast({
         title: isLogin ? "Willkommen!" : "Account erstellt! ✅",
