@@ -4862,33 +4862,25 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                             </p>
                           )}
                           
-                          {!myRsvp ? (
-                            <div className="flex gap-2 mt-4">
-                              <Button
-                                onClick={() => handleRsvp(event.id, "accepted")}
-                                disabled={loading[event.id]}
-                                className="flex-1 bg-violet-600 hover:bg-violet-700 text-white"
-                                data-testid={`button-accept-event-view-${event.id}`}
-                              >
-                                Zusagen
-                              </Button>
-                              <Button
-                                onClick={() => handleRsvp(event.id, "declined")}
-                                disabled={loading[event.id]}
-                                variant="destructive"
-                                className="flex-1"
-                                data-testid={`button-decline-event-view-${event.id}`}
-                              >
-                                Absagen
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="mt-4 p-3 bg-slate-700/20 rounded-lg">
-                              <p className="text-sm font-semibold text-slate-800">
-                                {myRsvp === "accepted" ? "✓ Du sagst zu" : "✗ Du sagst ab"}
-                              </p>
-                            </div>
-                          )}
+                          <div className="flex gap-2 mt-4">
+                            <Button
+                              onClick={() => handleRsvp(event.id, "accepted")}
+                              disabled={loading[event.id] || myRsvp === "accepted"}
+                              className={`flex-1 ${myRsvp === "accepted" ? "bg-green-600 hover:bg-green-700" : "bg-violet-600 hover:bg-violet-700"} text-white`}
+                              data-testid={`button-accept-event-view-${event.id}`}
+                            >
+                              {myRsvp === "accepted" ? "✓ Zusage" : "Zusagen"}
+                            </Button>
+                            <Button
+                              onClick={() => handleRsvp(event.id, "declined")}
+                              disabled={loading[event.id] || myRsvp === "declined"}
+                              variant={myRsvp === "declined" ? "default" : "destructive"}
+                              className={`flex-1 ${myRsvp === "declined" ? "bg-red-600 hover:bg-red-700" : ""}`}
+                              data-testid={`button-decline-event-view-${event.id}`}
+                            >
+                              {myRsvp === "declined" ? "✗ Absage" : "Absagen"}
+                            </Button>
+                          </div>
                           
                           {(accepted.length > 0 || declined.length > 0) && (
                             <div className="mt-4 space-y-2 border-t border-slate-300/30 pt-3">
@@ -5642,33 +5634,25 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                             </p>
                           )}
                           
-                          {!myRsvp ? (
-                            <div className="flex gap-2 mt-4">
-                              <Button
-                                onClick={() => handleRsvp(event.id, "accepted")}
-                                disabled={loading[event.id]}
-                                className="flex-1 bg-violet-600 hover:bg-violet-700 text-white"
-                                data-testid={`button-accept-event-view-${event.id}`}
-                              >
-                                Zusagen
-                              </Button>
-                              <Button
-                                onClick={() => handleRsvp(event.id, "declined")}
-                                disabled={loading[event.id]}
-                                variant="destructive"
-                                className="flex-1"
-                                data-testid={`button-decline-event-view-${event.id}`}
-                              >
-                                Absagen
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="mt-4 p-3 bg-slate-700/20 rounded-lg">
-                              <p className="text-sm font-semibold text-slate-800">
-                                {myRsvp === "accepted" ? "✓ Du sagst zu" : "✗ Du sagst ab"}
-                              </p>
-                            </div>
-                          )}
+                          <div className="flex gap-2 mt-4">
+                            <Button
+                              onClick={() => handleRsvp(event.id, "accepted")}
+                              disabled={loading[event.id] || myRsvp === "accepted"}
+                              className={`flex-1 ${myRsvp === "accepted" ? "bg-green-600 hover:bg-green-700" : "bg-violet-600 hover:bg-violet-700"} text-white`}
+                              data-testid={`button-accept-event-view-${event.id}`}
+                            >
+                              {myRsvp === "accepted" ? "✓ Zusage" : "Zusagen"}
+                            </Button>
+                            <Button
+                              onClick={() => handleRsvp(event.id, "declined")}
+                              disabled={loading[event.id] || myRsvp === "declined"}
+                              variant={myRsvp === "declined" ? "default" : "destructive"}
+                              className={`flex-1 ${myRsvp === "declined" ? "bg-red-600 hover:bg-red-700" : ""}`}
+                              data-testid={`button-decline-event-view-${event.id}`}
+                            >
+                              {myRsvp === "declined" ? "✗ Absage" : "Absagen"}
+                            </Button>
+                          </div>
                           
                           {(accepted.length > 0 || declined.length > 0) && (
                             <div className="mt-4 space-y-2 border-t border-slate-300/30 pt-3">
