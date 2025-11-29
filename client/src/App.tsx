@@ -1887,7 +1887,6 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
     
     setIsLoading(true);
     try {
-      console.log("Versuche", isLogin ? "Login" : "Registrierung", { name: trimmedName, role, pin: trimmedPin });
       const response = isLogin 
         ? await loginUser(trimmedName, role, trimmedPin)
         : await registerUser(
