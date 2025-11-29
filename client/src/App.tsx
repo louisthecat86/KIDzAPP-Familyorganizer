@@ -3262,6 +3262,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   });
   const [draggedCard, setDraggedCard] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [rsvps, setRsvps] = useState<Record<number, string>>({});
+  const [loading, setLoading] = useState<Record<number, boolean>>({});
 
   const hideConnectionCode = () => {
     setShowConnectionCode(false);
@@ -4770,6 +4772,30 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   }
 
   if (currentView === "calendar-view") {
+    const handleRsvp = async (eventId: number, response: string) => {
+      setLoading({ ...loading, [eventId]: true });
+      try {
+        await fetch(`/api/events/${eventId}/rsvps`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ peerId: user.id, response }),
+        });
+        setRsvps({ ...rsvps, [eventId]: response });
+        toast({
+          title: response === "accepted" ? "Zusage! 🎉" : "Absage bestätigt",
+          description: response === "accepted" ? "Du nimmst am Termin teil!" : "Die Absage wurde registriert"
+        });
+      } catch (error) {
+        toast({
+          title: "Fehler",
+          description: "RSVP konnte nicht gespeichert werden",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading({ ...loading, [eventId]: false });
+      }
+    };
+
     return (
       <div className="space-y-8">
         <h1 className="text-3xl font-bold mb-8">Familienkalender</h1>
@@ -4777,7 +4803,59 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
             <Calendar className="text-primary" /> Alle Termine
           </h2>
-          <ParentEventsList events={events} onDeleteEvent={onDeleteEvent} />
+          <div className="grid gap-4">
+            {events.length === 0 ? (
+              <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl p-8 text-center shadow-lg">
+                <p className="text-slate-700">Noch keine Termine geplant</p>
+              </div>
+            ) : (
+              events.map((event: FamilyEvent) => (
+                <div key={event.id} className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl hover:bg-white/60 transition-colors shadow-lg">
+                  <div className="p-5">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-lg text-slate-900" data-testid={`text-event-title-view-${event.id}`}>{event.title}</h3>
+                        <p className="text-xs text-slate-700 mt-2 flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          {new Date(event.startDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+                        </p>
+                        <p className="text-xs text-slate-700 flex items-center gap-1">
+                          <span>⏰</span>
+                          {new Date(event.startDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                          {event.endDate && ` - ${new Date(event.endDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`}
+                        </p>
+                        {event.description && <p className="text-slate-600 text-sm mt-3">{event.description}</p>}
+                        {event.location && (
+                          <p className="text-sm text-slate-700 flex items-center gap-1 mt-2">
+                            <MapPin className="h-4 w-4" /> {event.location}
+                          </p>
+                        )}
+                        <div className="flex gap-2 mt-4">
+                          <Button
+                            onClick={() => handleRsvp(event.id, "accepted")}
+                            disabled={loading[event.id] || rsvps[event.id] === "declined"}
+                            className={`flex-1 ${rsvps[event.id] === "accepted" ? "bg-green-600 hover:bg-green-700" : "bg-violet-600 hover:bg-violet-700"} text-white`}
+                            data-testid={`button-accept-event-view-${event.id}`}
+                          >
+                            {rsvps[event.id] === "accepted" ? "✓ Zusage" : "Zusagen"}
+                          </Button>
+                          <Button
+                            onClick={() => handleRsvp(event.id, "declined")}
+                            disabled={loading[event.id] || rsvps[event.id] === "accepted"}
+                            variant="destructive"
+                            className="flex-1"
+                            data-testid={`button-decline-event-view-${event.id}`}
+                          >
+                            {rsvps[event.id] === "declined" ? "✗ Absage" : "Absagen"}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </section>
       </div>
     );
@@ -5422,6 +5500,30 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   }
 
   if (currentView === "calendar-view") {
+    const handleRsvp = async (eventId: number, response: string) => {
+      setLoading({ ...loading, [eventId]: true });
+      try {
+        await fetch(`/api/events/${eventId}/rsvps`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ peerId: user.id, response }),
+        });
+        setRsvps({ ...rsvps, [eventId]: response });
+        toast({
+          title: response === "accepted" ? "Zusage! 🎉" : "Absage bestätigt",
+          description: response === "accepted" ? "Du nimmst am Termin teil!" : "Die Absage wurde registriert"
+        });
+      } catch (error) {
+        toast({
+          title: "Fehler",
+          description: "RSVP konnte nicht gespeichert werden",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading({ ...loading, [eventId]: false });
+      }
+    };
+
     return (
       <div className="space-y-8">
         <h1 className="text-3xl font-bold mb-8">Familienkalender</h1>
@@ -5429,7 +5531,59 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
             <Calendar className="text-primary" /> Alle Termine
           </h2>
-          <ParentEventsList events={events} onDeleteEvent={onDeleteEvent} />
+          <div className="grid gap-4">
+            {events.length === 0 ? (
+              <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl p-8 text-center shadow-lg">
+                <p className="text-slate-700">Noch keine Termine geplant</p>
+              </div>
+            ) : (
+              events.map((event: FamilyEvent) => (
+                <div key={event.id} className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl hover:bg-white/60 transition-colors shadow-lg">
+                  <div className="p-5">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-lg text-slate-900" data-testid={`text-event-title-view-${event.id}`}>{event.title}</h3>
+                        <p className="text-xs text-slate-700 mt-2 flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          {new Date(event.startDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+                        </p>
+                        <p className="text-xs text-slate-700 flex items-center gap-1">
+                          <span>⏰</span>
+                          {new Date(event.startDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                          {event.endDate && ` - ${new Date(event.endDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`}
+                        </p>
+                        {event.description && <p className="text-slate-600 text-sm mt-3">{event.description}</p>}
+                        {event.location && (
+                          <p className="text-sm text-slate-700 flex items-center gap-1 mt-2">
+                            <MapPin className="h-4 w-4" /> {event.location}
+                          </p>
+                        )}
+                        <div className="flex gap-2 mt-4">
+                          <Button
+                            onClick={() => handleRsvp(event.id, "accepted")}
+                            disabled={loading[event.id] || rsvps[event.id] === "declined"}
+                            className={`flex-1 ${rsvps[event.id] === "accepted" ? "bg-green-600 hover:bg-green-700" : "bg-violet-600 hover:bg-violet-700"} text-white`}
+                            data-testid={`button-accept-event-view-${event.id}`}
+                          >
+                            {rsvps[event.id] === "accepted" ? "✓ Zusage" : "Zusagen"}
+                          </Button>
+                          <Button
+                            onClick={() => handleRsvp(event.id, "declined")}
+                            disabled={loading[event.id] || rsvps[event.id] === "accepted"}
+                            variant="destructive"
+                            className="flex-1"
+                            data-testid={`button-decline-event-view-${event.id}`}
+                          >
+                            {rsvps[event.id] === "declined" ? "✗ Absage" : "Absagen"}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </section>
       </div>
     );
