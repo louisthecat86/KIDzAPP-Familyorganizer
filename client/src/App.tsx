@@ -8184,13 +8184,13 @@ function TrackerChart({ userId }: { userId: number }) {
           <p className="text-xs text-cyan-700 uppercase tracking-wide mb-1">{t('common.satoshi')}</p>
           <p className="text-2xl font-bold text-cyan-600">{latest.totalSats.toLocaleString()}</p>
           {satsChange > 0 && (
-            <p className="text-xs text-cyan-600/70 mt-1">+{satsChange.toLocaleString()} {t('education.earned')}</p>
+            <p className="text-xs text-cyan-600/70 mt-1">+{satsChange.toLocaleString()} {t('common.earned')}</p>
           )}
         </div>
         <div className="bg-gradient-to-br from-violet-500/20 to-violet-600/5 border border-violet-500/40 rounded-xl p-4">
           <p className="text-xs text-violet-700 uppercase tracking-wide mb-1">{t('common.euroValue')}</p>
           <p className="text-2xl font-bold text-violet-600">€{liveEuroValue.toFixed(2)}</p>
-          <p className="text-xs text-violet-600/70 mt-1">{t('education.liveRate')}</p>
+          <p className="text-xs text-violet-600/70 mt-1">{t('common.liveRate')}</p>
         </div>
       </div>
 
@@ -8226,7 +8226,7 @@ function TrackerChart({ userId }: { userId: number }) {
           }`}
           data-testid="toggle-btc-price"
         >
-          {t('education.rate')}
+          {t('common.rate')}
         </button>
       </div>
 
@@ -8344,15 +8344,15 @@ function TrackerChart({ userId }: { userId: number }) {
           <div className="grid gap-2">
             <div className="flex items-center gap-3 bg-violet-500/15 rounded-lg px-3 py-2">
               <div className="w-4 h-1 bg-violet-500 rounded-full"></div>
-              <span className="text-xs text-slate-700"><span className="text-violet-600 font-medium">Violett</span> = {t('education.chartViolet')}</span>
+              <span className="text-xs text-slate-700"><span className="text-violet-600 font-medium">Violett</span> = {t('common.chartViolet')}</span>
             </div>
             <div className="flex items-center gap-3 bg-cyan-500/15 rounded-lg px-3 py-2">
               <div className="w-4 h-1 bg-cyan-500 rounded-full"></div>
-              <span className="text-xs text-slate-700"><span className="text-cyan-600 font-medium">Cyan</span> = {t('education.chartCyan')}</span>
+              <span className="text-xs text-slate-700"><span className="text-cyan-600 font-medium">Cyan</span> = {t('common.chartCyan')}</span>
             </div>
             <div className="flex items-center gap-3 bg-amber-500/15 rounded-lg px-3 py-2">
               <div className="w-4 h-1 rounded-full" style={{background: 'repeating-linear-gradient(90deg, #d97706 0px, #d97706 4px, transparent 4px, transparent 8px)'}}></div>
-              <span className="text-xs text-slate-700"><span className="text-amber-600 font-medium">Orange (gestrichelt)</span> = {t('education.chartAmber')}</span>
+              <span className="text-xs text-slate-700"><span className="text-amber-600 font-medium">Orange (gestrichelt)</span> = {t('common.chartAmber')}</span>
             </div>
           </div>
         </div>
