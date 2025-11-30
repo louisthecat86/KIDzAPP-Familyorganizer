@@ -2669,7 +2669,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
         if (!res.ok) throw new Error("Failed to unlink");
         setUser(await res.json());
         queryClient.invalidateQueries({ queryKey: ["peers"] });
-        toast({ title: "Trennung erfolgreich", description: "Du bist nicht mehr mit der Familie verbunden" });
+        toast({ title: t('peers.unlinkSuccess'), description: t('peers.unlinkSuccessDesc') });
       } catch (error) {
         toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
       }
@@ -3026,7 +3026,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                       <div className="space-y-3">
                         <div className="p-3 rounded-lg border border-green-500/30 bg-green-500/10">
                           <p className="text-sm font-semibold text-green-300">✓ {t('wallet.lnbitsConnected')}</p>
-                          <p className="text-sm text-muted-foreground mt-1">Wallet ist konfiguriert und einsatzbereit</p>
+                          <p className="text-sm text-muted-foreground mt-1">{t('settings.walletConfigured')}</p>
                         </div>
                         <Button
                           onClick={deleteLNbits}
@@ -3875,7 +3875,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 <Input
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Nachricht eingeben..."
+                  placeholder={t('chat.placeholder')}
                   disabled={isLoadingMessage}
                   className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/50"
                   data-testid="input-chat-message"
@@ -4214,7 +4214,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         {leaderboard.length === 0 ? (
           <Card className="border-dashed border-border p-8 text-center">
             <Trophy className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground">Noch keine Kinder in der Familie</p>
+            <p className="text-muted-foreground">{t('leaderboard.noChildrenYet')}</p>
           </Card>
         ) : (
           <div className="grid gap-3">
@@ -4239,19 +4239,19 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     <div className="flex-1">
                       <p className="font-bold text-lg" data-testid={`text-leaderboard-name-${entry.id}`}>{entry.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        {entry.completedTasks} Aufgabe{entry.completedTasks !== 1 ? "n" : ""} erledigt
+                        {entry.completedTasks} {entry.completedTasks !== 1 ? t('leaderboard.tasksCompletedPlural') : t('leaderboard.tasksCompleted')}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-bold text-primary" data-testid={`text-leaderboard-sats-${entry.id}`}>
                         {entry.satsEarned}
                       </p>
-                      <p className="text-xs text-muted-foreground">Sats verdient</p>
+                      <p className="text-xs text-muted-foreground">{t('leaderboard.satsEarned')}</p>
                     </div>
                   </div>
                   <div className="mt-4 pt-4 border-t border-border">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Aktuelles Guthaben</span>
+                      <span className="text-muted-foreground">{t('leaderboard.currentBalance')}</span>
                       <span className="font-semibold" data-testid={`text-leaderboard-balance-${entry.id}`}>{entry.balance} Sats</span>
                     </div>
                   </div>
@@ -5140,7 +5140,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   <div className="space-y-3">
                     <div className="p-3 rounded-lg border border-green-500/30 bg-green-500/10">
                       <p className="text-sm font-semibold text-green-300">LNbits verbunden</p>
-                      <p className="text-sm text-muted-foreground mt-1">Wallet ist konfiguriert und einsatzbereit</p>
+                      <p className="text-sm text-muted-foreground mt-1">{t('settings.walletConfigured')}</p>
                     </div>
                     <div className="flex gap-2">
                       <Button
@@ -5987,13 +5987,13 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     
     return (
       <div className="max-w-2xl">
-        <h1 className="text-3xl font-bold mb-8 text-slate-900">Familienchat</h1>
+        <h1 className="text-3xl font-bold mb-8 text-slate-900">{t('chat.title')}</h1>
         <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl shadow-lg">
           <div className="p-6">
             <div className="space-y-4">
               <div className="h-96 overflow-y-auto bg-white/30 rounded-lg p-4 space-y-3">
                 {messages.length === 0 ? (
-                  <p className="text-slate-600 text-center py-8">Noch keine Nachrichten</p>
+                  <p className="text-slate-600 text-center py-8">{t('chat.noMessages')}</p>
                 ) : (
                   messages.map((msg, idx) => (
                     <div key={idx} className={`flex ${msg.fromPeerId === user.id ? "justify-end" : "justify-start"}`}>
@@ -6018,7 +6018,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 <Input
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Nachricht eingeben..."
+                  placeholder={t('chat.placeholder')}
                   disabled={isLoadingMessage}
                   className="flex-1 bg-white/50 border-white/60 text-slate-900 placeholder:text-gray-500"
                   data-testid="input-chat-message"
@@ -6116,7 +6116,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
     return (
       <div className="max-w-4xl">
-        <h1 className="text-3xl font-bold mb-2">🏆 Bestenliste</h1>
+        <h1 className="text-3xl font-bold mb-2">🏆 {t('leaderboard.title')}</h1>
         <p className="text-muted-foreground mb-6">{t('leaderboard.description')}</p>
         
         {/* Level Legend - Collapsible */}
@@ -6126,7 +6126,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
             className="w-full flex items-center justify-between p-4 hover:bg-primary/10 transition-colors"
             data-testid="button-toggle-levels"
           >
-            <h3 className="text-lg font-semibold">📋 Level-Übersicht</h3>
+            <h3 className="text-lg font-semibold">📋 {t('leaderboard.levelOverview')}</h3>
             <ChevronDown 
               className={`h-5 w-5 transition-transform ${showLevels ? "rotate-180" : ""}`}
             />
@@ -6135,9 +6135,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
             <CardContent className="pt-0 pb-4">
               {bonusSettings && bonusSettings.isActive && (
                 <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
-                  <p className="text-sm font-semibold text-amber-300 mb-1">🏆 Level-Bonus aktiv!</p>
+                  <p className="text-sm font-semibold text-amber-300 mb-1">🏆 {t('leaderboard.levelBonusActive')}</p>
                   <p className="text-xs text-muted-foreground">
-                    Alle {bonusSettings.milestoneInterval} Level gibt es <span className="text-amber-600 font-bold">{bonusSettings.bonusSats} Sats</span> Bonus!
+                    {t('leaderboard.everyXLevels', { interval: bonusSettings.milestoneInterval })} <span className="text-amber-600 font-bold">{bonusSettings.bonusSats} Sats</span> {t('leaderboard.satsBonus')}
                   </p>
                 </div>
               )}
@@ -6161,7 +6161,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                       <p className="text-xs text-muted-foreground mt-1">{level.tasks}</p>
                       {hasBonus && (
                         <div className={`text-xs font-bold mt-1 ${bonusPaid ? "text-green-400" : "text-amber-400"}`}>
-                          {bonusPaid ? "✓ Bonus erhalten" : `+${bonusSettings?.bonusSats} ⚡`}
+                          {bonusPaid ? `✓ ${t('leaderboard.bonusReceived')}` : `+${bonusSettings?.bonusSats} ⚡`}
                         </div>
                       )}
                     </div>
@@ -6175,7 +6175,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         {leaderboard.length === 0 ? (
           <Card className="border-dashed border-border p-8 text-center">
             <Trophy className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground">Noch keine Kinder in der Familie</p>
+            <p className="text-muted-foreground">{t('leaderboard.noChildrenYet')}</p>
           </Card>
         ) : (
           <div className="grid gap-3">
@@ -6202,7 +6202,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     <div className="flex-1">
                       <p className="font-bold text-lg" data-testid={`text-leaderboard-name-${entry.id}`}>{entry.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        {entry.completedTasks} Aufgabe{entry.completedTasks !== 1 ? "n" : ""} erledigt
+                        {entry.completedTasks} {entry.completedTasks !== 1 ? t('leaderboard.tasksCompletedPlural') : t('leaderboard.tasksCompleted')}
                       </p>
                       <div className="flex items-center gap-1 mt-2">
                         <span className={`text-2xl ${achievement.color}`}>{achievement.emoji}</span>
@@ -6213,12 +6213,12 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                       <p className="text-2xl font-bold text-primary" data-testid={`text-leaderboard-sats-${entry.id}`}>
                         {entry.satsEarned}
                       </p>
-                      <p className="text-xs text-muted-foreground">Sats verdient</p>
+                      <p className="text-xs text-muted-foreground">{t('leaderboard.satsEarned')}</p>
                     </div>
                   </div>
                   <div className="mt-4 pt-4 border-t border-border">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Aktuelles Guthaben</span>
+                      <span className="text-muted-foreground">{t('leaderboard.currentBalance')}</span>
                       <span className="font-semibold" data-testid={`text-leaderboard-balance-${entry.id}`}>{entry.balance} Sats</span>
                     </div>
                   </div>
@@ -6260,7 +6260,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         const updated = await res.json();
         setUser(updated);
         queryClient.invalidateQueries({ queryKey: ["peers"] });
-        toast({ title: "Trennung erfolgreich", description: "Du bist nicht mehr mit der Familie verbunden" });
+        toast({ title: t('peers.unlinkSuccess'), description: t('peers.unlinkSuccessDesc') });
       } catch (error) {
         toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
       }
@@ -6268,12 +6268,12 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
     return (
       <div className="max-w-4xl">
-        <h1 className="text-3xl font-bold mb-8">Meine Familie</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('peers.myFamily')}</h1>
         {parent ? (
           <Card className="border-2 border-primary/40 bg-primary/5">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary" /> Verbunden mit
+                <Users className="h-5 w-5 text-primary" /> {t('peers.connectedWith')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -6284,7 +6284,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   </div>
                   <div className="flex-1">
                     <p className="font-semibold">{parent.name}</p>
-                    <p className="text-xs text-muted-foreground">👨‍👩‍👧 Eltern</p>
+                    <p className="text-xs text-muted-foreground">👨‍👩‍👧 {t('peers.parent')}</p>
                   </div>
                 </div>
               </div>
@@ -6294,15 +6294,15 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 className="w-full text-destructive hover:text-destructive"
                 data-testid="button-unlink-parent"
               >
-                <X className="h-4 w-4 mr-2" /> Von Familie trennen
+                <X className="h-4 w-4 mr-2" /> {t('peers.unlinkFromFamily')}
               </Button>
             </CardContent>
           </Card>
         ) : (
           <Card className="border-dashed border-border p-8 text-center">
             <Info className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground">Du bist noch nicht mit einer Familie verbunden</p>
-            <p className="text-xs text-muted-foreground mt-2">Verbinde dich mit deinen Eltern über den Dashboard Bereich</p>
+            <p className="text-muted-foreground">{t('peers.notConnected')}</p>
+            <p className="text-xs text-muted-foreground mt-2">{t('peers.connectHint')}</p>
           </Card>
         )}
       </div>
@@ -6373,21 +6373,21 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
     return (
       <div className="max-w-4xl space-y-6">
-        <h1 className="text-3xl font-bold mb-8">Einstellungen</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('settings.title')}</h1>
         
         <Card className="border-2 border-primary/40 bg-primary/5">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              ⚡ LNbits Verbindung
+              ⚡ {t('settings.lnbitsConnection')}
             </CardTitle>
-            <CardDescription>Verbinde dein LNbits-Konto um Aufgaben mit Satoshi-Belohnungen zu erstellen</CardDescription>
+            <CardDescription>{t('settings.lnbitsConnectionDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {user.hasLnbitsConfigured ? (
               <div className="space-y-3">
                 <div className="p-3 rounded-lg border border-green-500/30 bg-green-500/10">
                   <p className="text-sm font-semibold text-green-300">✓ {t('wallet.lnbitsConnected')}</p>
-                  <p className="text-sm text-muted-foreground mt-1">Wallet ist konfiguriert und einsatzbereit</p>
+                  <p className="text-sm text-muted-foreground mt-1">{t('settings.walletConfigured')}</p>
                 </div>
                 <Button
                   onClick={() => {
@@ -6535,7 +6535,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   if (currentView === "settings" && user.role === "child") {
     return (
       <div className="max-w-4xl">
-        <h1 className="text-3xl font-bold mb-8">Einstellungen</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('settings.title')}</h1>
         <Card className="border-2 border-primary/40 bg-primary/5">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
