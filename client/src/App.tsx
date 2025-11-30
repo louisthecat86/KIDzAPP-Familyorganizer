@@ -8120,6 +8120,7 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
 }
 
 function TrackerChart({ userId }: { userId: number }) {
+  const { t } = useTranslation();
   const [trackerData, setTrackerData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showEuro, setShowEuro] = useState(true);
@@ -8156,7 +8157,7 @@ function TrackerChart({ userId }: { userId: number }) {
     fetchBtcPrice();
   }, []);
 
-  if (loading) return <div className="text-sm text-muted-foreground py-8 text-center">Wird geladen...</div>;
+  if (loading) return <div className="text-sm text-muted-foreground py-8 text-center">{t('education.loading')}</div>;
   if (trackerData.length === 0) return <p className="text-sm text-muted-foreground py-8 text-center">{t('education.noApprovedTasks')}</p>;
 
   const latest = trackerData[trackerData.length - 1];
@@ -8174,22 +8175,22 @@ function TrackerChart({ userId }: { userId: number }) {
           className="text-xs text-slate-600 hover:text-slate-900 transition-colors"
           data-testid="toggle-info"
         >
-          {showInfo ? "Ausblenden" : "Was bedeutet das?"}
+          {showInfo ? t('education.hide') : t('education.whatDoesMean')}
         </button>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-gradient-to-br from-cyan-500/20 to-cyan-600/5 border border-cyan-500/40 rounded-xl p-4">
-          <p className="text-xs text-cyan-700 uppercase tracking-wide mb-1">Satoshi</p>
+          <p className="text-xs text-cyan-700 uppercase tracking-wide mb-1">{t('education.satoshi')}</p>
           <p className="text-2xl font-bold text-cyan-600">{latest.totalSats.toLocaleString()}</p>
           {satsChange > 0 && (
-            <p className="text-xs text-cyan-600/70 mt-1">+{satsChange.toLocaleString()} verdient</p>
+            <p className="text-xs text-cyan-600/70 mt-1">+{satsChange.toLocaleString()} {t('education.earned')}</p>
           )}
         </div>
         <div className="bg-gradient-to-br from-violet-500/20 to-violet-600/5 border border-violet-500/40 rounded-xl p-4">
-          <p className="text-xs text-violet-700 uppercase tracking-wide mb-1">Euro-Wert</p>
+          <p className="text-xs text-violet-700 uppercase tracking-wide mb-1">{t('education.euroValue')}</p>
           <p className="text-2xl font-bold text-violet-600">€{liveEuroValue.toFixed(2)}</p>
-          <p className="text-xs text-violet-600/70 mt-1">Live-Kurs</p>
+          <p className="text-xs text-violet-600/70 mt-1">{t('education.liveRate')}</p>
         </div>
       </div>
 
@@ -8225,7 +8226,7 @@ function TrackerChart({ userId }: { userId: number }) {
           }`}
           data-testid="toggle-btc-price"
         >
-          Kurs
+          {t('education.rate')}
         </button>
       </div>
 
@@ -8338,20 +8339,20 @@ function TrackerChart({ userId }: { userId: number }) {
       {showInfo && (
         <div className="bg-white/40 backdrop-blur-md border border-white/50 rounded-xl p-4 space-y-3">
           <p className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-            So liest du das Diagramm:
+            {t('education.chartTitle')}
           </p>
           <div className="grid gap-2">
             <div className="flex items-center gap-3 bg-violet-500/15 rounded-lg px-3 py-2">
               <div className="w-4 h-1 bg-violet-500 rounded-full"></div>
-              <span className="text-xs text-slate-700"><span className="text-violet-600 font-medium">Violett</span> = Wert deiner Satoshi in Euro</span>
+              <span className="text-xs text-slate-700"><span className="text-violet-600 font-medium">Violett</span> = {t('education.chartViolet')}</span>
             </div>
             <div className="flex items-center gap-3 bg-cyan-500/15 rounded-lg px-3 py-2">
               <div className="w-4 h-1 bg-cyan-500 rounded-full"></div>
-              <span className="text-xs text-slate-700"><span className="text-cyan-600 font-medium">Cyan</span> = Anzahl deiner Satoshi</span>
+              <span className="text-xs text-slate-700"><span className="text-cyan-600 font-medium">Cyan</span> = {t('education.chartCyan')}</span>
             </div>
             <div className="flex items-center gap-3 bg-amber-500/15 rounded-lg px-3 py-2">
               <div className="w-4 h-1 rounded-full" style={{background: 'repeating-linear-gradient(90deg, #d97706 0px, #d97706 4px, transparent 4px, transparent 8px)'}}></div>
-              <span className="text-xs text-slate-700"><span className="text-amber-600 font-medium">Orange (gestrichelt)</span> = Bitcoin Kurs</span>
+              <span className="text-xs text-slate-700"><span className="text-amber-600 font-medium">Orange (gestrichelt)</span> = {t('education.chartAmber')}</span>
             </div>
           </div>
         </div>
@@ -8361,6 +8362,7 @@ function TrackerChart({ userId }: { userId: number }) {
 }
 
 function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setCurrentView?: (view: string) => void; user?: any }) {
+  const { t } = useTranslation();
   const [btcPrice, setBtcPrice] = useState<{ usd: number; eur: number } | null>(null);
   const [interestRate, setInterestRate] = useState(0.2); // Start at 0.2% monthly
   const [dailySnapshots, setDailySnapshots] = useState<any[]>([]);
@@ -8478,7 +8480,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
                 {viewMode === "bitcoin" ? t('education.bitcoin') : t('education.savingsBook')}
               </p>
               {viewMode === "savingsBook" && (
-                <span className="absolute text-[9px] text-muted-foreground/60 top-full -mt-1">0,2% monatlich</span>
+                <span className="absolute text-[9px] text-muted-foreground/60 top-full -mt-1">{t('education.monthlyRate')}</span>
               )}
             </div>
             <div className="flex gap-1">
@@ -8496,13 +8498,13 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
               <button
                 onClick={() => setViewMode("savingsBook")}
                 className={`text-xs px-2 py-0.5 rounded border transition-colors ${
-                  viewMode === "sparbuch"
+                  viewMode === "savingsBook"
                     ? "bg-blue-500/30 border-blue-500/60 text-blue-400 font-bold"
                     : "bg-blue-500/10 border-blue-500/20 text-blue-300 hover:bg-blue-500/20"
                 }`}
                 data-testid="button-toggle-sparbuch"
               >
-                🏦 Sparbuch
+                🏦 {t('education.savingsBook')}
               </button>
             </div>
           </div>
@@ -8541,7 +8543,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
                   </div>
                 ) : (
                   <div className="h-20 flex items-center justify-center text-xs text-muted-foreground">
-                    Daten werden gesammelt...
+                    {t('education.dataCollecting')}
                   </div>
                 )}
               </>
@@ -8570,7 +8572,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
                   </div>
                 ) : (
                   <div className="h-20 flex items-center justify-center text-xs text-muted-foreground">
-                    Daten werden gesammelt...
+                    {t('education.dataCollecting')}
                   </div>
                 )}
               </>
@@ -8585,7 +8587,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
             className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold text-sm"
             data-testid="button-open-savings-comparison"
           >
-            📊 Sparen vergleichen →
+            {t('education.compareSavingsBtn')}
           </Button>
         )}
       </div>

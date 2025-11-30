@@ -356,7 +356,22 @@
     "bitcoin": "BITCOIN",
     "savingsBook": "SAVINGS ACCOUNT",
     "compareTitle": "Compare",
-    "bitcoinVsSparbuch": "Bitcoin vs Savings Account"
+    "bitcoinVsSparbuch": "Bitcoin vs Savings Account",
+    "loading": "Loading...",
+    "whatDoesMean": "What does this mean?",
+    "hide": "Hide",
+    "satoshi": "Satoshi",
+    "earned": "earned",
+    "euroValue": "Euro Value",
+    "liveRate": "Live Rate",
+    "rate": "Rate",
+    "chartTitle": "How to read the chart:",
+    "chartViolet": "Value of your Satoshi in Euro",
+    "chartCyan": "Number of your Satoshi",
+    "chartAmber": "Bitcoin Rate",
+    "monthlyRate": "0.2% monthly",
+    "dataCollecting": "Collecting data...",
+    "compareSavingsBtn": "📊 Compare Savings →"
   },
   "chat": {
     "title": "Family Chat",

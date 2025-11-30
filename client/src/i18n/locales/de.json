@@ -353,7 +353,22 @@
     "bitcoin": "BITCOIN",
     "savingsBook": "SPARBUCH",
     "compareTitle": "Vergleiche",
-    "bitcoinVsSparbuch": "Bitcoin vs Sparbuch"
+    "bitcoinVsSparbuch": "Bitcoin vs Sparbuch",
+    "loading": "Wird geladen...",
+    "whatDoesMean": "Was bedeutet das?",
+    "hide": "Ausblenden",
+    "satoshi": "Satoshi",
+    "earned": "verdient",
+    "euroValue": "Euro-Wert",
+    "liveRate": "Live-Kurs",
+    "rate": "Kurs",
+    "chartTitle": "So liest du das Diagramm:",
+    "chartViolet": "Wert deiner Satoshi in Euro",
+    "chartCyan": "Anzahl deiner Satoshi",
+    "chartAmber": "Bitcoin Kurs",
+    "monthlyRate": "0,2% monatlich",
+    "dataCollecting": "Daten werden gesammelt...",
+    "compareSavingsBtn": "📊 Sparen vergleichen →"
   },
   "chat": {
     "title": "Familien-Chat",
