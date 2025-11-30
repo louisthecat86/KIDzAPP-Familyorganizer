@@ -7276,9 +7276,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           className="relative overflow-hidden rounded-2xl bg-white/50 backdrop-blur-xl border border-white/50 p-8 shadow-xl"
         >
           <div className="relative z-10 space-y-6">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-slate-700 font-mono text-sm uppercase tracking-widest mb-2">Erhaltene Sats</p>
+            <div className="flex items-start justify-between gap-1">
+              <div className="flex-1">
+                <p className="text-slate-700 font-mono text-sm uppercase tracking-widest mb-2">{t('dashboard.received')}</p>
                 <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-cyan-600" data-testid="text-earned-sats">
                   {(user.balance || 0).toLocaleString()} <span className="text-2xl opacity-70 text-slate-700">SATS</span>
                 </h2>
