@@ -6698,7 +6698,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
                     <div>
-                      <span className="text-lg font-bold text-slate-900">{levelTitles[userLevel - 1] || "Anfänger"}</span>
+                      <span className="text-lg font-bold text-slate-900">{levelTitles[userLevel - 1] || t('education.levelBeginner')}</span>
                       <span className="ml-2 text-sm text-slate-600">Level {userLevel}</span>
                     </div>
                     <span className="text-sm font-semibold text-violet-600">{userXp} XP</span>
@@ -6901,107 +6901,107 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
         {educationTab === "resources" && (
           <div className="space-y-6">
-            <p className="text-slate-600">Hier findest du die besten Bitcoin Bildungsressourcen - nach Alter sortiert:</p>
+            <p className="text-slate-600">{t('education.resourcesIntro')}</p>
             
             <div className="space-y-6">
               <div className="border-2 border-green-500/30 rounded-xl p-4 bg-green-500/5">
-                <h3 className="text-lg font-bold text-green-700 mb-3 flex items-center gap-2">🌱 6–9 Jahre (Jüngere Kinder)</h3>
-                <p className="text-xs text-slate-600 mb-3">Grundbegriffe wie Geld, digitale Werte, Sicherheit verstehen</p>
+                <h3 className="text-lg font-bold text-green-700 mb-3 flex items-center gap-2">🌱 {t('education.ageGroup69')}</h3>
+                <p className="text-xs text-slate-600 mb-3">{t('education.ageGroup69Desc')}</p>
                 <div className="grid grid-cols-1 gap-2">
                   <a href="https://thebitcoinadviser.com/for-kids" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
                     <h4 className="font-semibold text-slate-900 text-sm">The Bitcoin Adviser – "For Your Kids"</h4>
-                    <p className="text-xs text-slate-600">Sehr einfache Erklärungen mit Analogien (Schatzkiste, Geheimcodes)</p>
+                    <p className="text-xs text-slate-600">{t('education.resourceDesc15')}</p>
                   </a>
                   <a href="https://bitcoinsavvykids.com" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
                     <h4 className="font-semibold text-slate-900 text-sm">Bitcoin Savvy Kids – Early Kids</h4>
-                    <p className="text-xs text-slate-600">Spielerische Lernmethoden über die Geschichte des Geldes</p>
+                    <p className="text-xs text-slate-600">{t('education.resourceDesc16')}</p>
                   </a>
                   <a href="https://www.kindersache.de" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
                     <h4 className="font-semibold text-slate-900 text-sm">Kindersache.de</h4>
-                    <p className="text-xs text-slate-600">Kindgerechte Erklärungen zum Thema Geld</p>
+                    <p className="text-xs text-slate-600">{t('education.resourceDesc17')}</p>
                   </a>
                 </div>
               </div>
 
               <div className="border-2 border-blue-500/30 rounded-xl p-4 bg-blue-500/5">
-                <h3 className="text-lg font-bold text-blue-700 mb-3 flex items-center gap-2">📚 10–12 Jahre (Späte Grundschule)</h3>
-                <p className="text-xs text-slate-600 mb-3">Grundbegriffe von Blockchain, digitalem Geld, Sicherheit & Verantwortung</p>
+                <h3 className="text-lg font-bold text-blue-700 mb-3 flex items-center gap-2">📚 {t('education.ageGroup1012')}</h3>
+                <p className="text-xs text-slate-600 mb-3">{t('education.ageGroup1012Desc')}</p>
                 <div className="grid grid-cols-1 gap-2">
                   <a href="https://bitcoinsavvykids.com/middle" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
                     <h4 className="font-semibold text-slate-900 text-sm">Bitcoin Savvy Kids – Middle Kids</h4>
-                    <p className="text-xs text-slate-600">Erste einfache Blockchain-Erklärungen mit interaktiven Materialien</p>
+                    <p className="text-xs text-slate-600">{t('education.resourceDesc3')}</p>
                   </a>
                   <a href="https://thebitcoinadviser.com" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
                     <h4 className="font-semibold text-slate-900 text-sm">The Bitcoin Adviser</h4>
-                    <p className="text-xs text-slate-600">Einfache Einführung in Wallets und digitale Sicherheit</p>
+                    <p className="text-xs text-slate-600">{t('education.resourceDesc4')}</p>
                   </a>
                 </div>
               </div>
 
               <div className="border-2 border-amber-500/30 rounded-xl p-4 bg-amber-500/5">
-                <h3 className="text-lg font-bold text-amber-700 mb-3 flex items-center gap-2">🧠 12–14 Jahre (Frühe Teens)</h3>
-                <p className="text-xs text-slate-600 mb-3">Bitcoin als Technologie & soziales Phänomen verstehen</p>
+                <h3 className="text-lg font-bold text-amber-700 mb-3 flex items-center gap-2">🧠 {t('education.ageGroup1214')}</h3>
+                <p className="text-xs text-slate-600 mb-3">{t('education.ageGroup1214Desc')}</p>
                 <div className="grid grid-cols-1 gap-2">
                   <a href="https://www.unicef.org/blockchain" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
                     <h4 className="font-semibold text-slate-900 text-sm">UNICEF Blockchain Learning Hub</h4>
-                    <p className="text-xs text-slate-600">Sehr seriös, neutral & sachlich - perfekt für schulische Projekte</p>
+                    <p className="text-xs text-slate-600">{t('education.resourceDesc5')}</p>
                   </a>
                   <a href="https://bitcoinsavvykids.com/teens" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
                     <h4 className="font-semibold text-slate-900 text-sm">Bitcoin Savvy Kids – Teens</h4>
-                    <p className="text-xs text-slate-600">Bitcoin im Kontext der Geldgeschichte, digitale Verantwortung</p>
+                    <p className="text-xs text-slate-600">{t('education.resourceDesc6')}</p>
                   </a>
                 </div>
               </div>
 
               <div className="border-2 border-red-500/30 rounded-xl p-4 bg-red-500/5">
-                <h3 className="text-lg font-bold text-red-700 mb-3 flex items-center gap-2">🎓 14–16 Jahre (Mittelstufe)</h3>
-                <p className="text-xs text-slate-600 mb-3">Technisches Grundverständnis, wirtschaftlicher Kontext</p>
+                <h3 className="text-lg font-bold text-red-700 mb-3 flex items-center gap-2">🎓 {t('education.ageGroup1416')}</h3>
+                <p className="text-xs text-slate-600 mb-3">{t('education.ageGroup1416Desc2')}</p>
                 <div className="grid grid-cols-1 gap-2">
                   <a href="https://www.unicef.org/blockchain" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
                     <h4 className="font-semibold text-slate-900 text-sm">UNICEF Blockchain Hub – Intermediate</h4>
-                    <p className="text-xs text-slate-600">Blockchain im Kontext sozialer Projekte, sehr seriös</p>
+                    <p className="text-xs text-slate-600">{t('education.resourceDesc7')}</p>
                   </a>
                   <a href="https://www.khanacademy.org/economics-finance-domain/core-finance/money-and-banking/bitcoin/v/bitcoin-what-is-it" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
                     <h4 className="font-semibold text-slate-900 text-sm">Khan Academy – Bitcoin Kurse</h4>
-                    <p className="text-xs text-slate-600">Seriöse Bildungsplattform, Fokus auf Technologie</p>
+                    <p className="text-xs text-slate-600">{t('education.resourceDesc8')}</p>
                   </a>
                 </div>
               </div>
 
               <div className="border-2 border-purple-500/30 rounded-xl p-4 bg-purple-500/5">
-                <h3 className="text-lg font-bold text-purple-700 mb-3 flex items-center gap-2">🚀 16–18 Jahre (Oberstufe)</h3>
-                <p className="text-xs text-slate-600 mb-3">Technisch, gesellschaftlich & ökonomisch verstehen</p>
+                <h3 className="text-lg font-bold text-purple-700 mb-3 flex items-center gap-2">🚀 {t('education.ageGroup1618')}</h3>
+                <p className="text-xs text-slate-600 mb-3">{t('education.ageGroup1618Desc2')}</p>
                 <div className="grid grid-cols-1 gap-2">
                   <a href="https://www.unicef.org/blockchain" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
                     <h4 className="font-semibold text-slate-900 text-sm">UNICEF Blockchain – Full Curriculum</h4>
-                    <p className="text-xs text-slate-600">Gesellschaftliche, technische & ethische Perspektive</p>
+                    <p className="text-xs text-slate-600">{t('education.resourceDesc9')}</p>
                   </a>
                   <a href="https://ocw.mit.edu/courses/15-s12-blockchain-and-money-fall-2018/" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
                     <h4 className="font-semibold text-slate-900 text-sm">MIT – Blockchain & Money</h4>
-                    <p className="text-xs text-slate-600">Hochqualitativ, technisch anspruchsvoll für Fortgeschrittene</p>
+                    <p className="text-xs text-slate-600">{t('education.resourceDesc10')}</p>
                   </a>
                   <a href="https://www.khanacademy.org/computing/computer-science" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
                     <h4 className="font-semibold text-slate-900 text-sm">Khan Academy – Computer Science</h4>
-                    <p className="text-xs text-slate-600">Gut erklärt auf Hochschul-Einsteiger-Niveau</p>
+                    <p className="text-xs text-slate-600">{t('education.resourceDesc11')}</p>
                   </a>
                 </div>
               </div>
 
               <div className="border-2 border-slate-500/30 rounded-xl p-4 bg-slate-500/5">
-                <h3 className="text-lg font-bold text-slate-700 mb-3 flex items-center gap-2">👨‍👩‍👧‍👦 Für Eltern & Lehrer</h3>
-                <p className="text-xs text-slate-600 mb-3">Hilft Erwachsenen, das Thema sicher zu vermitteln</p>
+                <h3 className="text-lg font-bold text-slate-700 mb-3 flex items-center gap-2">👨‍👩‍👧‍👦 {t('education.forParents')}</h3>
+                <p className="text-xs text-slate-600 mb-3">{t('education.forParentsDesc2')}</p>
                 <div className="grid grid-cols-1 gap-2">
                   <a href="https://www.coin.space/teaching-kids-bitcoin" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
                     <h4 className="font-semibold text-slate-900 text-sm">Teaching Your Kids About Bitcoin</h4>
-                    <p className="text-xs text-slate-600">Erklärt, wie man Kindern digitale Werte erklärt</p>
+                    <p className="text-xs text-slate-600">{t('education.resourceDesc12')}</p>
                   </a>
                   <a href="https://bitcoinsavvykids.com/parents" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
                     <h4 className="font-semibold text-slate-900 text-sm">Bitcoin Savvy Kids – Elternbereich</h4>
-                    <p className="text-xs text-slate-600">Pädagogisch aufgebaut für Eltern und Lehrer</p>
+                    <p className="text-xs text-slate-600">{t('education.resourceDesc13')}</p>
                   </a>
                   <a href="https://www.unicef.org/digital-safety" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
                     <h4 className="font-semibold text-slate-900 text-sm">UNICEF – Digital Safety for Children</h4>
-                    <p className="text-xs text-slate-600">Grundlagen für sichere Nutzung digitaler Geräte & Konten</p>
+                    <p className="text-xs text-slate-600">{t('education.resourceDesc14')}</p>
                   </a>
                 </div>
               </div>
@@ -7085,11 +7085,11 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   <div className="bg-violet-100/50 p-4 rounded-lg text-center border-2 border-violet-300/50">
-                    <p className="text-xs text-slate-600 mb-1">Challenge Typ</p>
+                    <p className="text-xs text-slate-600 mb-1">{t('education.challengeType')}</p>
                     <p className="text-lg font-bold text-violet-600">{dailyChallenge.type === "quiz" ? "🧠" : dailyChallenge.type === "conversion" ? "🔄" : dailyChallenge.type === "lightning" ? "⚡" : dailyChallenge.type === "security" ? "🔒" : dailyChallenge.type === "fun" ? "🎮" : "⛓️"}</p>
                   </div>
                   <div className="bg-amber-100/50 p-4 rounded-lg text-center border-2 border-amber-300/50">
-                    <p className="text-xs text-slate-600 mb-1">Schwierigkeit</p>
+                    <p className="text-xs text-slate-600 mb-1">{t('education.difficulty')}</p>
                     <p className="text-lg font-bold text-amber-600">{dailyChallenge.type === "quiz" || dailyChallenge.type === "conversion" ? "⭐" : dailyChallenge.type === "lightning" || dailyChallenge.type === "security" ? "⭐⭐" : "⭐⭐⭐"}</p>
                   </div>
                 </div>
@@ -7107,7 +7107,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                         if (response.ok) {
                           const data = await response.json();
                           setDailyChallenge({ ...dailyChallenge, completed: true });
-                          toast({ title: "🎉 Challenge bestanden!", description: `Zurück morgen für eine neue Challenge!` });
+                          toast({ title: t('education.challengePassed'), description: t('education.challengePassedDesc') });
                         }
                       } catch (error) {
                         toast({ title: t('common.error'), description: t('errors.challengeSaveFailed'), variant: "destructive" });
@@ -7116,15 +7116,15 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     className="w-full bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-700 hover:to-cyan-700 h-12 text-lg font-bold"
                     data-testid="button-complete-challenge"
                   >
-                    Challenge bestanden! 🎉
+                    {t('education.challengePassedButton')} 🎉
                   </Button>
                 )}
                 
                 {dailyChallenge.completed && (
                   <div className="text-center p-5 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-lg border-2 border-green-400/50">
                     <p className="text-2xl mb-2">🏆</p>
-                    <p className="text-lg font-bold text-green-700 mb-1">Challenge bestanden!</p>
-                    <p className="text-xs text-green-600">Komm morgen zurück für eine neue Challenge!</p>
+                    <p className="text-lg font-bold text-green-700 mb-1">{t('education.challengePassedButton')}</p>
+                    <p className="text-xs text-green-600">{t('education.comeBackTomorrow')}</p>
                   </div>
                 )}
               </CardContent>
@@ -7134,7 +7134,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
         {educationTab === "glossar" && (
           <div className="space-y-4">
-            <Input placeholder="Glossar durchsuchen..." value={glossarSearch} onChange={(e) => setGlossarSearch(e.target.value)} className="text-base" data-testid="input-glossar-search" />
+            <Input placeholder={t('education.glossarySearch')} value={glossarSearch} onChange={(e) => setGlossarSearch(e.target.value)} className="text-base" data-testid="input-glossar-search" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {[
                 { term: "Bitcoin", def: "Digitale Währung, erste erfolgreiche Kryptowährung, dezentralisiert" },
@@ -7447,7 +7447,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                             <div className="h-8 w-8 bg-purple-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
                               <Trophy className="h-4 w-4 text-purple-600" />
                             </div>
-                            <p className="text-xs text-slate-600 mb-1 font-medium">Abzeichen</p>
+                            <p className="text-xs text-slate-600 mb-1 font-medium">{t('education.badges')}</p>
                             <p className="text-2xl font-bold text-purple-600">{achievements.filter(a => a.cond).length}/5</p>
                           </div>
                           
