@@ -17,6 +17,7 @@ import "react-day-picker/dist/style.css";
 import { formatDistanceToNow } from "date-fns";
 import { de, enUS } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
+import i18n from "./i18n";
 import { LineChart, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Line, Area, ResponsiveContainer } from "recharts";
 import { 
   CheckCircle, 
@@ -290,7 +291,7 @@ async function deleteEvent(id: number): Promise<void> {
 
 
 export default function App() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [newTask, setNewTask] = useState({ title: "", description: "", sats: 50 });
   const [newEvent, setNewEvent] = useState({ title: "", description: "", location: "", startDate: "", endDate: "" });
