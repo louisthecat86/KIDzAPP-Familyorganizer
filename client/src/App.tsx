@@ -6584,10 +6584,13 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         quiz: Array<{ question: string; option0: string; option1: string; option2: string }> 
       } | undefined;
       
+      const moduleNum = parseInt(mid.replace('m', ''));
+      const level = moduleNum <= 5 ? "beginner" : moduleNum <= 10 ? "intermediate" : "advanced";
+      
       return {
         id: mid,
-        level: mid <= "m5" ? "beginner" : mid <= "m10" ? "intermediate" : "advanced",
-        levelColor: levelColors[mid <= "m5" ? "beginner" : mid <= "m10" ? "intermediate" : "advanced"],
+        level,
+        levelColor: levelColors[level],
         title: moduleData?.title || `Module ${mid}`,
         icon: ["₿", "⚡", "🔄", "📍", "📈", "⚡", "🔗", "⛏️", "🤖", "🏆", "🔐", "🔑", "🛡️", "💸", "💪", "☠️", "⚖️", "📉", "🪙", "🚀"][moduleIds.indexOf(mid)],
         content: Array.isArray(moduleData?.content) ? moduleData.content : [],
@@ -6620,6 +6623,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
               setServerProgress(updatedProgress);
               console.log("✅ Progress synced from server:", updatedProgress);
               toast({ title: t('education.quizPassed'), description: t('education.quizPassedDesc', { xp: xpPerModule, level: updatedProgress.level, score, total: module.quiz.length }) });
+              setShowQuiz(null);
             } else {
               toast({ title: t('education.saveError'), description: t('education.saveErrorDesc'), variant: "destructive" });
             }
@@ -6629,6 +6633,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           }
         } else {
           toast({ title: t('education.quizAlreadyPassed'), description: t('education.quizAlreadyPassedDesc', { score, total: module.quiz.length }) });
+          setShowQuiz(null);
         }
       } else {
         toast({ title: t('education.quizTryAgain'), description: t('education.quizTryAgainDesc', { required: passScore, total: module.quiz.length, score }), variant: "destructive" });
