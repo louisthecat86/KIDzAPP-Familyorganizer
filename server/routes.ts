@@ -2643,6 +2643,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Daily Challenge endpoints
+  app.get("/api/daily-challenge/:peerId/:date", async (req, res) => {
+    try {
+      const { peerId, date } = req.params;
+      const challenge = await storage.getTodayChallenge(parseInt(peerId), date);
+      res.json(challenge || { challengeDate: date, completed: false });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch challenge" });
+    }
+  });
+
+  app.post("/api/daily-challenge/complete", async (req, res) => {
+    try {
+      const { peerId, challengeDate, challengeType } = req.body;
+      const challenge = await storage.completeTodayChallenge(parseInt(peerId), challengeDate, challengeType);
+      const progress = await storage.updateLearningProgress(parseInt(peerId), { dailyChallengesCompleted: (await storage.getLearningProgress(parseInt(peerId)))?.dailyChallengesCompleted || 0 + 1 });
+      res.json({ challenge, progress });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to complete challenge" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

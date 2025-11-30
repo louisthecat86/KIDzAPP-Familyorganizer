@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks, type LearningProgress, type InsertLearningProgress, learningProgress } from "@shared/schema";
+import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks, type LearningProgress, type InsertLearningProgress, learningProgress, type DailyChallenge, dailyChallenges } from "@shared/schema";
 import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
@@ -93,6 +93,10 @@ export interface IStorage {
   unlockAchievement(peerId: number, achievementId: string): Promise<LearningProgress>;
   completeModule(peerId: number, moduleId: string): Promise<LearningProgress>;
   updateStreak(peerId: number): Promise<LearningProgress>;
+
+  // Daily Challenge operations
+  getTodayChallenge(peerId: number, challengeDate: string): Promise<any | undefined>;
+  completeTodayChallenge(peerId: number, challengeDate: string, challengeType: string): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -792,6 +796,29 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date() 
       })
       .where(eq(learningProgress.peerId, peerId))
+      .returning();
+    return result[0];
+  }
+
+  // Daily Challenge operations
+  async getTodayChallenge(peerId: number, challengeDate: string): Promise<any | undefined> {
+    const result = await db.select().from(dailyChallenges)
+      .where(and(eq(dailyChallenges.peerId, peerId), eq(dailyChallenges.challengeDate, challengeDate)))
+      .limit(1);
+    return result[0];
+  }
+
+  async completeTodayChallenge(peerId: number, challengeDate: string, challengeType: string): Promise<any> {
+    const existing = await this.getTodayChallenge(peerId, challengeDate);
+    if (existing) {
+      const result = await db.update(dailyChallenges)
+        .set({ completed: true })
+        .where(eq(dailyChallenges.id, existing.id))
+        .returning();
+      return result[0];
+    }
+    const result = await db.insert(dailyChallenges)
+      .values({ peerId, challengeDate, challengeType, completed: true })
       .returning();
     return result[0];
   }

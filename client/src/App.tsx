@@ -3573,7 +3573,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 </div>,
                 index * 0.1
               );
-            } else if (cardId === "wallet-balance") {
+            } else if (cardId === "wallet-balance" && user.role === "parent") {
               return createDraggableCard(
                 cardId,
                 <div className={`bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl ${displayBalance !== null ? "hover:bg-white/55" : "opacity-60"} transition-colors h-full shadow-lg p-6`}>
@@ -3589,6 +3589,26 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         )}
                       </div>
                       <p className="text-sm text-slate-700 mt-2">{walletLabel}</p>
+                    </div>
+                  </div>
+                </div>,
+                index * 0.1
+              );
+            } else if (cardId === "learning-stats" && user.role === "child") {
+              return createDraggableCard(
+                cardId,
+                <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl hover:bg-white/55 transition-colors h-full shadow-lg p-6">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-700">Level</span>
+                      <span className="text-2xl font-bold text-violet-600">{serverProgress?.level || 1}</span>
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-2">
+                      <div className="bg-gradient-to-r from-violet-600 to-cyan-600 h-2 rounded-full" style={{width: `${((serverProgress?.xp || 0) % 100) / 100 * 100}%`}}></div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-600">{serverProgress?.xp || 0} XP</span>
+                      <span className="text-xs text-slate-600">🔥 Streak: {serverProgress?.streak || 0}</span>
                     </div>
                   </div>
                 </div>,
@@ -6480,36 +6500,6 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
   if (currentView === "bitcoin-education" && user.role === "child") {
     
-    // Challenge pool with different types
-    const challengePool = [
-      { type: "quiz", title: "Bitcoin Quiz", description: "Beantworte eine Bitcoin Frage richtig", icon: "🧠", reward: 50, question: "Was sind die maximalen Bitcoin?", options: ["21 Millionen", "Unbegrenzt", "1 Milliarde"], correct: 0 },
-      { type: "conversion", title: "Satoshi Konvertierung", description: "Konvertiere 100.000 Sats zu Bitcoin", icon: "🔄", reward: 40, challenge: "Wie viel Bitcoin sind 100.000 Satoshis?" },
-      { type: "lightning", title: "Lightning Lektion", description: "Lerne über das Lightning Network", icon: "⚡", reward: 45, question: "Was ist das Hauptvorteil von Lightning?", options: ["Schnelle & billige Transaktionen", "Hohe Sicherheit", "Dezentralisierung"], correct: 0 },
-      { type: "security", title: "Sicherheits-Challenge", description: "Teste dein Bitcoin Sicherheitswissen", icon: "🔒", reward: 55, question: "Was ist ein Private Key?", options: ["Dein Secret Password für die Wallet", "Die öffentliche Addresse", "Ein Bitcoin"], correct: 0 },
-      { type: "fun", title: "Bitcoin Fun Challenge", description: "Finde die richtige Satoshi-Definition", icon: "🎮", reward: 35, question: "Wer ist Satoshi Nakamoto?", options: ["Der anonyme Bitcoin Erfinder", "Ein Unternehmer", "Ein YouTuber"], correct: 0 },
-      { type: "blockchain", title: "Blockchain Basics", description: "Teste dein Blockchain Wissen", icon: "⛓️", reward: 48, question: "Wie lange dauert es einen Bitcoin Block zu erstellen?", options: ["Ca. 10 Minuten", "Ca. 1 Minute", "Ca. 1 Stunde"], correct: 0 }
-    ];
-    
-    // Initialize daily challenge with default value
-    const today = new Date().toDateString();
-    const [dailyChallenge, setDailyChallenge] = useState<{ completed: boolean; reward: number; type: string; title: string; description: string; icon: string; [key: string]: any }>(() => {
-      const lastChallengeDay = typeof localStorage !== 'undefined' ? localStorage.getItem("last-challenge-day") : null;
-      if (lastChallengeDay !== today) {
-        const selectedChallenge = challengePool[Math.floor(Math.random() * challengePool.length)];
-        const newChallenge = { ...selectedChallenge, completed: false };
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem("last-challenge-day", today);
-          localStorage.setItem("daily-challenge", JSON.stringify(newChallenge));
-        }
-        return newChallenge;
-      } else {
-        const saved = typeof localStorage !== 'undefined' ? localStorage.getItem("daily-challenge") : null;
-        if (saved) return JSON.parse(saved);
-        const selectedChallenge = challengePool[Math.floor(Math.random() * challengePool.length)];
-        return { ...selectedChallenge, completed: false };
-      }
-    });
-    
     const [serverProgress, setServerProgress] = useState<{
       xp: number;
       level: number;
@@ -6554,6 +6544,38 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     }, [user.id]);
     
     const passedQuizzes = serverProgress?.completedModules || [];
+    
+    // Challenge pool
+    const challengePool = [
+      { type: "quiz", title: "Bitcoin Quiz", description: "Beantworte eine Bitcoin Frage richtig", icon: "🧠", reward: 50, question: "Was sind die maximalen Bitcoin?", options: ["21 Millionen", "Unbegrenzt", "1 Milliarde"], correct: 0 },
+      { type: "conversion", title: "Satoshi Konvertierung", description: "Konvertiere 100.000 Sats zu Bitcoin", icon: "🔄", reward: 40, challenge: "Wie viel Bitcoin sind 100.000 Satoshis?" },
+      { type: "lightning", title: "Lightning Lektion", description: "Lerne über das Lightning Network", icon: "⚡", reward: 45, question: "Was ist das Hauptvorteil von Lightning?", options: ["Schnelle & billige Transaktionen", "Hohe Sicherheit", "Dezentralisierung"], correct: 0 },
+      { type: "security", title: "Sicherheits-Challenge", description: "Teste dein Bitcoin Sicherheitswissen", icon: "🔒", reward: 55, question: "Was ist ein Private Key?", options: ["Dein Secret Password für die Wallet", "Die öffentliche Addresse", "Ein Bitcoin"], correct: 0 },
+      { type: "fun", title: "Bitcoin Fun Challenge", description: "Finde die richtige Satoshi-Definition", icon: "🎮", reward: 35, question: "Wer ist Satoshi Nakamoto?", options: ["Der anonyme Bitcoin Erfinder", "Ein Unternehmer", "Ein YouTuber"], correct: 0 },
+      { type: "blockchain", title: "Blockchain Basics", description: "Teste dein Blockchain Wissen", icon: "⛓️", reward: 48, question: "Wie lange dauert es einen Bitcoin Block zu erstellen?", options: ["Ca. 10 Minuten", "Ca. 1 Minute", "Ca. 1 Stunde"], correct: 0 }
+    ];
+
+    const today = new Date().toDateString();
+    const getDailyChallenge = async () => {
+      try {
+        const response = await fetch(`/api/daily-challenge/${user.id}/${today}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.completed) {
+            return { ...challengePool[Math.floor(Math.random() * challengePool.length)], completed: true };
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch challenge:", error);
+      }
+      return { ...challengePool[Math.floor(Math.random() * challengePool.length)], completed: false };
+    };
+
+    const [dailyChallenge, setDailyChallenge] = useState<any>(null);
+    
+    useEffect(() => {
+      getDailyChallenge().then(setDailyChallenge);
+    }, [user.id]);
     
     const modules = [
       { id: "m1", level: "Anfänger", levelColor: "text-green-600", title: "Was ist Bitcoin?", icon: "₿", content: ["Bitcoin ist digitales Geld - wie elektronische Münzen", "Es wurde 2009 von Satoshi Nakamoto erfunden", "Es gibt maximal 21 Millionen Bitcoin", "Bitcoin ist dezentralisiert - keine Bank kontrolliert es", "Jeder Bitcoin kann in 100.000.000 Satoshis aufgeteilt werden", "Das Bitcoin Netzwerk wird von tausenden Computern gesichert", "Transaktionen sind transparent und nicht rückgängig zu machen", "Bitcoin ist das erste erfolgreiche digitale Geld"], quiz: [{ question: "Wann wurde Bitcoin erfunden?", options: ["2009", "2015", "2001"], correct: 0 }, { question: "Wie viele Bitcoin gibt es maximal?", options: ["21 Millionen", "Unbegrenzt", "1 Milliarde"], correct: 0 }, { question: "Wer ist Satoshi Nakamoto?", options: ["Der anonyme Bitcoin Erfinder", "Ein YouTuber", "Ein Politiker"], correct: 0 }] },
@@ -7013,11 +7035,22 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 
                 {!dailyChallenge.completed && (
                   <Button 
-                    onClick={() => {
-                      const newChallenge = { ...dailyChallenge, completed: true };
-                      setDailyChallenge(newChallenge);
-                      localStorage.setItem("daily-challenge", JSON.stringify(newChallenge));
-                      toast({ title: "🎉 Challenge bestanden!", description: `Zurück morgen für eine neue Challenge!` });
+                    onClick={async () => {
+                      try {
+                        const today = new Date().toDateString();
+                        const response = await fetch("/api/daily-challenge/complete", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ peerId: user.id, challengeDate: today, challengeType: dailyChallenge.type })
+                        });
+                        if (response.ok) {
+                          const data = await response.json();
+                          setDailyChallenge({ ...dailyChallenge, completed: true });
+                          toast({ title: "🎉 Challenge bestanden!", description: `Zurück morgen für eine neue Challenge!` });
+                        }
+                      } catch (error) {
+                        toast({ title: "Fehler", description: "Challenge konnte nicht gespeichert werden", variant: "destructive" });
+                      }
                     }}
                     className="w-full bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-700 hover:to-cyan-700 h-12 text-lg font-bold"
                     data-testid="button-complete-challenge"

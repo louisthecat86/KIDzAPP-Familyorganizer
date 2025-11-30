@@ -302,3 +302,21 @@ export const insertLearningProgressSchema = createInsertSchema(learningProgress)
 
 export type InsertLearningProgress = z.infer<typeof insertLearningProgressSchema>;
 export type LearningProgress = typeof learningProgress.$inferSelect;
+
+// Daily Challenges Table (for tracking daily challenge completion)
+export const dailyChallenges = pgTable("daily_challenges", {
+  id: serial("id").primaryKey(),
+  peerId: integer("peer_id").notNull(), // Child who is taking challenge
+  challengeDate: text("challenge_date").notNull(), // Date string (YYYY-MM-DD)
+  challengeType: text("challenge_type").notNull(), // 'quiz', 'conversion', 'lightning', 'security', 'fun', 'blockchain'
+  completed: boolean("completed").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertDailyChallengeSchema = createInsertSchema(dailyChallenges).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertDailyChallenge = z.infer<typeof insertDailyChallengeSchema>;
+export type DailyChallenge = typeof dailyChallenges.$inferSelect;
