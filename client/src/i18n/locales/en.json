@@ -169,6 +169,8 @@
     "yourCode": "Your Code:",
     "findCodeInSettings": "You can find this code later in the wallet settings",
     "clickForBreakdown": "Click to see breakdown per child",
+    "available": "Available",
+    "inProgress": "In Progress",
     "openTasks": "Open Tasks",
     "pendingApproval": "Pending Approval",
     "completedTasks": "Completed Tasks",

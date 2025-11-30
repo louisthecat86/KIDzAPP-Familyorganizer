@@ -7350,7 +7350,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     >
                       <div className="text-center">
                         <div className="text-lg md:text-3xl font-bold text-blue-600">{availableTasks.length}</div>
-                        <p className="text-[10px] md:text-xs text-slate-700 mt-1 md:mt-2 uppercase tracking-widest">Verfügbar</p>
+                        <p className="text-[10px] md:text-xs text-slate-700 mt-1 md:mt-2 uppercase tracking-widest">{t('dashboard.available')}</p>
                       </div>
                     </div>
                     
@@ -7362,7 +7362,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     >
                       <div className="text-center">
                         <div className="text-lg md:text-3xl font-bold text-violet-600">{assignedTasks.length}</div>
-                        <p className="text-[10px] md:text-xs text-slate-700 mt-1 md:mt-2 uppercase tracking-widest">In Arbeit</p>
+                        <p className="text-[10px] md:text-xs text-slate-700 mt-1 md:mt-2 uppercase tracking-widest">{t('dashboard.inProgress')}</p>
                       </div>
                     </div>
                     
@@ -7709,7 +7709,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
     return (
       <div className="max-w-4xl">
-        <h1 className="text-3xl font-bold mb-8">In Arbeit</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('dashboard.inProgress')}</h1>
         <div className="grid gap-4">
           {myTasks.filter((t: Task) => t.status === "assigned").map((task: Task) => (
             <TaskCard key={task.id} task={task} variant="child">
