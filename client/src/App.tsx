@@ -5510,6 +5510,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   const [rsvps, setRsvps] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState<Record<number, boolean>>({});
   const [serverProgress, setServerProgress] = useState<any>(null);
+  const [dailyChallenge, setDailyChallenge] = useState<any>(null);
   const { toast } = useToast();
   
   // Load learning progress from server
@@ -5529,6 +5530,55 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     };
     fetchLearningProgress();
   }, [user.id]);
+  
+  // Fetch BTC price for converter
+  useEffect(() => {
+    const fetchBtcPrice = async () => {
+      try {
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur');
+        const data = await response.json();
+        setBtcPrice(data.bitcoin.eur);
+      } catch (error) {
+        console.error("[BTC Price] Failed to fetch:", error);
+      }
+    };
+    if (user.role === "child") {
+      fetchBtcPrice();
+    }
+  }, [user.role]);
+  
+  // Fetch daily challenge
+  useEffect(() => {
+    const challengePool = [
+      { type: "quiz", title: "Bitcoin Quiz", description: "Beantworte eine Bitcoin Frage richtig", icon: "🧠", reward: 50, question: "Was sind die maximalen Bitcoin?", options: ["21 Millionen", "Unbegrenzt", "1 Milliarde"], correct: 0 },
+      { type: "conversion", title: "Satoshi Konvertierung", description: "Konvertiere 100.000 Sats zu Bitcoin", icon: "🔄", reward: 40, challenge: "Wie viel Bitcoin sind 100.000 Satoshis?" },
+      { type: "lightning", title: "Lightning Lektion", description: "Lerne über das Lightning Network", icon: "⚡", reward: 45, question: "Was ist das Hauptvorteil von Lightning?", options: ["Schnelle & billige Transaktionen", "Hohe Sicherheit", "Dezentralisierung"], correct: 0 },
+      { type: "security", title: "Sicherheits-Challenge", description: "Teste dein Bitcoin Sicherheitswissen", icon: "🔒", reward: 55, question: "Was ist ein Private Key?", options: ["Dein Secret Password für die Wallet", "Die öffentliche Addresse", "Ein Bitcoin"], correct: 0 },
+      { type: "fun", title: "Bitcoin Fun Challenge", description: "Finde die richtige Satoshi-Definition", icon: "🎮", reward: 35, question: "Wer ist Satoshi Nakamoto?", options: ["Der anonyme Bitcoin Erfinder", "Ein Unternehmer", "Ein YouTuber"], correct: 0 },
+      { type: "blockchain", title: "Blockchain Basics", description: "Teste dein Blockchain Wissen", icon: "⛓️", reward: 48, question: "Wie lange dauert es einen Bitcoin Block zu erstellen?", options: ["Ca. 10 Minuten", "Ca. 1 Minute", "Ca. 1 Stunde"], correct: 0 }
+    ];
+    
+    const fetchDailyChallenge = async () => {
+      const today = new Date().toDateString();
+      try {
+        const response = await fetch(`/api/daily-challenge/${user.id}/${today}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.completed) {
+            setDailyChallenge({ ...challengePool[Math.floor(Math.random() * challengePool.length)], completed: true });
+            return;
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch challenge:", error);
+      }
+      setDailyChallenge({ ...challengePool[Math.floor(Math.random() * challengePool.length)], completed: false });
+    };
+    
+    if (user.role === "child") {
+      fetchDailyChallenge();
+    }
+  }, [user.id, user.role]);
 
   const { data: connectedPeers = [] } = useQuery({
     queryKey: ["peers", user.connectionId],
@@ -6520,51 +6570,6 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   }
 
   if (currentView === "bitcoin-education" && user.role === "child") {
-    
-    useEffect(() => {
-      const fetchBtcPrice = async () => {
-        try {
-          const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur');
-          const data = await response.json();
-          setBtcPrice(data.bitcoin.eur);
-        } catch (error) {
-          console.error("[BTC Price] Failed to fetch:", error);
-        }
-      };
-      fetchBtcPrice();
-    }, []);
-    
-    // Challenge pool
-    const challengePool = [
-      { type: "quiz", title: "Bitcoin Quiz", description: "Beantworte eine Bitcoin Frage richtig", icon: "🧠", reward: 50, question: "Was sind die maximalen Bitcoin?", options: ["21 Millionen", "Unbegrenzt", "1 Milliarde"], correct: 0 },
-      { type: "conversion", title: "Satoshi Konvertierung", description: "Konvertiere 100.000 Sats zu Bitcoin", icon: "🔄", reward: 40, challenge: "Wie viel Bitcoin sind 100.000 Satoshis?" },
-      { type: "lightning", title: "Lightning Lektion", description: "Lerne über das Lightning Network", icon: "⚡", reward: 45, question: "Was ist das Hauptvorteil von Lightning?", options: ["Schnelle & billige Transaktionen", "Hohe Sicherheit", "Dezentralisierung"], correct: 0 },
-      { type: "security", title: "Sicherheits-Challenge", description: "Teste dein Bitcoin Sicherheitswissen", icon: "🔒", reward: 55, question: "Was ist ein Private Key?", options: ["Dein Secret Password für die Wallet", "Die öffentliche Addresse", "Ein Bitcoin"], correct: 0 },
-      { type: "fun", title: "Bitcoin Fun Challenge", description: "Finde die richtige Satoshi-Definition", icon: "🎮", reward: 35, question: "Wer ist Satoshi Nakamoto?", options: ["Der anonyme Bitcoin Erfinder", "Ein Unternehmer", "Ein YouTuber"], correct: 0 },
-      { type: "blockchain", title: "Blockchain Basics", description: "Teste dein Blockchain Wissen", icon: "⛓️", reward: 48, question: "Wie lange dauert es einen Bitcoin Block zu erstellen?", options: ["Ca. 10 Minuten", "Ca. 1 Minute", "Ca. 1 Stunde"], correct: 0 }
-    ];
-
-    const today = new Date().toDateString();
-    const getDailyChallenge = async () => {
-      try {
-        const response = await fetch(`/api/daily-challenge/${user.id}/${today}`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.completed) {
-            return { ...challengePool[Math.floor(Math.random() * challengePool.length)], completed: true };
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch challenge:", error);
-      }
-      return { ...challengePool[Math.floor(Math.random() * challengePool.length)], completed: false };
-    };
-
-    const [dailyChallenge, setDailyChallenge] = useState<any>(null);
-    
-    useEffect(() => {
-      getDailyChallenge().then(setDailyChallenge);
-    }, [user.id]);
     
     const modules = [
       { id: "m1", level: "Anfänger", levelColor: "text-green-600", title: "Was ist Bitcoin?", icon: "₿", content: ["Bitcoin ist digitales Geld - wie elektronische Münzen", "Es wurde 2009 von Satoshi Nakamoto erfunden", "Es gibt maximal 21 Millionen Bitcoin", "Bitcoin ist dezentralisiert - keine Bank kontrolliert es", "Jeder Bitcoin kann in 100.000.000 Satoshis aufgeteilt werden", "Das Bitcoin Netzwerk wird von tausenden Computern gesichert", "Transaktionen sind transparent und nicht rückgängig zu machen", "Bitcoin ist das erste erfolgreiche digitale Geld"], quiz: [{ question: "Wann wurde Bitcoin erfunden?", options: ["2009", "2015", "2001"], correct: 0 }, { question: "Wie viele Bitcoin gibt es maximal?", options: ["21 Millionen", "Unbegrenzt", "1 Milliarde"], correct: 0 }, { question: "Wer ist Satoshi Nakamoto?", options: ["Der anonyme Bitcoin Erfinder", "Ein YouTuber", "Ein Politiker"], correct: 0 }] },
