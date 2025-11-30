@@ -3612,27 +3612,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 </div>,
                 index * 0.1
               );
-            } else if (cardId === "learning-stats") {
-              if (user.role !== "child") return null;
-              return createDraggableCard(
-                cardId,
-                <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl hover:bg-white/55 transition-colors h-full shadow-lg p-6">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-slate-700">Level</span>
-                      <span className="text-2xl font-bold text-violet-600">{serverProgress?.level || 1}</span>
-                    </div>
-                    <div className="w-full bg-slate-200 rounded-full h-2">
-                      <div className="bg-gradient-to-r from-violet-600 to-cyan-600 h-2 rounded-full" style={{width: `${((serverProgress?.xp || 0) % 100) / 100 * 100}%`}}></div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-600">{serverProgress?.xp || 0} XP</span>
-                      <span className="text-xs text-slate-600">🔥 Streak: {serverProgress?.streak || 0}</span>
-                    </div>
-                  </div>
-                </div>,
-                index * 0.1
-              );
             }
           })}
           
