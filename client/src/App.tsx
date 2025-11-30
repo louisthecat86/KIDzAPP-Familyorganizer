@@ -6767,10 +6767,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 <span className="text-sm text-slate-600">{t('education.unlockedOf', { count: achievements.filter(a => a.condition).length, total: achievements.length })}</span>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                {achievements.map((badge, index) => {
-                  const unlockedBadges = achievements.filter(b => b.condition);
-                  const firstUnlockedIndex = achievements.indexOf(unlockedBadges[0]);
-                  const isFirstUnlocked = badge.condition && index === firstUnlockedIndex;
+                {achievements.map((badge, index, arr) => {
+                  const isFirstUnlocked = badge.condition && !arr.slice(0, index).some(b => b.condition);
                   
                   return (
                   <div 
