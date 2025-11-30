@@ -7455,7 +7455,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                             <div className="h-8 w-8 bg-green-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
                               <BookOpen className="h-4 w-4 text-green-600" />
                             </div>
-                            <p className="text-xs text-slate-600 mb-1 font-medium">{t('education.modules')}</p>
+                            <p className="text-xs text-slate-600 mb-1 font-medium">{t('education.modulesLabel')}</p>
                             <p className="text-2xl font-bold text-green-600">{completedModulesModal.length}/20</p>
                           </div>
                           
