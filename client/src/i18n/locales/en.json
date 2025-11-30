@@ -744,7 +744,7 @@
     "resourceDesc14text": "Basics for safe use of digital devices & accounts",
     "learningStreak": "Learning Streak",
     "record": "Record",
-    "modules": "Modules",
+    "modulesLabel": "Modules",
     "sevenDays": "7 Days",
     "youHaveSats": "You have {{sats}} Sats",
     "selectTimeframe": "Select Timeframe",

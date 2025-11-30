@@ -741,7 +741,7 @@
     "resourceDesc14text": "Grundlagen für sichere Nutzung digitaler Geräte & Konten",
     "learningStreak": "Lern-Streak",
     "record": "Rekord",
-    "modules": "Module",
+    "modulesLabel": "Module",
     "sevenDays": "7 Tage",
     "youHaveSats": "Du hast {{sats}} Sats",
     "selectTimeframe": "Zeitraum wählen",
