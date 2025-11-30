@@ -741,7 +741,14 @@
     "resourceDesc11text": "Well explained at university beginner level",
     "resourceDesc12text": "Explains how to teach children about digital values",
     "resourceDesc13text": "Pedagogically structured for parents and teachers",
-    "resourceDesc14text": "Basics for safe use of digital devices & accounts"
+    "resourceDesc14text": "Basics for safe use of digital devices & accounts",
+    "learningStreak": "Learning Streak",
+    "record": "Record",
+    "modules": "Modules",
+    "sevenDays": "7 Days",
+    "youHaveSats": "You have {{sats}} Sats",
+    "selectTimeframe": "Select Timeframe",
+    "interestRate": "Interest Rate"
   },
   "donate": {
     "title": "Support Developer",
@@ -795,6 +802,8 @@
     "master": "Master",
     "bitcoinMaster": "Bitcoin Master Achieved!",
     "tasks": "Tasks",
+    "day": "Day",
+    "days": "Days",
     "cancel": "Cancel",
     "save": "Save",
     "connect": "Connect",

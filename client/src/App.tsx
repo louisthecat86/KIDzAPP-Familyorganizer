@@ -6701,8 +6701,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   🔥
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-900">{userStreak} {userStreak === 1 ? "Tag" : "Tage"}</p>
-                  <p className="text-xs text-slate-600">Lern-Streak {serverProgress?.longestStreak ? `(Rekord: ${serverProgress.longestStreak})` : ""}</p>
+                  <p className="text-2xl font-bold text-slate-900">{userStreak} {userStreak === 1 ? t('common.day') : t('common.days')}</p>
+                  <p className="text-xs text-slate-600">{t('education.learningStreak')} {serverProgress?.longestStreak ? `(${t('education.record')}: ${serverProgress.longestStreak})` : ""}</p>
                 </div>
               </div>
               <div className="mt-3 flex gap-1">
@@ -7440,7 +7440,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                             <div className="h-8 w-8 bg-green-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
                               <BookOpen className="h-4 w-4 text-green-600" />
                             </div>
-                            <p className="text-xs text-slate-600 mb-1 font-medium">Module</p>
+                            <p className="text-xs text-slate-600 mb-1 font-medium">{t('education.modules')}</p>
                             <p className="text-2xl font-bold text-green-600">{completedModulesModal.length}/20</p>
                           </div>
                           
@@ -7457,14 +7457,14 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                               <Flame className="h-4 w-4 text-violet-600" />
                             </div>
                             <p className="text-xs text-slate-600 mb-1 font-medium">{t('dashboard.thisWeek')}</p>
-                            <p className="text-2xl font-bold text-violet-600">{weeklyCompleted} Tasks</p>
+                            <p className="text-2xl font-bold text-violet-600">{weeklyCompleted} {t('common.tasks')}</p>
                           </div>
                           
                           <div className="rounded-lg bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200/50 p-4 text-center">
                             <div className="h-8 w-8 bg-cyan-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
                               <TrendingUp className="h-4 w-4 text-cyan-600" />
                             </div>
-                            <p className="text-xs text-slate-600 mb-1 font-medium">7-Tage</p>
+                            <p className="text-xs text-slate-600 mb-1 font-medium">{t('education.sevenDays')}</p>
                             <p className="text-2xl font-bold text-cyan-600">{weeklySats.toLocaleString()} Sats</p>
                           </div>
                         </div>
@@ -7919,7 +7919,7 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
       <Card className="bg-blue-500/5 border border-blue-500/30">
         <CardContent className="pt-6">
           <p className="text-sm">
-            <span className="font-bold text-blue-400">Du hast {sats.toLocaleString()} Sats</span> 
+            <span className="font-bold text-blue-400">{t('education.youHaveSats', { sats: sats.toLocaleString() })}</span> 
             <span className="text-muted-foreground"> (€{currentValueEur.toFixed(2)})</span>
           </p>
           <p className="text-xs text-muted-foreground mt-2">
@@ -7933,7 +7933,7 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
         {/* Timeframe Selector */}
         <Card className="border-border">
           <CardContent className="pt-6">
-            <p className="text-xs font-bold text-muted-foreground mb-3 uppercase">Zeitraum wählen</p>
+            <p className="text-xs font-bold text-muted-foreground mb-3 uppercase">{t('education.selectTimeframe')}</p>
             <div className="flex gap-2">
               {[30, 60, 90].map((d) => (
                 <button
@@ -7946,7 +7946,7 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
                   }`}
                   data-testid={`button-days-${d}`}
                 >
-                  {d} Tage
+                  {d} {t('common.days')}
                 </button>
               ))}
             </div>
@@ -7958,7 +7958,7 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
           <CardContent className="pt-6">
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <p className="text-xs font-bold text-muted-foreground uppercase">Zinssatz</p>
+                <p className="text-xs font-bold text-muted-foreground uppercase">{t('education.interestRate')}</p>
                 <p className="text-sm font-mono font-bold text-blue-400" data-testid="text-interest-display">
                   {interestRate.toFixed(2)}% / Monat = {(interestRate * 12).toFixed(1)}% / Jahr
                 </p>

@@ -738,7 +738,14 @@
     "resourceDesc11text": "Gut erklärt auf Hochschul-Einsteiger-Niveau",
     "resourceDesc12text": "Erklärt, wie man Kindern digitale Werte erklärt",
     "resourceDesc13text": "Pädagogisch aufgebaut für Eltern und Lehrer",
-    "resourceDesc14text": "Grundlagen für sichere Nutzung digitaler Geräte & Konten"
+    "resourceDesc14text": "Grundlagen für sichere Nutzung digitaler Geräte & Konten",
+    "learningStreak": "Lern-Streak",
+    "record": "Rekord",
+    "modules": "Module",
+    "sevenDays": "7 Tage",
+    "youHaveSats": "Du hast {{sats}} Sats",
+    "selectTimeframe": "Zeitraum wählen",
+    "interestRate": "Zinssatz"
   },
   "donate": {
     "title": "Entwickler unterst\u00fctzen",
@@ -798,6 +805,8 @@
     "master": "Meister",
     "bitcoinMaster": "Bitcoin-Meister erreicht!",
     "tasks": "Aufgaben",
+    "day": "Tag",
+    "days": "Tage",
     "cancel": "Abbrechen",
     "save": "Speichern",
     "connect": "Verbinden",
