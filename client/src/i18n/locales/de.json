@@ -161,6 +161,7 @@
     "spendingPerChild": "Ausgaben pro Kind",
     "levelBonusSettings": "Level-Bonus Einstellungen",
     "activateLevelBonus": "Level-Bonus aktivieren",
+    "yourEarnings": "Dein Verdienst",
     "failedToLoadSpending": "Ausgaben-Statistik konnte nicht geladen werden",
     "paymentsAndScheduled": "Zahlungen & Terminzahlungen",
     "connectionCodeTitle": "Verbindungscode für Kinder",
@@ -339,6 +340,20 @@
     "months": ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
     "weekdays": ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
     "weekdaysShort": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"]
+  },
+  "education": {
+    "compareSavings": "Sparen vergleichen",
+    "compareSavingsDesc": "Vergleiche deinen Bitcoin-Sparplan mit einem klassischen Sparbuch über {{days}} Tage",
+    "satoshiWealthInEuro": "Dein Satoshi-Vermögen in Euro",
+    "bitcoinValueDevelopment": "Bitcoin Wertentwicklung",
+    "savingsAccount": "Sparbuch mit Zinseszins",
+    "priceCanVary": "Der Kurs kann hoch und runter gehen. Langfristig kann Bitcoin aber stärker wachsen als Sparbuch-Zinsen.",
+    "interestEarnsInterest": "Deine Zinsen verdienen wieder Zinsen. Mit höheren Zinsen wächst dein Geld immer schneller! 🚀",
+    "noApprovedTasks": "Noch keine genehmigten Tasks",
+    "bitcoin": "BITCOIN",
+    "savingsBook": "SPARBUCH",
+    "compareTitle": "Vergleiche",
+    "bitcoinVsSparbuch": "Bitcoin vs Sparbuch"
   },
   "chat": {
     "title": "Familien-Chat",

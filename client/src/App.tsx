@@ -7984,7 +7984,7 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
         <Card className="border-border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <span>⚡</span> Bitcoin Wertentwicklung
+              <span>⚡</span> {t('education.bitcoinValueDevelopment')}
             </CardTitle>
             <CardDescription>{t('education.satoshiWealthInEuro')}</CardDescription>
           </CardHeader>
@@ -8046,7 +8046,7 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
                     stroke="#60a5fa" 
                     strokeWidth={2.5}
                     dot={false}
-                    name="Sparbuch"
+                    name={t('education.savingsBook')}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -8080,7 +8080,7 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
                   </p>
                 </div>
                 <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                  <p className="text-xs text-muted-foreground mb-2">🏦 Sparbuch</p>
+                  <p className="text-xs text-muted-foreground mb-2">🏦 {t('education.savingsBook')}</p>
                   <p className="text-2xl font-mono font-bold text-blue-400">€{savingsFinal.toFixed(2)}</p>
                   <p className="text-sm mt-2 font-bold text-green-400">+€{savingsDifference.toFixed(2)}</p>
                 </div>
@@ -8098,7 +8098,7 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
               <span className="text-lg mt-0.5">📚</span>
               <span>
                 <span className="font-bold text-yellow-400">Bitcoin schwankt!</span>
-                <span className="text-muted-foreground"> Der Kurs kann hoch und runter gehen. Langfristig kann Bitcoin aber stärker wachsen als Sparbuch-Zinsen.</span>
+                <span className="text-muted-foreground"> {t('education.priceCanVary')}</span>
               </span>
             </p>
           </CardContent>
@@ -8109,7 +8109,7 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
               <span className="text-lg mt-0.5">💡</span>
               <span>
                 <span className="font-bold text-green-400">Zinseszins ist Zauberei!</span>
-                <span className="text-muted-foreground"> Deine Zinsen verdienen wieder Zinsen. Mit höheren Zinsen wächst dein Geld immer schneller! 🚀</span>
+                <span className="text-muted-foreground"> {t('education.interestEarnsInterest')}</span>
               </span>
             </p>
           </CardContent>
@@ -8157,7 +8157,7 @@ function TrackerChart({ userId }: { userId: number }) {
   }, []);
 
   if (loading) return <div className="text-sm text-muted-foreground py-8 text-center">Wird geladen...</div>;
-  if (trackerData.length === 0) return <p className="text-sm text-muted-foreground py-8 text-center">Noch keine genehmigten Tasks</p>;
+  if (trackerData.length === 0) return <p className="text-sm text-muted-foreground py-8 text-center">{t('education.noApprovedTasks')}</p>;
 
   const latest = trackerData[trackerData.length - 1];
   const first = trackerData[0];
@@ -8365,7 +8365,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
   const [interestRate, setInterestRate] = useState(0.2); // Start at 0.2% monthly
   const [dailySnapshots, setDailySnapshots] = useState<any[]>([]);
   const [monthlySnapshots, setMonthlySnapshots] = useState<any[]>([]);
-  const [viewMode, setViewMode] = useState<"bitcoin" | "sparbuch">("bitcoin");
+  const [viewMode, setViewMode] = useState<"bitcoin" | "savingsBook">("bitcoin");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -8475,9 +8475,9 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
             <div className="flex items-center gap-1 relative">
               <span className="text-sm">{viewMode === "bitcoin" ? "⚡" : "🏦"}</span>
               <p className="text-xs text-muted-foreground font-bold">
-                {viewMode === "bitcoin" ? "BITCOIN" : "SPARBUCH"}
+                {viewMode === "bitcoin" ? t('education.bitcoin') : t('education.savingsBook')}
               </p>
-              {viewMode === "sparbuch" && (
+              {viewMode === "savingsBook" && (
                 <span className="absolute text-[9px] text-muted-foreground/60 top-full -mt-1">0,2% monatlich</span>
               )}
             </div>
@@ -8494,7 +8494,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
                 ⚡ BTC
               </button>
               <button
-                onClick={() => setViewMode("sparbuch")}
+                onClick={() => setViewMode("savingsBook")}
                 className={`text-xs px-2 py-0.5 rounded border transition-colors ${
                   viewMode === "sparbuch"
                     ? "bg-blue-500/30 border-blue-500/60 text-blue-400 font-bold"

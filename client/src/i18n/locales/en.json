@@ -161,6 +161,7 @@
     "spendingPerChild": "Spending per Child",
     "levelBonusSettings": "Level Bonus Settings",
     "activateLevelBonus": "Activate Level Bonus",
+    "yourEarnings": "Your Earnings",
     "failedToLoadSpending": "Failed to load spending statistics",
     "paymentsAndScheduled": "Payments & Scheduled Payments",
     "connectionCodeTitle": "Connection Code for Children",
@@ -342,6 +343,20 @@
     "rsvps": "RSVPs",
     "noRsvps": "No RSVPs received yet",
     "addEvent": "Add Event"
+  },
+  "education": {
+    "compareSavings": "Compare Savings",
+    "compareSavingsDesc": "Compare your Bitcoin savings plan with a traditional savings account over {{days}} days",
+    "satoshiWealthInEuro": "Your Satoshi Wealth in Euro",
+    "bitcoinValueDevelopment": "Bitcoin Value Development",
+    "savingsAccount": "Savings Account with Compound Interest",
+    "priceCanVary": "The price can go up and down. In the long term, Bitcoin can grow stronger than savings account interest.",
+    "interestEarnsInterest": "Your interest earns interest again. With higher interest rates, your money grows faster! 🚀",
+    "noApprovedTasks": "No approved tasks yet",
+    "bitcoin": "BITCOIN",
+    "savingsBook": "SAVINGS ACCOUNT",
+    "compareTitle": "Compare",
+    "bitcoinVsSparbuch": "Bitcoin vs Savings Account"
   },
   "chat": {
     "title": "Family Chat",
