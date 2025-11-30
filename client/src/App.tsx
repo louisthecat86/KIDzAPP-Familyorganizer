@@ -187,7 +187,7 @@ async function registerUser(name: string, role: UserRole, pin: string, familyNam
   });
   const data = await res.json();
   if (!res.ok) {
-    throw new Error(data.error || "Registrierung fehlgeschlagen");
+    throw new Error(data.error || "Registration failed");
   }
   return data;
 }
@@ -200,7 +200,7 @@ async function loginUser(name: string, role: UserRole, pin: string): Promise<Use
   });
   const data = await res.json();
   if (!res.ok) {
-    throw new Error(data.error || "Anmeldung fehlgeschlagen");
+    throw new Error(data.error || "Login failed");
   }
   return data;
 }
@@ -213,7 +213,7 @@ async function linkChildToParent(childId: number, parentConnectionId: string): P
   });
   const data = await res.json();
   if (!res.ok) {
-    throw new Error(data.error || "Fehler beim Verbinden mit Eltern");
+    throw new Error(data.error || "Connection failed");
   }
   return data;
 }
@@ -227,7 +227,7 @@ async function withdrawSats(peerId: number, sats: number, paymentRequest: string
   });
   const data = await res.json();
   if (!res.ok) {
-    throw new Error(data.error || "Auszahlung fehlgeschlagen");
+    throw new Error(data.error || "Payout failed");
   }
   return data;
 }
@@ -2435,7 +2435,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
                         <div className="min-w-0">
                           <p className="font-semibold text-sm truncate">{child.name}</p>
                           <p className="text-xs text-muted-foreground truncate">
-                            {child.lightningAddress ? `⚡ ${child.lightningAddress}` : "⚠️ Keine Adresse"}
+                            {child.lightningAddress ? `⚡ ${child.lightningAddress}` : `⚠️ ${t('wallet.noAddress')}`}
                           </p>
                         </div>
                       </div>
@@ -2514,8 +2514,8 @@ function PeersContent({ user, setUser, queryClient }: any) {
 
           {children.length === 0 && (
             <div className="text-center py-4 text-muted-foreground text-sm border border-dashed border-border rounded-lg">
-              <p>Noch keine Kinder verbunden</p>
-              <p className="text-xs mt-1">Teile deinen Verbindungscode mit deinen Kindern</p>
+              <p>{t('dashboard.noChildrenConnected')}</p>
+              <p className="text-xs mt-1">{t('dashboard.shareCodeWithChildren')}</p>
             </div>
           )}
         </div>
@@ -2679,7 +2679,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
       <div className="space-y-3">
         {parent ? (
           <div className="space-y-3">
-            <p className="text-xs font-semibold text-muted-foreground uppercase">Verbunden mit</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase">{t('dashboard.connectedWith')}</p>
             <div className="p-3 rounded-lg bg-primary/10 border border-primary/30 flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm">
                 {parent.name[0]}
@@ -2700,8 +2700,8 @@ function PeersContent({ user, setUser, queryClient }: any) {
           </div>
         ) : (
           <div className="text-center py-4 text-muted-foreground text-sm">
-            <p>Nicht mit einer Familie verbunden</p>
-            <p className="text-xs mt-1">Verbinde dich mit deinen Eltern</p>
+            <p>{t('dashboard.notConnectedToFamily')}</p>
+            <p className="text-xs mt-1">{t('dashboard.connectWithParents')}</p>
           </div>
         )}
       </div>
@@ -2972,7 +2972,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                 // For children: only Lightning Address
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="lightning-address">Lightning Adresse</Label>
+                    <Label htmlFor="lightning-address">{t('wallet.lightningAddress')}</Label>
                     <Input 
                       id="lightning-address"
                       placeholder="name@example.com"
@@ -2982,10 +2982,10 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                       data-testid="input-lightning-address"
                     />
                     <p className="text-xs text-muted-foreground">
-                      Format: name@domain.com
+                      {t('wallet.formatExample')}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Status: {user.lightningAddress ? "✓ " + t('common.configured') : "✗ " + t('common.notConfigured')}
+                      {t('common.status')}: {user.lightningAddress ? "✓ " + t('common.configured') : "✗ " + t('common.notConfigured')}
                     </p>
                   </div>
                   <Button
@@ -3036,16 +3036,16 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                           className="w-full"
                           data-testid="button-disconnect-lnbits"
                         >
-                          Trennen
+                          {t('common.disconnect')}
                         </Button>
                       </div>
                     ) : (
                       <div className="space-y-3">
                         <div className="space-y-2">
-                          <Label htmlFor="lnbits-url">LNbits Instanz URL</Label>
+                          <Label htmlFor="lnbits-url">{t('wallet.lnbitsInstanceUrl')}</Label>
                           <Input 
                             id="lnbits-url"
-                            placeholder="z.B. https://lnbits.example.com"
+                            placeholder={t('wallet.lnbitsUrlPlaceholder')}
                             value={editLnbitsUrl}
                             onChange={(e) => setEditLnbitsUrl(e.target.value)}
                             className="font-mono text-xs"
@@ -3082,7 +3082,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                           disabled={isSaving || !editLnbitsUrl || !editLnbitsAdminKey}
                           data-testid="button-test-lnbits"
                         >
-                          Verbindung testen
+                          {t('wallet.testConnection')}
                         </Button>
                         <Button 
                           onClick={saveLNbits}
@@ -3090,7 +3090,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                           disabled={isSaving || !editLnbitsUrl || !editLnbitsAdminKey}
                           data-testid="button-save-lnbits"
                         >
-                          {isSaving ? "Wird gespeichert..." : "LNbits verbinden"}
+                          {isSaving ? t('common.saving') : `LNbits ${t('common.connect')}`}
                         </Button>
                       </div>
                     )}
@@ -3102,8 +3102,8 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                     {user.hasNwcConfigured ? (
                       <div className="space-y-3">
                         <div className="p-3 rounded-lg border border-green-500/30 bg-green-500/10">
-                          <p className="text-sm font-semibold text-green-300">NWC verbunden</p>
-                          <p className="text-sm text-muted-foreground mt-1">Deine NWC Wallet ist konfiguriert und einsatzbereit</p>
+                          <p className="text-sm font-semibold text-green-300">{t('wallet.nwcConnected')}</p>
+                          <p className="text-sm text-muted-foreground mt-1">{t('wallet.nwcConfigured')}</p>
                         </div>
                         <Button
                           onClick={deleteNwc}
@@ -3113,7 +3113,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                           className="w-full"
                           data-testid="button-delete-nwc"
                         >
-                          NWC trennen
+                          {t('wallet.disconnectNwc')}
                         </Button>
                       </div>
                     ) : (
@@ -3138,7 +3138,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                           className="w-full bg-cyan-600 hover:bg-cyan-600/90"
                           data-testid="button-setup-nwc"
                         >
-                          {isSaving ? "Wird gespeichert..." : "NWC verbinden"}
+                          {isSaving ? t('common.saving') : `NWC ${t('common.connect')}`}
                         </Button>
                       </div>
                     )}
@@ -3231,7 +3231,7 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
                           {accepted.length > 0 && (
                             <div className="bg-green-500/10 border border-green-500/30 rounded p-2">
                               <p className="text-xs text-green-400 font-medium" data-testid={`text-rsvp-accepted-${event.id}`}>
-                                ✓ Zusagen ({accepted.length}):
+                                ✓ {t('common.accepted')} ({accepted.length}):
                               </p>
                               <p className="text-xs text-green-300 ml-4">
                                 {accepted.map(r => r.childName).join(", ")}
@@ -3241,7 +3241,7 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
                           {declined.length > 0 && (
                             <div className="bg-red-500/10 border border-red-500/30 rounded p-2">
                               <p className="text-xs text-red-400 font-medium" data-testid={`text-rsvp-declined-${event.id}`}>
-                                ✗ Absagen ({declined.length}):
+                                ✗ {t('common.declined')} ({declined.length}):
                               </p>
                               <p className="text-xs text-red-300 ml-4">
                                 {declined.map(r => r.childName).join(", ")}
@@ -3717,10 +3717,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       mode="single"
                       selected={selectedDate}
                       onSelect={(date) => date && setSelectedDate(date)}
-                      locale={{
-                        months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
-                        weekdays: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
-                        weekdaysShort: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"]
+                      formatters={{
+                        formatWeekdayName: (day) => t(`calendar.weekdaysShort.${day.getDay()}`),
+                        formatCaption: (date) => `${t(`calendar.months.${date.getMonth()}`)} ${date.getFullYear()}`
                       }}
                       modifiers={{
                         hasEvent: (date) => events.some(e => {
@@ -3769,11 +3768,11 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         <Dialog open={showSpendingStats} onOpenChange={setShowSpendingStats}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Ausgaben pro Kind</DialogTitle>
+              <DialogTitle>{t('dashboard.spendingPerChild')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-3">
               {spendingStats.length === 0 ? (
-                <p className="text-muted-foreground text-center py-6">Keine Ausgaben erfasst</p>
+                <p className="text-muted-foreground text-center py-6">{t('dashboard.noSpendingsRecorded')}</p>
               ) : (
                 spendingStats.map((stat) => (
                   <div key={stat.childId} className="p-3 rounded-lg border border-border bg-secondary/30 flex items-center justify-between">
@@ -3850,7 +3849,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <div className="space-y-4">
               <div className="h-96 overflow-y-auto bg-black/20 backdrop-blur-sm rounded-xl p-4 space-y-3 border border-white/10">
                 {messages.length === 0 ? (
-                  <p className="text-white/60 text-center py-8">Noch keine Nachrichten</p>
+                  <p className="text-white/60 text-center py-8">{t('chat.noMessages')}</p>
                 ) : (
                   messages.map((msg, idx) => (
                     <div key={idx} className={`flex ${msg.fromPeerId === user.id ? "justify-end" : "justify-start"}`}>
@@ -3942,11 +3941,11 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     <div className="flex-1">
                       <h3 className="font-bold text-lg">{child.name}</h3>
                       <p className="text-xs text-muted-foreground">
-                        {child.lightningAddress ? `⚡ ${child.lightningAddress}` : "⚠️ Keine Lightning Adresse"}
+                        {child.lightningAddress ? `⚡ ${child.lightningAddress}` : `⚠️ ${t('wallet.noLightningAddress')}`}
                       </p>
                       <div className="flex gap-2 mt-2 flex-wrap">
                         {child.lightningAddress && (
-                          <Badge variant="secondary" className="text-xs">✓ Lightning konfiguriert</Badge>
+                          <Badge variant="secondary" className="text-xs">✓ {t('wallet.lightningConfigured')}</Badge>
                         )}
                         <Badge variant="outline" className="text-xs">💰 {child.balance || 0} sats</Badge>
                       </div>
@@ -3968,7 +3967,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         ) : (
           <Card className="border-dashed border-border p-8 text-center">
             <Users className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground font-semibold">Noch keine Kinder verbunden</p>
+            <p className="text-muted-foreground font-semibold">{t('dashboard.noChildrenConnected')}</p>
             <p className="text-xs text-muted-foreground mt-2">{t('family.shareConnectionCode')}</p>
           </Card>
         )}
@@ -4067,7 +4066,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         ) : (
           <Card className="border-dashed border-border p-12 text-center">
             <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">Keine Kinder verbunden</h3>
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">{t('dashboard.noChildrenConnected')}</h3>
             <p className="text-slate-600 text-sm">{t('family.shareConnectionCode')}</p>
           </Card>
         )}
@@ -4094,7 +4093,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       time: "09:00"
     });
 
-    const weekdays = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+    const weekdays = [t('calendar.weekdays.0'), t('calendar.weekdays.1'), t('calendar.weekdays.2'), t('calendar.weekdays.3'), t('calendar.weekdays.4'), t('calendar.weekdays.5'), t('calendar.weekdays.6')];
 
     const handleCreateRecurring = async () => {
       try {
@@ -4155,7 +4154,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               </Select>
             )}
             <Input type="time" value={newRecurring.time} onChange={(e) => setNewRecurring({ ...newRecurring, time: e.target.value })} data-testid="input-recurring-time" />
-            <Button onClick={handleCreateRecurring} className="w-full bg-violet-600 hover:bg-violet-700" data-testid="button-create-recurring">Erstellen</Button>
+            <Button onClick={handleCreateRecurring} className="w-full bg-violet-600 hover:bg-violet-700" data-testid="button-create-recurring">{t('common.create')}</Button>
           </div>
         </Card>
 
@@ -4273,17 +4272,17 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     if (user.role === "child") {
       return (
         <div className="max-w-4xl">
-          <h1 className="text-3xl font-bold mb-8">Wallet-Einstellungen</h1>
+          <h1 className="text-3xl font-bold mb-8">{t('settings.walletSettings')}</h1>
           <Card className="border-2 border-primary/40 bg-primary/5">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Bitcoin className="h-5 w-5 text-primary" /> Lightning Adresse
+                <Bitcoin className="h-5 w-5 text-primary" /> {t('wallet.lightningAddress')}
               </CardTitle>
               <CardDescription>{t('dashboard.receiveSatsDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="lightning-address">Lightning Adresse</Label>
+                <Label htmlFor="lightning-address">{t('wallet.lightningAddress')}</Label>
                 <Input 
                   id="lightning-address"
                   placeholder="name@example.com"
@@ -4293,10 +4292,10 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   data-testid="input-lightning-address"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Format: name@domain.com
+                  {t('wallet.formatExample')}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Status: {user.lightningAddress ? "✓ " + t('common.configured') : "✗ " + t('common.notConfigured')}
+                  {t('common.status')}: {user.lightningAddress ? "✓ " + t('common.configured') : "✗ " + t('common.notConfigured')}
                 </p>
               </div>
               <Button 
@@ -4304,7 +4303,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 className="bg-primary hover:bg-primary/90"
                 data-testid="button-setup-lightning-address"
               >
-                Speichern
+                {t('common.save')}
               </Button>
             </CardContent>
           </Card>
@@ -4315,13 +4314,13 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     // For parents: show all tabs
     return (
       <div className="max-w-4xl">
-        <h1 className="text-3xl font-bold mb-8">Wallet-Einstellungen</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('settings.walletSettings')}</h1>
         <Tabs defaultValue="verbindung" className="w-full">
           <TabsList className="bg-secondary p-1 border border-border mb-6">
-            <TabsTrigger value="verbindung">Verbindung</TabsTrigger>
+            <TabsTrigger value="verbindung">{t('wallet.connection')}</TabsTrigger>
             <TabsTrigger value="lnbits">LNbits</TabsTrigger>
             <TabsTrigger value="nwc">NWC</TabsTrigger>
-            <TabsTrigger value="donation">Spendenlink</TabsTrigger>
+            <TabsTrigger value="donation">{t('wallet.donationLink')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="verbindung">
@@ -4353,7 +4352,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="lnbits-url">LNbits Server URL</Label>
+                    <Label htmlFor="lnbits-url">{t('wallet.lnbitsServerUrl')}</Label>
                     <Input 
                       id="lnbits-url"
                       placeholder="https://lnbits.example.com"
@@ -4364,10 +4363,10 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lnbits-key">LNbits Admin Key</Label>
+                    <Label htmlFor="lnbits-key">{t('wallet.lnbitsKey')}</Label>
                     <Input 
                       id="lnbits-key"
-                      placeholder="deine-admin-key..."
+                      placeholder={t('wallet.adminKeyPlaceholder')}
                       type="password"
                       value={lnbitsAdminKey}
                       onChange={(e) => setLnbitsAdminKey(e.target.value)}
@@ -4375,7 +4374,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       data-testid="input-lnbits-key"
                     />
                     <p className="text-xs text-muted-foreground">
-                      Status: {user.hasLnbitsConfigured ? "✓ " + t('common.connected') : "✗ " + t('common.notConnected')}
+                      {t('common.status')}: {user.hasLnbitsConfigured ? "✓ " + t('common.connected') : "✗ " + t('common.notConnected')}
                     </p>
                   </div>
                   <Button 
@@ -4384,7 +4383,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     className="bg-primary hover:bg-primary/90 w-full"
                     data-testid="button-setup-lnbits-settings"
                   >
-                    Speichern
+                    {t('common.save')}
                   </Button>
                   {user.hasLnbitsConfigured && user.hasNwcConfigured && (
                     <Button 
@@ -4393,7 +4392,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       className="w-full mt-2"
                       data-testid="button-set-active-lnbits"
                     >
-                      {user.walletType === "lnbits" ? "Aktiv" : "Als aktiv setzen"}
+                      {user.walletType === "lnbits" ? t('common.active') : t('common.setAsActive')}
                     </Button>
                   )}
                 </CardContent>
@@ -4413,7 +4412,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     <Label htmlFor="donation-addr">{t('wallet.donationAddress')}</Label>
                     <Input 
                       id="donation-addr"
-                      placeholder="deine@lightning.adresse oder Lightning Adresse"
+                      placeholder={t('wallet.lightningAddressPlaceholder')}
                       value={user.donationAddress || ""}
                       onChange={(e) => setUser({ ...user, donationAddress: e.target.value })}
                       className="font-mono text-sm"
@@ -4446,11 +4445,11 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     className="bg-primary hover:bg-primary/90 w-full"
                     data-testid="button-save-donation-address"
                   >
-                    Speichern
+                    {t('common.save')}
                   </Button>
                   {user.donationAddress && (
                     <div className="p-4 bg-primary/10 border border-primary/30 rounded-lg space-y-2">
-                      <p className="text-xs font-semibold text-primary">Dein Spendenlink:</p>
+                      <p className="text-xs font-semibold text-primary">{t('wallet.yourDonationLink')}:</p>
                       <code className="text-xs break-all text-muted-foreground font-mono">
                         lightning:{user.donationAddress}
                       </code>
@@ -4484,8 +4483,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   {user.hasNwcConfigured ? (
                     <div className="space-y-4">
                       <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                        <p className="text-sm font-semibold text-green-300">NWC verbunden</p>
-                        <p className="text-xs text-muted-foreground mt-1">Deine NWC Wallet ist konfiguriert und einsatzbereit</p>
+                        <p className="text-sm font-semibold text-green-300">{t('wallet.nwcConnected')}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{t('wallet.nwcConfigured')}</p>
                       </div>
                       <Button 
                         onClick={deleteNwc}
@@ -4493,7 +4492,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         className="w-full"
                         data-testid="button-delete-nwc"
                       >
-                        NWC trennen
+                        {t('wallet.disconnectNwc')}
                       </Button>
                       {user.hasLnbitsConfigured && (
                         <Button 
@@ -4502,7 +4501,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                           className="w-full"
                           data-testid="button-set-active-nwc"
                         >
-                          {user.walletType === "nwc" ? "Aktiv" : "Als aktiv setzen"}
+                          {user.walletType === "nwc" ? t('common.active') : t('common.setAsActive')}
                         </Button>
                       )}
                     </div>
@@ -4528,7 +4527,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         className="bg-primary hover:bg-primary/90 w-full"
                         data-testid="button-setup-nwc"
                       >
-                        NWC verbinden
+                        {t('wallet.connectNwc')}
                       </Button>
                     </>
                   )}
@@ -4649,9 +4648,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     });
 
     const getChildName = (childId?: number) => {
-      if (!childId) return "Unbekannt";
+      if (!childId) return t('common.unknown');
       const child = connectedPeers.find((p: any) => p.id === childId);
-      return child?.name || "Unbekannt";
+      return child?.name || t('common.unknown');
     };
 
     const completedTasks = tasks.filter((t: Task) => t.status === "approved");
@@ -4690,13 +4689,13 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     if (!isWalletConfigured) {
       return (
         <div className="space-y-8">
-          <h1 className="text-3xl font-bold mb-8">Neue Aufgabe erstellen</h1>
+          <h1 className="text-3xl font-bold mb-8">{t('tasks.createNewTask')}</h1>
           <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
             <Card className="border-2 border-amber-500/40 bg-amber-500/5 shadow-lg overflow-hidden">
               <CardContent className="pt-8">
                 <div className="text-center space-y-4">
                   <div className="text-4xl">⚡</div>
-                  <h2 className="text-xl font-bold text-amber-300">Wallet-Verbindung erforderlich</h2>
+                  <h2 className="text-xl font-bold text-amber-300">{t('wallet.connectionRequired')}</h2>
                   <p className="text-sm text-amber-200/80 max-w-md mx-auto">
                     {t('dashboard.walletSetupRequired')}
                   </p>
@@ -4726,7 +4725,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-accent to-primary" />
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-primary" data-testid="text-create-task">
-                <Plus className="h-5 w-5" /> Neue Aufgabe erstellen
+                <Plus className="h-5 w-5" /> {t('tasks.createNewTask')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -4797,7 +4796,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   }`}
                   data-testid="button-create-task"
                 >
-                  {isBalanceInsufficient ? "Unzureichende Balance" : "Erstellen"}
+                  {isBalanceInsufficient ? t('common.insufficientBalance') : t('common.create')}
                 </Button>
               </form>
             </CardContent>
@@ -4948,7 +4947,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
 
     return (
       <div className="space-y-8">
-        <h1 className="text-3xl font-bold mb-8">Familienkalender</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('calendar.title')}</h1>
         <section>
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
             <Calendar className="text-primary" /> {t('dashboard.allEvents')}
@@ -4993,7 +4992,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                               className={`flex-1 ${myRsvp === "accepted" ? "bg-green-600 hover:bg-green-700" : "bg-violet-600 hover:bg-violet-700"} text-white`}
                               data-testid={`button-accept-event-view-${event.id}`}
                             >
-                              {myRsvp === "accepted" ? "✓ Zusage" : "Zusagen"}
+                              {myRsvp === "accepted" ? `✓ ${t('common.accepted')}` : t('common.accept')}
                             </Button>
                             <Button
                               onClick={() => handleRsvp(event.id, "declined")}
@@ -5002,17 +5001,17 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                               className={`flex-1 ${myRsvp === "declined" ? "bg-red-600 hover:bg-red-700" : ""}`}
                               data-testid={`button-decline-event-view-${event.id}`}
                             >
-                              {myRsvp === "declined" ? "✗ Absage" : "Absagen"}
+                              {myRsvp === "declined" ? `✗ ${t('common.declined')}` : t('common.decline')}
                             </Button>
                           </div>
                           
                           {(accepted.length > 0 || declined.length > 0) && (
                             <div className="mt-4 space-y-2 border-t border-slate-300/30 pt-3">
                               {accepted.length > 0 && (
-                                <p className="text-xs text-green-700 font-semibold">✓ Zusagen: {accepted.map((r: any) => r.childName).join(", ")}</p>
+                                <p className="text-xs text-green-700 font-semibold">✓ {t('common.accepted')}: {accepted.map((r: any) => r.childName).join(", ")}</p>
                               )}
                               {declined.length > 0 && (
-                                <p className="text-xs text-red-700 font-semibold">✗ Absagen: {declined.map((r: any) => r.childName).join(", ")}</p>
+                                <p className="text-xs text-red-700 font-semibold">✗ {t('common.declined')}: {declined.map((r: any) => r.childName).join(", ")}</p>
                               )}
                             </div>
                           )}
@@ -5087,7 +5086,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           body: JSON.stringify({ peerId: user.id }),
         });
         setUser({ ...user, hasNwcConfigured: false, walletType: user.hasLnbitsConfigured ? "lnbits" : null });
-        toast({ title: "Getrennt", description: "NWC-Verbindung wurde entfernt" });
+        toast({ title: t('common.disconnected'), description: t('wallet.nwcRemoved') });
       } catch (error) {
         toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
       }
@@ -5101,7 +5100,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           body: JSON.stringify({ peerId: user.id, walletType }),
         });
         setUser({ ...user, walletType });
-        toast({ title: "Aktive Wallet geändert", description: `${walletType === "nwc" ? "NWC" : "LNbits"} ist jetzt aktiv` });
+        toast({ title: t('wallet.walletSwitched'), description: `${walletType === "nwc" ? "NWC" : "LNbits"} ${t('wallet.walletNowActive')}` });
       } catch (error) {
         toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
       }
@@ -5124,14 +5123,14 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <TabsList className="bg-secondary p-1 border border-border mb-6">
             <TabsTrigger value="lnbits">LNbits</TabsTrigger>
             <TabsTrigger value="nwc">NWC</TabsTrigger>
-            <TabsTrigger value="donation">Spendenlink</TabsTrigger>
+            <TabsTrigger value="donation">{t('wallet.donationLink')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="lnbits">
             <Card className="border-2 border-primary/40 bg-primary/5">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  LNbits Verbindung
+                  {t('settings.lnbitsConnection')}
                 </CardTitle>
                 <CardDescription>{t('settings.lnbitsConnectionDesc')}</CardDescription>
               </CardHeader>
@@ -5139,7 +5138,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 {user.hasLnbitsConfigured ? (
                   <div className="space-y-3">
                     <div className="p-3 rounded-lg border border-green-500/30 bg-green-500/10">
-                      <p className="text-sm font-semibold text-green-300">LNbits verbunden</p>
+                      <p className="text-sm font-semibold text-green-300">{t('wallet.lnbitsConnected')}</p>
                       <p className="text-sm text-muted-foreground mt-1">{t('settings.walletConfigured')}</p>
                     </div>
                     <div className="flex gap-2">
@@ -5147,13 +5146,13 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         onClick={() => {
                           setUser({ ...user, hasLnbitsConfigured: false });
                           fetch("/api/wallet/disconnect", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ peerId: user.id }) });
-                          toast({ title: "Getrennt", description: "LNbits-Verbindung wurde entfernt" });
+                          toast({ title: t('common.disconnected'), description: t('wallet.lnbitsRemoved') });
                         }}
                         variant="destructive"
                         size="sm"
                         data-testid="button-disconnect-lnbits"
                       >
-                        Trennen
+                        {t('common.disconnect')}
                       </Button>
                       {user.hasNwcConfigured && (
                         <Button
@@ -5162,7 +5161,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                           size="sm"
                           data-testid="button-set-active-lnbits"
                         >
-                          {user.walletType === "lnbits" ? "Aktiv" : "Als aktiv setzen"}
+                          {user.walletType === "lnbits" ? t('common.active') : t('common.setAsActive')}
                         </Button>
                       )}
                     </div>
@@ -5170,10 +5169,10 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 ) : (
                   <div className="space-y-3">
                     <div className="space-y-2">
-                      <Label htmlFor="lnbits-url">LNbits Instanz URL</Label>
+                      <Label htmlFor="lnbits-url">{t('wallet.lnbitsInstanceUrl')}</Label>
                       <Input 
                         id="lnbits-url"
-                        placeholder="z.B. https://lnbits.example.com"
+                        placeholder={t('wallet.lnbitsUrlPlaceholder')}
                         value={editLnbitsUrl}
                         onChange={(e) => setEditLnbitsUrl(e.target.value)}
                         className="font-mono text-xs"
@@ -5221,14 +5220,14 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 <CardTitle className="flex items-center gap-2">
                   Nostr Wallet Connect (NWC)
                 </CardTitle>
-                <CardDescription>Verbinde deine Wallet über das Nostr Wallet Connect Protokoll</CardDescription>
+                <CardDescription>{t('wallet.nwcDescription')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {user.hasNwcConfigured ? (
                   <div className="space-y-3">
                     <div className="p-3 rounded-lg border border-green-500/30 bg-green-500/10">
-                      <p className="text-sm font-semibold text-green-300">NWC verbunden</p>
-                      <p className="text-sm text-muted-foreground mt-1">Deine NWC Wallet ist konfiguriert und einsatzbereit</p>
+                      <p className="text-sm font-semibold text-green-300">{t('wallet.nwcConnected')}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{t('wallet.nwcConfigured')}</p>
                     </div>
                     <div className="flex gap-2">
                       <Button
@@ -5237,7 +5236,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         size="sm"
                         data-testid="button-delete-nwc"
                       >
-                        NWC trennen
+                        {t('wallet.disconnectNwc')}
                       </Button>
                       {user.hasLnbitsConfigured && (
                         <Button
@@ -5246,7 +5245,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                           size="sm"
                           data-testid="button-set-active-nwc"
                         >
-                          {user.walletType === "nwc" ? "Aktiv" : "Als aktiv setzen"}
+                          {user.walletType === "nwc" ? t('common.active') : t('common.setAsActive')}
                         </Button>
                       )}
                     </div>
@@ -5273,7 +5272,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       className="w-full bg-cyan-600 hover:bg-cyan-600/90"
                       data-testid="button-setup-nwc"
                     >
-                      NWC verbinden
+                      {t('wallet.connectNwc')}
                     </Button>
                   </div>
                 )}
@@ -5283,9 +5282,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <Card className="mt-4 bg-secondary/30">
               <CardContent className="p-4">
                 <p className="text-sm text-muted-foreground">
-                  <strong>Was ist NWC?</strong> Nostr Wallet Connect ist ein offenes Protokoll, das es dir ermöglicht, 
-                  Zahlungen direkt von deiner Wallet zu senden - ohne Server-Zwischenspeicherung. 
-                  Unterstützte Wallets: Alby, Mutiny, und weitere.
+                  <strong>{t('wallet.whatIsNwc')}</strong> {t('wallet.nwcFullDescription')}
                 </p>
               </CardContent>
             </Card>
@@ -5296,10 +5293,10 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <Card className="border border-amber-500/30 bg-amber-500/5">
             <CardContent className="p-4">
               <p className="text-sm text-amber-200">
-                <strong>Aktive Wallet:</strong> {user.walletType === "nwc" ? "NWC (Nostr Wallet Connect)" : "LNbits"}
+                <strong>{t('wallet.activeWallet')}:</strong> {user.walletType === "nwc" ? "NWC (Nostr Wallet Connect)" : "LNbits"}
                 <br />
                 <span className="text-xs text-muted-foreground">
-                  Du kannst zwischen beiden Wallets wechseln. Die aktive Wallet wird für alle Zahlungen verwendet.
+                  {t('wallet.switchWalletHint')}
                 </span>
               </p>
             </CardContent>
@@ -5368,22 +5365,22 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           >
             {t('common.back')}
           </button>
-          <h1 className="text-3xl font-bold">🏆 Level-Bonus Einstellungen</h1>
+          <h1 className="text-3xl font-bold">🏆 {t('dashboard.levelBonusSettings')}</h1>
         </div>
         
         <Card className="border-2 border-amber-500/40 bg-amber-500/5">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              ⭐ Level-Bonus aktivieren
+              ⭐ {t('dashboard.activateLevelBonus')}
             </CardTitle>
             <CardDescription>
-              Belohne deine Kinder mit einem Bonus, wenn sie bestimmte Level erreichen!
+              {t('dashboard.rewardChildrenBonus')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/50 border border-border">
               <div>
-                <p className="font-semibold">Level-Bonus aktiviert</p>
+                <p className="font-semibold">{t('common.levelBonusActivated')}</p>
                 <p className="text-sm text-muted-foreground">{t('dashboard.childrenReceiveBonus')}</p>
               </div>
               <Switch 
@@ -5441,10 +5438,10 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 </div>
 
                 <div className="p-4 rounded-lg bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30">
-                  <p className="font-semibold mb-2">🎯 Vorschau</p>
+                  <p className="font-semibold mb-2">🎯 {t('common.preview')}</p>
                   <p className="text-sm">
                     {t('dashboard.yourChildrenReceive')} <span className="text-amber-600 font-bold">{bonusSats} Sats</span> {t('dashboard.bonus')}
-                    bei Level {Array.from({length: 5}, (_, i) => (i + 1) * milestoneInterval).join(", ")}...
+                    {t('common.atLevel')} {Array.from({length: 5}, (_, i) => (i + 1) * milestoneInterval).join(", ")}...
                   </p>
                 </div>
               </>
@@ -5773,7 +5770,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
     return (
       <div className="space-y-8">
-        <h1 className="text-3xl font-bold mb-8">Familienkalender</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('calendar.title')}</h1>
         <section>
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
             <Calendar className="text-primary" /> {t('dashboard.allEvents')}
@@ -5818,7 +5815,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                               className={`flex-1 ${myRsvp === "accepted" ? "bg-green-600 hover:bg-green-700" : "bg-violet-600 hover:bg-violet-700"} text-white`}
                               data-testid={`button-accept-event-view-${event.id}`}
                             >
-                              {myRsvp === "accepted" ? "✓ Zusage" : "Zusagen"}
+                              {myRsvp === "accepted" ? `✓ ${t('common.accepted')}` : t('common.accept')}
                             </Button>
                             <Button
                               onClick={() => handleRsvp(event.id, "declined")}
@@ -5827,17 +5824,17 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                               className={`flex-1 ${myRsvp === "declined" ? "bg-red-600 hover:bg-red-700" : ""}`}
                               data-testid={`button-decline-event-view-${event.id}`}
                             >
-                              {myRsvp === "declined" ? "✗ Absage" : "Absagen"}
+                              {myRsvp === "declined" ? `✗ ${t('common.declined')}` : t('common.decline')}
                             </Button>
                           </div>
                           
                           {(accepted.length > 0 || declined.length > 0) && (
                             <div className="mt-4 space-y-2 border-t border-slate-300/30 pt-3">
                               {accepted.length > 0 && (
-                                <p className="text-xs text-green-700 font-semibold">✓ Zusagen: {accepted.map((r: any) => r.childName).join(", ")}</p>
+                                <p className="text-xs text-green-700 font-semibold">✓ {t('common.accepted')}: {accepted.map((r: any) => r.childName).join(", ")}</p>
                               )}
                               {declined.length > 0 && (
-                                <p className="text-xs text-red-700 font-semibold">✗ Absagen: {declined.map((r: any) => r.childName).join(", ")}</p>
+                                <p className="text-xs text-red-700 font-semibold">✗ {t('common.declined')}: {declined.map((r: any) => r.childName).join(", ")}</p>
                               )}
                             </div>
                           )}
@@ -5882,11 +5879,11 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
     return (
       <div className="max-w-4xl">
-        <h1 className="text-3xl font-bold mb-8 text-slate-900">Familienkalender</h1>
+        <h1 className="text-3xl font-bold mb-8 text-slate-900">{t('calendar.title')}</h1>
         <div className="grid gap-4">
           {events.length === 0 ? (
             <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl p-8 text-center shadow-lg">
-              <p className="text-slate-700">Noch keine Termine geplant</p>
+              <p className="text-slate-700">{t('calendar.noEventsPlanned')}</p>
             </div>
           ) : (
             events.map((event: FamilyEvent) => (
@@ -5917,7 +5914,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                           className={`flex-1 ${rsvps[event.id] === "accepted" ? "bg-green-600 hover:bg-green-700" : "bg-violet-600 hover:bg-violet-700"} text-white`}
                           data-testid={`button-accept-event-${event.id}`}
                         >
-                          {rsvps[event.id] === "accepted" ? "✓ Zusage" : "Zusagen"}
+                          {rsvps[event.id] === "accepted" ? `✓ ${t('common.accepted')}` : t('common.accept')}
                         </Button>
                         <Button
                           onClick={() => handleRsvp(event.id, "declined")}
@@ -5926,7 +5923,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                           className="flex-1"
                           data-testid={`button-decline-event-${event.id}`}
                         >
-                          {rsvps[event.id] === "declined" ? "✗ Absage" : "Absagen"}
+                          {rsvps[event.id] === "declined" ? `✗ ${t('common.declined')}` : t('common.decline')}
                         </Button>
                       </div>
                     </div>
@@ -6393,22 +6390,22 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   onClick={() => {
                     setUser({ ...user, hasLnbitsConfigured: false });
                     fetch("/api/wallet/disconnect", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ peerId: user.id }) });
-                    toast({ title: "Getrennt", description: "LNbits-Verbindung wurde entfernt" });
+                    toast({ title: t('common.disconnected'), description: t('wallet.lnbitsRemoved') });
                   }}
                   variant="destructive"
                   size="sm"
                   data-testid="button-disconnect-lnbits"
                 >
-                  Trennen
+                  {t('common.disconnect')}
                 </Button>
               </div>
             ) : (
               <div className="space-y-3">
                 <div className="space-y-2">
-                  <Label htmlFor="lnbits-url">LNbits Instanz URL</Label>
+                  <Label htmlFor="lnbits-url">{t('wallet.lnbitsInstanceUrl')}</Label>
                   <Input 
                     id="lnbits-url"
-                    placeholder="z.B. https://lnbits.example.com"
+                    placeholder={t('wallet.lnbitsUrlPlaceholder')}
                     value={editLnbitsUrl}
                     onChange={(e) => setEditLnbitsUrl(e.target.value)}
                     className="font-mono text-xs"
@@ -6454,9 +6451,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
             <Card className="border-2 border-primary/40 bg-primary/5">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  👶 Kinder-Verwaltung
+                  👶 {t('settings.childManagement')}
                 </CardTitle>
-                <CardDescription>Verwalte Passwörter deiner Kinder</CardDescription>
+                <CardDescription>{t('settings.manageChildPasswords')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -6518,7 +6515,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                           className="flex-1"
                           data-testid="button-cancel-reset-pin"
                         >
-                          Abbrechen
+                          {t('common.cancel')}
                         </Button>
                       </div>
                     </div>
@@ -6545,7 +6542,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="child-lightning-address">Lightning Adresse</Label>
+              <Label htmlFor="child-lightning-address">{t('wallet.lightningAddress')}</Label>
               <Input 
                 id="child-lightning-address"
                 placeholder="name@walletofsatoshi.com"
@@ -6557,7 +6554,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 Format: name@domain.com
               </p>
               <p className="text-xs text-muted-foreground">
-                Status: {user.lightningAddress ? "✓ " + t('common.configured') : "✗ " + t('common.notConfigured')}
+                {t('common.status')}: {user.lightningAddress ? "✓ " + t('common.configured') : "✗ " + t('common.notConfigured')}
               </p>
             </div>
             <Button 
@@ -6577,7 +6574,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
               className="bg-primary hover:bg-primary/90"
               data-testid="button-save-child-lightning-address"
             >
-              Speichern
+              {t('common.save')}
             </Button>
           </CardContent>
         </Card>
@@ -7326,9 +7323,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     <span className="text-primary text-sm">⚡</span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Lightning Adresse</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">{t('wallet.lightningAddress')}</p>
                     <p className="text-xs font-mono text-violet-700 break-all" data-testid="text-child-lightning-address">{user.lightningAddress}</p>
-                    <p className="text-xs text-muted-foreground mt-1">✓ Zahlungen werden direkt hierhin gesendet</p>
+                    <p className="text-xs text-muted-foreground mt-1">✓ {t('wallet.paymentsDirectHere')}</p>
                   </div>
                 </div>
               </div>
@@ -7562,10 +7559,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                       mode="single"
                       selected={selectedDate}
                       onSelect={(date) => date && setSelectedDate(date)}
-                      locale={{
-                        months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
-                        weekdays: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
-                        weekdaysShort: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"]
+                      formatters={{
+                        formatWeekdayName: (day) => t(`calendar.weekdaysShort.${day.getDay()}`),
+                        formatCaption: (date) => `${t(`calendar.months.${date.getMonth()}`)} ${date.getFullYear()}`
                       }}
                       modifiers={{
                         hasEvent: (date) => events.some(e => {
@@ -7637,19 +7633,19 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
         {showLink && (
           <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl p-6 shadow-lg">
-            <h3 className="font-bold mb-4 text-slate-900">Mit Eltern verbinden</h3>
+            <h3 className="font-bold mb-4 text-slate-900">{t('dashboard.connectWithParentsTitle')}</h3>
             <div className="space-y-3">
               <div>
-                <Label htmlFor="parent-code" className="text-slate-800">Verbindungscode von Eltern</Label>
+                <Label htmlFor="parent-code" className="text-slate-800">{t('dashboard.parentConnectionCode')}</Label>
                 <Input 
                   id="parent-code"
-                  placeholder="z.B. BTC-XYZ123"
+                  placeholder={t('dashboard.connectionCodePlaceholder')}
                   value={parentConnectionId}
                   onChange={(e) => setParentConnectionId(e.target.value.toUpperCase())}
                   className="bg-white/50 border-white/60 text-slate-900 font-mono text-center"
                   data-testid="input-parent-code"
                 />
-                <p className="text-xs text-slate-600 mt-1">Frage deine Eltern nach dem Code!</p>
+                <p className="text-xs text-slate-600 mt-1">{t('dashboard.askParentsForCode')}</p>
               </div>
               <div className="flex gap-2">
                 <Button 
@@ -7658,7 +7654,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   className="bg-violet-600 hover:bg-violet-700 text-white"
                   data-testid="button-confirm-link"
                 >
-                  {isLinking ? "Wird verbunden..." : "Verbinden"}
+                  {isLinking ? t('common.connecting') : t('common.connect')}
                 </Button>
                 <Button 
                   variant="outline"
@@ -7907,7 +7903,7 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold flex items-center gap-2">
-          <span className="text-3xl">🎓</span> Sparen vergleichen
+          <span className="text-3xl">🎓</span> {t('education.compareSavings')}
         </h1>
         <Button onClick={() => setCurrentView("dashboard")} variant="ghost" data-testid="button-back-savings">
           {t('common.back')}
@@ -7922,7 +7918,7 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
             <span className="text-muted-foreground"> (€{currentValueEur.toFixed(2)})</span>
           </p>
           <p className="text-xs text-muted-foreground mt-2">
-            Vergleiche deinen Bitcoin-Sparplan mit einem klassischen Sparbuch über {days} Tage
+            {t('education.compareSavingsDesc', { days })}
           </p>
         </CardContent>
       </Card>
@@ -7990,7 +7986,7 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
             <CardTitle className="flex items-center gap-2">
               <span>⚡</span> Bitcoin Wertentwicklung
             </CardTitle>
-            <CardDescription>Dein Satoshi-Vermögen in Euro</CardDescription>
+            <CardDescription>{t('education.satoshiWealthInEuro')}</CardDescription>
           </CardHeader>
           <CardContent>
             {savingsChartData.length > 0 && (
@@ -8172,7 +8168,7 @@ function TrackerChart({ userId }: { userId: number }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-bold text-slate-900">Dein Verdienst</h3>
+        <h3 className="text-lg font-bold text-slate-900">{t('dashboard.yourEarnings')}</h3>
         <button
           onClick={() => setShowInfo(!showInfo)}
           className="text-xs text-slate-600 hover:text-slate-900 transition-colors"
@@ -8652,7 +8648,7 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
             <div className="mt-4 space-y-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
               <div className="flex items-center gap-2">
                 <span className="text-lg">💰</span>
-                <p className="text-sm font-bold text-green-600">Abheben! ({task.sats} sats warten)</p>
+                <p className="text-sm font-bold text-green-600">{t('common.withdraw')}! ({task.sats} {t('common.satsWaiting')})</p>
               </div>
               <p className="text-xs text-muted-foreground">{t('dashboard.copyLinkToReceive')}</p>
               {task.withdrawLink && (
