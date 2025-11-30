@@ -6767,26 +6767,42 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 <span className="text-sm text-slate-600">{t('education.unlockedOf', { count: achievements.filter(a => a.condition).length, total: achievements.length })}</span>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                {achievements.map(badge => (
+                {achievements.map((badge, index) => {
+                  const unlockedBadges = achievements.filter(b => b.condition);
+                  const firstUnlockedIndex = achievements.indexOf(unlockedBadges[0]);
+                  const isFirstUnlocked = badge.condition && index === firstUnlockedIndex;
+                  
+                  return (
                   <div 
                     key={badge.id} 
                     className={`p-4 rounded-xl border-2 transition-all text-center transform hover:scale-105 ${
-                      badge.condition 
+                      isFirstUnlocked
                         ? "border-amber-400 bg-gradient-to-br from-amber-400/20 to-yellow-400/20 shadow-lg shadow-amber-500/20" 
-                        : "border-slate-200 bg-slate-50/50 opacity-40 grayscale"
+                        : badge.condition 
+                          ? "border-blue-400 bg-gradient-to-br from-blue-400/20 to-cyan-400/20 shadow-lg shadow-blue-500/20" 
+                          : "border-slate-200 bg-slate-50/50 opacity-40 grayscale"
                     }`}
                   >
-                    <div className={`text-4xl mb-2 ${badge.condition ? "animate-bounce" : ""}`} style={{ animationDuration: '2s' }}>
+                    <div className={`text-4xl mb-2 ${isFirstUnlocked ? "animate-bounce" : ""}`} style={{ animationDuration: '2s' }}>
                       {badge.condition ? badge.icon : "🔒"}
                     </div>
-                    <p className={`text-xs font-bold ${badge.condition ? "text-amber-700" : "text-slate-400"}`}>{badge.title}</p>
-                    {badge.condition && (
+                    <p className={`text-xs font-bold ${isFirstUnlocked ? "text-amber-700" : badge.condition ? "text-blue-700" : "text-slate-400"}`}>{badge.title}</p>
+                    {isFirstUnlocked && (
                       <div className="mt-1 flex justify-center">
-                        <span className="text-[10px] px-2 py-0.5 bg-amber-500 text-white rounded-full font-semibold">{t('education.unlocked')}</span>
+                        <span className="relative inline-flex items-center gap-1">
+                          <span className="text-[10px] px-2 py-0.5 bg-amber-500 text-white rounded-full font-semibold">{t('education.unlocked')}</span>
+                          <span className="text-lg">🟡</span>
+                        </span>
+                      </div>
+                    )}
+                    {badge.condition && !isFirstUnlocked && (
+                      <div className="mt-1 flex justify-center">
+                        <span className="text-[10px] px-2 py-0.5 bg-blue-500 text-white rounded-full font-semibold">{t('education.unlocked')}</span>
                       </div>
                     )}
                   </div>
-                ))}
+                );
+                })}
               </div>
             </div>
 
