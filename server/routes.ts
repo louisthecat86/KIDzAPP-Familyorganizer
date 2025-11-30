@@ -8,7 +8,7 @@ import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 import cron from "node-cron";
 import { logAudit } from "./audit";
-import { checkPaymentRateLimit } from "./rate-limiter";
+import { checkPaymentRateLimit, checkSpendingLimit, recordSpending, getDailySpending, setUserSpendingLimits, getUserSpendingLimits } from "./rate-limiter";
 
 function validatePassword(password: string): { valid: boolean; error: string } {
   if (!password || password.length < 8) {
@@ -496,30 +496,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // SECURITY: Get current spending limits and usage (from persistent database)
+  // SECURITY: Get current spending limits and usage
   app.get("/api/spending-limits/:peerId", async (req, res) => {
     try {
       const peerId = parseInt(req.params.peerId);
-      
-      // Reset daily spent if new day
-      await storage.resetDailySpentIfNeeded(peerId);
-      const limits = await storage.getSpendingLimits(peerId);
-      
-      if (!limits) {
-        res.json({
-          dailyLimit: 100000,
-          perTransactionLimit: 50000,
-          dailySpent: 0,
-          dailyRemaining: 100000
-        });
-        return;
-      }
+      const limits = getUserSpendingLimits(peerId);
+      const dailySpent = getDailySpending(peerId);
       
       res.json({
         dailyLimit: limits.dailyLimit,
         perTransactionLimit: limits.perTransactionLimit,
-        dailySpent: limits.dailySpent,
-        dailyRemaining: Math.max(0, limits.dailyLimit - limits.dailySpent)
+        dailySpent,
+        dailyRemaining: Math.max(0, limits.dailyLimit - dailySpent)
       });
     } catch (error) {
       console.error("Get spending limits error:", error);
@@ -527,7 +515,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // SECURITY: Set spending limits for parent (persistent in database)
+  // SECURITY: Set spending limits for parent
   app.post("/api/spending-limits", async (req, res) => {
     try {
       const { peerId, dailyLimit, perTransactionLimit } = req.body;
@@ -541,22 +529,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Nur Eltern können Ausgabenlimits setzen" });
       }
 
-      const savedLimits = await storage.createOrUpdateSpendingLimits(
-        peerId, 
-        dailyLimit || 100000, 
-        perTransactionLimit || 50000
-      );
+      setUserSpendingLimits(peerId, dailyLimit, perTransactionLimit);
       
       await logAudit({
         peerId,
-        action: 'spending_limit_changed',
-        details: { dailyLimit: savedLimits.dailyLimit, perTransactionLimit: savedLimits.perTransactionLimit }
+        action: 'spending_limits_updated',
+        details: { dailyLimit, perTransactionLimit }
       });
 
       res.json({
         success: true,
-        dailyLimit: savedLimits.dailyLimit,
-        perTransactionLimit: savedLimits.perTransactionLimit
+        dailyLimit: dailyLimit || 100000,
+        perTransactionLimit: perTransactionLimit || 10000
       });
     } catch (error) {
       console.error("Set spending limits error:", error);
@@ -1092,7 +1076,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(404).json({ error: "Child or parent not found" });
         }
 
-        // SECURITY: Rate limiting check (in-memory for request throttling)
+        // SECURITY: Rate limiting check
         const rateLimitCheck = checkPaymentRateLimit(parent.id);
         if (!rateLimitCheck.allowed) {
           await logAudit({
@@ -1106,41 +1090,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
 
-        // SECURITY: Spending limit check (from persistent database)
-        await storage.resetDailySpentIfNeeded(parent.id);
-        const limits = await storage.getSpendingLimits(parent.id);
-        const dailyLimit = limits?.dailyLimit || 100000;
-        const perTxLimit = limits?.perTransactionLimit || 50000;
-        const dailySpent = limits?.dailySpent || 0;
-
-        if (task.sats > perTxLimit) {
+        // SECURITY: Spending limit check
+        const spendingCheck = checkSpendingLimit(parent.id, task.sats);
+        if (!spendingCheck.allowed) {
           await logAudit({
             peerId: parent.id,
             action: 'payment_failed',
-            details: { reason: 'per_tx_limit_exceeded', taskId: id, sats: task.sats, perTxLimit }
+            details: { reason: 'spending_limit_exceeded', taskId: id, sats: task.sats, ...spendingCheck }
           });
           return res.status(403).json({ 
-            error: `Transaction exceeds per-transaction limit of ${perTxLimit} sats`,
-            dailyRemaining: dailyLimit - dailySpent,
-            dailySpent
+            error: spendingCheck.reason,
+            dailyRemaining: spendingCheck.dailyRemaining,
+            dailySpent: spendingCheck.dailySpent
           });
         }
 
-        if (dailySpent + task.sats > dailyLimit) {
-          await logAudit({
-            peerId: parent.id,
-            action: 'payment_failed',
-            details: { reason: 'daily_limit_exceeded', taskId: id, sats: task.sats, dailyLimit, dailySpent }
-          });
-          return res.status(403).json({ 
-            error: `Daily spending limit of ${dailyLimit} sats exceeded`,
-            dailyRemaining: dailyLimit - dailySpent,
-            dailySpent
-          });
-        }
-
-        // Record this spending in persistent database
-        await storage.updateDailySpent(parent.id, task.sats);
+        // Record this spending
+        recordSpending(parent.id, task.sats);
 
         // Update child's balance IMMEDIATELY (only for first approval)
         const newBalance = (child.balance || 0) + task.sats;
