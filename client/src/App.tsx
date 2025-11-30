@@ -2720,6 +2720,12 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
   const [showAdminKey, setShowAdminKey] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { toast: useToastFn } = useToast();
+  
+  // SECURITY: PIN confirmation for wallet operations
+  const [showPinConfirm, setShowPinConfirm] = useState(false);
+  const [confirmPin, setConfirmPin] = useState("");
+  const [pendingWalletAction, setPendingWalletAction] = useState<(() => Promise<void>) | null>(null);
+  const [pendingActionLabel, setPendingActionLabel] = useState("");
 
   // Sync state with user changes - credentials are never stored in user object
   useEffect(() => {
@@ -2728,7 +2734,26 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
     setEditNwcConnectionString("");
     setEditFamilyName(user.familyName || "");
     setShowAdminKey(false);
+    setConfirmPin("");
+    setShowPinConfirm(false);
   }, [user]);
+  
+  // Helper: Request PIN confirmation before wallet operation
+  const requirePinConfirmation = (action: () => Promise<void>, label: string) => {
+    setPendingWalletAction(() => action);
+    setPendingActionLabel(label);
+    setConfirmPin("");
+    setShowPinConfirm(true);
+  };
+  
+  // Execute pending action with PIN
+  const executePendingAction = async () => {
+    if (!confirmPin || !pendingWalletAction) return;
+    setShowPinConfirm(false);
+    await pendingWalletAction();
+    setConfirmPin("");
+    setPendingWalletAction(null);
+  };
 
 
   const testLNbits = async () => {

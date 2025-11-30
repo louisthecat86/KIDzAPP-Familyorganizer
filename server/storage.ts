@@ -8,6 +8,7 @@ export interface IStorage {
   getPeerByName(name: string): Promise<Peer | undefined>;
   getPeerByConnectionId(connectionId: string, role: string): Promise<Peer | undefined>;
   getPeerByNameAndPin(name: string, pin: string, role: string): Promise<Peer | undefined>;
+  getPeerByNameAndRole(name: string, role: string): Promise<Peer | undefined>;
   getPeerByPin(pin: string): Promise<Peer | undefined>;
   getAllParents(): Promise<Peer[]>;
   createPeer(peer: InsertPeer): Promise<Peer>;
@@ -125,6 +126,16 @@ export class DatabaseStorage implements IStorage {
       .where(and(
         eq(peers.name, name),
         eq(peers.pin, pin),
+        eq(peers.role, role)
+      ))
+      .limit(1);
+    return result[0];
+  }
+
+  async getPeerByNameAndRole(name: string, role: string): Promise<Peer | undefined> {
+    const result = await db.select().from(peers)
+      .where(and(
+        eq(peers.name, name),
         eq(peers.role, role)
       ))
       .limit(1);
