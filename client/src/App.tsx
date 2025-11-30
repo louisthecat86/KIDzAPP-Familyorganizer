@@ -17,7 +17,7 @@ import "react-day-picker/dist/style.css";
 import { formatDistanceToNow } from "date-fns";
 import { de, enUS } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
-import { LineChart, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Line, Area, ResponsiveContainer, defs, linearGradient, stop } from "recharts";
+import { LineChart, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Line, Area, ResponsiveContainer } from "recharts";
 import { 
   CheckCircle, 
   Circle, 
@@ -2320,6 +2320,7 @@ function ParentDashboardWithSettings({ user, setUser, currentView, onCreate, onC
 }
 
 function PeersContent({ user, setUser, queryClient }: any) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [resetPinChildId, setResetPinChildId] = useState<number | null>(null);
   const [resetPinValue, setResetPinValue] = useState("");
@@ -3170,6 +3171,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
 }
 
 function ParentEventsList({ events, onDeleteEvent }: any) {
+  const { t } = useTranslation();
   const [rsvpData, setRsvpData] = useState<Record<number, any[]>>({});
 
   const fetchRsvps = () => {
@@ -7801,7 +7803,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   className="w-full hover:border-primary hover:text-primary"
                   data-testid={`button-accept-task-${task.id}`}
                 >
-                  Annehmen
+                  {t('tasks.accept')}
                 </Button>
               </CardFooter>
             </Card>
@@ -7825,6 +7827,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 }
 
 function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurrentView: (view: string) => void }) {
+  const { t } = useTranslation();
   const [days, setDays] = useState<30 | 60 | 90>(30);
   const [interestRate, setInterestRate] = useState(0.5);
   const [btcHistoricalData, setBtcHistoricalData] = useState<any[]>([]);
@@ -8596,15 +8599,16 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
 }
 
 function TaskCard({ task, children, variant }: { task: Task; children?: React.ReactNode; variant: "parent" | "child" }) {
+  const { t } = useTranslation();
   const [showLink, setShowLink] = useState(false);
   const [copied, setCopied] = useState(false);
   
   const getStatusConfig = (status: Task["status"]) => {
     switch (status) {
-      case "open": return { label: "OFFEN", color: "bg-secondary text-muted-foreground", icon: Circle };
-      case "assigned": return { label: "IN ARBEIT", color: "bg-blue-500/10 text-blue-400 border-blue-500/20", icon: Clock };
-      case "submitted": return { label: "PRÜFUNG", color: "bg-purple-500/10 text-purple-400 border-purple-500/20", icon: Upload };
-      case "approved": return { label: "ERLEDIGT", color: "bg-green-500/10 text-green-400 border-green-500/20", icon: CheckCircle };
+      case "open": return { label: t('tasks.statusOpen'), color: "bg-secondary text-muted-foreground", icon: Circle };
+      case "assigned": return { label: t('tasks.statusAssigned'), color: "bg-blue-500/10 text-blue-400 border-blue-500/20", icon: Clock };
+      case "submitted": return { label: t('tasks.statusSubmitted'), color: "bg-purple-500/10 text-purple-400 border-purple-500/20", icon: Upload };
+      case "approved": return { label: t('tasks.statusApproved'), color: "bg-green-500/10 text-green-400 border-green-500/20", icon: CheckCircle };
     }
   };
 
@@ -8642,7 +8646,7 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
 
           {task.status === "open" && variant === "parent" && (
             <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-              <p className="text-xs text-muted-foreground">Warte bis ein Kind die Aufgabe annimmt oder genehmige sie um die Zahlung zu aktivieren</p>
+              <p className="text-xs text-muted-foreground">{t('tasks.awaitingAssignmentInfo')}</p>
             </div>
           )}
           
@@ -8665,7 +8669,7 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
                       className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                       data-testid={`button-copy-withdraw-${task.id}`}
                     >
-                      📋 Kopieren
+                      📋 {t('common.copy')}
                     </Button>
                     {task.withdrawLink.startsWith("lnurl") && (
                       <a 
@@ -8679,7 +8683,7 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
                           className="w-full bg-green-600 hover:bg-green-700 text-white"
                           data-testid={`link-withdraw-${task.id}`}
                         >
-                          💳 Öffnen
+                          💳 {t('common.open')}
                         </Button>
                       </a>
                     )}
