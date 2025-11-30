@@ -3196,7 +3196,7 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
     <div className="grid gap-4">
       {events.length === 0 ? (
         <Card className="border-dashed border-border p-8 text-center">
-          <p className="text-muted-foreground">Noch keine Termine geplant</p>
+          <p className="text-muted-foreground">{t('dashboard.noEventsPlanned')}</p>
         </Card>
       ) : (
         events.map((event: FamilyEvent) => {
@@ -3637,7 +3637,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }} className="col-span-full">
             <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl cursor-pointer hover:bg-white/55 transition-colors shadow-lg p-4" onClick={() => setCurrentView("calendar-view")} data-testid="card-calendar">
                 <h3 className="text-sm font-bold mb-2 flex items-center gap-1 text-slate-900">
-                  <Calendar className="h-4 w-4 text-violet-600" /> Kalender
+                  <Calendar className="h-4 w-4 text-violet-600" /> {t('nav.calendar')}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <div className="col-span-1">
@@ -3757,7 +3757,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                           </div>
                         ))}
                       {events.filter(e => new Date(e.startDate).toDateString() === selectedDate.toDateString()).length === 0 && (
-                        <p className="text-xs text-muted-foreground text-center py-1">Keine Termine</p>
+                        <p className="text-xs text-muted-foreground text-center py-1">{t('dashboard.noEvents')}</p>
                       )}
                     </div>
                   </div>
@@ -4279,7 +4279,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               <CardTitle className="flex items-center gap-2">
                 <Bitcoin className="h-5 w-5 text-primary" /> Lightning Adresse
               </CardTitle>
-              <CardDescription>Hinterlege deine Lightning Adresse um Sats zu erhalten</CardDescription>
+              <CardDescription>{t('dashboard.receiveSatsDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -4951,12 +4951,12 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         <h1 className="text-3xl font-bold mb-8">Familienkalender</h1>
         <section>
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-            <Calendar className="text-primary" /> Alle Termine
+            <Calendar className="text-primary" /> {t('dashboard.allEvents')}
           </h2>
           <div className="grid gap-4">
             {events.length === 0 ? (
               <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl p-8 text-center shadow-lg">
-                <p className="text-slate-700">Noch keine Termine geplant</p>
+                <p className="text-slate-700">{t('dashboard.noEventsPlanned')}</p>
               </div>
             ) : (
               events.map((event: FamilyEvent) => {
@@ -5384,7 +5384,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/50 border border-border">
               <div>
                 <p className="font-semibold">Level-Bonus aktiviert</p>
-                <p className="text-sm text-muted-foreground">Kinder erhalten Bonus-Sats bei Meilensteinen</p>
+                <p className="text-sm text-muted-foreground">{t('dashboard.childrenReceiveBonus')}</p>
               </div>
               <Switch 
                 checked={isActive} 
@@ -5443,7 +5443,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 <div className="p-4 rounded-lg bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30">
                   <p className="font-semibold mb-2">🎯 Vorschau</p>
                   <p className="text-sm">
-                    Deine Kinder erhalten <span className="text-amber-600 font-bold">{bonusSats} Sats</span> Bonus
+                    {t('dashboard.yourChildrenReceive')} <span className="text-amber-600 font-bold">{bonusSats} Sats</span> {t('dashboard.bonus')}
                     bei Level {Array.from({length: 5}, (_, i) => (i + 1) * milestoneInterval).join(", ")}...
                   </p>
                 </div>
@@ -5776,12 +5776,12 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         <h1 className="text-3xl font-bold mb-8">Familienkalender</h1>
         <section>
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-            <Calendar className="text-primary" /> Alle Termine
+            <Calendar className="text-primary" /> {t('dashboard.allEvents')}
           </h2>
           <div className="grid gap-4">
             {events.length === 0 ? (
               <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl p-8 text-center shadow-lg">
-                <p className="text-slate-700">Noch keine Termine geplant</p>
+                <p className="text-slate-700">{t('dashboard.noEventsPlanned')}</p>
               </div>
             ) : (
               events.map((event: FamilyEvent) => {
@@ -6539,9 +6539,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         <Card className="border-2 border-primary/40 bg-primary/5">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Bitcoin className="h-5 w-5 text-primary" /> Lightning Adresse
+              <Bitcoin className="h-5 w-5 text-primary" /> {t('wallet.lightningAddress')}
             </CardTitle>
-            <CardDescription>Hinterlege deine Lightning Adresse um Sats zu erhalten (z.B. skypilink@walletofsatoshi.com)</CardDescription>
+            <CardDescription>{t('dashboard.receiveSatsDescFull')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -7308,7 +7308,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 data-testid="toggle-tracker-chart"
               >
                 <span className="text-[10px]">{showTrackerChart ? "▼" : "▶"}</span>
-                <span>Statistik</span>
+                <span>{t('dashboard.statistics')}</span>
               </button>
             </div>
 
@@ -7410,7 +7410,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   <div className="h-12 w-12 bg-gradient-to-br from-violet-500 to-cyan-500 rounded-lg flex items-center justify-center mx-auto mb-3">
                     <Sparkles className="h-6 w-6 text-white" />
                   </div>
-                  <p className="text-lg font-bold text-slate-900">Lern-Statistiken</p>
+                  <p className="text-lg font-bold text-slate-900">{t('dashboard.learningStatistics')}</p>
                 </motion.button>
 
                 {/* Stats Modal */}
@@ -7432,7 +7432,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     <Dialog open={showStatsModal} onOpenChange={setShowStatsModal}>
                       <DialogContent className="max-w-2xl">
                         <DialogHeader>
-                          <DialogTitle>Deine Lern-Statistiken</DialogTitle>
+                          <DialogTitle>{t('dashboard.yourLearningStatistics')}</DialogTitle>
                         </DialogHeader>
                         <div className="grid grid-cols-2 gap-3">
                           <div className="rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200/50 p-4 text-center">
@@ -7482,7 +7482,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
             >
               <div className="p-2 md:p-4">
                 <h3 className="text-sm font-bold mb-2 flex items-center gap-1 text-slate-900">
-                  <Calendar className="h-4 w-4 text-violet-600" /> Kalender
+                  <Calendar className="h-4 w-4 text-violet-600" /> {t('nav.calendar')}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <div className="col-span-1">
@@ -7602,7 +7602,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                           </div>
                         ))}
                       {events.filter(e => new Date(e.startDate).toDateString() === selectedDate.toDateString()).length === 0 && (
-                        <p className="text-xs text-slate-600 text-center py-1">Keine Termine</p>
+                        <p className="text-xs text-slate-600 text-center py-1">{t('dashboard.noEvents')}</p>
                       )}
                     </div>
                   </div>
@@ -8654,7 +8654,7 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
                 <span className="text-lg">💰</span>
                 <p className="text-sm font-bold text-green-600">Abheben! ({task.sats} sats warten)</p>
               </div>
-              <p className="text-xs text-muted-foreground">Kopiere diesen Link/Code und öffne ihn in deiner Lightning Wallet um deine Sats zu erhalten</p>
+              <p className="text-xs text-muted-foreground">{t('dashboard.copyLinkToReceive')}</p>
               {task.withdrawLink && (
                 <>
                   <div className="bg-secondary p-3 rounded border border-border break-words word-break font-mono text-xs text-muted-foreground cursor-pointer hover:bg-secondary/80 transition overflow-x-auto max-w-full" onClick={() => handleCopy(task.withdrawLink!)}>
