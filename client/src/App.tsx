@@ -6647,13 +6647,13 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     const intermediateModules = modules.filter(m => m.level === "intermediate");
     const advancedModules = modules.filter(m => m.level === "advanced");
     
-    const achievements = [
+    const achievements: Array<{ id: string; title: string; icon: string; condition: boolean; requirement: string }> = [
       { id: "first-module", title: t('education.achievementBeginner'), icon: "🌱", condition: completedModules.length >= 1, requirement: t('education.requirementFirstModule') },
+      { id: "beginner-master", title: t('education.achievementBeginnerMaster'), icon: "⭐", condition: beginnerModules.length > 0 && beginnerModules.every(m => completedModules.includes(m.id)), requirement: t('education.requirementBeginnerMaster') },
       { id: "half-done", title: t('education.achievementLearner'), icon: "📚", condition: completedModules.length >= 10, requirement: t('education.requirementHalfDone') },
-      { id: "all-done", title: t('education.achievementExpert'), icon: "👑", condition: modules.length > 0 && completedModules.length === modules.length, requirement: t('education.requirementAllDone') },
-      { id: "beginner-master", title: t('education.achievementBeginnerMaster'), icon: "🟢", condition: beginnerModules.length > 0 && beginnerModules.every(m => completedModules.includes(m.id)), requirement: t('education.requirementBeginnerMaster') },
-      { id: "advanced-master", title: t('education.achievementAdvancedMaster'), icon: "🔴", condition: advancedModules.length > 0 && advancedModules.every(m => completedModules.includes(m.id)), requirement: t('education.requirementAdvancedMaster') },
-      { id: "intermediate-master", title: t('education.achievementIntermediateMaster'), icon: "🟡", condition: intermediateModules.length > 0 && intermediateModules.every(m => completedModules.includes(m.id)), requirement: t('education.requirementIntermediateMaster') }
+      { id: "intermediate-master", title: t('education.achievementIntermediateMaster'), icon: "🏅", condition: intermediateModules.length > 0 && intermediateModules.every(m => completedModules.includes(m.id)), requirement: t('education.requirementIntermediateMaster') },
+      { id: "advanced-master", title: t('education.achievementAdvancedMaster'), icon: "🎖️", condition: advancedModules.length > 0 && advancedModules.every(m => completedModules.includes(m.id)), requirement: t('education.requirementAdvancedMaster') },
+      { id: "all-done", title: t('education.achievementExpert'), icon: "👑", condition: modules.length > 0 && completedModules.length === modules.length, requirement: t('education.requirementAllDone') }
     ];
 
     const xpPerModule = 100;
