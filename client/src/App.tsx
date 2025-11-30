@@ -1806,6 +1806,7 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
 }
 
 function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (user: User) => void; onBack: () => void }) {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [familyName, setFamilyName] = useState("");
   const [favoriteColor, setFavoriteColor] = useState("");
@@ -1823,17 +1824,16 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
 
   const handleForgotPin = async () => {
     if (!forgotPinName.trim() || !forgotPinColor.trim() || !forgotPinNewPin) {
-      toast({ title: "Fehler", description: "Bitte alle Felder ausfüllen", variant: "destructive" });
+      toast({ title: t('common.error'), description: t('auth.fillAllFields'), variant: "destructive" });
       return;
     }
     const passwordCheck = validatePassword(forgotPinNewPin);
     if (!passwordCheck.valid) {
-      toast({ title: "Fehler", description: passwordCheck.error, variant: "destructive" });
+      toast({ title: t('common.error'), description: passwordCheck.error, variant: "destructive" });
       return;
     }
     setIsForgotLoading(true);
     try {
-      // Secure password reset - verify and update in one step, no password returned
       const res = await fetch("/api/peers/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1847,7 +1847,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       
-      toast({ title: "✅ Passwort zurückgesetzt!", description: "Melde dich jetzt mit deinem neuen Passwort an" });
+      toast({ title: t('auth.passwordResetSuccess'), description: t('auth.loginWithNewPassword') });
       setShowForgotPin(false);
       setForgotPinName("");
       setForgotPinColor("");
@@ -1855,7 +1855,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
       setPin(forgotPinNewPin);
       setName(forgotPinName.trim());
     } catch (error) {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
     } finally {
       setIsForgotLoading(false);
     }
@@ -1871,19 +1871,18 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
     
     if (!trimmedName || !trimmedPin) {
       toast({
-        title: "Fehler",
-        description: "Bitte fülle alle Felder aus",
+        title: t('common.error'),
+        description: t('auth.fillAllFields'),
         variant: "destructive"
       });
       return;
     }
     
-    // Validate password for registration only
     if (!isLogin) {
       const passwordCheck = validatePassword(trimmedPin);
       if (!passwordCheck.valid) {
         toast({
-          title: "Fehler",
+          title: t('common.error'),
           description: passwordCheck.error,
           variant: "destructive"
         });
@@ -1893,8 +1892,8 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
 
     if (!isLogin && role === "parent" && parentMode === "new" && !trimmedFamilyName) {
       toast({
-        title: "Fehler",
-        description: "Bitte gib den Familiennamen ein",
+        title: t('common.error'),
+        description: t('auth.enterFamilyName'),
         variant: "destructive"
       });
       return;
@@ -1902,8 +1901,8 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
 
     if (!isLogin && role === "parent" && parentMode === "new" && !favoriteColor.trim()) {
       toast({
-        title: "Fehler",
-        description: "Bitte gib deine Lieblingsfarbe ein",
+        title: t('common.error'),
+        description: t('auth.enterFavoriteColor'),
         variant: "destructive"
       });
       return;
@@ -1911,8 +1910,8 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
 
     if (!isLogin && role === "parent" && parentMode === "join" && !trimmedJoinParentId) {
       toast({
-        title: "Fehler",
-        description: "Bitte gib die Familien-ID des anderen Elternteils ein",
+        title: t('common.error'),
+        description: t('auth.enterFamilyId'),
         variant: "destructive"
       });
       return;
@@ -1934,14 +1933,14 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
       const user = response as User;
       
       toast({
-        title: isLogin ? "Willkommen!" : "Account erstellt! ✅",
-        description: isLogin ? "Du bist angemeldet" : "Dein Account wurde erstellt!"
+        title: isLogin ? t('auth.welcomeBack') : t('auth.accountCreated'),
+        description: isLogin ? t('auth.loggedIn') : t('auth.accountCreatedDesc')
       });
       onComplete(user);
     } catch (error) {
-      console.error("Fehler:", error);
+      console.error("Error:", error);
       toast({
-        title: "Fehler",
+        title: t('common.error'),
         description: (error as Error).message,
         variant: "destructive"
       });
@@ -1967,11 +1966,11 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               className="w-fit mb-2 -ml-2 text-slate-700 hover:text-slate-900 hover:bg-white/20"
               data-testid="button-back"
             >
-              ← Zurück
+              ← {t('common.back')}
             </Button>
             <div>
-              <h1 className="text-2xl font-bold mb-2 text-slate-900">Familie auswählen</h1>
-              <p className="text-slate-700">Möchtest du eine neue Familie gründen oder einer bestehenden beitreten?</p>
+              <h1 className="text-2xl font-bold mb-2 text-slate-900">{t('auth.selectFamily')}</h1>
+              <p className="text-slate-700">{t('auth.selectFamilyDesc')}</p>
             </div>
           </div>
           <div className="space-y-3">
@@ -1984,8 +1983,8 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 <Plus className="h-5 w-5 text-violet-700" />
               </div>
               <div className="min-w-0">
-                <p className="font-semibold text-slate-900">Neue Familie gründen</p>
-                <p className="text-xs text-slate-700">Erstelle eine neue Familie</p>
+                <p className="font-semibold text-slate-900">{t('landing.newFamily')}</p>
+                <p className="text-xs text-slate-700">{t('landing.newFamilyDesc')}</p>
               </div>
             </button>
             <button
@@ -1997,8 +1996,8 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 <Users className="h-5 w-5 text-cyan-700" />
               </div>
               <div className="min-w-0">
-                <p className="font-semibold text-slate-900">Familie beitreten</p>
-                <p className="text-xs text-slate-700">Beitreten mit Familie-ID</p>
+                <p className="font-semibold text-slate-900">{t('landing.joinFamily')}</p>
+                <p className="text-xs text-slate-700">{t('landing.joinFamilyDesc')}</p>
               </div>
             </button>
           </div>
@@ -2027,14 +2026,14 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             className="w-fit mb-2 -ml-2 text-slate-700 hover:text-slate-900 hover:bg-white/20"
             data-testid="button-back"
           >
-            ← Zurück
+            ← {t('common.back')}
           </Button>
           <div>
             <h2 className="text-2xl font-bold mb-2 text-slate-900">
-              {isLogin ? "Anmelden" : "Registrieren"}
+              {isLogin ? t('auth.loginTitle') : t('auth.registerTitle')}
             </h2>
             <p className="text-slate-700">
-              {isLogin ? "Melde dich mit Name und Passwort an" : "Erstelle einen Account mit Name und Passwort"}
+              {isLogin ? t('auth.loginDesc') : t('auth.registerDesc')}
             </p>
           </div>
         </div>
@@ -2043,7 +2042,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && role === "parent" && parentMode === "new" && (
               <div className="space-y-2">
-                <Label htmlFor="familyName" className="text-slate-800">Familienname</Label>
+                <Label htmlFor="familyName" className="text-slate-800">{t('auth.familyName')}</Label>
                 <Input 
                   id="familyName"
                   value={familyName}
@@ -2051,14 +2050,14 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                   className="bg-white/50 border-white/60 focus:border-violet-500 focus:bg-white/70 text-slate-900 placeholder:text-gray-500"
                   disabled={isLoading}
                   autoComplete="off"
-                  placeholder="z.B. Familie Müller"
+                  placeholder={t('auth.familyNamePlaceholder')}
                   data-testid="input-family-name"
                 />
               </div>
             )}
             {!isLogin && role === "parent" && parentMode === "join" && (
               <div className="space-y-2">
-                <Label htmlFor="joinParentId" className="text-slate-800">Familien-ID</Label>
+                <Label htmlFor="joinParentId" className="text-slate-800">{t('auth.familyCode')}</Label>
                 <Input 
                   id="joinParentId"
                   value={joinParentId}
@@ -2066,14 +2065,14 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                   className="bg-white/50 border-white/60 focus:border-violet-500 focus:bg-white/70 text-slate-900 placeholder:text-gray-500 font-mono text-center"
                   disabled={isLoading}
                   autoComplete="off"
-                  placeholder="z.B. BTC-ABC123"
+                  placeholder={t('auth.familyCodePlaceholder')}
                   data-testid="input-join-parent-id"
                 />
-                <p className="text-xs text-slate-600">Frag das andere Elternteil nach der Familie-ID</p>
+                <p className="text-xs text-slate-600">{t('auth.askParentForCode')}</p>
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-slate-800">Dein Name</Label>
+              <Label htmlFor="name" className="text-slate-800">{t('auth.yourName')}</Label>
               <Input 
                 id="name"
                 value={name}
@@ -2087,7 +2086,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             </div>
             {!isLogin && role === "parent" && parentMode === "new" && (
               <div className="space-y-2">
-                <Label htmlFor="favoriteColor" className="text-slate-800">Lieblingsfarbe (für Passwort-Vergessen)</Label>
+                <Label htmlFor="favoriteColor" className="text-slate-800">{t('auth.favoriteColorLabel')}</Label>
                 <Input 
                   id="favoriteColor"
                   value={favoriteColor}
@@ -2095,18 +2094,18 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                   className="bg-white/50 border-white/60 focus:border-violet-500 focus:bg-white/70 text-slate-900 placeholder:text-gray-500"
                   disabled={isLoading}
                   autoComplete="off"
-                  placeholder="z.B. Blau"
+                  placeholder={t('auth.colorPlaceholder')}
                   data-testid="input-favorite-color"
                 />
-                <p className="text-xs text-slate-600">Du kannst damit dein Passwort später zurücksetzen</p>
+                <p className="text-xs text-slate-600">{t('auth.colorHint')}</p>
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="pin" className="text-slate-800">{isLogin ? "Passwort" : "Passwort (8-12 Zeichen)"}</Label>
+              <Label htmlFor="pin" className="text-slate-800">{isLogin ? t('auth.password') : t('auth.passwordWithLength')}</Label>
               <Input 
                 id="pin"
                 type="password"
-                placeholder={isLogin ? "••••••••" : "Min. 8 Zeichen, 1 Großbuchstabe, 1 Zahl"}
+                placeholder={isLogin ? "••••••••" : t('auth.passwordPlaceholder')}
                 value={pin}
                 onChange={(e) => setPin(e.target.value.slice(0, 12))}
                 className="bg-white/50 border-white/60 focus:border-violet-500 focus:bg-white/70 text-slate-900 placeholder:text-gray-400"
@@ -2118,13 +2117,13 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               {!isLogin && (
                 <div className="text-xs text-slate-600 space-y-1">
                   <p className={pin.length >= 8 && pin.length <= 12 ? "text-green-600" : ""}>
-                    {pin.length >= 8 && pin.length <= 12 ? "✓" : "○"} {pin.length}/8-12 Zeichen
+                    {pin.length >= 8 && pin.length <= 12 ? "✓" : "○"} {pin.length}/8-12 {t('auth.characters')}
                   </p>
                   <p className={/[A-Z]/.test(pin) ? "text-green-600" : ""}>
-                    {/[A-Z]/.test(pin) ? "✓" : "○"} Mindestens 1 Großbuchstabe
+                    {/[A-Z]/.test(pin) ? "✓" : "○"} {t('auth.requireUppercase')}
                   </p>
                   <p className={/[0-9]/.test(pin) ? "text-green-600" : ""}>
-                    {/[0-9]/.test(pin) ? "✓" : "○"} Mindestens 1 Zahl
+                    {/[0-9]/.test(pin) ? "✓" : "○"} {t('auth.requireNumber')}
                   </p>
                 </div>
               )}
@@ -2139,7 +2138,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 disabled={isLoading || name.trim().length === 0 || pin.length === 0 || (!isLogin && !validatePassword(pin).valid) || (!isLogin && role === "parent" && parentMode === "new" && (!familyName.trim() || !favoriteColor.trim()))}
                 data-testid={isLogin ? "button-login" : "button-register"}
               >
-                {isLoading ? "Wird verarbeitet..." : isLogin ? "Anmelden" : "Registrieren"}
+                {isLoading ? t('common.loading') : isLogin ? t('auth.login') : t('auth.register')}
               </Button>
               <Button 
                 type="button"
@@ -2149,7 +2148,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 disabled={isLoading}
                 data-testid="button-toggle-mode"
               >
-                {isLogin ? "Noch kein Account? Registrieren" : "Bereits registriert? Anmelden"}
+                {isLogin ? t('auth.noAccount') : t('auth.haveAccount')}
               </Button>
               {isLogin && role === "parent" && (
                 <Button
@@ -2160,7 +2159,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                   disabled={isLoading}
                   data-testid="button-forgot-pin"
                 >
-                  Passwort vergessen?
+                  {t('auth.forgotPassword')}
                 </Button>
               )}
             </div>
@@ -2176,41 +2175,41 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">
                   <span className="text-base">🔑</span>
                 </div>
-                Passwort zurücksetzen
+                {t('auth.resetPassword')}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-5 pt-4">
               <div className="space-y-2">
-                <Label htmlFor="forgot-name" className="text-sm font-semibold">Name</Label>
+                <Label htmlFor="forgot-name" className="text-sm font-semibold">{t('auth.name')}</Label>
                 <Input 
                   id="forgot-name"
                   value={forgotPinName}
                   onChange={(e) => setForgotPinName(e.target.value)}
                   className="bg-secondary/50 border-border focus:border-primary"
                   disabled={isForgotLoading}
-                  placeholder="Gib deinen Namen ein"
+                  placeholder={t('auth.enterYourName')}
                   data-testid="input-forgot-pin-name"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="forgot-color" className="text-sm font-semibold">Lieblingsfarbe</Label>
+                <Label htmlFor="forgot-color" className="text-sm font-semibold">{t('auth.favoriteColor')}</Label>
                 <Input 
                   id="forgot-color"
-                  placeholder="z.B. Blau"
+                  placeholder={t('auth.colorPlaceholder')}
                   value={forgotPinColor}
                   onChange={(e) => setForgotPinColor(e.target.value)}
                   className="bg-secondary/50 border-border focus:border-primary"
                   disabled={isForgotLoading}
                   data-testid="input-forgot-pin-color"
                 />
-                <p className="text-xs text-muted-foreground">Die Farbe, die du bei der Registrierung angegeben hast</p>
+                <p className="text-xs text-muted-foreground">{t('auth.colorRegistrationHint')}</p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="forgot-new-pin" className="text-sm font-semibold">Neues Passwort</Label>
+                <Label htmlFor="forgot-new-pin" className="text-sm font-semibold">{t('auth.newPassword')}</Label>
                 <Input 
                   id="forgot-new-pin"
                   type="password"
-                  placeholder="8-12 Zeichen"
+                  placeholder={t('auth.passwordLengthHint')}
                   value={forgotPinNewPin}
                   onChange={(e) => setForgotPinNewPin(e.target.value.slice(0, 12))}
                   className="bg-secondary/50 border-border focus:border-primary"
@@ -2220,13 +2219,13 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 />
                 <div className="text-xs text-muted-foreground space-y-1">
                   <p className={forgotPinNewPin.length >= 8 && forgotPinNewPin.length <= 12 ? "text-green-500" : ""}>
-                    {forgotPinNewPin.length >= 8 && forgotPinNewPin.length <= 12 ? "✓" : "○"} {forgotPinNewPin.length}/8-12 Zeichen
+                    {forgotPinNewPin.length >= 8 && forgotPinNewPin.length <= 12 ? "✓" : "○"} {forgotPinNewPin.length}/8-12 {t('auth.characters')}
                   </p>
                   <p className={/[A-Z]/.test(forgotPinNewPin) ? "text-green-500" : ""}>
-                    {/[A-Z]/.test(forgotPinNewPin) ? "✓" : "○"} Mindestens 1 Großbuchstabe
+                    {/[A-Z]/.test(forgotPinNewPin) ? "✓" : "○"} {t('auth.requireUppercase')}
                   </p>
                   <p className={/[0-9]/.test(forgotPinNewPin) ? "text-green-500" : ""}>
-                    {/[0-9]/.test(forgotPinNewPin) ? "✓" : "○"} Mindestens 1 Zahl
+                    {/[0-9]/.test(forgotPinNewPin) ? "✓" : "○"} {t('auth.requireNumber')}
                   </p>
                 </div>
               </div>
@@ -2237,7 +2236,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                   className="flex-1 bg-primary hover:bg-primary/90 font-semibold"
                   data-testid="button-confirm-forgot-pin"
                 >
-                  {isForgotLoading ? "⏳ Wird verarbeitet..." : "✓ Passwort zurücksetzen"}
+                  {isForgotLoading ? t('common.loading') : t('auth.resetPasswordButton')}
                 </Button>
                 <Button 
                   variant="outline"
@@ -2246,7 +2245,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                   className="flex-1 border-border hover:bg-secondary/50"
                   data-testid="button-cancel-forgot-pin"
                 >
-                  Abbrechen
+                  {t('common.cancel')}
                 </Button>
               </div>
             </div>
