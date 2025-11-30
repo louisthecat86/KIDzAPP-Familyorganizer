@@ -638,6 +638,7 @@
     "streakDays": "{{days}} Tage Streak",
     "modulesCompleted": "{{count}} Module abgeschlossen",
     "learningStreak": "Lern-Streak",
+    "nextGoal": "Nächstes Ziel",
     "record": "Rekord",
     "achievementBeginner": "Anfänger",
     "achievementLearner": "Lernender",

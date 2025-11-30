@@ -6591,10 +6591,17 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     const moduleIds = ["m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m9", "m10", "m11", "m12", "m13", "m14", "m15", "m16", "m17", "m18", "m19", "m20"];
     const levelColors: Record<string, string> = { beginner: "text-green-600", intermediate: "text-yellow-600", advanced: "text-red-600" };
     
+    const getModuleLevel = (mid: string) => {
+      const num = parseInt(mid.replace("m", ""), 10);
+      if (num <= 5) return "beginner";
+      if (num <= 10) return "intermediate";
+      return "advanced";
+    };
+    
     const modules = moduleIds.map((mid) => ({
       id: mid,
-      level: mid <= "m5" ? "beginner" : mid <= "m10" ? "intermediate" : "advanced",
-      levelColor: levelColors[mid <= "m5" ? "beginner" : mid <= "m10" ? "intermediate" : "advanced"],
+      level: getModuleLevel(mid),
+      levelColor: levelColors[getModuleLevel(mid)],
       title: t(`education.modules.${mid}.title`),
       icon: ["₿", "⚡", "🔄", "📍", "📈", "⚡", "🔗", "⛏️", "🤖", "🏆", "🔐", "🔑", "🛡️", "💸", "💪", "☠️", "⚖️", "📉", "🪙", "🚀"][moduleIds.indexOf(mid)],
       content: Array.from({length: 8}, (_, i) => t(`education.modules.${mid}.content.${i}`)),
@@ -6644,13 +6651,17 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
     const completedModules = serverProgress?.completedModules || [];
     
+    const beginnerModules = modules.filter(m => m.level === "beginner");
+    const intermediateModules = modules.filter(m => m.level === "intermediate");
+    const advancedModules = modules.filter(m => m.level === "advanced");
+    
     const achievements = [
       { id: "first-module", title: t('education.achievementBeginner'), icon: "🌱", condition: completedModules.length >= 1 },
+      { id: "beginner-master", title: t('education.achievementBeginnerMaster'), icon: "🟢", condition: beginnerModules.length > 0 && beginnerModules.every(m => completedModules.includes(m.id)) },
       { id: "half-done", title: t('education.achievementLearner'), icon: "📚", condition: completedModules.length >= 10 },
-      { id: "all-done", title: t('education.achievementExpert'), icon: "👑", condition: completedModules.length === modules.length },
-      { id: "beginner-master", title: t('education.achievementBeginnerMaster'), icon: "🟢", condition: modules.filter(m => m.level === "beginner").every(m => completedModules.includes(m.id)) },
-      { id: "advanced-master", title: t('education.achievementAdvancedMaster'), icon: "🔴", condition: modules.filter(m => m.level === "advanced").every(m => completedModules.includes(m.id)) },
-      { id: "intermediate-master", title: t('education.achievementIntermediateMaster'), icon: "🟡", condition: modules.filter(m => m.level === "intermediate").every(m => completedModules.includes(m.id)) }
+      { id: "intermediate-master", title: t('education.achievementIntermediateMaster'), icon: "🟡", condition: intermediateModules.length > 0 && intermediateModules.every(m => completedModules.includes(m.id)) },
+      { id: "advanced-master", title: t('education.achievementAdvancedMaster'), icon: "🔴", condition: advancedModules.length > 0 && advancedModules.every(m => completedModules.includes(m.id)) },
+      { id: "all-done", title: t('education.achievementExpert'), icon: "👑", condition: completedModules.length === modules.length }
     ];
 
     const xpPerModule = 100;
@@ -6766,32 +6777,34 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 <h2 className="text-lg font-bold text-slate-900">{t('education.yourBadges')} 🏆</h2>
                 <span className="text-sm text-slate-600">{t('education.unlockedOf', { count: achievements.filter(a => a.condition).length, total: achievements.length })}</span>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
                 {achievements.map((badge, index, arr) => {
-                  // FIRST unlocked badge gets highlighted with yellow dot
-                  const isFirstUnlocked = badge.condition && arr.findIndex(b => b.condition) === index;
+                  // FIRST NOT-YET-UNLOCKED badge gets highlighted as "next goal"
+                  const isNextGoal = !badge.condition && arr.findIndex(b => !b.condition) === index;
                   
                   return (
                   <div 
                     key={badge.id} 
-                    className={`p-4 rounded-xl border-2 transition-all text-center transform hover:scale-105 ${
-                      isFirstUnlocked
-                        ? "border-amber-400 bg-gradient-to-br from-amber-400/20 to-yellow-400/20 shadow-lg shadow-amber-500/20" 
+                    className={`p-3 rounded-xl border-2 transition-all text-center transform hover:scale-105 ${
+                      isNextGoal
+                        ? "border-amber-400 bg-gradient-to-br from-amber-400/20 to-yellow-400/20 shadow-lg shadow-amber-500/20 animate-pulse" 
                         : badge.condition 
-                          ? "border-blue-400 bg-gradient-to-br from-blue-400/20 to-cyan-400/20 shadow-lg shadow-blue-500/20" 
-                          : "border-slate-200 bg-slate-50/50 opacity-40 grayscale"
+                          ? "border-green-400 bg-gradient-to-br from-green-400/20 to-emerald-400/20 shadow-lg shadow-green-500/20" 
+                          : "border-slate-200 bg-slate-50/50 opacity-50"
                     }`}
                   >
-                    <div className={`text-4xl mb-2 ${isFirstUnlocked ? "animate-bounce" : ""}`} style={{ animationDuration: '2s' }}>
-                      {badge.condition ? badge.icon : "🔒"}
+                    <div className={`text-3xl mb-1 ${isNextGoal ? "animate-bounce" : ""}`} style={{ animationDuration: '2s' }}>
+                      {badge.condition ? badge.icon : isNextGoal ? "🎯" : "🔒"}
                     </div>
-                    <p className={`text-xs font-bold ${isFirstUnlocked ? "text-amber-700" : badge.condition ? "text-blue-700" : "text-slate-400"}`}>{badge.title}</p>
+                    <p className={`text-[10px] font-bold ${isNextGoal ? "text-amber-700" : badge.condition ? "text-green-700" : "text-slate-400"}`}>{badge.title}</p>
                     {badge.condition && (
                       <div className="mt-1 flex justify-center">
-                        <span className="relative inline-flex items-center gap-1">
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold text-white ${isFirstUnlocked ? "bg-amber-500" : "bg-blue-500"}`}>{t('education.unlocked')}</span>
-                          {isFirstUnlocked && <span className="text-lg">{badge.icon}</span>}
-                        </span>
+                        <span className="text-[9px] px-2 py-0.5 rounded-full font-semibold text-white bg-green-500">✓</span>
+                      </div>
+                    )}
+                    {isNextGoal && (
+                      <div className="mt-1 flex justify-center">
+                        <span className="text-[9px] px-2 py-0.5 rounded-full font-semibold text-white bg-amber-500">{t('education.nextGoal') || 'Nächstes Ziel'}</span>
                       </div>
                     )}
                   </div>
