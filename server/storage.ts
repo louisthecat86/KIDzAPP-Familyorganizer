@@ -1,6 +1,16 @@
 import { db } from "./db";
 import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks, type LearningProgress, type InsertLearningProgress, learningProgress, type DailyChallenge, dailyChallenges } from "@shared/schema";
 import { eq, and, desc } from "drizzle-orm";
+import { encrypt, decrypt } from "./crypto";
+
+function decryptPeerSecrets(peer: Peer | undefined): Peer | undefined {
+  if (!peer) return peer;
+  return {
+    ...peer,
+    lnbitsAdminKey: peer.lnbitsAdminKey ? decrypt(peer.lnbitsAdminKey) : null,
+    nwcConnectionString: peer.nwcConnectionString ? decrypt(peer.nwcConnectionString) : null,
+  };
+}
 
 export interface IStorage {
   // Peer operations
@@ -103,21 +113,21 @@ export class DatabaseStorage implements IStorage {
   // Peer operations
   async getPeer(id: number): Promise<Peer | undefined> {
     const result = await db.select().from(peers).where(eq(peers.id, id)).limit(1);
-    return result[0];
+    return decryptPeerSecrets(result[0]);
   }
 
   async getPeerByName(name: string): Promise<Peer | undefined> {
     const result = await db.select().from(peers)
       .where(eq(peers.name, name))
       .limit(1);
-    return result[0];
+    return decryptPeerSecrets(result[0]);
   }
 
   async getPeerByConnectionId(connectionId: string, role: string): Promise<Peer | undefined> {
     const result = await db.select().from(peers)
       .where(and(eq(peers.connectionId, connectionId), eq(peers.role, role)))
       .limit(1);
-    return result[0];
+    return decryptPeerSecrets(result[0]);
   }
 
   async getPeerByNameAndPin(name: string, pin: string, role: string): Promise<Peer | undefined> {
@@ -128,7 +138,7 @@ export class DatabaseStorage implements IStorage {
         eq(peers.role, role)
       ))
       .limit(1);
-    return result[0];
+    return decryptPeerSecrets(result[0]);
   }
 
   async getPeerByPin(pin: string): Promise<Peer | undefined> {
@@ -138,22 +148,20 @@ export class DatabaseStorage implements IStorage {
     
     const peer = result[0];
     if (peer && peer.role === "child") {
-      // Wenn Kind mit Parent gekoppelt ist, stelle sicher dass familyName korrekt ist
       const parent = await db.select().from(peers)
         .where(and(eq(peers.connectionId, peer.connectionId), eq(peers.role, "parent")))
         .limit(1);
       
       if (parent[0] && parent[0].familyName !== peer.familyName) {
-        // Aktualisiere familyName des Kindes
         const updated = await db.update(peers)
           .set({ familyName: parent[0].familyName })
           .where(eq(peers.id, peer.id))
           .returning();
-        return updated[0];
+        return decryptPeerSecrets(updated[0]);
       }
     }
     
-    return peer;
+    return decryptPeerSecrets(peer);
   }
 
   async getAllParents(): Promise<Peer[]> {
@@ -200,19 +208,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updatePeerWallet(peerId: number, lnbitsUrl: string, lnbitsAdminKey: string): Promise<Peer> {
+    const encryptedKey = lnbitsAdminKey ? encrypt(lnbitsAdminKey) : null;
     const result = await db.update(peers)
-      .set({ lnbitsUrl, lnbitsAdminKey, walletType: lnbitsUrl ? "lnbits" : null })
+      .set({ lnbitsUrl, lnbitsAdminKey: encryptedKey, walletType: lnbitsUrl ? "lnbits" : null })
       .where(eq(peers.id, peerId))
       .returning();
-    return result[0];
+    console.log(`[Security] Wallet credentials encrypted for peer ${peerId}`);
+    return decryptPeerSecrets(result[0]) as Peer;
   }
 
   async updatePeerNwcWallet(peerId: number, nwcConnectionString: string): Promise<Peer> {
+    const encryptedString = nwcConnectionString ? encrypt(nwcConnectionString) : null;
     const result = await db.update(peers)
-      .set({ nwcConnectionString, walletType: nwcConnectionString ? "nwc" : null })
+      .set({ nwcConnectionString: encryptedString, walletType: nwcConnectionString ? "nwc" : null })
       .where(eq(peers.id, peerId))
       .returning();
-    return result[0];
+    console.log(`[Security] NWC connection string encrypted for peer ${peerId}`);
+    return decryptPeerSecrets(result[0]) as Peer;
   }
 
   async updatePeerWalletType(peerId: number, walletType: string): Promise<Peer> {
