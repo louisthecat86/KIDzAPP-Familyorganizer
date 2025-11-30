@@ -6529,6 +6529,17 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       }
     });
     
+    const [serverProgress, setServerProgress] = useState<{
+      xp: number;
+      level: number;
+      streak: number;
+      longestStreak: number;
+      completedModules: string[];
+      unlockedAchievements: string[];
+      totalQuizzesPassed: number;
+      dailyChallengesCompleted: number;
+    } | null>(null);
+
     useEffect(() => {
       const fetchBtcPrice = async () => {
         try {
@@ -6541,6 +6552,26 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       };
       fetchBtcPrice();
     }, []);
+
+    useEffect(() => {
+      const fetchLearningProgress = async () => {
+        try {
+          const response = await fetch(`/api/learning-progress/${user.id}`);
+          if (response.ok) {
+            const data = await response.json();
+            setServerProgress(data);
+            if (data.completedModules && data.completedModules.length > 0) {
+              setPassedQuizzes(data.completedModules);
+              localStorage.setItem("passed-quizzes", JSON.stringify(data.completedModules));
+            }
+            console.log("✅ Learning progress loaded from server:", data);
+          }
+        } catch (error) {
+          console.error("[Learning Progress] Failed to fetch:", error);
+        }
+      };
+      fetchLearningProgress();
+    }, [user.id]);
     
     const modules = [
       { id: "m1", level: "Anfänger", levelColor: "text-green-600", title: "Was ist Bitcoin?", icon: "₿", content: ["Bitcoin ist digitales Geld - wie elektronische Münzen", "Es wurde 2009 von Satoshi Nakamoto erfunden", "Es gibt maximal 21 Millionen Bitcoin", "Bitcoin ist dezentralisiert - keine Bank kontrolliert es", "Jeder Bitcoin kann in 100.000.000 Satoshis aufgeteilt werden", "Das Bitcoin Netzwerk wird von tausenden Computern gesichert", "Transaktionen sind transparent und nicht rückgängig zu machen", "Bitcoin ist das erste erfolgreiche digitale Geld"], quiz: [{ question: "Wann wurde Bitcoin erfunden?", options: ["2009", "2015", "2001"], correct: 0 }, { question: "Wie viele Bitcoin gibt es maximal?", options: ["21 Millionen", "Unbegrenzt", "1 Milliarde"], correct: 0 }, { question: "Wer ist Satoshi Nakamoto?", options: ["Der anonyme Bitcoin Erfinder", "Ein YouTuber", "Ein Politiker"], correct: 0 }] },
@@ -6565,7 +6596,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       { id: "m20", level: "Fortgeschritten", levelColor: "text-red-600", title: "Zukunft des Bitcoin", icon: "🚀", content: ["Bitcoin wird immer wichtiger für die Weltwirtschaft", "2024: >50 Millionen Menschen besitzen Bitcoin", "Große Unternehmen halten Bitcoin als Vermögensanlage", "Länder könnten Bitcoin als Reservewährung nutzen", "Lightning macht Bitcoin praktisch für tägliche Nutzung", "Du lernst heute die Technologie der Zukunft", "Bitcoin könnte die Finanzwelt revolutionieren", "Die Zukunft ist spannend für Bitcoin Nutzer"], quiz: [{ question: "Wie viele Menschen besitzen Bitcoin 2024?", options: [">50 Millionen", "1 Million", "Niemand"], correct: 0 }, { question: "Welche großen Firmen halten Bitcoin?", options: ["MicroStrategy, Tesla, Marathon", "Keine", "Nur Banken"], correct: 0 }, { question: "Wird Bitcoin in Zukunft wichtiger?", options: ["Wahrscheinlich ja", "Nein", "Vielleicht"], correct: 0 }] }
     ];
 
-    const handleQuizSubmit = (moduleId: string) => {
+    const handleQuizSubmit = async (moduleId: string) => {
       const module = modules.find(m => m.id === moduleId);
       if (!module) return;
       
@@ -6573,14 +6604,37 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       const passScore = Math.ceil(module.quiz.length * 0.7);
       
       if (score >= passScore) {
-        // Only add if not already passed
         if (!passedQuizzes.includes(moduleId)) {
-          const newPassedQuizzes = [...passedQuizzes, moduleId];
-          setPassedQuizzes(newPassedQuizzes);
-          localStorage.setItem("passed-quizzes", JSON.stringify(newPassedQuizzes));
-          console.log("✅ Quiz passed!", { moduleId, newPassedQuizzes: newPassedQuizzes.length });
+          try {
+            const response = await fetch(`/api/learning-progress/${user.id}/add-xp`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ xp: xpPerModule, moduleId })
+            });
+            if (response.ok) {
+              const updatedProgress = await response.json();
+              setServerProgress(updatedProgress);
+              const serverModules = updatedProgress.completedModules || [];
+              setPassedQuizzes(serverModules);
+              localStorage.setItem("passed-quizzes", JSON.stringify(serverModules));
+              console.log("✅ Progress synced from server:", updatedProgress);
+              toast({ title: "🎉 Quiz bestanden!", description: `+${xpPerModule} XP! Level ${updatedProgress.level}! ${score}/${module.quiz.length} richtig!` });
+            } else {
+              const newPassedQuizzes = [...passedQuizzes, moduleId];
+              setPassedQuizzes(newPassedQuizzes);
+              localStorage.setItem("passed-quizzes", JSON.stringify(newPassedQuizzes));
+              toast({ title: "🎉 Quiz bestanden!", description: `+${xpPerModule} XP! ${score}/${module.quiz.length} richtig!` });
+            }
+          } catch (error) {
+            console.error("Failed to save XP to server:", error);
+            const newPassedQuizzes = [...passedQuizzes, moduleId];
+            setPassedQuizzes(newPassedQuizzes);
+            localStorage.setItem("passed-quizzes", JSON.stringify(newPassedQuizzes));
+            toast({ title: "🎉 Quiz bestanden!", description: `+${xpPerModule} XP! ${score}/${module.quiz.length} richtig!` });
+          }
+        } else {
+          toast({ title: "Quiz bereits bestanden!", description: `${score}/${module.quiz.length} richtig!` });
         }
-        toast({ title: "🎉 Quiz bestanden!", description: `${score}/${module.quiz.length} richtig!` });
       } else {
         toast({ title: "Probier nochmal!", description: `Du brauchst ${passScore} von ${module.quiz.length}. Du hattest ${score}.`, variant: "destructive" });
       }
@@ -6596,8 +6650,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     ];
 
     const xpPerModule = 100;
-    const userXp = passedQuizzes.length * xpPerModule;
-    const userLevel = Math.floor(userXp / 300) + 1;
+    const userXp = serverProgress?.xp ?? (passedQuizzes.length * xpPerModule);
+    const userLevel = serverProgress?.level ?? (Math.floor(userXp / 300) + 1);
+    const userStreak = serverProgress?.streak ?? 0;
     
     const isModuleUnlocked = (moduleId: string) => {
       const idx = modules.findIndex(m => m.id === moduleId);
@@ -6606,11 +6661,89 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       return passedQuizzes.includes(prevModule.id);
     };
     
+    const xpThresholds = [0, 100, 250, 500, 800, 1200, 1700, 2300, 3000, 4000, 5000];
+    const maxLevel = xpThresholds.length;
+    const clampedLevel = Math.min(userLevel, maxLevel);
+    const currentLevelXp = xpThresholds[clampedLevel - 1] || 0;
+    const nextLevelXp = xpThresholds[clampedLevel] || xpThresholds[xpThresholds.length - 1] + 500;
+    const xpDiff = nextLevelXp - currentLevelXp;
+    const xpProgress = xpDiff > 0 ? ((userXp - currentLevelXp) / xpDiff) * 100 : 100;
+    
+    const levelTitles = ["Neuling", "Anfänger", "Lernender", "Entdecker", "Kenner", "Experte", "Meister", "Guru", "Legende", "Satoshi", "Bitcoin-Held"];
+    const levelColors = ["bg-slate-400", "bg-green-500", "bg-emerald-500", "bg-teal-500", "bg-cyan-500", "bg-blue-500", "bg-indigo-500", "bg-violet-500", "bg-purple-500", "bg-amber-500", "bg-orange-500"];
+    
     return (
       <div className="max-w-6xl space-y-6">
-        {/* Header with XP + Level */}
+        {/* Gamification Header Dashboard */}
         <div className="space-y-4">
           <h1 className="text-4xl font-bold text-slate-900">Bitcoin Bildungszentrum</h1>
+          
+          {/* Progress Dashboard */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Level & XP Card */}
+            <div className="col-span-1 md:col-span-2 p-4 rounded-xl bg-gradient-to-r from-violet-500/10 via-purple-500/10 to-indigo-500/10 border border-violet-500/20">
+              <div className="flex items-center gap-4">
+                <div className={`w-16 h-16 rounded-full ${levelColors[userLevel - 1] || "bg-violet-500"} flex items-center justify-center text-white font-bold text-2xl shadow-lg ring-4 ring-white/50`}>
+                  {userLevel}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <div>
+                      <span className="text-lg font-bold text-slate-900">{levelTitles[userLevel - 1] || "Anfänger"}</span>
+                      <span className="ml-2 text-sm text-slate-600">Level {userLevel}</span>
+                    </div>
+                    <span className="text-sm font-semibold text-violet-600">{userXp} XP</span>
+                  </div>
+                  <div className="relative h-4 bg-slate-200 rounded-full overflow-hidden">
+                    <div 
+                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-violet-500 to-purple-500 rounded-full transition-all duration-1000 ease-out"
+                      style={{ width: `${Math.min(xpProgress, 100)}%` }}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-[10px] font-bold text-white drop-shadow">{userXp} / {nextLevelXp} XP</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">Noch {nextLevelXp - userXp} XP bis Level {userLevel + 1}</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Streak Card */}
+            <div className="p-4 rounded-xl bg-gradient-to-br from-orange-500/10 to-amber-500/10 border border-orange-500/20">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-2xl shadow-lg">
+                  🔥
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-slate-900">{userStreak} {userStreak === 1 ? "Tag" : "Tage"}</p>
+                  <p className="text-xs text-slate-600">Lern-Streak {serverProgress?.longestStreak ? `(Rekord: ${serverProgress.longestStreak})` : ""}</p>
+                </div>
+              </div>
+              <div className="mt-3 flex gap-1">
+                {[...Array(7)].map((_, i) => (
+                  <div key={i} className={`flex-1 h-2 rounded-full ${i < Math.min(userStreak, 7) ? "bg-orange-500" : "bg-slate-200"}`} />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-center">
+              <p className="text-2xl font-bold text-green-600">{passedQuizzes.length}</p>
+              <p className="text-xs text-slate-600">Module bestanden</p>
+            </div>
+            <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-center">
+              <p className="text-2xl font-bold text-blue-600">{achievements.filter(a => a.condition).length}/{achievements.length}</p>
+              <p className="text-xs text-slate-600">Abzeichen</p>
+            </div>
+            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-center">
+              <p className="text-2xl font-bold text-amber-600">{modules.length - passedQuizzes.length}</p>
+              <p className="text-xs text-slate-600">Module übrig</p>
+            </div>
+          </div>
+
+          {/* Tab Navigation */}
           <div className="overflow-x-auto -mx-4 px-4 border-b">
             <div className="flex gap-1 min-w-max md:min-w-0">
               <button onClick={() => setEducationTab("modules")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "modules" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-modules">📚 Module</button>
@@ -6624,14 +6757,31 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
         {educationTab === "modules" && (
           <div className="space-y-8">
-            {/* Achievements */}
+            {/* Enhanced Achievements */}
             <div className="space-y-3">
-              <h2 className="text-lg font-bold text-slate-900">Deine Abzeichen 🏆</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold text-slate-900">Deine Abzeichen 🏆</h2>
+                <span className="text-sm text-slate-600">{achievements.filter(a => a.condition).length} von {achievements.length} freigeschaltet</span>
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {achievements.map(badge => (
-                  <div key={badge.id} className={`p-4 rounded-lg border-2 transition-all text-center ${badge.condition ? "border-amber-400/50 bg-amber-400/10" : "border-slate-300/50 bg-slate-100/30 opacity-50"}`}>
-                    <span className="text-3xl block mb-1">{badge.icon}</span>
-                    <p className="text-xs font-semibold text-slate-700">{badge.title}</p>
+                  <div 
+                    key={badge.id} 
+                    className={`p-4 rounded-xl border-2 transition-all text-center transform hover:scale-105 ${
+                      badge.condition 
+                        ? "border-amber-400 bg-gradient-to-br from-amber-400/20 to-yellow-400/20 shadow-lg shadow-amber-500/20" 
+                        : "border-slate-200 bg-slate-50/50 opacity-40 grayscale"
+                    }`}
+                  >
+                    <div className={`text-4xl mb-2 ${badge.condition ? "animate-bounce" : ""}`} style={{ animationDuration: '2s' }}>
+                      {badge.condition ? badge.icon : "🔒"}
+                    </div>
+                    <p className={`text-xs font-bold ${badge.condition ? "text-amber-700" : "text-slate-400"}`}>{badge.title}</p>
+                    {badge.condition && (
+                      <div className="mt-1 flex justify-center">
+                        <span className="text-[10px] px-2 py-0.5 bg-amber-500 text-white rounded-full font-semibold">Freigeschaltet!</span>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
