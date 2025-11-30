@@ -6883,64 +6883,111 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         )}
 
         {educationTab === "resources" && (
-          <div className="space-y-4">
-            <p className="text-slate-600 mb-6">Hier findest du die besten Bitcoin Ressourcen im Internet um noch mehr zu lernen:</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <a href="https://bitcoin.org" target="_blank" rel="noopener noreferrer" className="block p-4 border border-blue-500/30 rounded-lg hover:bg-blue-500/5 transition-all">
-                <div className="text-2xl mb-2">₿</div>
-                <h3 className="font-semibold text-slate-900 mb-1">Bitcoin.org</h3>
-                <p className="text-xs text-slate-600 mb-2">Die offizielle Bitcoin Website mit Anfänger-Guides und technischen Infos</p>
-                <span className="text-xs text-blue-600 font-medium">→ Zur Website</span>
-              </a>
+          <div className="space-y-6">
+            <p className="text-slate-600">Hier findest du die besten Bitcoin Bildungsressourcen - nach Alter sortiert:</p>
+            
+            <div className="space-y-6">
+              <div className="border-2 border-green-500/30 rounded-xl p-4 bg-green-500/5">
+                <h3 className="text-lg font-bold text-green-700 mb-3 flex items-center gap-2">🌱 6–9 Jahre (Jüngere Kinder)</h3>
+                <p className="text-xs text-slate-600 mb-3">Grundbegriffe wie Geld, digitale Werte, Sicherheit verstehen</p>
+                <div className="grid grid-cols-1 gap-2">
+                  <a href="https://thebitcoinadviser.com/for-kids" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-slate-900 text-sm">The Bitcoin Adviser – "For Your Kids"</h4>
+                    <p className="text-xs text-slate-600">Sehr einfache Erklärungen mit Analogien (Schatzkiste, Geheimcodes)</p>
+                  </a>
+                  <a href="https://bitcoinsavvykids.com" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-slate-900 text-sm">Bitcoin Savvy Kids – Early Kids</h4>
+                    <p className="text-xs text-slate-600">Spielerische Lernmethoden über die Geschichte des Geldes</p>
+                  </a>
+                  <a href="https://www.kindersache.de" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-slate-900 text-sm">Kindersache.de</h4>
+                    <p className="text-xs text-slate-600">Kindgerechte Erklärungen zum Thema Geld</p>
+                  </a>
+                </div>
+              </div>
 
-              <a href="https://www.youtube.com/c/aantonop" target="_blank" rel="noopener noreferrer" className="block p-4 border border-purple-500/30 rounded-lg hover:bg-purple-500/5 transition-all">
-                <div className="text-2xl mb-2">📺</div>
-                <h3 className="font-semibold text-slate-900 mb-1">Andreas M. Antonopoulos</h3>
-                <p className="text-xs text-slate-600 mb-2">Großartiger YouTuber erklärt Bitcoin & Kryptographie verständlich</p>
-                <span className="text-xs text-purple-600 font-medium">→ YouTube Kanal</span>
-              </a>
+              <div className="border-2 border-blue-500/30 rounded-xl p-4 bg-blue-500/5">
+                <h3 className="text-lg font-bold text-blue-700 mb-3 flex items-center gap-2">📚 10–12 Jahre (Späte Grundschule)</h3>
+                <p className="text-xs text-slate-600 mb-3">Grundbegriffe von Blockchain, digitalem Geld, Sicherheit & Verantwortung</p>
+                <div className="grid grid-cols-1 gap-2">
+                  <a href="https://bitcoinsavvykids.com/middle" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-slate-900 text-sm">Bitcoin Savvy Kids – Middle Kids</h4>
+                    <p className="text-xs text-slate-600">Erste einfache Blockchain-Erklärungen mit interaktiven Materialien</p>
+                  </a>
+                  <a href="https://thebitcoinadviser.com" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-slate-900 text-sm">The Bitcoin Adviser</h4>
+                    <p className="text-xs text-slate-600">Einfache Einführung in Wallets und digitale Sicherheit</p>
+                  </a>
+                </div>
+              </div>
 
-              <a href="https://lightning.network" target="_blank" rel="noopener noreferrer" className="block p-4 border border-yellow-500/30 rounded-lg hover:bg-yellow-500/5 transition-all">
-                <div className="text-2xl mb-2">⚡</div>
-                <h3 className="font-semibold text-slate-900 mb-1">Lightning Network</h3>
-                <p className="text-xs text-slate-600 mb-2">Offizielle Lightning Network Info - die Zukunft von Bitcoin Zahlungen</p>
-                <span className="text-xs text-yellow-600 font-medium">→ Zur Website</span>
-              </a>
+              <div className="border-2 border-amber-500/30 rounded-xl p-4 bg-amber-500/5">
+                <h3 className="text-lg font-bold text-amber-700 mb-3 flex items-center gap-2">🧠 12–14 Jahre (Frühe Teens)</h3>
+                <p className="text-xs text-slate-600 mb-3">Bitcoin als Technologie & soziales Phänomen verstehen</p>
+                <div className="grid grid-cols-1 gap-2">
+                  <a href="https://www.unicef.org/blockchain" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-slate-900 text-sm">UNICEF Blockchain Learning Hub</h4>
+                    <p className="text-xs text-slate-600">Sehr seriös, neutral & sachlich - perfekt für schulische Projekte</p>
+                  </a>
+                  <a href="https://bitcoinsavvykids.com/teens" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-slate-900 text-sm">Bitcoin Savvy Kids – Teens</h4>
+                    <p className="text-xs text-slate-600">Bitcoin im Kontext der Geldgeschichte, digitale Verantwortung</p>
+                  </a>
+                </div>
+              </div>
 
-              <a href="https://www.coinbase.com/learn" target="_blank" rel="noopener noreferrer" className="block p-4 border border-green-500/30 rounded-lg hover:bg-green-500/5 transition-all">
-                <div className="text-2xl mb-2">📚</div>
-                <h3 className="font-semibold text-slate-900 mb-1">Coinbase Learn</h3>
-                <p className="text-xs text-slate-600 mb-2">Interaktive Lektionen zu Bitcoin, Krypto und Blockchain</p>
-                <span className="text-xs text-green-600 font-medium">→ Zur Website</span>
-              </a>
+              <div className="border-2 border-red-500/30 rounded-xl p-4 bg-red-500/5">
+                <h3 className="text-lg font-bold text-red-700 mb-3 flex items-center gap-2">🎓 14–16 Jahre (Mittelstufe)</h3>
+                <p className="text-xs text-slate-600 mb-3">Technisches Grundverständnis, wirtschaftlicher Kontext</p>
+                <div className="grid grid-cols-1 gap-2">
+                  <a href="https://www.unicef.org/blockchain" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-slate-900 text-sm">UNICEF Blockchain Hub – Intermediate</h4>
+                    <p className="text-xs text-slate-600">Blockchain im Kontext sozialer Projekte, sehr seriös</p>
+                  </a>
+                  <a href="https://www.khanacademy.org/economics-finance-domain/core-finance/money-and-banking/bitcoin/v/bitcoin-what-is-it" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-slate-900 text-sm">Khan Academy – Bitcoin Kurse</h4>
+                    <p className="text-xs text-slate-600">Seriöse Bildungsplattform, Fokus auf Technologie</p>
+                  </a>
+                </div>
+              </div>
 
-              <a href="https://en.wikipedia.org/wiki/Bitcoin" target="_blank" rel="noopener noreferrer" className="block p-4 border border-red-500/30 rounded-lg hover:bg-red-500/5 transition-all">
-                <div className="text-2xl mb-2">📖</div>
-                <h3 className="font-semibold text-slate-900 mb-1">Bitcoin Wikipedia</h3>
-                <p className="text-xs text-slate-600 mb-2">Umfassende technische und historische Bitcoin Informationen</p>
-                <span className="text-xs text-red-600 font-medium">→ Zur Website</span>
-              </a>
+              <div className="border-2 border-purple-500/30 rounded-xl p-4 bg-purple-500/5">
+                <h3 className="text-lg font-bold text-purple-700 mb-3 flex items-center gap-2">🚀 16–18 Jahre (Oberstufe)</h3>
+                <p className="text-xs text-slate-600 mb-3">Technisch, gesellschaftlich & ökonomisch verstehen</p>
+                <div className="grid grid-cols-1 gap-2">
+                  <a href="https://www.unicef.org/blockchain" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-slate-900 text-sm">UNICEF Blockchain – Full Curriculum</h4>
+                    <p className="text-xs text-slate-600">Gesellschaftliche, technische & ethische Perspektive</p>
+                  </a>
+                  <a href="https://ocw.mit.edu/courses/15-s12-blockchain-and-money-fall-2018/" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-slate-900 text-sm">MIT – Blockchain & Money</h4>
+                    <p className="text-xs text-slate-600">Hochqualitativ, technisch anspruchsvoll für Fortgeschrittene</p>
+                  </a>
+                  <a href="https://www.khanacademy.org/computing/computer-science" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-slate-900 text-sm">Khan Academy – Computer Science</h4>
+                    <p className="text-xs text-slate-600">Gut erklärt auf Hochschul-Einsteiger-Niveau</p>
+                  </a>
+                </div>
+              </div>
 
-              <a href="https://bitcoin-on-chain.glitch.me" target="_blank" rel="noopener noreferrer" className="block p-4 border border-cyan-500/30 rounded-lg hover:bg-cyan-500/5 transition-all">
-                <div className="text-2xl mb-2">📊</div>
-                <h3 className="font-semibold text-slate-900 mb-1">Bitcoin Analytics</h3>
-                <p className="text-xs text-slate-600 mb-2">Echte Bitcoin Blockchain Statistiken und Metriken live sehen</p>
-                <span className="text-xs text-cyan-600 font-medium">→ Zur Website</span>
-              </a>
-
-              <a href="https://www.lopp.net/bitcoin.html" target="_blank" rel="noopener noreferrer" className="block p-4 border border-amber-500/30 rounded-lg hover:bg-amber-500/5 transition-all">
-                <div className="text-2xl mb-2">🔗</div>
-                <h3 className="font-semibold text-slate-900 mb-1">Jameson Lopp's Bitcoin Resources</h3>
-                <p className="text-xs text-slate-600 mb-2">Die beste Sammlung von Bitcoin Links und Ressourcen</p>
-                <span className="text-xs text-amber-600 font-medium">→ Zur Website</span>
-              </a>
-
-              <a href="https://www.thebookofbitcoin.com" target="_blank" rel="noopener noreferrer" className="block p-4 border border-violet-500/30 rounded-lg hover:bg-violet-500/5 transition-all">
-                <div className="text-2xl mb-2">📕</div>
-                <h3 className="font-semibold text-slate-900 mb-1">The Book of Bitcoin</h3>
-                <p className="text-xs text-slate-600 mb-2">Kostenlos online lesbar - für Bitcoin Anfänger und Profis</p>
-                <span className="text-xs text-violet-600 font-medium">→ Zur Website</span>
-              </a>
+              <div className="border-2 border-slate-500/30 rounded-xl p-4 bg-slate-500/5">
+                <h3 className="text-lg font-bold text-slate-700 mb-3 flex items-center gap-2">👨‍👩‍👧‍👦 Für Eltern & Lehrer</h3>
+                <p className="text-xs text-slate-600 mb-3">Hilft Erwachsenen, das Thema sicher zu vermitteln</p>
+                <div className="grid grid-cols-1 gap-2">
+                  <a href="https://www.coin.space/teaching-kids-bitcoin" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-slate-900 text-sm">Teaching Your Kids About Bitcoin</h4>
+                    <p className="text-xs text-slate-600">Erklärt, wie man Kindern digitale Werte erklärt</p>
+                  </a>
+                  <a href="https://bitcoinsavvykids.com/parents" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-slate-900 text-sm">Bitcoin Savvy Kids – Elternbereich</h4>
+                    <p className="text-xs text-slate-600">Pädagogisch aufgebaut für Eltern und Lehrer</p>
+                  </a>
+                  <a href="https://www.unicef.org/digital-safety" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-slate-900 text-sm">UNICEF – Digital Safety for Children</h4>
+                    <p className="text-xs text-slate-600">Grundlagen für sichere Nutzung digitaler Geräte & Konten</p>
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         )}

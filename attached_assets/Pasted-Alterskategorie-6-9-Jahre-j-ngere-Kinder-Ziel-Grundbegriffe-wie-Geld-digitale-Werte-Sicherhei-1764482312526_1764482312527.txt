@@ -1,0 +1,148 @@
+Alterskategorie: 6–9 Jahre (jüngere Kinder)
+
+Ziel: Grundbegriffe wie Geld, digitale Werte, Sicherheit verstehen – ohne technische Tiefe.
+
+Empfohlene Quellen
+
+1. The Bitcoin Adviser – “For Your Kids”
+✔ Sehr einfache Erklärungen
+✔ Viele Analogien (Schatzkiste, Geheimcodes)
+✔ Perfekt zum gemeinsamen Lesen mit Eltern
+
+
+2. Bitcoin Savvy Kids – Early Kids Section
+✔ Grundlegende Konzepte über die Geschichte des Geldes
+✔ Spielerische Lernmethoden
+✔ Keine Finanzversprechen, rein edukativ
+
+
+3. Allgemeine kindgerechte Wissensseiten (nicht speziell Bitcoin, aber wichtig für Grundverständnis)
+
+Kindersache.de → Thema Geld
+
+Blinde-Kuh.de → Suchportal für kindgeeignete Erklärartikel
+✔ Vorbereitung, bevor Bitcoin erklärt wird
+
+
+
+
+
+---
+
+🟩 Alterskategorie: 10–12 Jahre (späte Grundschule / frühe Mittelstufe)
+
+Ziel: Grundbegriffe von Blockchain, digitalem Geld, Sicherheit & Verantwortung.
+
+Empfohlene Quellen
+
+1. Bitcoin Savvy Kids – Middle Kids
+✔ Erste einfache Blockchain-Erklärungen
+✔ Interaktive Materialien, Lehrer- und Elternbegleitung möglich
+
+
+2. The Bitcoin Adviser – ab 10 Jahren tiefergehende Inhalte
+✔ Einfache Einführung in Wallets, digitale Sicherheit
+
+
+3. Was-ist-Was / kindgerechte Wissensportale
+✔ Erklären Geldsystem & digitale Technologien kindgerecht
+✔ Hilfreich als Grundlagenwissen für weiterführende Bitcoin-Themen
+
+
+
+
+---
+
+🟧 Alterskategorie: 12–14 Jahre (Unterstufe / frühe Teens)
+
+Ziel: Verständnis von Bitcoin als Technologie & sozialem Phänomen.
+Keine Spekulation, sondern reine Bildung.
+
+Empfohlene Quellen
+
+1. UNICEF Blockchain Learning Hub (Einsteiger-Bereich)
+✔ Sehr seriös
+✔ Neutrale & sachliche Erklärungen
+✔ Videos & Texte verständlich aufbereitet
+✔ Perfekt für schulische Projekte
+
+
+2. Bitcoin Savvy Kids – Teens
+✔ Versteht Bitcoin im Kontext der Geldgeschichte
+✔ Fokus auf digitale Verantwortung & Sicherheit
+
+
+3. CryptocurrencyTeens (Grundlagen)
+✔ Höhere Texttiefe, aber noch jugendfreundlich
+✔ Gut für Kinder, die „mehr wissen“ wollen
+
+
+
+
+---
+
+🟥 Alterskategorie: 14–16 Jahre (Mittelstufe)
+
+Ziel: Technisches Grundverständnis, wirtschaftlicher Kontext, Risiken & Chancen neutral betrachten.
+
+Empfohlene Quellen
+
+1. UNICEF Blockchain Learning Hub – Intermediate
+✔ Blockchain im Kontext sozialer Projekte
+✔ Sehr seriöse Organisation
+✔ Keine Investmentorientierung
+
+
+2. CryptocurrencyTeens
+✔ Grundlagen + gesellschaftliche Bedeutung
+✔ Neutral erklärt, kein Investment-Fokus
+
+
+3. Khan Academy (Bitcoin / Kryptowährung Grundkurse)
+✔ Sehr seriöse Bildungsplattform
+✔ Englisch, aber leicht verständlich
+✔ Fokus auf Technologie, nicht auf Trading
+
+
+
+
+---
+
+🟪 Alterskategorie: 16–18 Jahre (Oberstufe / technisch oder wirtschaftlich interessierte Jugendliche)
+
+Ziel: Verstehen, wie Bitcoin technisch, gesellschaftlich & ökonomisch funktioniert – keine Anlageberatung.
+
+Empfohlene Quellen
+
+1. UNICEF Blockchain Learning Hub – Full Curriculum
+✔ Ideal für technik-interessierte Jugendliche
+✔ Gute Mischung aus gesellschaftlicher, technischer & ethischer Perspektive
+
+
+2. MIT – „Blockchain & Money“-Einführungsressourcen (öffentliche Inhalte)
+✔ Sehr hochqualitativ
+✔ Technisch anspruchsvoll
+✔ Geeignet für fortgeschrittene Jugendliche
+
+
+3. Khan Academy – Computer Science + Bitcoin Videos
+✔ Gut erklärt auf Hochschul-Einsteiger-Niveau
+
+
+
+
+---
+
+🟫 Für Eltern & Lehrer (alle Altersgruppen unterstützend)
+
+Diese Quellen helfen Erwachsenen, Kindern das Thema sicher & verständlich näherzubringen:
+
+„Teaching Your Kids About Bitcoin & Cryptocurrency“ – coin.space
+✔ erklärt, wie man Kindern digitale Werte erklärt
+
+Bitcoin Savvy Kids – Eltern- und Lehrerbereich
+✔ pädagogisch aufgebaut
+
+UNICEF – „Digital Safety for Children“
+✔ wichtig für alle Altersgruppen
+✔ Grundlagen für sichere Nutzung digitaler Geräte & Konten
