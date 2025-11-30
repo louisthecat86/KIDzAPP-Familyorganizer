@@ -2501,7 +2501,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
                             className="flex-1 text-xs h-7"
                             data-testid="button-cancel-reset-pin"
                           >
-                            Abbrechen
+                            {t('common.cancel')}
                           </Button>
                         </div>
                       </div>
