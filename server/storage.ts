@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks, type LearningProgress, type InsertLearningProgress, learningProgress, type DailyChallenge, dailyChallenges } from "@shared/schema";
+import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks, type LearningProgress, type InsertLearningProgress, learningProgress, type DailyChallenge, dailyChallenges, type SpendingLimit, type InsertSpendingLimit, spendingLimits, type AuditLog, type InsertAuditLog, auditLogs } from "@shared/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { encrypt, decrypt } from "./crypto";
 
@@ -107,6 +107,16 @@ export interface IStorage {
   // Daily Challenge operations
   getTodayChallenge(peerId: number, challengeDate: string): Promise<any | undefined>;
   completeTodayChallenge(peerId: number, challengeDate: string, challengeType: string): Promise<any>;
+
+  // Spending Limits operations
+  getSpendingLimits(peerId: number): Promise<SpendingLimit | undefined>;
+  createOrUpdateSpendingLimits(peerId: number, dailyLimit: number, perTransactionLimit: number): Promise<SpendingLimit>;
+  updateDailySpent(peerId: number, satsToAdd: number): Promise<SpendingLimit>;
+  resetDailySpentIfNeeded(peerId: number): Promise<SpendingLimit | undefined>;
+
+  // Audit Log operations
+  createAuditLog(log: InsertAuditLog): Promise<AuditLog>;
+  getAuditLogs(peerId: number, limit?: number): Promise<AuditLog[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -833,6 +843,125 @@ export class DatabaseStorage implements IStorage {
       .values({ peerId, challengeDate, challengeType, completed: true })
       .returning();
     return result[0];
+  }
+
+  // Spending Limits operations
+  private getTodayDateString(): string {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  async getSpendingLimits(peerId: number): Promise<SpendingLimit | undefined> {
+    const result = await db.select().from(spendingLimits)
+      .where(eq(spendingLimits.peerId, peerId))
+      .limit(1);
+    return result[0];
+  }
+
+  async createOrUpdateSpendingLimits(peerId: number, dailyLimit: number, perTransactionLimit: number): Promise<SpendingLimit> {
+    const existing = await this.getSpendingLimits(peerId);
+    const today = this.getTodayDateString();
+    
+    if (existing) {
+      const result = await db.update(spendingLimits)
+        .set({ 
+          dailyLimit, 
+          perTransactionLimit, 
+          updatedAt: new Date() 
+        })
+        .where(eq(spendingLimits.peerId, peerId))
+        .returning();
+      if (!result.length) {
+        throw new Error(`Failed to update spending limits for peer ${peerId}`);
+      }
+      return result[0];
+    }
+    
+    const result = await db.insert(spendingLimits)
+      .values({ 
+        peerId, 
+        dailyLimit, 
+        perTransactionLimit, 
+        dailySpent: 0,
+        lastResetDate: today 
+      })
+      .returning();
+    if (!result.length) {
+      throw new Error(`Failed to create spending limits for peer ${peerId}`);
+    }
+    return result[0];
+  }
+
+  async updateDailySpent(peerId: number, satsToAdd: number): Promise<SpendingLimit> {
+    await this.resetDailySpentIfNeeded(peerId);
+    const today = this.getTodayDateString();
+    
+    const existing = await this.getSpendingLimits(peerId);
+    if (!existing) {
+      const result = await db.insert(spendingLimits)
+        .values({ 
+          peerId, 
+          dailyLimit: 100000, 
+          perTransactionLimit: 50000, 
+          dailySpent: satsToAdd,
+          lastResetDate: today
+        })
+        .returning();
+      if (!result.length) {
+        throw new Error(`Failed to create spending limits for peer ${peerId}`);
+      }
+      return result[0];
+    }
+    
+    const result = await db.update(spendingLimits)
+      .set({ 
+        dailySpent: existing.dailySpent + satsToAdd,
+        updatedAt: new Date() 
+      })
+      .where(eq(spendingLimits.peerId, peerId))
+      .returning();
+    if (!result.length) {
+      throw new Error(`Failed to update daily spent for peer ${peerId}`);
+    }
+    return result[0];
+  }
+
+  async resetDailySpentIfNeeded(peerId: number): Promise<SpendingLimit | undefined> {
+    const existing = await this.getSpendingLimits(peerId);
+    if (!existing) return undefined;
+    
+    const today = this.getTodayDateString();
+    const lastReset = existing.lastResetDate || '';
+    
+    if (lastReset !== today) {
+      console.log(`[Spending Limits] Resetting daily spent for peer ${peerId}: lastReset=${lastReset}, today=${today}`);
+      const result = await db.update(spendingLimits)
+        .set({ 
+          dailySpent: 0, 
+          lastResetDate: today,
+          updatedAt: new Date() 
+        })
+        .where(eq(spendingLimits.peerId, peerId))
+        .returning();
+      if (!result.length) {
+        console.error(`[Spending Limits] Failed to reset for peer ${peerId}`);
+        return existing;
+      }
+      return result[0];
+    }
+    return existing;
+  }
+
+  // Audit Log operations
+  async createAuditLog(log: InsertAuditLog): Promise<AuditLog> {
+    const result = await db.insert(auditLogs).values(log).returning();
+    return result[0];
+  }
+
+  async getAuditLogs(peerId: number, limit: number = 100): Promise<AuditLog[]> {
+    return await db.select().from(auditLogs)
+      .where(eq(auditLogs.peerId, peerId))
+      .orderBy(desc(auditLogs.createdAt))
+      .limit(limit);
   }
 
 }

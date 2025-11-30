@@ -320,3 +320,43 @@ export const insertDailyChallengeSchema = createInsertSchema(dailyChallenges).om
 
 export type InsertDailyChallenge = z.infer<typeof insertDailyChallengeSchema>;
 export type DailyChallenge = typeof dailyChallenges.$inferSelect;
+
+// Spending Limits Table (for parent payment security)
+export const spendingLimits = pgTable("spending_limits", {
+  id: serial("id").primaryKey(),
+  peerId: integer("peer_id").notNull().unique(), // Parent who set the limits
+  dailyLimit: integer("daily_limit").default(100000).notNull(), // Max sats per day
+  perTransactionLimit: integer("per_transaction_limit").default(50000).notNull(), // Max sats per transaction
+  dailySpent: integer("daily_spent").default(0).notNull(), // Current day spending
+  lastResetDate: text("last_reset_date"), // Date string for daily reset (YYYY-MM-DD)
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertSpendingLimitSchema = createInsertSchema(spendingLimits).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertSpendingLimit = z.infer<typeof insertSpendingLimitSchema>;
+export type SpendingLimit = typeof spendingLimits.$inferSelect;
+
+// Audit Logs Table (for security tracking)
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  peerId: integer("peer_id").notNull(),
+  action: text("action").notNull(), // 'wallet_connect_lnbits', 'wallet_connect_nwc', 'wallet_disconnect', 'payment_success', 'payment_failed', 'spending_limits_updated'
+  details: text("details"), // JSON string with additional details
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
+export type AuditLog = typeof auditLogs.$inferSelect;
