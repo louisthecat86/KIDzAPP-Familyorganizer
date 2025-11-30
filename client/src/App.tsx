@@ -350,6 +350,16 @@ export default function App() {
     enabled: !!user?.connectionId,
   });
 
+  const { data: dashboardProgress } = useQuery({
+    queryKey: ["learning-progress-dashboard", user?.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/learning-progress/${user!.id}`);
+      if (!res.ok) return { level: 1, xp: 0, streak: 0 };
+      return res.json();
+    },
+    enabled: !!user?.id && user?.role === "child",
+  });
+
   const createTaskMutation = useMutation({
     mutationFn: createTask,
     onSuccess: (task) => {
@@ -3612,27 +3622,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 </div>,
                 index * 0.1
               );
-            } else if (cardId === "learning-stats") {
-              if (user.role !== "child") return null;
-              return createDraggableCard(
-                cardId,
-                <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl hover:bg-white/55 transition-colors h-full shadow-lg p-6">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-slate-700">Level</span>
-                      <span className="text-2xl font-bold text-violet-600">{serverProgress?.level || 1}</span>
-                    </div>
-                    <div className="w-full bg-slate-200 rounded-full h-2">
-                      <div className="bg-gradient-to-r from-violet-600 to-cyan-600 h-2 rounded-full" style={{width: `${((serverProgress?.xp || 0) % 100) / 100 * 100}%`}}></div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-600">{serverProgress?.xp || 0} XP</span>
-                      <span className="text-xs text-slate-600">🔥 Streak: {serverProgress?.streak || 0}</span>
-                    </div>
-                  </div>
-                </div>,
-                index * 0.1
-              );
             }
           })}
           
@@ -4427,7 +4416,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   <Button 
                     onClick={async () => {
                       if (!user.donationAddress) {
-                        useToast()({ title: t('common.error'), description: t('donation.addressRequired'), variant: "destructive" });
+                        toast({ title: t('common.error'), description: t('donation.addressRequired'), variant: "destructive" });
                         return;
                       }
                       try {
@@ -4438,10 +4427,10 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         });
                         const data = await res.json();
                         if (res.ok) {
-                          useToast()({ title: t('common.success'), description: t('donation.savedSuccess') });
+                          toast({ title: t('common.success'), description: t('donation.savedSuccess') });
                         }
                       } catch (error) {
-                        useToast()({ title: t('common.error'), description: t('donation.saveError'), variant: "destructive" });
+                        toast({ title: t('common.error'), description: t('donation.saveError'), variant: "destructive" });
                       }
                     }}
                     className="bg-primary hover:bg-primary/90 w-full"
@@ -4458,7 +4447,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       <Button 
                         onClick={() => {
                           navigator.clipboard.writeText(`lightning:${user.donationAddress}`);
-                          useToast()({ title: t('donation.copied'), description: t('donation.copiedDesc') });
+                          toast({ title: t('donation.copied'), description: t('donation.copiedDesc') });
                         }}
                         size="sm"
                         variant="outline"
@@ -7838,7 +7827,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
   // Savings Comparison View
   if (currentView === "savings-comparison") {
-    return <SavingsComparisonPage sats={user.balance || 0} setCurrentView={setCurrentView} user={user} />;
+    return <SavingsComparisonPage sats={user.balance || 0} setCurrentView={setCurrentView} />;
   }
 
   return null;
