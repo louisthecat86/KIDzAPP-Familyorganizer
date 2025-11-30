@@ -6718,8 +6718,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   🔥
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-900">{userStreak} {userStreak === 1 ? t('common.day') : t('common.days')}</p>
-                  <p className="text-xs text-slate-600">{t('education.learningStreak')} {serverProgress?.longestStreak ? `(${t('education.record')}: ${serverProgress.longestStreak})` : ""}</p>
+                  <p className="text-2xl font-bold text-slate-900">{userStreak} {userStreak === 1 ? "Tag" : "Tage"}</p>
+                  <p className="text-xs text-slate-600">Lern-Streak {serverProgress?.longestStreak ? `(Rekord: ${serverProgress.longestStreak})` : ""}</p>
                 </div>
               </div>
               <div className="mt-3 flex gap-1">
@@ -6767,9 +6767,10 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 <span className="text-sm text-slate-600">{t('education.unlockedOf', { count: achievements.filter(a => a.condition).length, total: achievements.length })}</span>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                {achievements.map((badge, index, arr) => {
-                  // FIRST unlocked badge gets highlighted with yellow dot
-                  const isFirstUnlocked = badge.condition && arr.findIndex(b => b.condition) === index;
+                {achievements.map((badge, index) => {
+                  const unlockedBadges = achievements.filter(b => b.condition);
+                  const firstUnlockedIndex = achievements.indexOf(unlockedBadges[0]);
+                  const isFirstUnlocked = badge.condition && index === firstUnlockedIndex;
                   
                   return (
                   <div 

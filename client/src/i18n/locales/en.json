@@ -392,9 +392,7 @@
     "chartAmber": "Bitcoin Rate",
     "monthlyRate": "0.2% monthly",
     "dataCollecting": "Collecting data...",
-    "compareSavingsBtn": "📊 Compare Savings →",
-    "learningStreak": "Learning Streak",
-    "record": "Record"
+    "compareSavingsBtn": "📊 Compare Savings →"
   },
   "chat": {
     "title": "Family Chat",
@@ -964,10 +962,6 @@
     "newPasswordFor": "New password for",
     "passwordReset": "Password has been reset",
     "savePassword": "Save"
-  },
-  "common": {
-    "day": "Day",
-    "days": "Days"
   },
   "challenges": {
     "bitcoinQuiz": "Bitcoin Quiz",

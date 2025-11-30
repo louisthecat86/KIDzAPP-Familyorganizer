@@ -637,8 +637,6 @@
     "xpToNextLevel": "Noch {{xp}} XP bis Level {{level}}",
     "streakDays": "{{days}} Tage Streak",
     "modulesCompleted": "{{count}} Module abgeschlossen",
-    "learningStreak": "Lern-Streak",
-    "record": "Rekord",
     "achievementBeginner": "Anfänger",
     "achievementLearner": "Lernender",
     "achievementExpert": "Experte",
@@ -962,10 +960,6 @@
     "newPasswordFor": "Neues Passwort für",
     "passwordReset": "Passwort wurde zurückgesetzt",
     "savePassword": "Speichern"
-  },
-  "common": {
-    "day": "Tag",
-    "days": "Tage"
   },
   "challenges": {
     "bitcoinQuiz": "Bitcoin Quiz",
