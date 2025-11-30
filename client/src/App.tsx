@@ -3341,6 +3341,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     </motion.div>
   );
 
+  const serverProgress: any = null;
 
   const setupLNbits = async () => {
     if (!lnbitsUrl || !lnbitsAdminKey) return;
@@ -4427,7 +4428,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   <Button 
                     onClick={async () => {
                       if (!user.donationAddress) {
-                        useToast()({ title: t('common.error'), description: t('donation.addressRequired'), variant: "destructive" });
+                        toast({ title: t('common.error'), description: t('donation.addressRequired'), variant: "destructive" });
                         return;
                       }
                       try {
@@ -4438,10 +4439,10 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         });
                         const data = await res.json();
                         if (res.ok) {
-                          useToast()({ title: t('common.success'), description: t('donation.savedSuccess') });
+                          toast({ title: t('common.success'), description: t('donation.savedSuccess') });
                         }
                       } catch (error) {
-                        useToast()({ title: t('common.error'), description: t('donation.saveError'), variant: "destructive" });
+                        toast({ title: t('common.error'), description: t('donation.saveError'), variant: "destructive" });
                       }
                     }}
                     className="bg-primary hover:bg-primary/90 w-full"
@@ -4458,7 +4459,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       <Button 
                         onClick={() => {
                           navigator.clipboard.writeText(`lightning:${user.donationAddress}`);
-                          useToast()({ title: t('donation.copied'), description: t('donation.copiedDesc') });
+                          toast({ title: t('donation.copied'), description: t('donation.copiedDesc') });
                         }}
                         size="sm"
                         variant="outline"
