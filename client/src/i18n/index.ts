@@ -20,7 +20,11 @@ i18n
     detection: {
       order: ['localStorage', 'navigator'],
       caches: ['localStorage']
-    }
+    },
+    react: {
+      useSuspense: false
+    },
+    initImmediate: false
   });
 
 export default i18n;
