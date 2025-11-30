@@ -6768,7 +6768,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
               </div>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {achievements.map((badge, index, arr) => {
-                  const isFirstUnlocked = badge.condition && !arr.slice(0, index).some(b => b.condition);
+                  // FIRST unlocked badge gets highlighted with yellow dot
+                  const isFirstUnlocked = badge.condition && arr.findIndex(b => b.condition) === index;
                   
                   return (
                   <div 
