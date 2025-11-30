@@ -53,9 +53,7 @@ import {
   Zap,
   Flame,
   TrendingUp,
-  Globe,
-  Moon,
-  Sun
+  Globe
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PhotoUpload } from "@/components/PhotoUpload";
