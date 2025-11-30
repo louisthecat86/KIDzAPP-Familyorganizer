@@ -158,7 +158,14 @@
     "interestInfo": "Your interest earns interest too. With higher rates, your money grows faster! 🚀",
     "learningStats": "Your Learning Statistics",
     "noEvents": "No events",
-    "exampleAmount": "e.g. 500"
+    "exampleAmount": "e.g. 500",
+    "earned": "Earned",
+    "completed": "Completed",
+    "thisWeek": "This week",
+    "completedBy": "Completed by",
+    "walletSetupRequired": "To create tasks with Satoshi rewards, you first need to connect your LNbits account or Nostr Wallet Connect (NWC).",
+    "tasks": "Tasks",
+    "tasksCount": "{{count}} tasks"
   },
   "tasks": {
     "title": "Tasks",
@@ -180,6 +187,7 @@
     "transactionSent": "The transaction has been sent successfully! 🚀",
     "rewardMustBePositive": "Reward must be greater than 0",
     "confirmDelete": "Really delete this task?",
+    "orUploadPhoto": "or upload a photo:",
     "name": "Task Name",
     "namePlaceholder": "e.g. Clean your room",
     "description": "Description",

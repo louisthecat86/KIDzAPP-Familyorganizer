@@ -158,7 +158,14 @@
     "interestInfo": "Deine Zinsen verdienen wieder Zinsen. Mit höheren Zinsen wächst dein Geld immer schneller! 🚀",
     "learningStats": "Deine Lern-Statistiken",
     "noEvents": "Keine Termine",
-    "exampleAmount": "z.B. 500"
+    "exampleAmount": "z.B. 500",
+    "earned": "Verdient",
+    "completed": "Erledigt",
+    "thisWeek": "Diese Woche",
+    "completedBy": "Erledigt von",
+    "walletSetupRequired": "Um Aufgaben mit Satoshi-Belohnungen zu erstellen, musst du zuerst dein LNbits-Konto oder Nostr Wallet Connect (NWC) verbinden.",
+    "tasks": "Aufgaben",
+    "tasksCount": "{{count}} Aufgaben"
   },
   "tasks": {
     "title": "Aufgaben",
@@ -180,6 +187,7 @@
     "transactionSent": "Die Transaktion wurde erfolgreich gesendet! 🚀",
     "rewardMustBePositive": "Belohnung muss größer als 0 sein",
     "confirmDelete": "Aufgabe wirklich löschen?",
+    "orUploadPhoto": "oder Foto hochladen:",
     "name": "Aufgabenname",
     "namePlaceholder": "z.B. Zimmer aufräumen",
     "description": "Beschreibung",

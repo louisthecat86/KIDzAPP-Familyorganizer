@@ -4034,7 +4034,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     </div>
 
                     <div className="pt-2 border-t border-white/30 text-sm text-slate-600">
-                      <p>💰 Verdient: {totalSatsEarned} Sats</p>
+                      <p>💰 {t('dashboard.earned')}: {totalSatsEarned} Sats</p>
                     </div>
 
                     <div className="flex gap-2 pt-2">
@@ -4056,7 +4056,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         onClick={() => setCurrentView("tasks")}
                         data-testid={`button-tasks-${child.id}`}
                       >
-                        Aufgaben
+                        {t('dashboard.tasks')}
                       </Button>
                     </div>
                   </div>
@@ -4670,7 +4670,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 <TaskCard key={task.id} task={task} variant="parent">
                   <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-green-500/10 border border-green-500/30 w-fit">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="text-xs font-semibold text-green-300">Erledigt von: {getChildName(task.assignedTo)}</span>
+                    <span className="text-xs font-semibold text-green-300">{t('dashboard.completedBy')}: {getChildName(task.assignedTo)}</span>
                   </div>
                 </TaskCard>
               ))
@@ -4698,7 +4698,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   <div className="text-4xl">⚡</div>
                   <h2 className="text-xl font-bold text-amber-300">Wallet-Verbindung erforderlich</h2>
                   <p className="text-sm text-amber-200/80 max-w-md mx-auto">
-                    Um Aufgaben mit Satoshi-Belohnungen zu erstellen, musst du zuerst dein LNbits-Konto oder Nostr Wallet Connect (NWC) verbinden.
+                    {t('dashboard.walletSetupRequired')}
                   </p>
                   <Button 
                     onClick={() => {
@@ -5133,7 +5133,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 <CardTitle className="flex items-center gap-2">
                   LNbits Verbindung
                 </CardTitle>
-                <CardDescription>Verbinde dein LNbits-Konto um Aufgaben mit Satoshi-Belohnungen zu erstellen</CardDescription>
+                <CardDescription>{t('settings.lnbitsConnectionDesc')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {user.hasLnbitsConfigured ? (
@@ -5487,7 +5487,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 >
                   <div className="text-lg">{l.emoji}</div>
                   <div className="font-semibold">Level {l.level}</div>
-                  <div className="text-xs text-muted-foreground">{l.tasks} Aufgaben</div>
+                  <div className="text-xs text-muted-foreground">{l.tasks} {t('dashboard.tasks')}</div>
                   {l.level % milestoneInterval === 0 && (
                     <div className="text-xs text-amber-500 font-bold mt-1">+{bonusSats} ⚡</div>
                   )}
@@ -7288,11 +7288,11 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 {satsBreakdown && (
                   <div className="flex gap-4 mt-3 text-xs">
                     <div>
-                      <span className="text-slate-600">Verdient:</span>
+                      <span className="text-slate-600">{t('dashboard.earned')}:</span>
                       <span className="font-mono text-yellow-600 ml-1">{satsBreakdown.taskSats.toLocaleString()}</span>
                     </div>
                     <div>
-                      <span className="text-slate-600">Taschengeld:</span>
+                      <span className="text-slate-600">{t('family.allowance')}:</span>
                       <span className="font-mono text-green-600 ml-1">{satsBreakdown.allowanceSats.toLocaleString()}</span>
                     </div>
                   </div>
@@ -7389,7 +7389,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     >
                       <div className="text-center">
                         <div className="text-lg md:text-3xl font-bold text-green-600">{completedTasks.length}</div>
-                        <p className="text-[10px] md:text-xs text-slate-700 mt-1 md:mt-2 uppercase tracking-widest">Erledigt</p>
+                        <p className="text-[10px] md:text-xs text-slate-700 mt-1 md:mt-2 uppercase tracking-widest">{t('dashboard.completed')}</p>
                       </div>
                     </div>
                   </div>
@@ -7455,7 +7455,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                             <div className="h-8 w-8 bg-violet-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
                               <Flame className="h-4 w-4 text-violet-600" />
                             </div>
-                            <p className="text-xs text-slate-600 mb-1 font-medium">Diese Woche</p>
+                            <p className="text-xs text-slate-600 mb-1 font-medium">{t('dashboard.thisWeek')}</p>
                             <p className="text-2xl font-bold text-violet-600">{weeklyCompleted} Tasks</p>
                           </div>
                           
@@ -7725,9 +7725,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   size="sm"
                   data-testid={`button-submit-task-${task.id}`}
                 >
-                  ✓ Erledigt
+                  ✓ {t('dashboard.completed')}
                 </Button>
-                <div className="text-xs text-muted-foreground text-center">oder Foto hochladen:</div>
+                <div className="text-xs text-muted-foreground text-center">{t('tasks.orUploadPhoto')}</div>
                 <PhotoUpload 
                   taskId={task.id}
                   onUploadSuccess={handlePhotoUploadSuccess}
@@ -7767,7 +7767,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   if (currentView === "tasks-completed") {
     return (
       <div className="max-w-4xl">
-        <h1 className="text-3xl font-bold mb-8">Erledigt</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('dashboard.completed')}</h1>
         <div className="grid gap-4">
           {myTasks.filter((t: Task) => t.status === "approved").map((task: Task) => (
             <TaskCard key={task.id} task={task} variant="child" />
