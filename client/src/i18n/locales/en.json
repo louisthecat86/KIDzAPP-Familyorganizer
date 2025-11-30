@@ -735,6 +735,8 @@
     "loading": "Loading...",
     "saving": "Saving...",
     "error": "Error",
+    "satoshi": "Satoshi",
+    "euroValue": "Euro Value",
     "success": "Success",
     "warning": "Warning",
     "info": "Info",

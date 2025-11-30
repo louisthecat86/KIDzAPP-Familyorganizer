@@ -8181,14 +8181,14 @@ function TrackerChart({ userId }: { userId: number }) {
 
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-gradient-to-br from-cyan-500/20 to-cyan-600/5 border border-cyan-500/40 rounded-xl p-4">
-          <p className="text-xs text-cyan-700 uppercase tracking-wide mb-1">{t('education.satoshi')}</p>
+          <p className="text-xs text-cyan-700 uppercase tracking-wide mb-1">{t('common.satoshi')}</p>
           <p className="text-2xl font-bold text-cyan-600">{latest.totalSats.toLocaleString()}</p>
           {satsChange > 0 && (
             <p className="text-xs text-cyan-600/70 mt-1">+{satsChange.toLocaleString()} {t('education.earned')}</p>
           )}
         </div>
         <div className="bg-gradient-to-br from-violet-500/20 to-violet-600/5 border border-violet-500/40 rounded-xl p-4">
-          <p className="text-xs text-violet-700 uppercase tracking-wide mb-1">{t('education.euroValue')}</p>
+          <p className="text-xs text-violet-700 uppercase tracking-wide mb-1">{t('common.euroValue')}</p>
           <p className="text-2xl font-bold text-violet-600">€{liveEuroValue.toFixed(2)}</p>
           <p className="text-xs text-violet-600/70 mt-1">{t('education.liveRate')}</p>
         </div>
@@ -8215,7 +8215,7 @@ function TrackerChart({ userId }: { userId: number }) {
           }`}
           data-testid="toggle-sats"
         >
-          {t('education.satoshi')}
+          {t('common.satoshi')}
         </button>
         <button
           onClick={() => setShowBtcPrice(!showBtcPrice)}
