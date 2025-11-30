@@ -6628,12 +6628,12 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     const advancedModules = modules.filter(m => m.level === "advanced");
     
     const achievements = [
-      { id: "first-module", title: t('education.achievementBeginner'), icon: "🌱", condition: completedModules.length >= 1 },
-      { id: "half-done", title: t('education.achievementLearner'), icon: "📚", condition: completedModules.length >= 10 },
-      { id: "all-done", title: t('education.achievementExpert'), icon: "👑", condition: modules.length > 0 && completedModules.length === modules.length },
-      { id: "beginner-master", title: t('education.achievementBeginnerMaster'), icon: "🟢", condition: beginnerModules.length > 0 && beginnerModules.every(m => completedModules.includes(m.id)) },
-      { id: "advanced-master", title: t('education.achievementAdvancedMaster'), icon: "🔴", condition: advancedModules.length > 0 && advancedModules.every(m => completedModules.includes(m.id)) },
-      { id: "intermediate-master", title: t('education.achievementIntermediateMaster'), icon: "🟡", condition: intermediateModules.length > 0 && intermediateModules.every(m => completedModules.includes(m.id)) }
+      { id: "first-module", title: t('education.achievementBeginner'), icon: "🌱", condition: completedModules.length >= 1, requirement: t('education.requirementFirstModule') },
+      { id: "half-done", title: t('education.achievementLearner'), icon: "📚", condition: completedModules.length >= 10, requirement: t('education.requirementHalfDone') },
+      { id: "all-done", title: t('education.achievementExpert'), icon: "👑", condition: modules.length > 0 && completedModules.length === modules.length, requirement: t('education.requirementAllDone') },
+      { id: "beginner-master", title: t('education.achievementBeginnerMaster'), icon: "🟢", condition: beginnerModules.length > 0 && beginnerModules.every(m => completedModules.includes(m.id)), requirement: t('education.requirementBeginnerMaster') },
+      { id: "advanced-master", title: t('education.achievementAdvancedMaster'), icon: "🔴", condition: advancedModules.length > 0 && advancedModules.every(m => completedModules.includes(m.id)), requirement: t('education.requirementAdvancedMaster') },
+      { id: "intermediate-master", title: t('education.achievementIntermediateMaster'), icon: "🟡", condition: intermediateModules.length > 0 && intermediateModules.every(m => completedModules.includes(m.id)), requirement: t('education.requirementIntermediateMaster') }
     ];
 
     const xpPerModule = 100;
@@ -6752,8 +6752,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {achievements.map((badge, index) => {
                   const unlockedBadges = achievements.filter(b => b.condition);
-                  const firstUnlockedIndex = achievements.indexOf(unlockedBadges[0]);
+                  const firstUnlockedIndex = unlockedBadges.length > 0 ? achievements.indexOf(unlockedBadges[0]) : -1;
                   const isFirstUnlocked = badge.condition && index === firstUnlockedIndex;
+                  const isNextToUnlock = !badge.condition && index === 0;
                   
                   return (
                   <div 
@@ -6763,13 +6764,15 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                         ? "border-amber-400 bg-gradient-to-br from-amber-400/20 to-yellow-400/20 shadow-lg shadow-amber-500/20" 
                         : badge.condition 
                           ? "border-blue-400 bg-gradient-to-br from-blue-400/20 to-cyan-400/20 shadow-lg shadow-blue-500/20" 
-                          : "border-slate-200 bg-slate-50/50 opacity-40 grayscale"
+                          : isNextToUnlock
+                            ? "border-green-400 bg-gradient-to-br from-green-400/10 to-emerald-400/10 opacity-90"
+                            : "border-slate-200 bg-slate-50/50 opacity-40 grayscale"
                     }`}
                   >
                     <div className={`text-4xl mb-2 ${isFirstUnlocked ? "animate-bounce" : ""}`} style={{ animationDuration: '2s' }}>
                       {badge.condition ? badge.icon : "🔒"}
                     </div>
-                    <p className={`text-xs font-bold ${isFirstUnlocked ? "text-amber-700" : badge.condition ? "text-blue-700" : "text-slate-400"}`}>{badge.title}</p>
+                    <p className={`text-xs font-bold ${isFirstUnlocked ? "text-amber-700" : badge.condition ? "text-blue-700" : isNextToUnlock ? "text-green-700" : "text-slate-400"}`}>{badge.title}</p>
                     {isFirstUnlocked && (
                       <div className="mt-1 flex justify-center">
                         <span className="relative inline-flex items-center gap-1">
@@ -6781,6 +6784,11 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     {badge.condition && !isFirstUnlocked && (
                       <div className="mt-1 flex justify-center">
                         <span className="text-[10px] px-2 py-0.5 bg-blue-500 text-white rounded-full font-semibold">{t('education.unlocked')}</span>
+                      </div>
+                    )}
+                    {!badge.condition && (
+                      <div className="mt-1">
+                        <p className={`text-[9px] ${isNextToUnlock ? "text-green-600 font-semibold" : "text-slate-400"}`}>{badge.requirement}</p>
                       </div>
                     )}
                   </div>
