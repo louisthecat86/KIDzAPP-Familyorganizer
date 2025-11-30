@@ -139,19 +139,19 @@ type FamilyEvent = {
   eventType: string;
 };
 
-// --- Password Validation Function ---
+// --- Password Validation Function (returns translation keys) ---
 function validatePassword(password: string): { valid: boolean; error: string } {
   if (password.length < 8) {
-    return { valid: false, error: "Passwort muss mindestens 8 Zeichen haben" };
+    return { valid: false, error: "errors.passwordMinLength" };
   }
   if (password.length > 12) {
-    return { valid: false, error: "Passwort darf maximal 12 Zeichen haben" };
+    return { valid: false, error: "errors.passwordMaxLength" };
   }
   if (!/[A-Z]/.test(password)) {
-    return { valid: false, error: "Passwort muss mindestens einen Großbuchstaben enthalten" };
+    return { valid: false, error: "errors.passwordUppercase" };
   }
   if (!/[0-9]/.test(password)) {
-    return { valid: false, error: "Passwort muss mindestens eine Zahl enthalten" };
+    return { valid: false, error: "errors.passwordNumber" };
   }
   return { valid: true, error: "" };
 }
@@ -290,6 +290,7 @@ async function deleteEvent(id: number): Promise<void> {
 
 
 export default function App() {
+  const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [newTask, setNewTask] = useState({ title: "", description: "", sats: 50 });
   const [newEvent, setNewEvent] = useState({ title: "", description: "", location: "", startDate: "", endDate: "" });
@@ -353,12 +354,12 @@ export default function App() {
     mutationFn: createTask,
     onSuccess: (task) => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      toast({ title: "Aufgabe erstellt", description: "Warte auf Bestätigung" });
+      toast({ title: t('tasks.created'), description: t('tasks.waitingForApproval') });
       setNewTask({ title: "", description: "", sats: 50 });
       setCurrentView("dashboard");
     },
     onError: (error) => {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
     }
   });
 
@@ -384,10 +385,10 @@ export default function App() {
     mutationFn: deleteTask,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      toast({ title: "Aufgabe gelöscht", description: "Die Aufgabe wurde erfolgreich gelöscht" });
+      toast({ title: t('tasks.deleted'), description: t('tasks.deletedSuccess') });
     },
     onError: (error) => {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
     }
   });
 
@@ -396,10 +397,10 @@ export default function App() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
       setNewEvent({ title: "", description: "", location: "", startDate: "", endDate: "" });
-      toast({ title: "Termin erstellt", description: "Der Familienkalender wurde aktualisiert" });
+      toast({ title: t('calendar.eventCreated'), description: t('calendar.calendarUpdated') });
     },
     onError: (error) => {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
     }
   });
 
@@ -407,10 +408,10 @@ export default function App() {
     mutationFn: deleteEvent,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
-      toast({ title: "Termin gelöscht", description: "Der Termin wurde entfernt" });
+      toast({ title: t('calendar.eventDeleted'), description: t('calendar.eventRemoved') });
     },
     onError: (error) => {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
     }
   });
 
@@ -458,13 +459,13 @@ export default function App() {
         }),
       });
       if (!res.ok) throw new Error("Failed to create allowance");
-      toast({ title: "Erfolg", description: "Taschengeld hinzugefügt!" });
+      toast({ title: t('common.success'), description: t('family.allowanceAdded') });
       queryClient.invalidateQueries({ queryKey: ["allowances"] });
       setAllowanceChildId(null);
       setAllowanceSats("");
       setAllowanceFrequency("weekly");
     } catch (error) {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
     } finally {
       setIsCreatingAllowance(false);
     }
@@ -474,10 +475,10 @@ export default function App() {
     try {
       const res = await fetch(`/api/allowances/${allowanceId}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete allowance");
-      toast({ title: "Erfolg", description: "Taschengeld gelöscht!" });
+      toast({ title: t('common.success'), description: t('family.allowanceDeleted') });
       queryClient.invalidateQueries({ queryKey: ["allowances"] });
     } catch (error) {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
     }
   };
 
@@ -491,7 +492,7 @@ export default function App() {
     setMode("app");
     setCurrentView("dashboard");
     localStorage.setItem("sats-user", JSON.stringify(newUser));
-    toast({ title: "Willkommen!", description: `Hallo ${newUser.name}` });
+    toast({ title: t('auth.welcomeBack'), description: `${t('dashboard.hello')} ${newUser.name}` });
   };
 
   const logout = () => {
@@ -506,7 +507,7 @@ export default function App() {
     if (!newTask.title || !user) return;
 
     if (newTask.sats <= 0) {
-      toast({ title: "Fehler", description: "Belohnung muss größer als 0 sein", variant: "destructive" });
+      toast({ title: t('common.error'), description: t('tasks.rewardMustBePositive'), variant: "destructive" });
       return;
     }
 
@@ -526,7 +527,7 @@ export default function App() {
       id: taskId,
       updates: { status: "assigned", assignedTo: user.id },
     });
-    toast({ title: "Aufgabe angenommen", description: "Let's stack sats!" });
+    toast({ title: t('tasks.accepted'), description: t('tasks.letsStackSats') });
   };
 
   const submitProof = (taskId: number) => {
@@ -534,7 +535,7 @@ export default function App() {
       id: taskId,
       updates: { status: "submitted", proof: "proof_mock.jpg" },
     });
-    toast({ title: "Beweis hochgeladen", description: "Warte auf Bestätigung." });
+    toast({ title: t('tasks.proofUploaded'), description: t('tasks.waitingForApproval') });
   };
 
   const approveTask = async (taskId: number) => {
@@ -552,7 +553,7 @@ export default function App() {
         id: taskId,
         updates: { status: "approved" },
       });
-      toast({ title: "🎉⚡ Sats ausgezahlt!", description: "Die Transaktion wurde erfolgreich gesendet! 🚀" });
+      toast({ title: t('tasks.satsPaid'), description: t('tasks.transactionSent') });
     } finally {
       // Reset after a delay to allow mutation to complete
       setTimeout(() => setApprovingTaskId(null), 2000);
@@ -602,8 +603,8 @@ export default function App() {
             const bonusData = await bonusRes.json();
             if (bonusData.bonusPaid) {
               toast({ 
-                title: "🏆 Level-Bonus!", 
-                description: `Level ${bonusData.level} erreicht: +${bonusData.sats} Sats Bonus!`,
+                title: t('education.levelBonus'), 
+                description: t('education.levelBonusDesc', { level: bonusData.level, sats: bonusData.sats }),
                 duration: 5000
               });
             }
@@ -616,7 +617,7 @@ export default function App() {
   };
 
   const handleDeleteTask = (taskId: number) => {
-    if (window.confirm("Aufgabe wirklich löschen?")) {
+    if (window.confirm(t('tasks.confirmDelete'))) {
       deleteTaskMutation.mutate(taskId);
     }
   };
@@ -642,7 +643,7 @@ export default function App() {
   };
 
   const handleDeleteEvent = (eventId: number) => {
-    if (window.confirm("Termin wirklich löschen?")) {
+    if (window.confirm(t('calendar.confirmDelete'))) {
       deleteEventMutation.mutate(eventId);
     }
   };
@@ -791,17 +792,17 @@ export default function App() {
           <div className="px-4 py-8 space-y-6 flex flex-col items-center">
             <div className="flex items-center gap-3 mb-8">
               <Button variant="outline" onClick={() => setCurrentView("allowance-payout")} className="gap-2" data-testid="button-back-to-dashboard">
-                <ChevronLeft className="h-4 w-4" /> Zurück
+                <ChevronLeft className="h-4 w-4" /> {t('common.back')}
               </Button>
             </div>
 
             <Card className="border-2 border-primary/40 bg-primary/5 w-full max-w-md">
               <CardHeader>
-                <CardTitle>Neue Terminzahlung hinzufügen</CardTitle>
+                <CardTitle>{t('allowance.addNew')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="allowance-child">Kind</Label>
+                  <Label htmlFor="allowance-child">{t('sidebar.child')}</Label>
                   <select
                     id="allowance-child"
                     value={allowanceChildId || ""}
@@ -809,7 +810,7 @@ export default function App() {
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     data-testid="select-allowance-child"
                   >
-                    <option value="">-- Kind wählen --</option>
+                    <option value="">{t('common.selectChild')}</option>
                     {parentChildren.map((child: any) => (
                       <option key={child.id} value={child.id}>{child.name}</option>
                     ))}
@@ -817,11 +818,11 @@ export default function App() {
                 </div>
 
                 <div>
-                  <Label htmlFor="allowance-sats">Betrag (Sats)</Label>
+                  <Label htmlFor="allowance-sats">{t('family.amount')} (Sats)</Label>
                   <Input
                     id="allowance-sats"
                     type="number"
-                    placeholder="z.B. 100"
+                    placeholder={t('tasks.amountPlaceholder')}
                     value={allowanceSats}
                     onChange={(e) => setAllowanceSats(e.target.value)}
                     data-testid="input-allowance-sats"
@@ -829,7 +830,7 @@ export default function App() {
                 </div>
 
                 <div>
-                  <Label htmlFor="allowance-freq">Turnus</Label>
+                  <Label htmlFor="allowance-freq">{t('family.frequency')}</Label>
                   <select
                     id="allowance-freq"
                     value={allowanceFrequency}
@@ -837,10 +838,10 @@ export default function App() {
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     data-testid="select-allowance-frequency"
                   >
-                    <option value="daily">Täglich</option>
-                    <option value="weekly">Wöchentlich</option>
-                    <option value="biweekly">Zweiwöchentlich</option>
-                    <option value="monthly">Monatlich</option>
+                    <option value="daily">{t('common.daily')}</option>
+                    <option value="weekly">{t('common.weekly')}</option>
+                    <option value="biweekly">{t('common.biweekly')}</option>
+                    <option value="monthly">{t('common.monthly')}</option>
                   </select>
                 </div>
 
@@ -850,7 +851,7 @@ export default function App() {
                   className="w-full bg-primary hover:bg-primary/90"
                   data-testid="button-create-allowance"
                 >
-                  {isCreatingAllowance ? "Wird gespeichert..." : "Hinzufügen"}
+                  {isCreatingAllowance ? t('common.saving') : t('common.add')}
                 </Button>
               </CardContent>
             </Card>
@@ -858,18 +859,14 @@ export default function App() {
             {allowances.length > 0 && (
               <Card className="w-full max-w-md border border-border/50 bg-card/50">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">Aktive Zahlungen ({allowances.length})</CardTitle>
+                  <CardTitle className="text-lg">{t('allowance.activePayments')} ({allowances.length})</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {allowances.map((allowance: any) => {
                     const child = parentChildren.find((c: any) => c.id === allowance.childId);
-                    const freqLabels: Record<string, string> = {
-                      daily: "Täglich",
-                      weekly: "Wöchentlich",
-                      biweekly: "Zweiwöchentlich",
-                      monthly: "Monatlich",
-                    };
-                    const freqLabel = freqLabels[allowance.frequency as string] || allowance.frequency;
+                    const freqLabel = allowance.frequency === "daily" ? t('common.daily') :
+                                      allowance.frequency === "weekly" ? t('common.weekly') :
+                                      allowance.frequency === "biweekly" ? t('common.biweekly') : t('common.monthly');
 
                     return (
                       <div
@@ -882,7 +879,7 @@ export default function App() {
                             {child?.name?.[0] || "?"}
                           </div>
                           <div>
-                            <p className="font-semibold">{child?.name || "Unbekannt"}</p>
+                            <p className="font-semibold">{child?.name || t('common.unknown')}</p>
                             <p className="text-sm text-primary font-medium">
                               {allowance.sats} Sats {freqLabel}
                             </p>
@@ -936,6 +933,8 @@ export default function App() {
 }
 
 function NotificationCenterView({ user, tasks, messages, allowances, parentChildren, setCurrentView }: any) {
+  const { t, i18n } = useTranslation();
+  
   type NotificationItem = {
     id: string;
     type: "task" | "allowance" | "message";
@@ -955,8 +954,8 @@ function NotificationCenterView({ user, tasks, messages, allowances, parentChild
     notifications.push({
       id: `task-${task.id}`,
       type: "task",
-      title: "Aufgabe genehmigt",
-      description: `${task.title} - ${task.sats} Sats ${child ? `an ${child.name}` : "erhalten"}`,
+      title: t('tasks.statusApproved'),
+      description: `${task.title} - ${task.sats} Sats ${child ? `${t('allowance.paidTo')} ${child.name}` : t('wallet.earned')}`,
       timestamp: taskTimestamp,
       sats: task.sats,
     });
@@ -965,16 +964,16 @@ function NotificationCenterView({ user, tasks, messages, allowances, parentChild
   allowances.forEach((allowance: any) => {
     const child = parentChildren.find((c: any) => c.id === allowance.childId);
     const freqLabels: Record<string, string> = {
-      daily: "täglich",
-      weekly: "wöchentlich",
-      biweekly: "zweiwöchentlich",
-      monthly: "monatlich",
+      daily: t('common.daily'),
+      weekly: t('common.weekly'),
+      biweekly: t('common.biweekly'),
+      monthly: t('common.monthly'),
     };
     notifications.push({
       id: `allowance-${allowance.id}`,
       type: "allowance",
-      title: "Taschengeld aktiv",
-      description: `${allowance.sats} Sats ${freqLabels[allowance.frequency] || allowance.frequency} für ${child?.name || "Kind"}`,
+      title: t('activities.allowanceActive'),
+      description: `${allowance.sats} Sats ${freqLabels[allowance.frequency] || allowance.frequency} ${t('allowance.paidTo')} ${child?.name || t('sidebar.child')}`,
       timestamp: new Date(allowance.createdAt || Date.now()),
       sats: allowance.sats,
     });
@@ -985,7 +984,7 @@ function NotificationCenterView({ user, tasks, messages, allowances, parentChild
     notifications.push({
       id: `message-${msg.id}`,
       type: "message",
-      title: "Neue Nachricht",
+      title: t('activities.newMessage'),
       description: `${msg.senderName}: ${msg.content?.substring(0, 50)}${msg.content?.length > 50 ? "..." : ""}`,
       timestamp: new Date(msg.createdAt || Date.now()),
     });
@@ -1039,7 +1038,7 @@ function NotificationCenterView({ user, tasks, messages, allowances, parentChild
       <div className="px-4 py-8 space-y-6 flex flex-col items-center">
         <div className="flex items-center gap-3 mb-4 w-full max-w-md">
           <Button variant="outline" onClick={() => setCurrentView("dashboard")} className="gap-2" data-testid="button-back-to-dashboard">
-            <ChevronLeft className="h-4 w-4" /> Zurück
+            <ChevronLeft className="h-4 w-4" /> {t('common.back')}
           </Button>
         </div>
 
@@ -1049,8 +1048,8 @@ function NotificationCenterView({ user, tasks, messages, allowances, parentChild
               <Bell className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold">Aktivitäten</h2>
-              <p className="text-sm text-muted-foreground">Deine letzten Ereignisse</p>
+              <h2 className="text-xl font-bold">{t('activities.title')}</h2>
+              <p className="text-sm text-muted-foreground">{t('activities.recentEvents')}</p>
             </div>
           </div>
 
@@ -1059,7 +1058,7 @@ function NotificationCenterView({ user, tasks, messages, allowances, parentChild
               <div className="h-16 w-16 rounded-full bg-muted/30 flex items-center justify-center mx-auto mb-4">
                 <Bell className="h-8 w-8 text-muted-foreground" />
               </div>
-              <p className="text-muted-foreground">Noch keine Aktivitäten vorhanden</p>
+              <p className="text-muted-foreground">{t('activities.noActivities')}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -1077,7 +1076,7 @@ function NotificationCenterView({ user, tasks, messages, allowances, parentChild
                     <p className="text-xs text-muted-foreground truncate">{notification.description}</p>
                   </div>
                   <p className="text-xs text-muted-foreground whitespace-nowrap">
-                    {formatDistanceToNow(notification.timestamp, { addSuffix: true, locale: de })}
+                    {formatDistanceToNow(notification.timestamp, { addSuffix: true, locale: i18n.language === 'de' ? de : enUS })}
                   </p>
                 </motion.div>
               ))}
@@ -1090,6 +1089,7 @@ function NotificationCenterView({ user, tasks, messages, allowances, parentChild
 }
 
 function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView, queryClient }: any) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [isProcessingPayout, setIsProcessingPayout] = useState(false);
   const [payoutTab, setPayoutTab] = useState<"plans" | "instant" | null>(null);
@@ -1134,34 +1134,34 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
         body: JSON.stringify({ allowanceId, childId, sats, paymentMethod }),
       });
       if (!res.ok) throw new Error("Payout failed");
-      const childName = childrenWithAllowances.find((c: any) => c.child.id === childId)?.child.name || "Kind";
-      toast({ title: "Erfolg", description: `${sats} Sats an ${childName} gezahlt!` });
+      const childName = childrenWithAllowances.find((c: any) => c.child.id === childId)?.child.name || t('sidebar.child');
+      toast({ title: t('common.success'), description: `${sats} Sats ${t('allowance.paidTo')} ${childName}!` });
       queryClient.invalidateQueries({ queryKey: ["children-with-allowances"] });
     } catch (error) {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
     } finally {
       setIsProcessingPayout(false);
     }
   };
 
   const handleDeleteAllowance = async (allowanceId: number) => {
-    if (!confirm("Bist du sicher, dass du diese Terminzahlung löschen möchtest?")) return;
+    if (!confirm(t('allowance.confirmDelete'))) return;
     
     try {
       const res = await fetch(`/api/allowances/${allowanceId}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete allowance");
-      toast({ title: "Erfolg", description: "Terminzahlung gelöscht!" });
+      toast({ title: t('common.success'), description: t('allowance.deleted') });
       refetchAllowances();
     } catch (error) {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
     }
   };
 
   const handleAdHocPayout = async () => {
     if (!adHocChildId || !adHocSats) {
-      toast({ title: "Fehler", description: "Bitte Kind und Betrag auswählen", variant: "destructive" });
+      toast({ title: t('common.error'), description: t('allowance.selectChildAndAmount'), variant: "destructive" });
       return;
     }
     
@@ -1169,7 +1169,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
     try {
       const child = allChildren.find((c: any) => c.id === adHocChildId);
       if (!child?.lightningAddress) {
-        throw new Error("Kind hat keine Lightning Adresse");
+        throw new Error(t('allowance.noLightningAddress'));
       }
 
       const res = await fetch(`/api/parent/${user.id}/payout-instant`, {
@@ -1184,15 +1184,15 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
       });
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.error || "Zahlung fehlgeschlagen");
+        throw new Error(error.error || t('wallet.paymentFailed'));
       }
-      toast({ title: "Erfolg", description: `${adHocSats} Sats an ${child.name} gesendet!` });
+      toast({ title: t('common.success'), description: `${adHocSats} Sats ${t('allowance.paidTo')} ${child.name}!` });
       setAdHocChildId(null);
       setAdHocSats("");
       setAdHocMessage("");
       queryClient.invalidateQueries({ queryKey: ["children-with-allowances"] });
     } catch (error) {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
     } finally {
       setIsProcessingPayout(false);
     }
@@ -1210,14 +1210,14 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
       <div className="px-4 py-8 space-y-6 flex flex-col items-center">
         <div className="flex items-center gap-3 mb-8">
           <Button variant="outline" onClick={() => setCurrentView("dashboard")} className="gap-2" data-testid="button-back-to-dashboard">
-            <ChevronLeft className="h-4 w-4" /> Zurück
+            <ChevronLeft className="h-4 w-4" /> {t('common.back')}
           </Button>
         </div>
 
 
         {payoutTab === null ? (
           <div className="flex flex-col items-center justify-center gap-8 py-8 w-full">
-            <h2 className="text-2xl font-bold text-center">Was möchtest du tun?</h2>
+            <h2 className="text-2xl font-bold text-center">{t('allowance.whatToDo')}</h2>
             <div className="flex flex-col gap-3 w-80 items-stretch">
               <Button 
                 onClick={() => setPayoutTab("plans")}
@@ -1226,7 +1226,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
               >
                 <div className="flex flex-col items-center gap-3">
                   <span className="text-3xl">📅</span>
-                  <span className="text-base">Terminzahlung</span>
+                  <span className="text-base">{t('sidebar.allowance.scheduled')}</span>
                 </div>
               </Button>
               <Button 
@@ -1236,7 +1236,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
               >
                 <div className="flex flex-col items-center gap-3">
                   <span className="text-3xl">⚡</span>
-                  <span className="text-base">Sofortzahlung</span>
+                  <span className="text-base">{t('sidebar.allowance.instant')}</span>
                 </div>
               </Button>
             </div>
@@ -1251,12 +1251,12 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
                     className="bg-primary hover:bg-primary/90"
                     data-testid="button-create-new-allowance"
                   >
-                    + Neue Terminzahlung erstellen
+                    + {t('allowance.addNew')}
                   </Button>
                 </div>
                 {childrenWithAllowances.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-muted-foreground mb-4">Keine Kinder mit aktiven Zahlplänen vorhanden.</p>
+                    <p className="text-muted-foreground mb-4">{t('allowance.noActivePayments')}</p>
                   </div>
                 ) : (
                   childrenWithAllowances.map((item: any) => (
@@ -1268,7 +1268,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
                           </div>
                           <div>
                             <p className="font-semibold">{item.child.name}</p>
-                            <p className="text-xs text-muted-foreground">⚡ {item.child.lightningAddress || "Keine Adresse"}</p>
+                            <p className="text-xs text-muted-foreground">⚡ {item.child.lightningAddress || t('wallet.noAddress')}</p>
                           </div>
                         </div>
                       </div>
@@ -1278,9 +1278,9 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
                             <div>
                               <p className="font-semibold text-primary">{allowance.sats} Sats</p>
                               <p className="text-xs text-muted-foreground">
-                                {allowance.frequency === "daily" ? "Täglich" : 
-                                 allowance.frequency === "weekly" ? "Wöchentlich" :
-                                 allowance.frequency === "biweekly" ? "Zweiwöchentlich" : "Monatlich"}
+                                {allowance.frequency === "daily" ? t('common.daily') : 
+                                 allowance.frequency === "weekly" ? t('common.weekly') :
+                                 allowance.frequency === "biweekly" ? t('common.biweekly') : t('common.monthly')}
                               </p>
                             </div>
                             <div className="flex gap-2">
@@ -1291,7 +1291,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
                                 className="bg-primary hover:bg-primary/90"
                                 data-testid={`button-payout-${allowance.id}`}
                               >
-                                {isProcessingPayout ? "..." : "Zahlen"}
+                                {isProcessingPayout ? "..." : t('wallet.pay')}
                               </Button>
                               <Button
                                 onClick={() => handleDeleteAllowance(allowance.id)}
@@ -1314,7 +1314,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
             {payoutTab === "instant" && (
               <div className="space-y-4 max-w-md mx-auto w-full">
                 <div>
-                  <Label htmlFor="adhoc-child" className="text-sm font-semibold mb-2 block">Kind auswählen</Label>
+                  <Label htmlFor="adhoc-child" className="text-sm font-semibold mb-2 block">{t('allowance.selectChildLabel')}</Label>
                   <select
                     id="adhoc-child"
                     value={adHocChildId || ""}
@@ -1322,18 +1322,18 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     data-testid="select-adhoc-child"
                   >
-                    <option value="">-- Kind wählen --</option>
+                    <option value="">{t('common.selectChild')}</option>
                     {allChildren.map((child: any) => (
                       <option key={child.id} value={child.id}>
                         {child.name} {child.lightningAddress ? "✓" : "⚠️"}
                       </option>
                     ))}
                   </select>
-                  <p className="text-xs text-muted-foreground mt-1">⚠️ = Keine Lightning Adresse konfiguriert</p>
+                  <p className="text-xs text-muted-foreground mt-1">⚠️ = {t('allowance.noLightningAddress')}</p>
                 </div>
 
                 <div>
-                  <Label htmlFor="adhoc-sats" className="text-sm font-semibold mb-2 block">Betrag (Sats)</Label>
+                  <Label htmlFor="adhoc-sats" className="text-sm font-semibold mb-2 block">{t('family.amount')} (Sats)</Label>
                   <Input
                     id="adhoc-sats"
                     type="number"
@@ -1346,11 +1346,11 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
                 </div>
 
                 <div>
-                  <Label htmlFor="adhoc-message" className="text-sm font-semibold mb-2 block">Nachricht (optional)</Label>
+                  <Label htmlFor="adhoc-message" className="text-sm font-semibold mb-2 block">{t('chat.message')} ({t('chat.optional')})</Label>
                   <Input
                     id="adhoc-message"
                     type="text"
-                    placeholder="z.B. Taschengeld extra"
+                    placeholder={t('chat.messagePlaceholder')}
                     value={adHocMessage}
                     onChange={(e) => setAdHocMessage(e.target.value)}
                     data-testid="input-adhoc-message"
@@ -1365,7 +1365,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
                   size="lg"
                   data-testid="button-send-adhoc"
                 >
-                  {isProcessingPayout ? "⏳ Wird gesendet..." : "💚 Jetzt senden"}
+                  {isProcessingPayout ? `⏳ ${t('common.sending')}` : `💚 ${t('common.sendNow')}`}
                 </Button>
               </div>
             )}
@@ -1377,6 +1377,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
 }
 
 function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setSidebarOpen, onLogout, layoutView, setLayoutView, tasksNotificationCount = 0, chatNotificationCount = 0 }: any) {
+  const { t } = useTranslation();
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [showWalletSubmenu, setShowWalletSubmenu] = useState(false);
   const [showCalendarSubmenu, setShowCalendarSubmenu] = useState(false);
@@ -1386,14 +1387,14 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
   const [showTasksSubmenu, setShowTasksSubmenu] = useState(false);
   
   const menuItems = [
-    { id: "dashboard", label: user.role === "parent" ? "Dashboard" : "Mein Dashboard", icon: Home, badge: 0 },
-    ...(user.role === "parent" ? [{ id: "tasks", label: "Aufgaben", icon: CheckCircle, badge: tasksNotificationCount, submenu: true }] : []),
-    ...(user.role === "parent" ? [{ id: "children-overview", label: "Kinder-Übersicht", icon: Users, badge: 0 }] : []),
-    { id: "calendar", label: "Familienkalender", icon: Calendar, badge: 0 },
-    { id: "chat", label: "Familienchat", icon: MessageSquare, badge: chatNotificationCount },
-    { id: "notifications", label: "Aktivitäten", icon: Bell, badge: 0 },
-    { id: "leaderboard", label: "Bestenliste", icon: Trophy, badge: 0 },
-    ...(user.role === "child" ? [{ id: "bitcoin-education", label: "Bitcoin Lernen", icon: BookOpen, badge: 0 }] : []),
+    { id: "dashboard", label: user.role === "parent" ? t('nav.dashboard') : t('sidebar.myDashboard'), icon: Home, badge: 0 },
+    ...(user.role === "parent" ? [{ id: "tasks", label: t('nav.tasks'), icon: CheckCircle, badge: tasksNotificationCount, submenu: true }] : []),
+    ...(user.role === "parent" ? [{ id: "children-overview", label: t('sidebar.childrenOverview'), icon: Users, badge: 0 }] : []),
+    { id: "calendar", label: t('nav.calendar'), icon: Calendar, badge: 0 },
+    { id: "chat", label: t('sidebar.familyChat'), icon: MessageSquare, badge: chatNotificationCount },
+    { id: "notifications", label: t('sidebar.activities'), icon: Bell, badge: 0 },
+    { id: "leaderboard", label: t('sidebar.leaderboard'), icon: Trophy, badge: 0 },
+    ...(user.role === "child" ? [{ id: "bitcoin-education", label: t('sidebar.bitcoinLearn'), icon: BookOpen, badge: 0 }] : []),
   ];
 
   const handleSettingsClick = (tab: "ansicht" | "wallet" | "peers") => {
@@ -1437,15 +1438,15 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
             </Button>
           </div>
           <div className="space-y-1 md:space-y-2">
-            <p className="text-xs uppercase tracking-widest text-slate-600 font-semibold">Familie</p>
-            <h2 className="text-xl md:text-2xl font-bold text-slate-900">{user.familyName || "Family"}</h2>
+            <p className="text-xs uppercase tracking-widest text-slate-600 font-semibold">{t('family.title')}</p>
+            <h2 className="text-xl md:text-2xl font-bold text-slate-900">{user.familyName || t('family.title')}</h2>
             <div className="flex items-center gap-2 pt-1 md:pt-2">
               <div className="h-7 w-7 md:h-8 md:w-8 rounded-full bg-violet-500/30 text-violet-700 flex items-center justify-center font-bold text-xs md:text-sm">
                 {user.name[0]}
               </div>
               <div>
                 <p className="text-xs md:text-sm font-medium text-slate-800">{user.name}</p>
-                <p className="text-xs text-slate-600 capitalize">{user.role === "child" ? "Kind" : "Eltern"}</p>
+                <p className="text-xs text-slate-600 capitalize">{user.role === "child" ? t('sidebar.child') : t('sidebar.parent')}</p>
               </div>
             </div>
           </div>
@@ -1491,7 +1492,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                         }`}
                         data-testid="submenu-tasks-normal"
                       >
-                        Normale Aufgaben
+                        {t('sidebar.normalTasks')}
                       </button>
                       <button
                         onClick={() => {
@@ -1505,7 +1506,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                         }`}
                         data-testid="submenu-tasks-recurring"
                       >
-                        Wiederkehrende Aufgaben
+                        {t('sidebar.recurringTasks')}
                       </button>
                     </motion.div>
                   )}
@@ -1546,7 +1547,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                         }`}
                         data-testid="submenu-calendar-create"
                       >
-                        Termin anlegen
+                        {t('sidebar.createEvent')}
                       </button>
                       <button
                         onClick={() => {
@@ -1560,7 +1561,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                         }`}
                         data-testid="submenu-calendar-view"
                       >
-                        Termine ansehen
+                        {t('sidebar.viewEvents')}
                       </button>
                     </motion.div>
                   )}
@@ -1601,22 +1602,20 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
               data-testid="menu-item-settings"
             >
               <Settings className="h-4 w-4" />
-              <span>Einstellungen</span>
+              <span>{t('settings.title')}</span>
               <ChevronDown className={`h-4 w-4 ml-auto transition-transform ${showSettingsMenu ? "rotate-180" : ""}`} />
             </button>
             
             {showSettingsMenu && (
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-3 md:ml-4 mt-0.5 md:mt-1 space-y-0.5 md:space-y-1 relative z-50">
-                {/* Ansicht */}
                 <button
                   onClick={() => { handleSettingsClick("ansicht"); setSidebarOpen(false); }}
                   className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-slate-700 hover:bg-white/20 transition-colors text-left"
                   data-testid="submenu-ansicht"
                 >
-                  Ansicht
+                  {t('sidebar.view')}
                 </button>
 
-                {/* Wallet Einstellung - Parent or Child */}
                 {user.role === "parent" ? (
                   <div>
                     <button
@@ -1624,7 +1623,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                       className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-slate-700 hover:bg-white/20 transition-colors text-left flex items-center justify-between"
                       data-testid="submenu-wallet"
                     >
-                      <span>Wallet Einstellung</span>
+                      <span>{t('sidebar.walletSettings')}</span>
                       <ChevronDown className={`h-3 w-3 transition-transform ${showWalletSubmenu ? "rotate-180" : ""}`} />
                     </button>
                     
@@ -1635,14 +1634,14 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                           className="w-full px-3 md:px-4 py-0.5 md:py-2 rounded-lg text-xs text-slate-700 hover:bg-white/20 transition-colors text-left"
                           data-testid="submenu-wallet-lnbits"
                         >
-                          LNbits Anbindung
+                          {t('sidebar.lnbitsConnection')}
                         </button>
                         <button
                           onClick={() => { setWalletTab("nwc"); handleSettingsClick("wallet"); setSidebarOpen(false); }}
                           className="w-full px-3 md:px-4 py-0.5 md:py-2 rounded-lg text-xs text-slate-700 hover:bg-white/20 transition-colors text-left"
                           data-testid="submenu-wallet-nwc"
                         >
-                          NWC Anbindung
+                          {t('sidebar.nwcConnection')}
                         </button>
                       </motion.div>
                     )}
@@ -1653,27 +1652,25 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                     className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-slate-700 hover:bg-white/20 transition-colors text-left"
                     data-testid="submenu-wallet-child"
                   >
-                    Wallet Einstellung
+                    {t('sidebar.walletSettings')}
                   </button>
                 )}
 
-                {/* Peers */}
                 <button
                   onClick={() => { handleSettingsClick("peers"); setSidebarOpen(false); }}
                   className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-slate-700 hover:bg-white/20 transition-colors text-left"
                   data-testid="submenu-peers"
                 >
-                  Peers
+                  {t('sidebar.peers')}
                 </button>
 
-                {/* Level-Bonus - nur für Eltern */}
                 {user.role === "parent" && (
                   <button
                     onClick={() => { setCurrentView("level-bonus-settings"); setSidebarOpen(false); setShowSettingsMenu(false); }}
                     className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-slate-700 hover:bg-white/20 transition-colors text-left"
                     data-testid="submenu-level-bonus"
                   >
-                    Level-Bonus
+                    {t('sidebar.levelBonus')}
                   </button>
                 )}
               </motion.div>
@@ -1681,7 +1678,6 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
           </div>
         </div>
 
-        {/* Donate Button - nur für Eltern */}
         {user.role === "parent" && (
           <div className="p-2 md:p-4 border-t border-white/20">
             <button
@@ -1690,7 +1686,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
               data-testid="menu-item-donate"
             >
               <span className="text-base md:text-lg">🧡</span>
-              <span>Spenden</span>
+              <span>{t('nav.donate')}</span>
             </button>
           </div>
         )}
@@ -1703,7 +1699,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
             className="w-full gap-2 bg-red-500/20 border-red-500/40 text-red-700 hover:bg-red-500/30 hover:text-red-800 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2"
             data-testid="button-logout-sidebar"
           >
-            <LogOut className="h-4 w-4" /> Abmelden
+            <LogOut className="h-4 w-4" /> {t('auth.logout')}
           </Button>
         </div>
       </motion.aside>
@@ -1829,7 +1825,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
     }
     const passwordCheck = validatePassword(forgotPinNewPin);
     if (!passwordCheck.valid) {
-      toast({ title: t('common.error'), description: passwordCheck.error, variant: "destructive" });
+      toast({ title: t('common.error'), description: t(passwordCheck.error), variant: "destructive" });
       return;
     }
     setIsForgotLoading(true);
@@ -1883,7 +1879,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
       if (!passwordCheck.valid) {
         toast({
           title: t('common.error'),
-          description: passwordCheck.error,
+          description: t(passwordCheck.error),
           variant: "destructive"
         });
         return;
@@ -2348,7 +2344,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
     const children = connectedPeers.filter((p: any) => p.role === "child");
 
     const handleUnlinkChild = async (childId: number, childName: string) => {
-      if (!window.confirm(`Möchtest du ${childName} wirklich von der Familie trennen?`)) return;
+      if (!window.confirm(t('family.confirmRemoveChild', { name: childName }))) return;
       
       try {
         const res = await fetch("/api/peers/unlink", {
@@ -2358,16 +2354,16 @@ function PeersContent({ user, setUser, queryClient }: any) {
         });
         if (!res.ok) throw new Error("Failed to unlink");
         queryClient.invalidateQueries({ queryKey: ["peers", user.connectionId] });
-        toast({ title: "Trennung erfolgreich", description: `${childName} wurde von der Familie getrennt` });
+        toast({ title: t('common.success'), description: t('family.childUnlinked', { name: childName }) });
       } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+        toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
       }
     };
 
     const handleResetPin = async (childId: number) => {
       const passwordCheck = validatePassword(resetPinValue);
       if (!passwordCheck.valid) {
-        toast({ title: "Fehler", description: passwordCheck.error, variant: "destructive" });
+        toast({ title: t('common.error'), description: t(passwordCheck.error), variant: "destructive" });
         return;
       }
 
@@ -2377,22 +2373,22 @@ function PeersContent({ user, setUser, queryClient }: any) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ parentId: user.id, newPin: resetPinValue }),
         });
-        if (!res.ok) throw new Error("Passwort-Änderung fehlgeschlagen");
+        if (!res.ok) throw new Error(t('errors.passwordChangeFailed'));
         setResetPinChildId(null);
         setResetPinValue("");
         queryClient.invalidateQueries({ queryKey: ["peers", user.connectionId] });
-        toast({ title: "Erfolg", description: "Passwort wurde zurückgesetzt" });
+        toast({ title: t('common.success'), description: t('settings.passwordReset') });
       } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+        toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
       }
     };
 
     const handleCopyConnectionId = async () => {
       try {
         await navigator.clipboard.writeText(user.connectionId);
-        toast({ title: "Kopiert!", description: "Kopplungs-ID wurde in die Zwischenablage kopiert" });
+        toast({ title: t('common.copied'), description: t('auth.connectionIdCopied') });
       } catch (error) {
-        toast({ title: "Fehler", description: "ID konnte nicht kopiert werden", variant: "destructive" });
+        toast({ title: t('common.error'), description: t('errors.couldNotCopyId'), variant: "destructive" });
       }
     };
 
@@ -2494,7 +2490,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
                             disabled={!validatePassword(resetPinValue).valid}
                             data-testid="button-confirm-reset-pin"
                           >
-                            Passwort ändern
+                            {t('settings.changePassword')}
                           </Button>
                           <Button
                             onClick={() => {
@@ -2552,7 +2548,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
             className="w-full text-sm"
             data-testid="button-toggle-parent-pin-change"
           >
-            {showParentPinChange ? "Passwort-Änderung abbrechen" : "🔑 Mein Passwort ändern"}
+            {showParentPinChange ? t('settings.cancelPasswordChange') : `🔑 ${t('settings.changeMyPassword')}`}
           </Button>
           
           {showParentPinChange && (
@@ -2571,12 +2567,12 @@ function PeersContent({ user, setUser, queryClient }: any) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="new-pin">Neues Passwort (8-12 Zeichen)</Label>
+                <Label htmlFor="new-pin">{t('auth.newPassword')} (8-12)</Label>
                 <Input
                   id="new-pin"
                   type="password"
                   maxLength={12}
-                  placeholder="8-12 Zeichen"
+                  placeholder="8-12"
                   value={newParentPin}
                   onChange={(e) => setNewParentPin(e.target.value.slice(0, 12))}
                   className="text-sm"
@@ -2584,13 +2580,13 @@ function PeersContent({ user, setUser, queryClient }: any) {
                 />
                 <div className="text-xs text-muted-foreground space-y-0.5">
                   <p className={newParentPin.length >= 8 && newParentPin.length <= 12 ? "text-green-500" : ""}>
-                    {newParentPin.length >= 8 && newParentPin.length <= 12 ? "✓" : "○"} {newParentPin.length}/8-12 Zeichen
+                    {newParentPin.length >= 8 && newParentPin.length <= 12 ? "✓" : "○"} {t('settings.lengthCheck', { length: newParentPin.length })}
                   </p>
                   <p className={/[A-Z]/.test(newParentPin) ? "text-green-500" : ""}>
-                    {/[A-Z]/.test(newParentPin) ? "✓" : "○"} 1 Großbuchstabe
+                    {/[A-Z]/.test(newParentPin) ? "✓" : "○"} {t('settings.uppercase')}
                   </p>
                   <p className={/[0-9]/.test(newParentPin) ? "text-green-500" : ""}>
-                    {/[0-9]/.test(newParentPin) ? "✓" : "○"} 1 Zahl
+                    {/[0-9]/.test(newParentPin) ? "✓" : "○"} {t('settings.number')}
                   </p>
                 </div>
               </div>
@@ -2599,7 +2595,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
                   onClick={async () => {
                     const passwordCheck = validatePassword(newParentPin);
                     if (!oldParentPin || !passwordCheck.valid) {
-                      toast({ title: "Fehler", description: passwordCheck.error || "Bitte fülle beide Passwort-Felder aus", variant: "destructive" });
+                      toast({ title: t('common.error'), description: passwordCheck.error ? t(passwordCheck.error) : t('settings.fillBothPasswordFields'), variant: "destructive" });
                       return;
                     }
                     setIsSavingPin(true);
@@ -2609,13 +2605,13 @@ function PeersContent({ user, setUser, queryClient }: any) {
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ oldPin: oldParentPin, newPin: newParentPin }),
                       });
-                      if (!res.ok) throw new Error("Passwort-Änderung fehlgeschlagen");
+                      if (!res.ok) throw new Error(t('errors.passwordChangeFailed'));
                       setShowParentPinChange(false);
                       setOldParentPin("");
                       setNewParentPin("");
-                      toast({ title: "✅ Erfolg", description: "Dein Passwort wurde geändert" });
+                      toast({ title: t('common.success'), description: t('settings.passwordChanged') });
                     } catch (error) {
-                      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+                      toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
                     } finally {
                       setIsSavingPin(false);
                     }
@@ -2624,7 +2620,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
                   disabled={isSavingPin || !validatePassword(newParentPin).valid}
                   data-testid="button-confirm-parent-pin-change"
                 >
-                  {isSavingPin ? "⏳ Wird gespeichert..." : "💾 Passwort ändern"}
+                  {isSavingPin ? t('common.loading') : t('settings.changePassword')}
                 </Button>
                 <Button
                   onClick={() => {
@@ -2637,7 +2633,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
                   disabled={isSavingPin}
                   data-testid="button-cancel-parent-pin-change"
                 >
-                  Abbrechen
+                  {t('common.cancel')}
                 </Button>
               </div>
             </div>
@@ -2662,7 +2658,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
       .sort((a: any, b: any) => a.id - b.id)[0];
 
     const handleUnlink = async () => {
-      if (!window.confirm("Möchtest du dich wirklich von dieser Familie trennen?")) return;
+      if (!window.confirm(t('family.confirmLeaveFamily'))) return;
       
       try {
         const res = await fetch("/api/peers/unlink", {
@@ -2675,7 +2671,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
         queryClient.invalidateQueries({ queryKey: ["peers"] });
         toast({ title: "Trennung erfolgreich", description: "Du bist nicht mehr mit der Familie verbunden" });
       } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+        toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
       }
     };
 
@@ -2714,6 +2710,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
 }
 
 function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onClose, layoutView, setLayoutView }: any) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [editLnbitsUrl, setEditLnbitsUrl] = useState("");
   const [editLnbitsAdminKey, setEditLnbitsAdminKey] = useState("");
@@ -2745,18 +2742,18 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
       const data = await res.json();
       if (data.success) {
         useToastFn({ 
-          title: "✓ Verbindung erfolgreich!", 
-          description: `Funktioniert mit: ${data.workingEndpoint}` 
+          title: t('wallet.connectionSuccess'), 
+          description: `${t('wallet.worksWith')} ${data.workingEndpoint}` 
         });
       } else {
         useToastFn({ 
-          title: "Verbindung fehlgeschlagen", 
+          title: t('wallet.connectionFailed'), 
           description: data.error, 
           variant: "destructive" 
         });
       }
     } catch (error) {
-      useToastFn({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      useToastFn({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
     } finally {
       setIsSaving(false);
     }
@@ -2779,8 +2776,8 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
       
       // Show success toast with longer duration
       useToastFn({ 
-        title: "✅ LNbits erfolgreich gespeichert!", 
-        description: "Wallet-Verbindung ist jetzt aktiv",
+        title: t('wallet.lnbitsSaved'), 
+        description: t('wallet.walletConnectionActive'),
         duration: 3000
       });
       
@@ -2788,7 +2785,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
       setTimeout(() => onClose(), 1500);
     } catch (error) {
       useToastFn({ 
-        title: "❌ Fehler beim Speichern", 
+        title: t('wallet.saveError'), 
         description: (error as Error).message, 
         variant: "destructive",
         duration: 5000
@@ -2811,13 +2808,13 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
       setUser({ ...user, hasLnbitsConfigured: false });
       
       useToastFn({ 
-        title: "LNbits Verbindung getrennt", 
-        description: "Die Wallet-Verbindung wurde entfernt",
+        title: t('wallet.lnbitsDisconnected'), 
+        description: t('wallet.walletConnectionRemoved'),
         duration: 3000
       });
     } catch (error) {
       useToastFn({ 
-        title: "Fehler", 
+        title: t('common.error'), 
         description: (error as Error).message, 
         variant: "destructive" 
       });
@@ -2828,7 +2825,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
 
   const saveNwc = async () => {
     if (!editNwcConnectionString || !editNwcConnectionString.startsWith("nostr+walletconnect://")) {
-      useToastFn({ title: "Fehler", description: "Gültiger NWC Connection String erforderlich", variant: "destructive" });
+      useToastFn({ title: t('common.error'), description: t('errors.nwcRequired'), variant: "destructive" });
       return;
     }
     setIsSaving(true);
@@ -2843,10 +2840,10 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
       setUser(updatedUser);
       localStorage.setItem("sats-user", JSON.stringify(updatedUser));
       setEditNwcConnectionString("");
-      useToastFn({ title: "NWC verbunden!", description: "Nostr Wallet Connect ist jetzt aktiv", duration: 3000 });
+      useToastFn({ title: t('wallet.nwcConnected'), description: t('wallet.nwcActive'), duration: 3000 });
       setTimeout(() => onClose(), 1500);
     } catch (error) {
-      useToastFn({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      useToastFn({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
     } finally {
       setIsSaving(false);
     }
@@ -2861,9 +2858,9 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
         body: JSON.stringify({ peerId: user.id }),
       });
       setUser({ ...user, hasNwcConfigured: false, walletType: user.hasLnbitsConfigured ? "lnbits" : null });
-      useToastFn({ title: "NWC getrennt", description: "Nostr Wallet Connect wurde entfernt", duration: 3000 });
+      useToastFn({ title: t('wallet.nwcDisconnected'), description: t('wallet.nwcRemoved'), duration: 3000 });
     } catch (error) {
-      useToastFn({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      useToastFn({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
     } finally {
       setIsSaving(false);
     }
@@ -2874,7 +2871,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
     if (user?.id) {
       localStorage.setItem(`layoutView_${user.id}`, layout);
     }
-    useToastFn({ title: "Ansicht aktualisiert", description: `Dashboard wird jetzt ${layout === "one-column" ? "einreihig" : "zweireihig"} angezeigt` });
+    useToastFn({ title: t('wallet.viewUpdated'), description: layout === "one-column" ? t('wallet.dashboardOneColumn') : t('wallet.dashboardTwoColumns') });
   };
 
   return (
@@ -2882,9 +2879,9 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
       <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle>
-            {activeTab === "ansicht" && "Ansicht"}
-            {activeTab === "wallet" && "Wallet Einstellungen"}
-            {activeTab === "peers" && "Peers"}
+            {activeTab === "ansicht" && t('sidebar.view')}
+            {activeTab === "wallet" && t('sidebar.walletSettings')}
+            {activeTab === "peers" && t('sidebar.peers')}
           </CardTitle>
           <Button 
             variant="ghost" 
@@ -2925,9 +2922,9 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                         const data = await res.json();
                         if (!res.ok) throw new Error(data.error);
                         setUser({ ...user, familyName: editFamilyName.trim() });
-                        useToastFn({ title: "✅ Familienname aktualisiert!", duration: 2000 });
+                        useToastFn({ title: t('wallet.familyNameUpdated'), duration: 2000 });
                       } catch (error) {
-                        useToastFn({ title: "❌ Fehler", description: (error as Error).message, variant: "destructive" });
+                        useToastFn({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
                       } finally {
                         setIsSaving(false);
                       }
@@ -3007,10 +3004,10 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                         const data = await res.json();
                         if (!res.ok) throw new Error(data.error);
                         setUser({ ...user, lightningAddress: editLnbitsUrl });
-                        useToastFn({ title: "✅ Lightning Adresse gespeichert!", duration: 3000 });
+                        useToastFn({ title: t('wallet.lightningAddressSaved'), duration: 3000 });
                         setTimeout(() => onClose(), 1500);
                       } catch (error) {
-                        useToastFn({ title: "❌ Fehler", description: (error as Error).message, variant: "destructive" });
+                        useToastFn({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
                       } finally {
                         setIsSaving(false);
                       }
@@ -3056,11 +3053,11 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="lnbits-key">Admin-Schlüssel</Label>
+                          <Label htmlFor="lnbits-key">{t('wallet.lnbitsKey')}</Label>
                           <div className="flex gap-2">
                             <Input 
                               id="lnbits-key"
-                              placeholder="Admin-Schlüssel"
+                              placeholder={t('wallet.lnbitsKey')}
                               type={showAdminKey ? "text" : "password"}
                               value={editLnbitsAdminKey}
                               onChange={(e) => setEditLnbitsAdminKey(e.target.value)}
@@ -3164,7 +3161,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
             onClick={onClose}
             data-testid="button-cancel-settings"
           >
-            Schließen
+            {t('common.close')}
           </Button>
         </CardFooter>
       </Card>
@@ -3275,6 +3272,7 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
 }
 
 function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, approvingTaskId, queryClient, layoutView, setLayoutView, showSpendingStats, setShowSpendingStats, spendingStats, setSpendingStats, messages, setMessages, newMessage, setNewMessage, isLoadingMessage, setIsLoadingMessage, allowances, parentChildren, allowanceChildId, setAllowanceChildId, allowanceSats, setAllowanceSats, allowanceFrequency, setAllowanceFrequency, isCreatingAllowance, handleCreateAllowance, handleDeleteAllowance }: any) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [lnbitsUrl, setLnbitsUrl] = useState("");
   const [lnbitsAdminKey, setLnbitsAdminKey] = useState("");
@@ -3355,9 +3353,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       setUser({ ...user, hasLnbitsConfigured: true, walletType: "lnbits" });
       setLnbitsUrl("");
       setLnbitsAdminKey("");
-      toast({ title: "LNbits verbunden!", description: "LNbits Wallet ist jetzt aktiv" });
+      toast({ title: t('wallet.lnbitsConnected'), description: t('wallet.lnbitsActive') });
     } catch (error) {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
     }
   };
 
@@ -3373,9 +3371,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       if (!res.ok) throw new Error(data.error);
       setUser({ ...user, hasNwcConfigured: true, walletType: "nwc" });
       setNwcConnectionString("");
-      toast({ title: "NWC verbunden!", description: "Nostr Wallet Connect ist jetzt aktiv" });
+      toast({ title: t('wallet.nwcConnected'), description: t('wallet.nwcActive') });
     } catch (error) {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
     }
   };
 
@@ -3386,11 +3384,11 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ peerId: user.id }),
       });
-      if (!res.ok) throw new Error("Fehler beim Trennen");
+      if (!res.ok) throw new Error(t('wallet.disconnectError'));
       setUser({ ...user, hasNwcConfigured: false, walletType: user.hasLnbitsConfigured ? "lnbits" : null });
-      toast({ title: "NWC getrennt", description: "Nostr Wallet Connect wurde entfernt" });
+      toast({ title: t('wallet.nwcDisconnected'), description: t('wallet.nwcRemoved') });
     } catch (error) {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
     }
   };
 
@@ -3404,9 +3402,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setUser({ ...user, walletType });
-      toast({ title: "Aktive Wallet geändert", description: `${walletType === "nwc" ? "NWC" : "LNbits"} ist jetzt aktiv` });
+      toast({ title: t('wallet.walletSwitched'), description: `${walletType === "nwc" ? "NWC" : "LNbits"} ${t('wallet.walletNowActive')}` });
     } catch (error) {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
     }
   };
 
@@ -3421,9 +3419,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setUser({ ...user, lightningAddress: data.lightningAddress });
-      toast({ title: "Lightning Adresse gespeichert!", description: "Du erhältst nun Sats direkt" });
+      toast({ title: t('wallet.lightningAddressSaved'), description: t('dashboard.receiveSatsDirect') });
     } catch (error) {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
     }
   };
 
@@ -3468,13 +3466,13 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         setSpendingStats(data);
         setShowSpendingStats(true);
       } catch (error) {
-        toast({ title: "Fehler", description: "Ausgaben-Statistik konnte nicht geladen werden", variant: "destructive" });
+        toast({ title: t('common.error'), description: t('dashboard.failedToLoadSpending'), variant: "destructive" });
       }
     };
     
     return (
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-slate-900">{t('nav.dashboard')}</h1>
         
         {user.role === "parent" && (
           <div 
@@ -3483,8 +3481,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             className="p-6 bg-gradient-to-br from-violet-500/30 to-cyan-500/30 backdrop-blur-md border border-white/50 rounded-2xl cursor-pointer hover:bg-white/55 transition-all shadow-xl overflow-hidden relative"
           >
             <div className="text-center relative z-10">
-              <div className="text-2xl font-bold text-slate-900">Taschengeld</div>
-              <div className="text-sm text-slate-700 mt-1">Zahlungen & Terminzahlungen</div>
+              <div className="text-2xl font-bold text-slate-900">{t('family.allowances')}</div>
+              <div className="text-sm text-slate-700 mt-1">{t('dashboard.paymentsAndScheduled')}</div>
             </div>
           </div>
         )}
@@ -3495,9 +3493,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               <div className="flex flex-row items-start justify-between pb-3">
                 <div className="flex-1">
                   <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
-                    <LinkIcon className="h-5 w-5 text-violet-600" /> Verbindungscode für Kinder
+                    <LinkIcon className="h-5 w-5 text-violet-600" /> {t('dashboard.connectionCodeTitle')}
                   </h3>
-                  <p className="text-sm text-slate-700">Gebe diesen Code deinen Kindern, damit sie sich verbinden können</p>
+                  <p className="text-sm text-slate-700">{t('dashboard.connectionCodeDesc')}</p>
                 </div>
                 <Button 
                   variant="ghost" 
@@ -3510,11 +3508,11 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 </Button>
               </div>
               <div className="bg-white/30 border border-white/40 rounded-xl p-4 text-center">
-                <p className="text-xs text-slate-600 mb-2 uppercase tracking-widest">Dein Code:</p>
+                <p className="text-xs text-slate-600 mb-2 uppercase tracking-widest">{t('dashboard.yourCode')}</p>
                 <p className="text-3xl font-mono font-bold text-violet-700 tracking-wider break-words word-break mb-3" data-testid="text-connection-code">
                   {user.connectionId}
                 </p>
-                <p className="text-xs text-slate-600">Später findest du diesen Code in den Wallet-Einstellungen</p>
+                <p className="text-xs text-slate-600">{t('dashboard.findCodeInSettings')}</p>
               </div>
             </div>
           </motion.div>
@@ -3533,11 +3531,11 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <div className="relative z-10">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div className="flex-1">
-                <p className="text-slate-700 font-mono text-sm uppercase tracking-widest mb-2">Ausgegeben</p>
+                <p className="text-slate-700 font-mono text-sm uppercase tracking-widest mb-2">{t('wallet.spent')}</p>
                 <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-cyan-600" data-testid="text-sats-spent">
                   {(satsSpent || 0).toLocaleString()} <span className="text-2xl opacity-70 text-slate-700">SATS</span>
                 </h2>
-                <p className="text-xs text-slate-600 mt-2">Klick zum Anzeigen der Aufschlüsselung pro Kind</p>
+                <p className="text-xs text-slate-600 mt-2">{t('dashboard.clickForBreakdown')}</p>
               </div>
             </div>
           </div>
@@ -3555,7 +3553,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 >
                   <div className="text-center">
                     <div className="text-3xl font-bold text-violet-600">{openTasks.length}</div>
-                    <p className="text-sm text-slate-700 mt-2">Offene Aufgaben</p>
+                    <p className="text-sm text-slate-700 mt-2">{t('dashboard.openTasks')}</p>
                   </div>
                 </div>,
                 index * 0.1
@@ -3570,7 +3568,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 >
                   <div className="text-center">
                     <div className="text-3xl font-bold text-amber-500">{submittedTasks.length}</div>
-                    <p className="text-sm text-slate-700 mt-2">Zur Bestätigung</p>
+                    <p className="text-sm text-slate-700 mt-2">{t('dashboard.pendingApproval')}</p>
                   </div>
                 </div>,
                 index * 0.1
@@ -3585,7 +3583,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 >
                   <div className="text-center">
                     <div className="text-3xl font-bold text-green-500">{completedTasks.length}</div>
-                    <p className="text-sm text-slate-700 mt-2">Abgeschlossen</p>
+                    <p className="text-sm text-slate-700 mt-2">{t('dashboard.completedTasks')}</p>
                   </div>
                 </div>,
                 index * 0.1
@@ -3838,7 +3836,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           setMessages(data);
         }
       } catch (error) {
-        toast({ title: "Fehler", description: "Nachricht konnte nicht gesendet werden", variant: "destructive" });
+        toast({ title: t('common.error'), description: t('errors.messageSendFailed'), variant: "destructive" });
       } finally {
         setIsLoadingMessage(false);
       }
@@ -3912,7 +3910,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     const children = connectedPeers.filter((p: any) => p.role === "child");
 
     const handleUnlinkChild = async (childId: number, childName: string) => {
-      if (!window.confirm(`Möchtest du ${childName} wirklich von der Familie trennen?`)) return;
+      if (!window.confirm(t('family.confirmRemoveChild', { name: childName }))) return;
       
       try {
         const res = await fetch("/api/peers/unlink", {
@@ -3922,9 +3920,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         });
         if (!res.ok) throw new Error("Failed to unlink");
         queryClient.invalidateQueries({ queryKey: ["peers", user.connectionId] });
-        toast({ title: "Trennung erfolgreich", description: `${childName} wurde von der Familie getrennt` });
+        toast({ title: t('common.success'), description: t('family.childUnlinked', { name: childName }) });
       } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+        toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
       }
     };
 
@@ -3971,7 +3969,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <Card className="border-dashed border-border p-8 text-center">
             <Users className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
             <p className="text-muted-foreground font-semibold">Noch keine Kinder verbunden</p>
-            <p className="text-xs text-muted-foreground mt-2">Teile deinen Verbindungscode mit deinen Kindern, um sie hinzuzufügen</p>
+            <p className="text-xs text-muted-foreground mt-2">{t('family.shareConnectionCode')}</p>
           </Card>
         )}
       </div>
@@ -3982,8 +3980,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Kinder-Übersicht</h1>
-          <p className="text-slate-700 text-sm mt-2">Alle deine Kinder auf einen Blick</p>
+          <h1 className="text-3xl font-bold text-slate-900">{t('sidebar.childrenOverview')}</h1>
+          <p className="text-slate-700 text-sm mt-2">{t('family.childrenOverviewDesc')}</p>
         </div>
 
         {parentChildren.length > 0 ? (
@@ -4070,7 +4068,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <Card className="border-dashed border-border p-12 text-center">
             <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
             <h3 className="text-lg font-semibold text-slate-900 mb-2">Keine Kinder verbunden</h3>
-            <p className="text-slate-600 text-sm">Teile deinen Verbindungscode mit deinen Kindern, um sie hinzuzufügen</p>
+            <p className="text-slate-600 text-sm">{t('family.shareConnectionCode')}</p>
           </Card>
         )}
       </div>
@@ -4112,27 +4110,27 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         });
         const data = await res.json();
         queryClient.invalidateQueries({ queryKey: ["recurring-tasks"] });
-        toast({ title: "✅ Aufgabe erstellt", description: `${newRecurring.frequency} Aufgabe erstellt` });
+        toast({ title: t('tasks.recurringCreated'), description: `${newRecurring.frequency === 'weekly' ? t('tasks.weekly') : newRecurring.frequency === 'daily' ? t('tasks.daily') : t('tasks.monthly')} ${t('tasks.recurringCreatedDesc')}` });
         setNewRecurring({ title: "", description: "", sats: "", frequency: "weekly", dayOfWeek: 3, time: "09:00" });
       } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+        toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
       }
     };
 
     return (
       <div className="space-y-6 max-w-2xl">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Wiederkehrende Aufgaben</h1>
-          <p className="text-slate-700 text-sm mt-2">Automatisch jede Woche, täglich oder monatlich erstellt</p>
+          <h1 className="text-3xl font-bold text-slate-900">{t('tasks.recurringTasks')}</h1>
+          <p className="text-slate-700 text-sm mt-2">{t('tasks.recurringDescription')}</p>
         </div>
 
         <Card className="bg-gradient-to-br from-violet-500/20 to-cyan-500/20 border border-white/50 p-6">
-          <h3 className="font-bold mb-4">Neue wiederholende Aufgabe</h3>
+          <h3 className="font-bold mb-4">{t('tasks.newRecurringTask')}</h3>
           <div className="space-y-3">
-            <Input placeholder="Aufgabentitel" value={newRecurring.title} onChange={(e) => setNewRecurring({ ...newRecurring, title: e.target.value })} data-testid="input-recurring-title" />
-            <Input placeholder="Beschreibung" value={newRecurring.description} onChange={(e) => setNewRecurring({ ...newRecurring, description: e.target.value })} data-testid="input-recurring-desc" />
+            <Input placeholder={t('tasks.taskTitlePlaceholder')} value={newRecurring.title} onChange={(e) => setNewRecurring({ ...newRecurring, title: e.target.value })} data-testid="input-recurring-title" />
+            <Input placeholder={t('tasks.description')} value={newRecurring.description} onChange={(e) => setNewRecurring({ ...newRecurring, description: e.target.value })} data-testid="input-recurring-desc" />
             <div className="grid grid-cols-2 gap-3">
-              <Input type="number" placeholder="Betrag" value={newRecurring.sats} onChange={(e) => setNewRecurring({ ...newRecurring, sats: e.target.value })} data-testid="input-recurring-sats" />
+              <Input type="number" placeholder={t('tasks.amount')} value={newRecurring.sats} onChange={(e) => setNewRecurring({ ...newRecurring, sats: e.target.value })} data-testid="input-recurring-sats" />
               <Select value={newRecurring.frequency} onValueChange={(v) => setNewRecurring({ ...newRecurring, frequency: v })}>
                 <SelectTrigger data-testid="select-frequency">
                   <SelectValue />
@@ -4184,7 +4182,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 }} data-testid={`button-delete-recurring-${task.id}`}>✕</Button>
               </div>
             </Card>
-          )) : <p className="text-slate-600" data-testid="text-no-recurring">Keine wiederholenden Aufgaben erstellt</p>}
+          )) : <p className="text-slate-600" data-testid="text-no-recurring">{t('tasks.noRecurringTasks')}</p>}
         </div>
       </div>
     );
@@ -4211,7 +4209,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     return (
       <div className="max-w-4xl">
         <h1 className="text-3xl font-bold mb-2">🏆 Bestenliste</h1>
-        <p className="text-muted-foreground mb-6">Wer ist der beste Aufgabenerlediger in der Familie?</p>
+        <p className="text-muted-foreground mb-6">{t('leaderboard.description')}</p>
         
         {leaderboard.length === 0 ? (
           <Card className="border-dashed border-border p-8 text-center">
@@ -4428,7 +4426,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   <Button 
                     onClick={async () => {
                       if (!user.donationAddress) {
-                        useToast()({ title: "Fehler", description: "Spendendadresse erforderlich", variant: "destructive" });
+                        useToast()({ title: t('common.error'), description: t('donation.addressRequired'), variant: "destructive" });
                         return;
                       }
                       try {
@@ -4439,10 +4437,10 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         });
                         const data = await res.json();
                         if (res.ok) {
-                          useToast()({ title: "Erfolg", description: "Spendendadresse gespeichert!" });
+                          useToast()({ title: t('common.success'), description: t('donation.savedSuccess') });
                         }
                       } catch (error) {
-                        useToast()({ title: "Fehler", description: "Fehler beim Speichern", variant: "destructive" });
+                        useToast()({ title: t('common.error'), description: t('donation.saveError'), variant: "destructive" });
                       }
                     }}
                     className="bg-primary hover:bg-primary/90 w-full"
@@ -4459,7 +4457,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       <Button 
                         onClick={() => {
                           navigator.clipboard.writeText(`lightning:${user.donationAddress}`);
-                          useToast()({ title: "Kopiert", description: "Spendenlink in Zwischenablage" });
+                          useToast()({ title: t('donation.copied'), description: t('donation.copiedDesc') });
                         }}
                         size="sm"
                         variant="outline"
@@ -4554,12 +4552,12 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   if (currentView === "tasks-open") {
     return (
       <div className="space-y-8">
-        <h1 className="text-3xl font-bold mb-8">Offene Aufgaben</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('tasks.openTasks')}</h1>
         <section>
           <div className="space-y-4">
             {tasks.filter((t: Task) => t.status === "open" || t.status === "assigned").length === 0 ? (
               <Card className="border-dashed border-border p-8 text-center">
-                <p className="text-muted-foreground">Keine offenen Aufgaben</p>
+                <p className="text-muted-foreground">{t('tasks.noOpenTasks')}</p>
               </Card>
             ) : (
               tasks.filter((t: Task) => t.status === "open" || t.status === "assigned").map((task: Task) => (
@@ -4584,12 +4582,12 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   if (currentView === "tasks-pending") {
     return (
       <div className="space-y-8">
-        <h1 className="text-3xl font-bold mb-8">Zur Bestätigung</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('dashboard.pendingApproval')}</h1>
         <section>
           <div className="space-y-4">
             {tasks.filter((t: Task) => t.status === "submitted").length === 0 ? (
               <Card className="border-dashed border-border p-8 text-center">
-                <p className="text-muted-foreground">Keine Aufgaben zur Bestätigung</p>
+                <p className="text-muted-foreground">{t('tasks.noTasksForApproval')}</p>
               </Card>
             ) : (
               tasks.filter((t: Task) => t.status === "submitted").map((task: Task) => (
@@ -4661,12 +4659,12 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
 
     return (
       <div className="space-y-8">
-        <h1 className="text-3xl font-bold mb-8">Abgeschlossene Aufgaben</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('tasks.completedTasks')}</h1>
         <section>
           <div className="space-y-4">
             {completedTasks.length === 0 ? (
               <Card className="border-dashed border-border p-8 text-center">
-                <p className="text-muted-foreground">Keine abgeschlossenen Aufgaben</p>
+                <p className="text-muted-foreground">{t('tasks.noCompletedTasks')}</p>
               </Card>
             ) : (
               completedTasks.map((task: Task) => (
@@ -4813,21 +4811,21 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   if (currentView === "calendar-create") {
     return (
       <div className="space-y-8">
-        <h1 className="text-3xl font-bold mb-8">Neuen Termin anlegen</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('calendar.createNewEvent')}</h1>
         <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
           <Card className="border border-primary/20 shadow-[0_0_30px_-10px_rgba(247,147,26,0.15)] bg-card/50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-primary">
-                <Plus className="h-5 w-5" /> Neuer Familientemin
+                <Plus className="h-5 w-5" /> {t('calendar.newFamilyEvent')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={onCreateEvent} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="event-title">Termin</Label>
+                  <Label htmlFor="event-title">{t('calendar.event')}</Label>
                   <Input 
                     id="event-title"
-                    placeholder="z.B. Familienessen..." 
+                    placeholder={t('calendar.eventPlaceholder')} 
                     value={newEvent.title}
                     onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                     className="bg-secondary border-border"
@@ -4835,10 +4833,10 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="event-description">Beschreibung</Label>
+                  <Label htmlFor="event-description">{t('calendar.description')}</Label>
                   <Input 
                     id="event-description"
-                    placeholder="Details..." 
+                    placeholder={t('calendar.detailsPlaceholder')} 
                     value={newEvent.description}
                     onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
                     className="bg-secondary border-border"
@@ -4847,7 +4845,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="event-start-date">📅 Startdatum</Label>
+                    <Label htmlFor="event-start-date">📅 {t('calendar.startDate')}</Label>
                     <Input 
                       id="event-start-date"
                       type="datetime-local"
@@ -4858,7 +4856,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="event-end-date">📅 Enddatum (optional)</Label>
+                    <Label htmlFor="event-end-date">📅 {t('calendar.endDateOptional')}</Label>
                     <Input 
                       id="event-end-date"
                       type="datetime-local"
@@ -4871,7 +4869,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="event-location" className="flex items-center gap-1">
-                    <MapPin className="h-4 w-4" /> Ort (optional)
+                    <MapPin className="h-4 w-4" /> {t('calendar.locationOptional')}
                   </Label>
                   <Input 
                     id="event-location"
@@ -4888,7 +4886,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   disabled={!newEvent.title || !newEvent.startDate}
                   data-testid="button-create-event"
                 >
-                  Termin hinzufügen
+                  {t('calendar.addEvent')}
                 </Button>
               </form>
             </CardContent>
@@ -4935,13 +4933,13 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         const updated = eventRsvps[eventId] ? eventRsvps[eventId].map((r: any) => r.peerId === user.id ? { ...r, response } : r) : [];
         setEventRsvps({ ...eventRsvps, [eventId]: updated });
         toast({
-          title: response === "accepted" ? "Zusage! 🎉" : "Absage bestätigt",
-          description: response === "accepted" ? "Du nimmst am Termin teil!" : "Die Absage wurde registriert"
+          title: response === "accepted" ? t('calendar.rsvpAccepted') : t('calendar.rsvpDeclined'),
+          description: response === "accepted" ? t('calendar.rsvpAcceptedDesc') : t('calendar.rsvpDeclinedDesc')
         });
       } catch (error) {
         toast({
-          title: "Fehler",
-          description: "RSVP konnte nicht gespeichert werden",
+          title: t('common.error'),
+          description: t('calendar.rsvpError'),
           variant: "destructive"
         });
       } finally {
@@ -5040,7 +5038,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
 
     const handleSaveLnbits = async () => {
       if (!editLnbitsUrl || !editLnbitsAdminKey) {
-        toast({ title: "Fehler", description: "URL und Admin-Schlüssel erforderlich", variant: "destructive" });
+        toast({ title: t('common.error'), description: t('errors.lnbitsRequired'), variant: "destructive" });
         return;
       }
 
@@ -5053,15 +5051,15 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         if (!res.ok) throw new Error("Failed to save LNbits configuration");
         const data = await res.json();
         setUser(data);
-        toast({ title: "Erfolg", description: "LNbits-Konto verbunden!" });
+        toast({ title: t('common.success'), description: t('errors.lnbitsConnected') });
       } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+        toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
       }
     };
 
     const handleSetupNwc = async () => {
       if (!editNwcConnectionString || !editNwcConnectionString.startsWith("nostr+walletconnect://")) {
-        toast({ title: "Fehler", description: "Gültiger NWC Connection String erforderlich", variant: "destructive" });
+        toast({ title: t('common.error'), description: t('errors.nwcRequired'), variant: "destructive" });
         return;
       }
 
@@ -5076,9 +5074,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         setUser(updatedUser);
         localStorage.setItem("sats-user", JSON.stringify(updatedUser));
         setEditNwcConnectionString("");
-        toast({ title: "Erfolg", description: "Nostr Wallet Connect verbunden!" });
+        toast({ title: t('common.success'), description: t('errors.nwcConnected') });
       } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+        toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
       }
     };
 
@@ -5092,7 +5090,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         setUser({ ...user, hasNwcConfigured: false, walletType: user.hasLnbitsConfigured ? "lnbits" : null });
         toast({ title: "Getrennt", description: "NWC-Verbindung wurde entfernt" });
       } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+        toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
       }
     };
 
@@ -5106,7 +5104,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         setUser({ ...user, walletType });
         toast({ title: "Aktive Wallet geändert", description: `${walletType === "nwc" ? "NWC" : "LNbits"} ist jetzt aktiv` });
       } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+        toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
       }
     };
 
@@ -5118,9 +5116,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             className="text-muted-foreground hover:text-foreground"
             data-testid="button-back-from-wallet-settings"
           >
-            ← Zurück
+            {t('common.back')}
           </button>
-          <h1 className="text-3xl font-bold">Wallet Einstellungen</h1>
+          <h1 className="text-3xl font-bold">{t('sidebar.walletSettings')}</h1>
         </div>
 
         <Tabs defaultValue="lnbits" className="w-full">
@@ -5184,11 +5182,11 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="lnbits-key">Admin-Schlüssel</Label>
+                      <Label htmlFor="lnbits-key">{t('wallet.lnbitsKey')}</Label>
                       <div className="flex gap-2">
                         <Input 
                           id="lnbits-key"
-                          placeholder="Admin-Schlüssel"
+                          placeholder={t('wallet.lnbitsKey')}
                           type={showAdminKey ? "text" : "password"}
                           value={editLnbitsAdminKey}
                           onChange={(e) => setEditLnbitsAdminKey(e.target.value)}
@@ -5352,10 +5350,10 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           }),
         });
         if (!res.ok) throw new Error("Failed to save settings");
-        toast({ title: "Erfolg", description: "Level-Bonus Einstellungen gespeichert!" });
+        toast({ title: t('common.success'), description: t('errors.levelBonusSaved') });
         queryClient.invalidateQueries({ queryKey: ["level-bonus-settings"] });
       } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+        toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
       } finally {
         setIsSaving(false);
       }
@@ -5369,7 +5367,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             className="text-muted-foreground hover:text-foreground"
             data-testid="button-back-from-level-bonus-settings"
           >
-            ← Zurück
+            {t('common.back')}
           </button>
           <h1 className="text-3xl font-bold">🏆 Level-Bonus Einstellungen</h1>
         </div>
@@ -5564,15 +5562,17 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     }
   }, [user.role]);
   
+  const { t } = useTranslation();
+  
   // Fetch daily challenge
   useEffect(() => {
     const challengePool = [
-      { type: "quiz", title: "Bitcoin Quiz", description: "Beantworte eine Bitcoin Frage richtig", icon: "🧠", reward: 50, question: "Was sind die maximalen Bitcoin?", options: ["21 Millionen", "Unbegrenzt", "1 Milliarde"], correct: 0 },
-      { type: "conversion", title: "Satoshi Konvertierung", description: "Konvertiere 100.000 Sats zu Bitcoin", icon: "🔄", reward: 40, challenge: "Wie viel Bitcoin sind 100.000 Satoshis?" },
-      { type: "lightning", title: "Lightning Lektion", description: "Lerne über das Lightning Network", icon: "⚡", reward: 45, question: "Was ist das Hauptvorteil von Lightning?", options: ["Schnelle & billige Transaktionen", "Hohe Sicherheit", "Dezentralisierung"], correct: 0 },
-      { type: "security", title: "Sicherheits-Challenge", description: "Teste dein Bitcoin Sicherheitswissen", icon: "🔒", reward: 55, question: "Was ist ein Private Key?", options: ["Dein Secret Password für die Wallet", "Die öffentliche Addresse", "Ein Bitcoin"], correct: 0 },
-      { type: "fun", title: "Bitcoin Fun Challenge", description: "Finde die richtige Satoshi-Definition", icon: "🎮", reward: 35, question: "Wer ist Satoshi Nakamoto?", options: ["Der anonyme Bitcoin Erfinder", "Ein Unternehmer", "Ein YouTuber"], correct: 0 },
-      { type: "blockchain", title: "Blockchain Basics", description: "Teste dein Blockchain Wissen", icon: "⛓️", reward: 48, question: "Wie lange dauert es einen Bitcoin Block zu erstellen?", options: ["Ca. 10 Minuten", "Ca. 1 Minute", "Ca. 1 Stunde"], correct: 0 }
+      { type: "quiz", titleKey: "challenges.bitcoinQuiz", descKey: "challenges.answerBitcoinQuestion", icon: "🧠", reward: 50, questionKey: "challenges.maxBitcoins", optionKeys: ["challenges.21million", "challenges.unlimited", "challenges.1billion"], correct: 0 },
+      { type: "conversion", titleKey: "challenges.satoshiConversion", descKey: "challenges.convert100kSats", icon: "🔄", reward: 40, challengeKey: "challenges.howMuchBitcoin" },
+      { type: "lightning", titleKey: "challenges.lightningLesson", descKey: "challenges.learnLightning", icon: "⚡", reward: 45, questionKey: "challenges.lightningAdvantage", optionKeys: ["challenges.fastCheap", "challenges.highSecurity", "challenges.decentralization"], correct: 0 },
+      { type: "security", titleKey: "challenges.securityChallenge", descKey: "challenges.testSecurityKnowledge", icon: "🔒", reward: 55, questionKey: "challenges.whatIsPrivateKey", optionKeys: ["challenges.secretPassword", "challenges.publicAddress", "challenges.aBitcoin"], correct: 0 },
+      { type: "fun", titleKey: "challenges.funChallenge", descKey: "challenges.findSatoshiDefinition", icon: "🎮", reward: 35, questionKey: "challenges.whoIsSatoshi", optionKeys: ["challenges.anonymousCreator", "challenges.entrepreneur", "challenges.youtuber"], correct: 0 },
+      { type: "blockchain", titleKey: "challenges.blockchainBasics", descKey: "challenges.testBlockchainKnowledge", icon: "⛓️", reward: 48, questionKey: "challenges.blockCreationTime", optionKeys: ["challenges.10minutes", "challenges.1minute", "challenges.1hour"], correct: 0 }
     ];
     
     const fetchDailyChallenge = async () => {
@@ -5618,13 +5618,13 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       setUser(updated);
       localStorage.setItem("sats-user", JSON.stringify(updated));
       toast({
-        title: "Verbunden! 🎉",
-        description: "Du bist jetzt mit deinen Eltern verbunden"
+        title: t('connection.connected'),
+        description: t('connection.connectedToParents')
       });
       setShowLink(false);
     } catch (error) {
       toast({
-        title: "Fehler",
+        title: t('common.error'),
         description: (error as Error).message,
         variant: "destructive"
       });
@@ -5636,21 +5636,21 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   if (currentView === "calendar-create") {
     return (
       <div className="space-y-8">
-        <h1 className="text-3xl font-bold mb-8">Neuen Termin anlegen</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('calendar.createNewEvent')}</h1>
         <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
           <Card className="border border-primary/20 shadow-[0_0_30px_-10px_rgba(247,147,26,0.15)] bg-card/50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-primary">
-                <Plus className="h-5 w-5" /> Neuer Familientemin
+                <Plus className="h-5 w-5" /> {t('calendar.newFamilyEvent')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={onCreateEvent} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="event-title">Termin</Label>
+                  <Label htmlFor="event-title">{t('calendar.event')}</Label>
                   <Input 
                     id="event-title"
-                    placeholder="z.B. Familienessen..." 
+                    placeholder={t('calendar.eventPlaceholder')} 
                     value={newEvent.title}
                     onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                     className="bg-secondary border-border"
@@ -5658,10 +5658,10 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="event-description">Beschreibung</Label>
+                  <Label htmlFor="event-description">{t('calendar.description')}</Label>
                   <Input 
                     id="event-description"
-                    placeholder="Details..." 
+                    placeholder={t('calendar.detailsPlaceholder')} 
                     value={newEvent.description}
                     onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
                     className="bg-secondary border-border"
@@ -5670,7 +5670,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="event-start-date">📅 Startdatum</Label>
+                    <Label htmlFor="event-start-date">📅 {t('calendar.startDate')}</Label>
                     <Input 
                       id="event-start-date"
                       type="datetime-local"
@@ -5681,7 +5681,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="event-end-date">📅 Enddatum (optional)</Label>
+                    <Label htmlFor="event-end-date">📅 {t('calendar.endDateOptional')}</Label>
                     <Input 
                       id="event-end-date"
                       type="datetime-local"
@@ -5694,7 +5694,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="event-location" className="flex items-center gap-1">
-                    <MapPin className="h-4 w-4" /> Ort (optional)
+                    <MapPin className="h-4 w-4" /> {t('calendar.locationOptional')}
                   </Label>
                   <Input 
                     id="event-location"
@@ -5711,7 +5711,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   disabled={!newEvent.title || !newEvent.startDate}
                   data-testid="button-create-event"
                 >
-                  Termin hinzufügen
+                  {t('calendar.addEvent')}
                 </Button>
               </form>
             </CardContent>
@@ -5758,13 +5758,13 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         const updated = eventRsvps[eventId] ? eventRsvps[eventId].map((r: any) => r.peerId === user.id ? { ...r, response } : r) : [];
         setEventRsvps({ ...eventRsvps, [eventId]: updated });
         toast({
-          title: response === "accepted" ? "Zusage! 🎉" : "Absage bestätigt",
-          description: response === "accepted" ? "Du nimmst am Termin teil!" : "Die Absage wurde registriert"
+          title: response === "accepted" ? t('calendar.rsvpAccepted') : t('calendar.rsvpDeclined'),
+          description: response === "accepted" ? t('calendar.rsvpAcceptedDesc') : t('calendar.rsvpDeclinedDesc')
         });
       } catch (error) {
         toast({
-          title: "Fehler",
-          description: "RSVP konnte nicht gespeichert werden",
+          title: t('common.error'),
+          description: t('calendar.rsvpError'),
           variant: "destructive"
         });
       } finally {
@@ -5867,13 +5867,13 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         });
         setRsvps({ ...rsvps, [eventId]: response });
         toast({
-          title: response === "accepted" ? "Zusage! 🎉" : "Absage bestätigt",
-          description: response === "accepted" ? "Du nimmst am Termin teil!" : "Die Absage wurde registriert"
+          title: response === "accepted" ? t('calendar.rsvpAccepted') : t('calendar.rsvpDeclined'),
+          description: response === "accepted" ? t('calendar.rsvpAcceptedDesc') : t('calendar.rsvpDeclinedDesc')
         });
       } catch (error) {
         toast({
-          title: "Fehler",
-          description: "RSVP konnte nicht gespeichert werden",
+          title: t('common.error'),
+          description: t('calendar.rsvpError'),
           variant: "destructive"
         });
       } finally {
@@ -5980,7 +5980,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           setMessages(data);
         }
       } catch (error) {
-        toast({ title: "Fehler", description: "Nachricht konnte nicht gesendet werden", variant: "destructive" });
+        toast({ title: t('common.error'), description: t('errors.messageSendFailed'), variant: "destructive" });
       } finally {
         setIsLoadingMessage(false);
       }
@@ -6118,7 +6118,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     return (
       <div className="max-w-4xl">
         <h1 className="text-3xl font-bold mb-2">🏆 Bestenliste</h1>
-        <p className="text-muted-foreground mb-6">Wer ist der beste Aufgabenerlediger in der Familie?</p>
+        <p className="text-muted-foreground mb-6">{t('leaderboard.description')}</p>
         
         {/* Level Legend - Collapsible */}
         <Card className="mb-6 bg-primary/5 border border-primary/30">
@@ -6249,7 +6249,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       .sort((a: any, b: any) => a.id - b.id)[0];
 
     const handleUnlink = async () => {
-      if (!window.confirm("Möchtest du dich wirklich von dieser Familie trennen?")) return;
+      if (!window.confirm(t('family.confirmLeaveFamily'))) return;
       
       try {
         const res = await fetch("/api/peers/unlink", {
@@ -6263,7 +6263,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         queryClient.invalidateQueries({ queryKey: ["peers"] });
         toast({ title: "Trennung erfolgreich", description: "Du bist nicht mehr mit der Familie verbunden" });
       } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+        toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
       }
     };
 
@@ -6331,7 +6331,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     const handleResetPin = async (childId: number) => {
       const passwordCheck = validatePassword(resetPinValue);
       if (!passwordCheck.valid) {
-        toast({ title: "Fehler", description: passwordCheck.error, variant: "destructive" });
+        toast({ title: t('common.error'), description: t(passwordCheck.error), variant: "destructive" });
         return;
       }
 
@@ -6341,19 +6341,19 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ parentId: user.id, newPin: resetPinValue }),
         });
-        if (!res.ok) throw new Error("Passwort-Änderung fehlgeschlagen");
+        if (!res.ok) throw new Error(t('errors.passwordChangeFailed'));
         setResetPinChildId(null);
         setResetPinValue("");
         queryClient.invalidateQueries({ queryKey: ["peers"] });
-        toast({ title: "Erfolg", description: "Passwort wurde zurückgesetzt" });
+        toast({ title: t('common.success'), description: t('settings.passwordReset') });
       } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+        toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
       }
     };
 
     const handleSaveLnbits = async () => {
       if (!editLnbitsUrl || !editLnbitsAdminKey) {
-        toast({ title: "Fehler", description: "URL und Admin-Schlüssel erforderlich", variant: "destructive" });
+        toast({ title: t('common.error'), description: t('errors.lnbitsRequired'), variant: "destructive" });
         return;
       }
 
@@ -6366,9 +6366,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         if (!res.ok) throw new Error("Failed to save LNbits configuration");
         const data = await res.json();
         setUser(data);
-        toast({ title: "Erfolg", description: "LNbits-Konto verbunden!" });
+        toast({ title: t('common.success'), description: t('errors.lnbitsConnected') });
       } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+        toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
       }
     };
 
@@ -6417,11 +6417,11 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lnbits-key">Admin-Schlüssel</Label>
+                  <Label htmlFor="lnbits-key">{t('wallet.lnbitsKey')}</Label>
                   <div className="flex gap-2">
                     <Input 
                       id="lnbits-key"
-                      placeholder="Admin-Schlüssel"
+                      placeholder={t('wallet.lnbitsKey')}
                       type={showAdminKey ? "text" : "password"}
                       value={editLnbitsAdminKey}
                       onChange={(e) => setEditLnbitsAdminKey(e.target.value)}
@@ -6508,7 +6508,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                           disabled={!validatePassword(resetPinValue).valid}
                           data-testid="button-confirm-reset-pin"
                         >
-                          Passwort ändern
+                          {t('settings.changePassword')}
                         </Button>
                         <Button
                           onClick={() => {
@@ -6571,8 +6571,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     body: JSON.stringify({ peerId: user.id, lightningAddress: addr }),
                   }).then(r => r.json()).then(data => {
                     setUser(data);
-                    toast({ title: "Lightning Adresse gespeichert!", description: "Du erhältst nun Sats direkt" });
-                  }).catch(err => toast({ title: "Fehler", description: err.message, variant: "destructive" }));
+                    toast({ title: t('connection.lightningAddressSaved'), description: t('connection.receiveSatsDirect') });
+                  }).catch(err => toast({ title: t('common.error'), description: err.message, variant: "destructive" }));
                 }
               }}
               className="bg-primary hover:bg-primary/90"
@@ -7110,7 +7110,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                           toast({ title: "🎉 Challenge bestanden!", description: `Zurück morgen für eine neue Challenge!` });
                         }
                       } catch (error) {
-                        toast({ title: "Fehler", description: "Challenge konnte nicht gespeichert werden", variant: "destructive" });
+                        toast({ title: t('common.error'), description: t('errors.challengeSaveFailed'), variant: "destructive" });
                       }
                     }}
                     className="w-full bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-700 hover:to-cyan-700 h-12 text-lg font-bold"
@@ -7210,7 +7210,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
     const handleCreateAllowance = async () => {
       if (!allowanceChildId || !allowanceSats) {
-        toast({ title: "Fehler", description: "Kind und Betrag erforderlich", variant: "destructive" });
+        toast({ title: t('common.error'), description: t('errors.childAndAmountRequired'), variant: "destructive" });
         return;
       }
 
@@ -7232,24 +7232,24 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         setAllowanceSats("");
         setAllowanceFrequency("weekly");
         queryClient.invalidateQueries({ queryKey: ["allowances"] });
-        toast({ title: "Erfolg", description: "Taschengeld eingerichtet!" });
+        toast({ title: t('common.success'), description: t('errors.allowanceCreated') });
       } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+        toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
       } finally {
         setIsCreatingAllowance(false);
       }
     };
 
     const handleDeleteAllowance = async (allowanceId: number) => {
-      if (!window.confirm("Taschengeld wirklich löschen?")) return;
+      if (!window.confirm(t('family.confirmDeleteAllowance'))) return;
 
       try {
         const res = await fetch(`/api/allowances/${allowanceId}`, { method: "DELETE" });
         if (!res.ok) throw new Error("Failed to delete allowance");
         queryClient.invalidateQueries({ queryKey: ["allowances"] });
-        toast({ title: "Erfolg", description: "Taschengeld gelöscht" });
+        toast({ title: t('common.success'), description: t('errors.allowanceDeleted') });
       } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+        toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
       }
     };
 
@@ -7369,7 +7369,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                       </div>
                     </div>
                     
-                    {/* Zur Bestätigung - unten links */}
+                    {/* {t('dashboard.pendingApproval')} - unten links */}
                     <div 
                       onClick={() => setCurrentView("tasks-pending")}
                       className="border border-amber-400/40 bg-amber-500/20 backdrop-blur-sm rounded-xl p-3 cursor-pointer hover:bg-amber-500/30 hover:border-amber-400/60 transition-all"
@@ -7377,7 +7377,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     >
                       <div className="text-center">
                         <div className="text-lg md:text-3xl font-bold text-amber-600">{submittedTasks.length}</div>
-                        <p className="text-[10px] md:text-xs text-slate-700 mt-1 md:mt-2 uppercase tracking-widest">Zur Bestätigung</p>
+                        <p className="text-[10px] md:text-xs text-slate-700 mt-1 md:mt-2 uppercase tracking-widest">{t('dashboard.pendingApproval')}</p>
                       </div>
                     </div>
                     
@@ -7618,9 +7618,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
             <div className="flex gap-4">
               <Info className="h-5 w-5 text-violet-600 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-bold mb-1 text-slate-900">Noch nicht verbunden</h3>
+                <h3 className="font-bold mb-1 text-slate-900">{t('connection.notConnected')}</h3>
                 <p className="text-sm text-slate-700 mb-3">
-                  Verbinde dich mit deinen Eltern, um Aufgaben zu sehen
+                  {t('connection.connectToSeeTasksTitle')}
                 </p>
                 <Button 
                   size="sm"
@@ -7697,12 +7697,12 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
         queryClient.invalidateQueries({ queryKey: ["tasks", user.connectionId] });
         toast({
-          title: "Erfolg",
-          description: "Aufgabe eingereicht!",
+          title: t('taskSubmission.success'),
+          description: t('taskSubmission.taskSubmitted'),
         });
       } catch (error) {
         toast({
-          title: "Fehler",
+          title: t('common.error'),
           description: (error as Error).message,
           variant: "destructive",
         });
@@ -7738,7 +7738,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           ))}
           {myTasks.filter((t: Task) => t.status === "assigned").length === 0 && (
             <div className="text-center py-8 border border-dashed border-border rounded-lg text-muted-foreground">
-              Keine Aufgaben in Arbeit
+              {t('tasks.noTasksInProgress')}
             </div>
           )}
         </div>
@@ -7749,14 +7749,14 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   if (currentView === "tasks-pending") {
     return (
       <div className="max-w-4xl">
-        <h1 className="text-3xl font-bold mb-8">Zur Bestätigung</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('dashboard.pendingApproval')}</h1>
         <div className="grid gap-4">
           {myTasks.filter((t: Task) => t.status === "submitted").map((task: Task) => (
             <TaskCard key={task.id} task={task} variant="child" />
           ))}
           {myTasks.filter((t: Task) => t.status === "submitted").length === 0 && (
             <div className="text-center py-8 border border-dashed border-border rounded-lg text-muted-foreground">
-              Keine Aufgaben zur Bestätigung
+              {t('tasks.noTasksForApproval')}
             </div>
           )}
         </div>
@@ -7774,7 +7774,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           ))}
           {myTasks.filter((t: Task) => t.status === "approved").length === 0 && (
             <div className="text-center py-8 border border-dashed border-border rounded-lg text-muted-foreground">
-              Noch keine Aufgaben erledigt
+              {t('tasks.noTasksCompleted')}
             </div>
           )}
         </div>
@@ -7785,7 +7785,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   if (currentView === "tasks-open") {
     return (
       <div className="max-w-4xl">
-        <h1 className="text-3xl font-bold mb-8">Verfügbare Aufgaben</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('tasks.availableTasks')}</h1>
         <div className="grid gap-4 md:grid-cols-2">
           {availableTasks.map((task: Task) => (
             <Card key={task.id} className="border-border bg-card hover:border-primary/50 transition-colors">
@@ -7812,7 +7812,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           ))}
           {availableTasks.length === 0 && (
             <div className="text-center py-8 border border-dashed border-border rounded-lg text-muted-foreground md:col-span-2">
-              Keine Aufgaben verfügbar
+              {t('tasks.noTasksAvailable')}
             </div>
           )}
         </div>
@@ -7879,8 +7879,8 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
       <div className="max-w-6xl mx-auto py-8">
         <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-6 text-center">
           <div className="text-3xl mb-2">⚠️</div>
-          <p className="text-red-400 font-bold">{error || "Keine Live-Daten verfügbar"}</p>
-          <p className="text-xs text-muted-foreground mt-2">Bitte später erneut versuchen</p>
+          <p className="text-red-400 font-bold">{error || t('errors.noLiveData')}</p>
+          <p className="text-xs text-muted-foreground mt-2">{t('errors.tryAgainLater')}</p>
         </div>
       </div>
     );
@@ -7910,7 +7910,7 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
           <span className="text-3xl">🎓</span> Sparen vergleichen
         </h1>
         <Button onClick={() => setCurrentView("dashboard")} variant="ghost" data-testid="button-back-savings">
-          ← Zurück
+          {t('common.back')}
         </Button>
       </div>
 
@@ -8697,13 +8697,14 @@ function TaskCard({ task, children, variant }: { task: Task; children?: React.Re
 }
 
 function DonateView({ user, onClose }: { user: User; onClose: () => void }) {
+  const { t } = useTranslation();
   const [donationAmount, setDonationAmount] = useState<string>("500");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   const handleDonate = async () => {
     if (!donationAmount || parseInt(donationAmount) <= 0) {
-      toast({ title: "Fehler", description: "Gültigen Betrag eingeben", variant: "destructive" });
+      toast({ title: t('common.error'), description: t('donation.validAmountRequired'), variant: "destructive" });
       return;
     }
 
@@ -8716,14 +8717,14 @@ function DonateView({ user, onClose }: { user: User; onClose: () => void }) {
       });
       
       if (res.ok) {
-        toast({ title: "✨ Danke!", description: `${donationAmount} Sats gespendet!` });
+        toast({ title: t('donation.thankYou'), description: `${donationAmount} ${t('donation.satsDonated')}` });
         setDonationAmount("500");
       } else {
         const error = await res.json();
-        toast({ title: "Fehler", description: error.error, variant: "destructive" });
+        toast({ title: t('common.error'), description: error.error, variant: "destructive" });
       }
     } catch (error) {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
