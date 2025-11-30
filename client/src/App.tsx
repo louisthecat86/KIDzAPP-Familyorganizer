@@ -5474,26 +5474,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showTrackerChart, setShowTrackerChart] = useState(false);
   const [showStatsModal, setShowStatsModal] = useState(false);
-  const [passedQuizzes, setPassedQuizzes] = useState<string[]>(() => {
-    if (typeof localStorage !== 'undefined') {
-      const saved = localStorage.getItem("passed-quizzes");
-      // First time: clear old data
-      if (saved && (saved.includes('"5"') || saved.includes('"false"') || !saved.startsWith('["m'))) {
-        console.log("🧹 Clearing corrupted quiz data");
-        localStorage.setItem("passed-quizzes", JSON.stringify([]));
-        return [];
-      }
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          localStorage.setItem("passed-quizzes", JSON.stringify([]));
-          return [];
-        }
-      }
-    }
-    return [];
-  });
+  const [progressLoading, setProgressLoading] = useState(true);
   const [showQuiz, setShowQuiz] = useState<string | null>(null);
   const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
   const [quizSubmitted, setQuizSubmitted] = useState<Record<string, boolean>>({});
@@ -6556,22 +6537,23 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     useEffect(() => {
       const fetchLearningProgress = async () => {
         try {
+          setProgressLoading(true);
           const response = await fetch(`/api/learning-progress/${user.id}`);
           if (response.ok) {
             const data = await response.json();
             setServerProgress(data);
-            if (data.completedModules && data.completedModules.length > 0) {
-              setPassedQuizzes(data.completedModules);
-              localStorage.setItem("passed-quizzes", JSON.stringify(data.completedModules));
-            }
             console.log("✅ Learning progress loaded from server:", data);
           }
         } catch (error) {
           console.error("[Learning Progress] Failed to fetch:", error);
+        } finally {
+          setProgressLoading(false);
         }
       };
       fetchLearningProgress();
     }, [user.id]);
+    
+    const passedQuizzes = serverProgress?.completedModules || [];
     
     const modules = [
       { id: "m1", level: "Anfänger", levelColor: "text-green-600", title: "Was ist Bitcoin?", icon: "₿", content: ["Bitcoin ist digitales Geld - wie elektronische Münzen", "Es wurde 2009 von Satoshi Nakamoto erfunden", "Es gibt maximal 21 Millionen Bitcoin", "Bitcoin ist dezentralisiert - keine Bank kontrolliert es", "Jeder Bitcoin kann in 100.000.000 Satoshis aufgeteilt werden", "Das Bitcoin Netzwerk wird von tausenden Computern gesichert", "Transaktionen sind transparent und nicht rückgängig zu machen", "Bitcoin ist das erste erfolgreiche digitale Geld"], quiz: [{ question: "Wann wurde Bitcoin erfunden?", options: ["2009", "2015", "2001"], correct: 0 }, { question: "Wie viele Bitcoin gibt es maximal?", options: ["21 Millionen", "Unbegrenzt", "1 Milliarde"], correct: 0 }, { question: "Wer ist Satoshi Nakamoto?", options: ["Der anonyme Bitcoin Erfinder", "Ein YouTuber", "Ein Politiker"], correct: 0 }] },
@@ -6614,23 +6596,14 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
             if (response.ok) {
               const updatedProgress = await response.json();
               setServerProgress(updatedProgress);
-              const serverModules = updatedProgress.completedModules || [];
-              setPassedQuizzes(serverModules);
-              localStorage.setItem("passed-quizzes", JSON.stringify(serverModules));
               console.log("✅ Progress synced from server:", updatedProgress);
               toast({ title: "🎉 Quiz bestanden!", description: `+${xpPerModule} XP! Level ${updatedProgress.level}! ${score}/${module.quiz.length} richtig!` });
             } else {
-              const newPassedQuizzes = [...passedQuizzes, moduleId];
-              setPassedQuizzes(newPassedQuizzes);
-              localStorage.setItem("passed-quizzes", JSON.stringify(newPassedQuizzes));
-              toast({ title: "🎉 Quiz bestanden!", description: `+${xpPerModule} XP! ${score}/${module.quiz.length} richtig!` });
+              toast({ title: "Fehler beim Speichern", description: "Fortschritt konnte nicht gespeichert werden.", variant: "destructive" });
             }
           } catch (error) {
             console.error("Failed to save XP to server:", error);
-            const newPassedQuizzes = [...passedQuizzes, moduleId];
-            setPassedQuizzes(newPassedQuizzes);
-            localStorage.setItem("passed-quizzes", JSON.stringify(newPassedQuizzes));
-            toast({ title: "🎉 Quiz bestanden!", description: `+${xpPerModule} XP! ${score}/${module.quiz.length} richtig!` });
+            toast({ title: "Fehler beim Speichern", description: "Bitte versuche es später erneut.", variant: "destructive" });
           }
         } else {
           toast({ title: "Quiz bereits bestanden!", description: `${score}/${module.quiz.length} richtig!` });
