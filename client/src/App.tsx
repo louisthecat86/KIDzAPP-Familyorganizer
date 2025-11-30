@@ -2720,12 +2720,6 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
   const [showAdminKey, setShowAdminKey] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { toast: useToastFn } = useToast();
-  
-  // SECURITY: PIN confirmation for wallet operations
-  const [showPinConfirm, setShowPinConfirm] = useState(false);
-  const [confirmPin, setConfirmPin] = useState("");
-  const [pendingWalletAction, setPendingWalletAction] = useState<(() => Promise<void>) | null>(null);
-  const [pendingActionLabel, setPendingActionLabel] = useState("");
 
   // Sync state with user changes - credentials are never stored in user object
   useEffect(() => {
@@ -2734,26 +2728,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
     setEditNwcConnectionString("");
     setEditFamilyName(user.familyName || "");
     setShowAdminKey(false);
-    setConfirmPin("");
-    setShowPinConfirm(false);
   }, [user]);
-  
-  // Helper: Request PIN confirmation before wallet operation
-  const requirePinConfirmation = (action: () => Promise<void>, label: string) => {
-    setPendingWalletAction(() => action);
-    setPendingActionLabel(label);
-    setConfirmPin("");
-    setShowPinConfirm(true);
-  };
-  
-  // Execute pending action with PIN
-  const executePendingAction = async () => {
-    if (!confirmPin || !pendingWalletAction) return;
-    setShowPinConfirm(false);
-    await pendingWalletAction();
-    setConfirmPin("");
-    setPendingWalletAction(null);
-  };
 
 
   const testLNbits = async () => {
@@ -3637,6 +3612,27 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 </div>,
                 index * 0.1
               );
+            } else if (cardId === "learning-stats") {
+              if (user.role !== "child") return null;
+              return createDraggableCard(
+                cardId,
+                <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl hover:bg-white/55 transition-colors h-full shadow-lg p-6">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-700">Level</span>
+                      <span className="text-2xl font-bold text-violet-600">{serverProgress?.level || 1}</span>
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-2">
+                      <div className="bg-gradient-to-r from-violet-600 to-cyan-600 h-2 rounded-full" style={{width: `${((serverProgress?.xp || 0) % 100) / 100 * 100}%`}}></div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-600">{serverProgress?.xp || 0} XP</span>
+                      <span className="text-xs text-slate-600">🔥 Streak: {serverProgress?.streak || 0}</span>
+                    </div>
+                  </div>
+                </div>,
+                index * 0.1
+              );
             }
           })}
           
@@ -4141,9 +4137,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="daily">{t('common.daily')}</SelectItem>
-                  <SelectItem value="weekly">{t('common.weekly')}</SelectItem>
-                  <SelectItem value="monthly">{t('common.monthly')}</SelectItem>
+                  <SelectItem value="daily">Täglich</SelectItem>
+                  <SelectItem value="weekly">Wöchentlich</SelectItem>
+                  <SelectItem value="monthly">Monatlich</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -4175,8 +4171,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   </div>
                   <p className="text-sm text-slate-600 mt-1">
                     {task.frequency === 'weekly' && weekdays[task.dayOfWeek]} 
-                    {task.frequency === 'daily' && t('common.daily')}
-                    {task.frequency === 'monthly' && `${t('common.monthly')} ${task.dayOfMonth || 'Tag'}`}
+                    {task.frequency === 'daily' && 'Täglich'}
+                    {task.frequency === 'monthly' && `Monatlich am ${task.dayOfMonth || 'Tag'}`}
                     • {task.time}
                   </p>
                   <p className="text-xs text-slate-500 mt-1">{task.description}</p>
@@ -4431,7 +4427,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   <Button 
                     onClick={async () => {
                       if (!user.donationAddress) {
-                        toast({ title: t('common.error'), description: t('donation.addressRequired'), variant: "destructive" });
+                        useToast()({ title: t('common.error'), description: t('donation.addressRequired'), variant: "destructive" });
                         return;
                       }
                       try {
@@ -4442,10 +4438,10 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         });
                         const data = await res.json();
                         if (res.ok) {
-                          toast({ title: t('common.success'), description: t('donation.savedSuccess') });
+                          useToast()({ title: t('common.success'), description: t('donation.savedSuccess') });
                         }
                       } catch (error) {
-                        toast({ title: t('common.error'), description: t('donation.saveError'), variant: "destructive" });
+                        useToast()({ title: t('common.error'), description: t('donation.saveError'), variant: "destructive" });
                       }
                     }}
                     className="bg-primary hover:bg-primary/90 w-full"
@@ -4462,7 +4458,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       <Button 
                         onClick={() => {
                           navigator.clipboard.writeText(`lightning:${user.donationAddress}`);
-                          toast({ title: t('donation.copied'), description: t('donation.copiedDesc') });
+                          useToast()({ title: t('donation.copied'), description: t('donation.copiedDesc') });
                         }}
                         size="sm"
                         variant="outline"
@@ -7829,7 +7825,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
   // Savings Comparison View
   if (currentView === "savings-comparison") {
-    return <SavingsComparisonPage sats={user.balance || 0} setCurrentView={setCurrentView} />;
+    return <SavingsComparisonPage sats={user.balance || 0} setCurrentView={setCurrentView} user={user} />;
   }
 
   return null;
