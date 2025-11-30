@@ -6085,11 +6085,11 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       if (completedTasks >= 9) return { emoji: "🤝", title: "Level 3 – Familienhelfer", color: "text-green-500" };
       if (completedTasks >= 6) return { emoji: "🔍", title: "Level 2 – Aufgabenentdecker", color: "text-green-600" };
       if (completedTasks >= 3) return { emoji: "✨", title: "Level 1 – Funkenstarter", color: "text-slate-500" };
-      return { emoji: "🌱", title: "Anfänger", color: "text-slate-400" };
+      return { emoji: "🌱", title: t('common.beginner'), color: "text-slate-400" };
     };
 
     const levels = [
-      { level: 0, emoji: "🌱", title: "Anfänger", tasks: "0 Aufgaben" },
+      { level: 0, emoji: "🌱", title: t('common.beginner'), tasks: "0 Aufgaben" },
       { level: 1, emoji: "✨", title: "Level 1 – Funkenstarter", tasks: "3 Aufgaben" },
       { level: 2, emoji: "🔍", title: "Level 2 – Aufgabenentdecker", tasks: "6 Aufgaben" },
       { level: 3, emoji: "🤝", title: "Level 3 – Familienhelfer", tasks: "9 Aufgaben" },
@@ -7172,8 +7172,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           <Card className="border-green-500/50 bg-gradient-to-r from-green-500/10 to-blue-500/10">
             <CardContent className="pt-8 pb-8 text-center">
               <p className="text-4xl mb-3">🏆👑🚀</p>
-              <p className="text-2xl font-bold text-green-600 mb-2">Bitcoin-Meister erreicht!</p>
-              <Badge className="bg-green-600">Level {userLevel} Experte</Badge>
+              <p className="text-2xl font-bold text-green-600 mb-2">{t('common.bitcoinMaster')}</p>
+              <Badge className="bg-green-600">Level {userLevel} {t('common.expert')}</Badge>
             </CardContent>
           </Card>
         )}
