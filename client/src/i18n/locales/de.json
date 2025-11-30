@@ -385,6 +385,7 @@
   "wallet": {
     "title": "Wallet",
     "balance": "Guthaben",
+    "euro": "Euro",
     "send": "Senden",
     "receive": "Empfangen",
     "history": "Verlauf",

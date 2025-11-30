@@ -388,6 +388,7 @@
   "wallet": {
     "title": "Wallet",
     "balance": "Balance",
+    "euro": "Euro",
     "send": "Send",
     "receive": "Receive",
     "history": "History",
