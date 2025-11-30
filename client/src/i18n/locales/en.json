@@ -4,6 +4,19 @@
     "subtitle": "Family. Tasks. Bitcoin.",
     "tagline": "Gamified family organization with real Bitcoin rewards"
   },
+  "landing": {
+    "howItWorks": "How It Works",
+    "step1": "Parents create tasks with Sats rewards",
+    "step2": "Kids complete tasks & upload photo proof",
+    "step3": "Parents approve & pay out instantly",
+    "step4": "Family calendar & chat for communication",
+    "parentDesc": "Manage tasks & wallet",
+    "childDesc": "Complete tasks & earn Sats",
+    "newFamily": "Create New Family",
+    "newFamilyDesc": "Start a new family",
+    "joinFamily": "Join Family",
+    "joinFamilyDesc": "Join with Family ID"
+  },
   "auth": {
     "welcome": "Welcome back!",
     "loginTitle": "Sign In",

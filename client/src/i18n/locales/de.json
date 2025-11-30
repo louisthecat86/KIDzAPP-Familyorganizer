@@ -4,6 +4,19 @@
     "subtitle": "Familie. Aufgaben. Bitcoin.",
     "tagline": "Gamifizierte Familienorganisation mit echten Bitcoin-Belohnungen"
   },
+  "landing": {
+    "howItWorks": "So funktioniert's",
+    "step1": "Eltern erstellen Aufgaben mit Sats-Belohnung",
+    "step2": "Kinder erledigen Aufgaben & laden Foto-Beweis hoch",
+    "step3": "Eltern best\u00e4tigen & zahlen sofort aus",
+    "step4": "Familienkalender & Chat f\u00fcr direkten Austausch",
+    "parentDesc": "Aufgaben & Wallet verwalten",
+    "childDesc": "Aufgaben erledigen & Sats verdienen",
+    "newFamily": "Neue Familie gr\u00fcnden",
+    "newFamilyDesc": "Erstelle eine neue Familie",
+    "joinFamily": "Familie beitreten",
+    "joinFamilyDesc": "Beitreten mit Familie-ID"
+  },
   "auth": {
     "welcome": "Willkommen zur\u00fcck!",
     "loginTitle": "Anmelden",

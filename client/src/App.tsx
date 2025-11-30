@@ -15,7 +15,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { formatDistanceToNow } from "date-fns";
-import { de } from "date-fns/locale";
+import { de, enUS } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 import { LineChart, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Line, Area, ResponsiveContainer, defs, linearGradient, stop } from "recharts";
 import { 
   CheckCircle, 
@@ -51,7 +52,8 @@ import {
   BookOpen,
   Zap,
   Flame,
-  TrendingUp
+  TrendingUp,
+  Globe
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PhotoUpload } from "@/components/PhotoUpload";
@@ -1710,11 +1712,27 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
 }
 
 function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void }) {
+  const { t, i18n } = useTranslation();
+  
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'de' ? 'en' : 'de';
+    i18n.changeLanguage(newLang);
+  };
+  
   return (
     <div 
       className="min-h-screen flex flex-col items-center p-6 bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: 'url(/background.png)' }}
     >
+      <button
+        onClick={toggleLanguage}
+        className="absolute top-4 right-4 flex items-center gap-2 px-3 py-2 bg-white/30 backdrop-blur-md border border-white/50 rounded-xl hover:bg-white/50 transition-all text-slate-800 font-medium text-sm"
+        data-testid="button-language-toggle"
+      >
+        <Globe className="h-4 w-4" />
+        {i18n.language === 'de' ? '🇩🇪 DE' : '🇬🇧 EN'}
+      </button>
+      
       {/* Logo */}
       <div className="pt-8 mb-4">
         <img 
@@ -1729,23 +1747,23 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
         
         {/* Info Box */}
         <div className="bg-white/15 backdrop-blur-md border border-white/50 rounded-2xl p-5 w-full shadow-lg">
-          <h3 className="text-lg font-bold mb-3 text-slate-900">So funktioniert's</h3>
+          <h3 className="text-lg font-bold mb-3 text-slate-900">{t('landing.howItWorks')}</h3>
           <div className="space-y-2 text-slate-800 text-sm">
             <div className="flex gap-2">
               <span className="text-violet-600 flex-shrink-0">•</span>
-              <span>Eltern erstellen Aufgaben mit Sats-Belohnung</span>
+              <span>{t('landing.step1')}</span>
             </div>
             <div className="flex gap-2">
               <span className="text-violet-600 flex-shrink-0">•</span>
-              <span>Kinder erledigen Aufgaben & laden Foto-Beweis hoch</span>
+              <span>{t('landing.step2')}</span>
             </div>
             <div className="flex gap-2">
               <span className="text-violet-600 flex-shrink-0">•</span>
-              <span>Eltern bestätigen & zahlen sofort aus</span>
+              <span>{t('landing.step3')}</span>
             </div>
             <div className="flex gap-2">
               <span className="text-violet-600 flex-shrink-0">•</span>
-              <span>Familienkalender & Chat für direkten Austausch</span>
+              <span>{t('landing.step4')}</span>
             </div>
           </div>
         </div>
@@ -1761,8 +1779,8 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
             <UserIcon className="h-6 w-6 text-white" />
           </div>
           <div className="text-left">
-            <h3 className="font-bold text-lg text-slate-900 tracking-wide">ELTERN</h3>
-            <p className="text-sm text-slate-700">Aufgaben & Wallet verwalten</p>
+            <h3 className="font-bold text-lg text-slate-900 tracking-wide">{t('auth.parent').toUpperCase()}</h3>
+            <p className="text-sm text-slate-700">{t('landing.parentDesc')}</p>
           </div>
           <span className="ml-auto text-amber-600 text-xl opacity-0 group-hover:opacity-100 transition-opacity">⚡</span>
         </button>
@@ -1776,8 +1794,8 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
             <Sparkles className="h-6 w-6 text-white" />
           </div>
           <div className="text-left">
-            <h3 className="font-bold text-lg text-slate-900 tracking-wide">KIND</h3>
-            <p className="text-sm text-slate-700">Aufgaben erledigen & Sats verdienen</p>
+            <h3 className="font-bold text-lg text-slate-900 tracking-wide">{t('auth.child').toUpperCase()}</h3>
+            <p className="text-sm text-slate-700">{t('landing.childDesc')}</p>
           </div>
           <span className="ml-auto text-amber-600 text-xl opacity-0 group-hover:opacity-100 transition-opacity">⚡</span>
         </button>
