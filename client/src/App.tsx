@@ -18,6 +18,8 @@ import { formatDistanceToNow } from "date-fns";
 import { de, enUS } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
 import i18n from "./i18n";
+import deTranslations from "./i18n/locales/de.json";
+import enTranslations from "./i18n/locales/en.json";
 import { LineChart, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Line, Area, ResponsiveContainer } from "recharts";
 import { 
   CheckCircle, 
@@ -6572,7 +6574,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     const levelColors: Record<string, string> = { beginner: "text-green-600", intermediate: "text-yellow-600", advanced: "text-red-600" };
     
     const currentLang = i18n.language?.startsWith('en') ? 'en' : 'de';
-    const allModules = i18n.getResourceBundle(currentLang, 'translation')?.education?.modules || {};
+    const translations = currentLang === 'en' ? enTranslations : deTranslations;
+    const allModules = (translations as any).education?.modules || {};
     
     const modules = moduleIds.map((mid) => {
       const moduleData = allModules[mid] as { 
