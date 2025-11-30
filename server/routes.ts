@@ -2497,6 +2497,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Learning Progress Endpoints
+  app.get("/api/learning-progress/:peerId", async (req, res) => {
+    try {
+      const peerId = parseInt(req.params.peerId);
+      let progress = await storage.getLearningProgress(peerId);
+      
+      if (!progress) {
+        progress = await storage.createLearningProgress({ 
+          peerId, 
+          xp: 0, 
+          level: 1, 
+          streak: 0, 
+          longestStreak: 0 
+        });
+      }
+      
+      res.json(progress);
+    } catch (error) {
+      console.error("Error fetching learning progress:", error);
+      res.status(500).json({ error: "Failed to fetch learning progress" });
+    }
+  });
+
+  app.post("/api/learning-progress/:peerId/add-xp", async (req, res) => {
+    try {
+      const peerId = parseInt(req.params.peerId);
+      const { xp, moduleId, achievementId } = req.body;
+      
+      if (!xp || xp <= 0) {
+        return res.status(400).json({ error: "XP amount required" });
+      }
+
+      const progress = await storage.addXpAndCheckLevel(peerId, xp);
+      
+      if (moduleId) {
+        await storage.completeModule(peerId, moduleId);
+      }
+      
+      if (achievementId) {
+        await storage.unlockAchievement(peerId, achievementId);
+      }
+
+      await storage.updateStreak(peerId);
+      
+      const updatedProgress = await storage.getLearningProgress(peerId);
+      res.json(updatedProgress);
+    } catch (error) {
+      console.error("Error adding XP:", error);
+      res.status(500).json({ error: "Failed to add XP" });
+    }
+  });
+
+  app.post("/api/learning-progress/:peerId/unlock-achievement", async (req, res) => {
+    try {
+      const peerId = parseInt(req.params.peerId);
+      const { achievementId } = req.body;
+      
+      if (!achievementId) {
+        return res.status(400).json({ error: "Achievement ID required" });
+      }
+
+      const progress = await storage.unlockAchievement(peerId, achievementId);
+      res.json(progress);
+    } catch (error) {
+      console.error("Error unlocking achievement:", error);
+      res.status(500).json({ error: "Failed to unlock achievement" });
+    }
+  });
+
+  app.post("/api/learning-progress/:peerId/complete-daily", async (req, res) => {
+    try {
+      const peerId = parseInt(req.params.peerId);
+      const { xp } = req.body;
+      
+      await storage.updateStreak(peerId);
+      
+      const currentProgress = await storage.getLearningProgress(peerId);
+      if (currentProgress) {
+        await storage.updateLearningProgress(peerId, {
+          dailyChallengesCompleted: currentProgress.dailyChallengesCompleted + 1,
+          totalSatsEarned: currentProgress.totalSatsEarned + (xp || 0)
+        });
+      }
+      
+      if (xp && xp > 0) {
+        await storage.addXpAndCheckLevel(peerId, xp);
+      }
+      
+      const updatedProgress = await storage.getLearningProgress(peerId);
+      res.json(updatedProgress);
+    } catch (error) {
+      console.error("Error completing daily challenge:", error);
+      res.status(500).json({ error: "Failed to complete daily challenge" });
+    }
+  });
+
   // Donation endpoint - send sats to developer
   const DEVELOPER_DONATION_ADDRESS = process.env.DEVELOPER_DONATION_ADDRESS || "satoshi@stacker.news";
   
