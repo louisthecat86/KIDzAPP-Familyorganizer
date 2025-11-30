@@ -6623,13 +6623,17 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
     const completedModules = serverProgress?.completedModules || [];
     
+    const beginnerModules = modules.filter(m => m.level === "beginner");
+    const intermediateModules = modules.filter(m => m.level === "intermediate");
+    const advancedModules = modules.filter(m => m.level === "advanced");
+    
     const achievements = [
       { id: "first-module", title: t('education.achievementBeginner'), icon: "🌱", condition: completedModules.length >= 1 },
       { id: "half-done", title: t('education.achievementLearner'), icon: "📚", condition: completedModules.length >= 10 },
-      { id: "all-done", title: t('education.achievementExpert'), icon: "👑", condition: completedModules.length === modules.length },
-      { id: "beginner-master", title: t('education.achievementBeginnerMaster'), icon: "🟢", condition: modules.filter(m => m.level === "beginner").every(m => completedModules.includes(m.id)) },
-      { id: "advanced-master", title: t('education.achievementAdvancedMaster'), icon: "🔴", condition: modules.filter(m => m.level === "advanced").every(m => completedModules.includes(m.id)) },
-      { id: "intermediate-master", title: t('education.achievementIntermediateMaster'), icon: "🟡", condition: modules.filter(m => m.level === "intermediate").every(m => completedModules.includes(m.id)) }
+      { id: "all-done", title: t('education.achievementExpert'), icon: "👑", condition: modules.length > 0 && completedModules.length === modules.length },
+      { id: "beginner-master", title: t('education.achievementBeginnerMaster'), icon: "🟢", condition: beginnerModules.length > 0 && beginnerModules.every(m => completedModules.includes(m.id)) },
+      { id: "advanced-master", title: t('education.achievementAdvancedMaster'), icon: "🔴", condition: advancedModules.length > 0 && advancedModules.every(m => completedModules.includes(m.id)) },
+      { id: "intermediate-master", title: t('education.achievementIntermediateMaster'), icon: "🟡", condition: intermediateModules.length > 0 && intermediateModules.every(m => completedModules.includes(m.id)) }
     ];
 
     const xpPerModule = 100;
