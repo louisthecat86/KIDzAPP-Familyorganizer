@@ -637,6 +637,8 @@
     "xpToNextLevel": "Noch {{xp}} XP bis Level {{level}}",
     "streakDays": "{{days}} Tage Streak",
     "modulesCompleted": "{{count}} Module abgeschlossen",
+    "learningStreak": "Lern-Streak",
+    "record": "Rekord",
     "achievementBeginner": "Anfänger",
     "achievementLearner": "Lernender",
     "achievementExpert": "Experte",
@@ -964,10 +966,6 @@
   "common": {
     "day": "Tag",
     "days": "Tage"
-  },
-  "education": {
-    "learningStreak": "Lern-Streak",
-    "record": "Rekord"
   },
   "challenges": {
     "bitcoinQuiz": "Bitcoin Quiz",
