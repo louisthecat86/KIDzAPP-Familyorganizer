@@ -6718,8 +6718,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   🔥
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-900">{userStreak} {userStreak === 1 ? "Tag" : "Tage"}</p>
-                  <p className="text-xs text-slate-600">Lern-Streak {serverProgress?.longestStreak ? `(Rekord: ${serverProgress.longestStreak})` : ""}</p>
+                  <p className="text-2xl font-bold text-slate-900">{userStreak} {userStreak === 1 ? t('common.day') : t('common.days')}</p>
+                  <p className="text-xs text-slate-600">{t('education.learningStreak')} {serverProgress?.longestStreak ? `(${t('education.record')}: ${serverProgress.longestStreak})` : ""}</p>
                 </div>
               </div>
               <div className="mt-3 flex gap-1">

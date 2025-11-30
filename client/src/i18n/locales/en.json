@@ -963,6 +963,14 @@
     "passwordReset": "Password has been reset",
     "savePassword": "Save"
   },
+  "common": {
+    "day": "Day",
+    "days": "Days"
+  },
+  "education": {
+    "learningStreak": "Learning Streak",
+    "record": "Record"
+  },
   "challenges": {
     "bitcoinQuiz": "Bitcoin Quiz",
     "answerBitcoinQuestion": "Answer a Bitcoin question correctly",

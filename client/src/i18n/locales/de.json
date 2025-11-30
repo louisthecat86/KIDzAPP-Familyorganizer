@@ -961,6 +961,14 @@
     "passwordReset": "Passwort wurde zurückgesetzt",
     "savePassword": "Speichern"
   },
+  "common": {
+    "day": "Tag",
+    "days": "Tage"
+  },
+  "education": {
+    "learningStreak": "Lern-Streak",
+    "record": "Rekord"
+  },
   "challenges": {
     "bitcoinQuiz": "Bitcoin Quiz",
     "answerBitcoinQuestion": "Beantworte eine Bitcoin Frage richtig",
