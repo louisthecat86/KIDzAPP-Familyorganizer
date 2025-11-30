@@ -6570,19 +6570,26 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     const moduleIds = ["m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m9", "m10", "m11", "m12", "m13", "m14", "m15", "m16", "m17", "m18", "m19", "m20"];
     const levelColors: Record<string, string> = { beginner: "text-green-600", intermediate: "text-yellow-600", advanced: "text-red-600" };
     
-    const modules = moduleIds.map((mid) => ({
-      id: mid,
-      level: mid <= "m5" ? "beginner" : mid <= "m10" ? "intermediate" : "advanced",
-      levelColor: levelColors[mid <= "m5" ? "beginner" : mid <= "m10" ? "intermediate" : "advanced"],
-      title: t(`education.modules.${mid}.title`),
-      icon: ["₿", "⚡", "🔄", "📍", "📈", "⚡", "🔗", "⛏️", "🤖", "🏆", "🔐", "🔑", "🛡️", "💸", "💪", "☠️", "⚖️", "📉", "🪙", "🚀"][moduleIds.indexOf(mid)],
-      content: Array.from({length: 8}, (_, i) => t(`education.modules.${mid}.content.${i}`)),
-      quiz: Array.from({length: 3}, (_, i) => ({
-        question: t(`education.modules.${mid}.quiz.${i}.question`),
-        options: [t(`education.modules.${mid}.quiz.${i}.option0`), t(`education.modules.${mid}.quiz.${i}.option1`), t(`education.modules.${mid}.quiz.${i}.option2`)],
-        correct: 0
-      }))
-    }));
+    const modules = moduleIds.map((mid) => {
+      const moduleData = t(`education.modules.${mid}`, { returnObjects: true }) as { 
+        title: string; 
+        content: string[]; 
+        quiz: Array<{ question: string; option0: string; option1: string; option2: string }> 
+      };
+      return {
+        id: mid,
+        level: mid <= "m5" ? "beginner" : mid <= "m10" ? "intermediate" : "advanced",
+        levelColor: levelColors[mid <= "m5" ? "beginner" : mid <= "m10" ? "intermediate" : "advanced"],
+        title: moduleData.title,
+        icon: ["₿", "⚡", "🔄", "📍", "📈", "⚡", "🔗", "⛏️", "🤖", "🏆", "🔐", "🔑", "🛡️", "💸", "💪", "☠️", "⚖️", "📉", "🪙", "🚀"][moduleIds.indexOf(mid)],
+        content: moduleData.content || [],
+        quiz: (moduleData.quiz || []).map((q) => ({
+          question: q.question,
+          options: [q.option0, q.option1, q.option2],
+          correct: 0
+        }))
+      };
+    });
 
     const handleQuizSubmit = async (moduleId: string) => {
       const module = modules.find(m => m.id === moduleId);
