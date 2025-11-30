@@ -200,6 +200,18 @@
     "tasks": "Aufgaben",
     "tasksCount": "{{count}} Aufgaben"
   },
+  "levels": {
+    "level1": "Level 1 – Funkenstarter",
+    "level2": "Level 2 – Aufgabenentdecker",
+    "level3": "Level 3 – Familienhelfer",
+    "level4": "Level 4 – Alltagsmeister",
+    "level5": "Level 5 – Blitzbringer",
+    "level6": "Level 6 – Superheld der Woche",
+    "level7": "Level 7 – Aufgabenprofi",
+    "level8": "Level 8 – Wochenchampion",
+    "level9": "Level 9 – Familienheld",
+    "level10": "Level 10 – Großmeister der Blitze"
+  },
   "tasks": {
     "awaitingAssignmentInfo": "Warte bis ein Kind die Aufgabe annimmt oder genehmige sie um die Zahlung zu aktivieren",
     "accept": "Annehmen",

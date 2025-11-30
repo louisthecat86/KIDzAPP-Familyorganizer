@@ -200,6 +200,18 @@
     "tasks": "Tasks",
     "tasksCount": "{{count}} tasks"
   },
+  "levels": {
+    "level1": "Level 1 – Spark Starter",
+    "level2": "Level 2 – Task Discoverer",
+    "level3": "Level 3 – Family Helper",
+    "level4": "Level 4 – Daily Master",
+    "level5": "Level 5 – Lightning Bringer",
+    "level6": "Level 6 – Weekly Superhero",
+    "level7": "Level 7 – Task Pro",
+    "level8": "Level 8 – Weekly Champion",
+    "level9": "Level 9 – Family Hero",
+    "level10": "Level 10 – Lightning Grandmaster"
+  },
   "tasks": {
     "awaitingAssignmentInfo": "Wait until a child accepts the task or approve it to activate payment",
     "accept": "Accept",

@@ -6077,31 +6077,31 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     };
 
     const getAchievement = (completedTasks: number) => {
-      if (completedTasks >= 30) return { emoji: "👑", title: "Level 10 – Großmeister der Blitze", color: "text-yellow-600" };
-      if (completedTasks >= 27) return { emoji: "⭐", title: "Level 9 – Familienheld", color: "text-amber-600" };
-      if (completedTasks >= 24) return { emoji: "🏆", title: "Level 8 – Wochenchampion", color: "text-purple-500" };
-      if (completedTasks >= 21) return { emoji: "🎯", title: "Level 7 – Aufgabenprofi", color: "text-blue-600" };
-      if (completedTasks >= 18) return { emoji: "🦸", title: "Level 6 – Superheld der Woche", color: "text-blue-500" };
-      if (completedTasks >= 15) return { emoji: "⚡", title: "Level 5 – Blitzbringer", color: "text-amber-600" };
-      if (completedTasks >= 12) return { emoji: "🚀", title: "Level 4 – Alltagsmeister", color: "text-amber-500" };
-      if (completedTasks >= 9) return { emoji: "🤝", title: "Level 3 – Familienhelfer", color: "text-green-500" };
-      if (completedTasks >= 6) return { emoji: "🔍", title: "Level 2 – Aufgabenentdecker", color: "text-green-600" };
-      if (completedTasks >= 3) return { emoji: "✨", title: "Level 1 – Funkenstarter", color: "text-slate-500" };
+      if (completedTasks >= 30) return { emoji: "👑", title: t('levels.level10'), color: "text-yellow-600" };
+      if (completedTasks >= 27) return { emoji: "⭐", title: t('levels.level9'), color: "text-amber-600" };
+      if (completedTasks >= 24) return { emoji: "🏆", title: t('levels.level8'), color: "text-purple-500" };
+      if (completedTasks >= 21) return { emoji: "🎯", title: t('levels.level7'), color: "text-blue-600" };
+      if (completedTasks >= 18) return { emoji: "🦸", title: t('levels.level6'), color: "text-blue-500" };
+      if (completedTasks >= 15) return { emoji: "⚡", title: t('levels.level5'), color: "text-amber-600" };
+      if (completedTasks >= 12) return { emoji: "🚀", title: t('levels.level4'), color: "text-amber-500" };
+      if (completedTasks >= 9) return { emoji: "🤝", title: t('levels.level3'), color: "text-green-500" };
+      if (completedTasks >= 6) return { emoji: "🔍", title: t('levels.level2'), color: "text-green-600" };
+      if (completedTasks >= 3) return { emoji: "✨", title: t('levels.level1'), color: "text-slate-500" };
       return { emoji: "🌱", title: t('common.beginner'), color: "text-slate-400" };
     };
 
     const levels = [
       { level: 0, emoji: "🌱", title: t('common.beginner'), tasks: `0 ${t('common.tasks')}` },
-      { level: 1, emoji: "✨", title: "Level 1 – Funkenstarter", tasks: `3 ${t('common.tasks')}` },
-      { level: 2, emoji: "🔍", title: "Level 2 – Aufgabenentdecker", tasks: `6 ${t('common.tasks')}` },
-      { level: 3, emoji: "🤝", title: "Level 3 – Familienhelfer", tasks: `9 ${t('common.tasks')}` },
-      { level: 4, emoji: "🚀", title: "Level 4 – Alltagsmeister", tasks: `12 ${t('common.tasks')}` },
-      { level: 5, emoji: "⚡", title: "Level 5 – Blitzbringer", tasks: `15 ${t('common.tasks')}` },
-      { level: 6, emoji: "🦸", title: "Level 6 – Superheld der Woche", tasks: `18 ${t('common.tasks')}` },
-      { level: 7, emoji: "🎯", title: "Level 7 – Aufgabenprofi", tasks: `21 ${t('common.tasks')}` },
-      { level: 8, emoji: "🏆", title: "Level 8 – Wochenchampion", tasks: `24 ${t('common.tasks')}` },
-      { level: 9, emoji: "⭐", title: "Level 9 – Familienheld", tasks: `27 ${t('common.tasks')}` },
-      { level: 10, emoji: "👑", title: "Level 10 – Großmeister der Blitze", tasks: `30 ${t('common.tasks')}` },
+      { level: 1, emoji: "✨", title: t('levels.level1'), tasks: `3 ${t('common.tasks')}` },
+      { level: 2, emoji: "🔍", title: t('levels.level2'), tasks: `6 ${t('common.tasks')}` },
+      { level: 3, emoji: "🤝", title: t('levels.level3'), tasks: `9 ${t('common.tasks')}` },
+      { level: 4, emoji: "🚀", title: t('levels.level4'), tasks: `12 ${t('common.tasks')}` },
+      { level: 5, emoji: "⚡", title: t('levels.level5'), tasks: `15 ${t('common.tasks')}` },
+      { level: 6, emoji: "🦸", title: t('levels.level6'), tasks: `18 ${t('common.tasks')}` },
+      { level: 7, emoji: "🎯", title: t('levels.level7'), tasks: `21 ${t('common.tasks')}` },
+      { level: 8, emoji: "🏆", title: t('levels.level8'), tasks: `24 ${t('common.tasks')}` },
+      { level: 9, emoji: "⭐", title: t('levels.level9'), tasks: `27 ${t('common.tasks')}` },
+      { level: 10, emoji: "👑", title: t('levels.level10'), tasks: `30 ${t('common.tasks')}` },
     ];
 
     const hasBonusForLevel = (level: number) => {
