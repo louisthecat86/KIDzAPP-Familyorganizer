@@ -6089,17 +6089,17 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     };
 
     const levels = [
-      { level: 0, emoji: "🌱", title: t('common.beginner'), tasks: "0 Aufgaben" },
-      { level: 1, emoji: "✨", title: "Level 1 – Funkenstarter", tasks: "3 Aufgaben" },
-      { level: 2, emoji: "🔍", title: "Level 2 – Aufgabenentdecker", tasks: "6 Aufgaben" },
-      { level: 3, emoji: "🤝", title: "Level 3 – Familienhelfer", tasks: "9 Aufgaben" },
-      { level: 4, emoji: "🚀", title: "Level 4 – Alltagsmeister", tasks: "12 Aufgaben" },
-      { level: 5, emoji: "⚡", title: "Level 5 – Blitzbringer", tasks: "15 Aufgaben" },
-      { level: 6, emoji: "🦸", title: "Level 6 – Superheld der Woche", tasks: "18 Aufgaben" },
-      { level: 7, emoji: "🎯", title: "Level 7 – Aufgabenprofi", tasks: "21 Aufgaben" },
-      { level: 8, emoji: "🏆", title: "Level 8 – Wochenchampion", tasks: "24 Aufgaben" },
-      { level: 9, emoji: "⭐", title: "Level 9 – Familienheld", tasks: "27 Aufgaben" },
-      { level: 10, emoji: "👑", title: "Level 10 – Großmeister der Blitze", tasks: "30 Aufgaben" },
+      { level: 0, emoji: "🌱", title: t('common.beginner'), tasks: `0 ${t('common.tasks')}` },
+      { level: 1, emoji: "✨", title: "Level 1 – Funkenstarter", tasks: `3 ${t('common.tasks')}` },
+      { level: 2, emoji: "🔍", title: "Level 2 – Aufgabenentdecker", tasks: `6 ${t('common.tasks')}` },
+      { level: 3, emoji: "🤝", title: "Level 3 – Familienhelfer", tasks: `9 ${t('common.tasks')}` },
+      { level: 4, emoji: "🚀", title: "Level 4 – Alltagsmeister", tasks: `12 ${t('common.tasks')}` },
+      { level: 5, emoji: "⚡", title: "Level 5 – Blitzbringer", tasks: `15 ${t('common.tasks')}` },
+      { level: 6, emoji: "🦸", title: "Level 6 – Superheld der Woche", tasks: `18 ${t('common.tasks')}` },
+      { level: 7, emoji: "🎯", title: "Level 7 – Aufgabenprofi", tasks: `21 ${t('common.tasks')}` },
+      { level: 8, emoji: "🏆", title: "Level 8 – Wochenchampion", tasks: `24 ${t('common.tasks')}` },
+      { level: 9, emoji: "⭐", title: "Level 9 – Familienheld", tasks: `27 ${t('common.tasks')}` },
+      { level: 10, emoji: "👑", title: "Level 10 – Großmeister der Blitze", tasks: `30 ${t('common.tasks')}` },
     ];
 
     const hasBonusForLevel = (level: number) => {
