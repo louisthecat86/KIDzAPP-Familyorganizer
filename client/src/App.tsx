@@ -6148,11 +6148,13 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     <div 
                       key={level.level} 
                       className={`text-center p-2 rounded-lg border transition-colors ${
-                        hasBonus 
-                          ? bonusPaid 
-                            ? "bg-green-500/10 border-green-500/50" 
-                            : "bg-amber-500/10 border-amber-500/50"
-                          : "bg-card/50 border-border hover:border-primary/50"
+                        level.level === 1
+                          ? "bg-blue-500/15 border-blue-500/60 ring-2 ring-blue-500/30"
+                          : hasBonus 
+                            ? bonusPaid 
+                              ? "bg-green-500/10 border-green-500/50" 
+                              : "bg-amber-500/10 border-amber-500/50"
+                            : "bg-card/50 border-border hover:border-primary/50"
                       }`}
                     >
                       <div className="text-2xl mb-1">{level.emoji}</div>
