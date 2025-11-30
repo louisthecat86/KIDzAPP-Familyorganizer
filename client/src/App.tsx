@@ -6543,7 +6543,12 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       fetchLearningProgress();
     }, [user.id]);
     
-    const passedQuizzes = serverProgress?.completedModules || [];
+    const passedQuizzes = serverProgress?.completedModules ?? [];
+    
+    // Return loading state while data fetches
+    if (progressLoading) {
+      return <div className="flex items-center justify-center min-h-screen"><p className="text-slate-600">Lädt...</p></div>;
+    }
     
     // Challenge pool
     const challengePool = [
