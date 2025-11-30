@@ -7353,11 +7353,11 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 {showStatsModal && (() => {
                   const completedModulesModal = serverProgress?.completedModules || [];
                   const achievements = [
-                    { id: "first", cond: completedModulesModal.length >= 1 },
-                    { id: "half", cond: completedModulesModal.length >= 10 },
-                    { id: "master", cond: completedModulesModal.length === 20 },
-                    { id: "lightning", cond: user.lightningAddress?.length > 0 },
-                    { id: "star", cond: (user.balance || 0) > 50000 }
+                    { id: "first-module", cond: completedModulesModal.length >= 1 },
+                    { id: "half-done", cond: completedModulesModal.length >= 10 },
+                    { id: "all-done", cond: completedModulesModal.length === 20 },
+                    { id: "beginner-master", cond: completedModulesModal.filter((m: string) => m.startsWith("m") && parseInt(m.slice(1)) <= 5).length === 5 },
+                    { id: "advanced-master", cond: completedModulesModal.filter((m: string) => m.startsWith("m") && parseInt(m.slice(1)) >= 16).length === 5 }
                   ];
                   
                   // Calculate weekly stats
