@@ -2396,7 +2396,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
       <div className="space-y-6">
         {/* Eltern Hierarchie */}
         <div className="space-y-3">
-          <h3 className="font-semibold text-sm text-muted-foreground uppercase">👨‍👩‍👧 Familienstruktur</h3>
+          <h3 className="font-semibold text-sm text-muted-foreground uppercase">{t('settings.familyStructure')}</h3>
           
           {/* Eltern */}
           <div className="flex gap-3 justify-center">
@@ -2462,7 +2462,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
                     </div>
                     {resetPinChildId === child.id && (
                       <div className="p-3 rounded-lg border-2 border-amber-500/50 bg-amber-500/10 space-y-2">
-                        <p className="text-xs font-semibold">Neues Passwort für {child.name}:</p>
+                        <p className="text-xs font-semibold">{t('settings.newPasswordFor')} {child.name}:</p>
                         <Input
                           type="password"
                           maxLength={12}
@@ -2522,7 +2522,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
 
         {/* Connection ID Box */}
         <div className="p-3 rounded-lg bg-primary/10 border border-primary/30">
-          <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Kopplungs-ID für Kinder</p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">{t('settings.pairingIdForChildren')}</p>
           <div className="flex items-center gap-2">
             <code className="flex-1 text-xs bg-secondary p-2 rounded font-mono break-all text-primary" data-testid="text-connection-id">
               {user.connectionId}
@@ -2537,7 +2537,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
               <Copy className="h-4 w-4" />
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground mt-2">Teile diese ID mit deinen Kindern, um sie mit der Familie zu verbinden</p>
+          <p className="text-xs text-muted-foreground mt-2">{t('settings.shareIdWithChildren')}</p>
         </div>
 
         {/* Password Change Section for Parent */}
@@ -2933,7 +2933,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                     className="w-full"
                     data-testid="button-save-family-name"
                   >
-                    {isSaving ? "Wird gespeichert..." : "Speichern"}
+                    {isSaving ? t('common.saving') : t('common.save')}
                   </Button>
                 </div>
               )}
@@ -2947,7 +2947,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                 >
                   <div className="flex flex-col gap-1">
                     <span className="font-semibold">Einreihig</span>
-                    <span className="text-xs text-muted-foreground">Kästchen untereinander angeordnet</span>
+                    <span className="text-xs text-muted-foreground">{t('settings.boxesArrangedVertically')}</span>
                   </div>
                 </Button>
                 <Button
@@ -2958,7 +2958,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                 >
                   <div className="flex flex-col gap-1">
                     <span className="font-semibold">Zweireihig</span>
-                    <span className="text-xs text-muted-foreground">2 Kästchen nebeneinander</span>
+                    <span className="text-xs text-muted-foreground">{t('settings.boxesArrangedHorizontally')}</span>
                   </div>
                 </Button>
               </div>
@@ -2985,7 +2985,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                       Format: name@domain.com
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Status: {user.lightningAddress ? "✓ Konfiguriert" : "✗ Nicht konfiguriert"}
+                      Status: {user.lightningAddress ? "✓ " + t('common.configured') : "✗ " + t('common.notConfigured')}
                     </p>
                   </div>
                   <Button
@@ -3015,7 +3015,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                     disabled={isSaving || !editLnbitsUrl}
                     data-testid="button-save-lightning-address"
                   >
-                    {isSaving ? "⏳ Speichern..." : "💾 Speichern"}
+                    {isSaving ? "⏳ " + t('common.saving') : "💾 " + t('common.save')}
                   </Button>
                 </div>
               ) : (
@@ -3025,7 +3025,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                     {user.hasLnbitsConfigured ? (
                       <div className="space-y-3">
                         <div className="p-3 rounded-lg border border-green-500/30 bg-green-500/10">
-                          <p className="text-sm font-semibold text-green-300">✓ LNbits verbunden</p>
+                          <p className="text-sm font-semibold text-green-300">✓ {t('wallet.lnbitsConnected')}</p>
                           <p className="text-sm text-muted-foreground mt-1">Wallet ist konfiguriert und einsatzbereit</p>
                         </div>
                         <Button
@@ -3129,7 +3129,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                             data-testid="input-nwc-connection"
                           />
                           <p className="text-xs text-muted-foreground">
-                            Den Connection String erhältst du von deiner NWC-kompatiblen Wallet (z.B. Alby, Mutiny)
+                            {t('wallet.getConnectionString')}
                           </p>
                         </div>
                         <Button 
@@ -3222,10 +3222,10 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
                     )}
                     <div className="mt-4 p-4 bg-secondary/70 rounded-lg border border-border">
                       <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                        📋 Rückmeldungen ({rsvps.length})
+                        📋 {t('calendar.rsvps')} ({rsvps.length})
                       </h4>
                       {rsvps.length === 0 ? (
-                        <p className="text-xs text-muted-foreground italic">Noch keine Rückmeldungen erhalten</p>
+                        <p className="text-xs text-muted-foreground italic">{t('calendar.noRsvps')}</p>
                       ) : (
                         <div className="space-y-2">
                           {accepted.length > 0 && (
@@ -4296,7 +4296,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   Format: name@domain.com
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Status: {user.lightningAddress ? "✓ Konfiguriert" : "✗ Nicht konfiguriert"}
+                  Status: {user.lightningAddress ? "✓ " + t('common.configured') : "✗ " + t('common.notConfigured')}
                 </p>
               </div>
               <Button 
@@ -4327,8 +4327,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <TabsContent value="verbindung">
             <Card>
               <CardHeader>
-                <CardTitle>Dein Verbindungscode</CardTitle>
-                <CardDescription>Teile diesen Code mit deinen Kindern zum Verbinden</CardDescription>
+                <CardTitle>{t('wallet.connectionCodeTitle')}</CardTitle>
+                <CardDescription>{t('wallet.shareCodeWithChildren')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="bg-secondary border-2 border-primary/30 rounded-lg p-4 text-center">
@@ -4338,7 +4338,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   </p>
                 </div>
                 <p className="text-xs text-muted-foreground bg-blue-500/10 border border-blue-500/30 rounded p-3">
-                  💡 Dieser Code wird für die Verbindung mit deinen Kindern benötigt. Teile ihn sicher mit ihnen.
+                  💡 {t('wallet.connectionCodeTip')}
                 </p>
               </CardContent>
             </Card>
@@ -4348,8 +4348,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>LNbits Wallet (für Aufgaben & Auszahlungen)</CardTitle>
-                  <CardDescription>Verbinde dein LNbits Wallet für Zahlungen und Escrow</CardDescription>
+                  <CardTitle>{t('wallet.lnbitsWallet')}</CardTitle>
+                  <CardDescription>{t('wallet.lnbitsDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
@@ -4375,7 +4375,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       data-testid="input-lnbits-key"
                     />
                     <p className="text-xs text-muted-foreground">
-                      Status: {user.hasLnbitsConfigured ? "✓ Verbunden" : "✗ Nicht verbunden"}
+                      Status: {user.hasLnbitsConfigured ? "✓ " + t('common.connected') : "✗ " + t('common.notConnected')}
                     </p>
                   </div>
                   <Button 
@@ -4405,12 +4405,12 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Spendenlink</CardTitle>
-                  <CardDescription>Erhalte Spenden über Lightning Network</CardDescription>
+                  <CardTitle>{t('wallet.donationLink')}</CardTitle>
+                  <CardDescription>{t('wallet.receiveDonations')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="donation-addr">Lightning Adresse für Spenden</Label>
+                    <Label htmlFor="donation-addr">{t('wallet.donationAddress')}</Label>
                     <Input 
                       id="donation-addr"
                       placeholder="deine@lightning.adresse oder Lightning Adresse"
@@ -4420,7 +4420,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       data-testid="input-donation-address"
                     />
                     <p className="text-xs text-muted-foreground">
-                      Gib deine Lightning Adresse ein, um Spenden zu erhalten
+                      {t('wallet.enterDonationAddress')}
                     </p>
                   </div>
                   <Button 
@@ -4464,7 +4464,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         className="w-full"
                         data-testid="button-copy-donation-link"
                       >
-                        <Copy className="h-4 w-4 mr-2" /> Spendenlink kopieren
+                        <Copy className="h-4 w-4 mr-2" /> {t('wallet.copyDonationLink')}
                       </Button>
                     </div>
                   )}
@@ -4477,8 +4477,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Nostr Wallet Connect (NWC)</CardTitle>
-                  <CardDescription>Verbinde deine Wallet über das Nostr Wallet Connect Protokoll</CardDescription>
+                  <CardTitle>{t('wallet.nwcTitle')}</CardTitle>
+                  <CardDescription>{t('wallet.nwcDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {user.hasNwcConfigured ? (
@@ -4519,7 +4519,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                           data-testid="input-nwc-connection"
                         />
                         <p className="text-xs text-muted-foreground">
-                          Den Connection String erhältst du von deiner NWC-kompatiblen Wallet (z.B. Alby, Mutiny)
+                          {t('wallet.getConnectionString')}
                         </p>
                       </div>
                       <Button 
@@ -4537,8 +4537,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               <Card className="bg-secondary/30">
                 <CardContent className="p-4">
                   <p className="text-xs text-muted-foreground">
-                    <strong>Was ist NWC?</strong> Nostr Wallet Connect ist ein offenes Protokoll, das es dir ermöglicht, 
-                    deine Lightning Wallet sicher mit Apps zu verbinden. Unterstützte Wallets: Alby, Mutiny, Zeus und andere.
+                    <strong>{t('wallet.whatIsNwc')}</strong> {t('wallet.nwcExplanation')}
                   </p>
                 </CardContent>
               </Card>
@@ -4568,7 +4567,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     data-testid={`button-delete-task-${task.id}`}
                     size="sm"
                   >
-                    <Trash2 className="mr-2 h-4 w-4" /> Löschen
+                    <Trash2 className="mr-2 h-4 w-4" /> {t('common.delete')}
                   </Button>
                 </TaskCard>
               ))
@@ -4625,7 +4624,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         size="sm"
                         disabled={approvingTaskId === task.id}
                       >
-                        <Trash2 className="mr-2 h-4 w-4" /> Löschen
+                        <Trash2 className="mr-2 h-4 w-4" /> {t('common.delete')}
                       </Button>
                     </div>
                   </div>
@@ -5265,7 +5264,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         data-testid="input-nwc-connection"
                       />
                       <p className="text-xs text-muted-foreground">
-                        Den Connection String erhältst du von deiner NWC-kompatiblen Wallet (z.B. Alby, Mutiny)
+                        {t('wallet.getConnectionString')}
                       </p>
                     </div>
                     <Button 
@@ -6387,7 +6386,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
             {user.hasLnbitsConfigured ? (
               <div className="space-y-3">
                 <div className="p-3 rounded-lg border border-green-500/30 bg-green-500/10">
-                  <p className="text-sm font-semibold text-green-300">✓ LNbits verbunden</p>
+                  <p className="text-sm font-semibold text-green-300">✓ {t('wallet.lnbitsConnected')}</p>
                   <p className="text-sm text-muted-foreground mt-1">Wallet ist konfiguriert und einsatzbereit</p>
                 </div>
                 <Button
@@ -6558,7 +6557,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 Format: name@domain.com
               </p>
               <p className="text-xs text-muted-foreground">
-                Status: {user.lightningAddress ? "✓ Konfiguriert" : "✗ Nicht konfiguriert"}
+                Status: {user.lightningAddress ? "✓ " + t('common.configured') : "✗ " + t('common.notConfigured')}
               </p>
             </div>
             <Button 
