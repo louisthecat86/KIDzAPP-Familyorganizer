@@ -4116,9 +4116,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="daily">Täglich</SelectItem>
-                  <SelectItem value="weekly">Wöchentlich</SelectItem>
-                  <SelectItem value="monthly">Monatlich</SelectItem>
+                  <SelectItem value="daily">{t('common.daily')}</SelectItem>
+                  <SelectItem value="weekly">{t('common.weekly')}</SelectItem>
+                  <SelectItem value="monthly">{t('common.monthly')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -4150,8 +4150,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   </div>
                   <p className="text-sm text-slate-600 mt-1">
                     {task.frequency === 'weekly' && weekdays[task.dayOfWeek]} 
-                    {task.frequency === 'daily' && 'Täglich'}
-                    {task.frequency === 'monthly' && `Monatlich am ${task.dayOfMonth || 'Tag'}`}
+                    {task.frequency === 'daily' && t('common.daily')}
+                    {task.frequency === 'monthly' && `${t('common.monthly')} ${task.dayOfMonth || 'Tag'}`}
                     • {task.time}
                   </p>
                   <p className="text-xs text-slate-500 mt-1">{task.description}</p>
