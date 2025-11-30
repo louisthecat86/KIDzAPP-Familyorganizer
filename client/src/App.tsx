@@ -5523,6 +5523,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         }
       } catch (error) {
         console.error("[Learning Progress] Failed to fetch:", error);
+      } finally {
+        setProgressLoading(false);
       }
     };
     fetchLearningProgress();
@@ -6531,11 +6533,6 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       };
       fetchBtcPrice();
     }, []);
-    
-    // Return loading state while data fetches
-    if (progressLoading) {
-      return <div className="flex items-center justify-center min-h-screen"><p className="text-slate-600">Lädt...</p></div>;
-    }
     
     // Challenge pool
     const challengePool = [
