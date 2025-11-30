@@ -275,3 +275,30 @@ export const insertRecurringTaskSchema = createInsertSchema(recurringTasks).omit
 
 export type InsertRecurringTask = z.infer<typeof insertRecurringTaskSchema>;
 export type RecurringTask = typeof recurringTasks.$inferSelect;
+
+// Learning Progress Table (for Bitcoin Education gamification)
+export const learningProgress = pgTable("learning_progress", {
+  id: serial("id").primaryKey(),
+  peerId: integer("peer_id").notNull(), // Child who is learning
+  xp: integer("xp").default(0).notNull(), // Experience points
+  level: integer("level").default(1).notNull(), // Current level (1-10)
+  streak: integer("streak").default(0).notNull(), // Current streak in days
+  longestStreak: integer("longest_streak").default(0).notNull(), // Best streak ever
+  lastActivityDate: timestamp("last_activity_date"), // For streak tracking
+  completedModules: text("completed_modules").array().default([]).notNull(), // Array of module IDs
+  unlockedAchievements: text("unlocked_achievements").array().default([]).notNull(), // Array of achievement IDs
+  totalQuizzesPassed: integer("total_quizzes_passed").default(0).notNull(),
+  totalSatsEarned: integer("total_sats_earned").default(0).notNull(),
+  dailyChallengesCompleted: integer("daily_challenges_completed").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertLearningProgressSchema = createInsertSchema(learningProgress).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertLearningProgress = z.infer<typeof insertLearningProgressSchema>;
+export type LearningProgress = typeof learningProgress.$inferSelect;

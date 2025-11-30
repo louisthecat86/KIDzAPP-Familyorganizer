@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks } from "@shared/schema";
+import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks, type LearningProgress, type InsertLearningProgress, learningProgress } from "@shared/schema";
 import { eq, and, desc } from "drizzle-orm";
 
 export interface IStorage {
@@ -84,6 +84,15 @@ export interface IStorage {
   createRecurringTask(task: InsertRecurringTask): Promise<RecurringTask>;
   updateRecurringTask(id: number, task: Partial<RecurringTask>): Promise<RecurringTask | undefined>;
   deleteRecurringTask(id: number): Promise<boolean>;
+
+  // Learning Progress operations
+  getLearningProgress(peerId: number): Promise<LearningProgress | undefined>;
+  createLearningProgress(progress: InsertLearningProgress): Promise<LearningProgress>;
+  updateLearningProgress(peerId: number, progress: Partial<LearningProgress>): Promise<LearningProgress | undefined>;
+  addXpAndCheckLevel(peerId: number, xpToAdd: number): Promise<LearningProgress>;
+  unlockAchievement(peerId: number, achievementId: string): Promise<LearningProgress>;
+  completeModule(peerId: number, moduleId: string): Promise<LearningProgress>;
+  updateStreak(peerId: number): Promise<LearningProgress>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -649,6 +658,142 @@ export class DatabaseStorage implements IStorage {
   async deleteRecurringTask(id: number): Promise<boolean> {
     const result = await db.delete(recurringTasks).where(eq(recurringTasks.id, id));
     return true;
+  }
+
+  // Learning Progress operations
+  async getLearningProgress(peerId: number): Promise<LearningProgress | undefined> {
+    const result = await db.select().from(learningProgress)
+      .where(eq(learningProgress.peerId, peerId))
+      .limit(1);
+    return result[0];
+  }
+
+  async createLearningProgress(progress: InsertLearningProgress): Promise<LearningProgress> {
+    const result = await db.insert(learningProgress).values(progress).returning();
+    return result[0];
+  }
+
+  async updateLearningProgress(peerId: number, updates: Partial<LearningProgress>): Promise<LearningProgress | undefined> {
+    const result = await db.update(learningProgress)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(learningProgress.peerId, peerId))
+      .returning();
+    return result[0];
+  }
+
+  async addXpAndCheckLevel(peerId: number, xpToAdd: number): Promise<LearningProgress> {
+    let progress = await this.getLearningProgress(peerId);
+    
+    if (!progress) {
+      progress = await this.createLearningProgress({ peerId, xp: 0, level: 1, streak: 0, longestStreak: 0 });
+    }
+
+    const newXp = progress.xp + xpToAdd;
+    const xpThresholds = [0, 100, 250, 500, 800, 1200, 1700, 2300, 3000, 4000, 5000];
+    let newLevel = 1;
+    for (let i = xpThresholds.length - 1; i >= 0; i--) {
+      if (newXp >= xpThresholds[i]) {
+        newLevel = i + 1;
+        break;
+      }
+    }
+
+    const result = await db.update(learningProgress)
+      .set({ xp: newXp, level: newLevel, updatedAt: new Date() })
+      .where(eq(learningProgress.peerId, peerId))
+      .returning();
+    return result[0];
+  }
+
+  async unlockAchievement(peerId: number, achievementId: string): Promise<LearningProgress> {
+    let progress = await this.getLearningProgress(peerId);
+    
+    if (!progress) {
+      progress = await this.createLearningProgress({ peerId, xp: 0, level: 1, streak: 0, longestStreak: 0 });
+    }
+
+    const currentAchievements = progress.unlockedAchievements || [];
+    if (!currentAchievements.includes(achievementId)) {
+      const result = await db.update(learningProgress)
+        .set({ 
+          unlockedAchievements: [...currentAchievements, achievementId],
+          updatedAt: new Date() 
+        })
+        .where(eq(learningProgress.peerId, peerId))
+        .returning();
+      return result[0];
+    }
+    return progress;
+  }
+
+  async completeModule(peerId: number, moduleId: string): Promise<LearningProgress> {
+    let progress = await this.getLearningProgress(peerId);
+    
+    if (!progress) {
+      progress = await this.createLearningProgress({ peerId, xp: 0, level: 1, streak: 0, longestStreak: 0 });
+    }
+
+    const currentModules = progress.completedModules || [];
+    if (!currentModules.includes(moduleId)) {
+      const result = await db.update(learningProgress)
+        .set({ 
+          completedModules: [...currentModules, moduleId],
+          totalQuizzesPassed: progress.totalQuizzesPassed + 1,
+          updatedAt: new Date() 
+        })
+        .where(eq(learningProgress.peerId, peerId))
+        .returning();
+      return result[0];
+    }
+    return progress;
+  }
+
+  async updateStreak(peerId: number): Promise<LearningProgress> {
+    let progress = await this.getLearningProgress(peerId);
+    
+    if (!progress) {
+      progress = await this.createLearningProgress({ peerId, xp: 0, level: 1, streak: 1, longestStreak: 1, lastActivityDate: new Date() });
+      return progress;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const lastActivity = progress.lastActivityDate ? new Date(progress.lastActivityDate) : null;
+    if (lastActivity) {
+      lastActivity.setHours(0, 0, 0, 0);
+    }
+
+    let newStreak = progress.streak;
+    let newLongestStreak = progress.longestStreak;
+
+    if (!lastActivity) {
+      newStreak = 1;
+    } else {
+      const diffDays = Math.floor((today.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24));
+      if (diffDays === 0) {
+        // Same day, no streak change
+      } else if (diffDays === 1) {
+        newStreak = progress.streak + 1;
+      } else {
+        newStreak = 1; // Streak broken
+      }
+    }
+
+    if (newStreak > newLongestStreak) {
+      newLongestStreak = newStreak;
+    }
+
+    const result = await db.update(learningProgress)
+      .set({ 
+        streak: newStreak, 
+        longestStreak: newLongestStreak,
+        lastActivityDate: new Date(),
+        updatedAt: new Date() 
+      })
+      .where(eq(learningProgress.peerId, peerId))
+      .returning();
+    return result[0];
   }
 
 }
