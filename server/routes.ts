@@ -7,8 +7,6 @@ import { LNBitsClient } from "./lnbits";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 import cron from "node-cron";
-import { logAudit } from "./audit";
-import { checkPaymentRateLimit, checkSpendingLimit, recordSpending, getDailySpending, setUserSpendingLimits, getUserSpendingLimits } from "./rate-limiter";
 
 function validatePassword(password: string): { valid: boolean; error: string } {
   if (!password || password.length < 8) {
@@ -331,14 +329,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       await storage.updatePeerWallet(peerId, "", "");
       console.log("LNbits wallet deleted successfully for peer:", peerId);
-      
-      // SECURITY: Audit log wallet disconnection
-      await logAudit({
-        peerId,
-        action: 'wallet_disconnect',
-        details: { walletType: 'lnbits' }
-      });
-      
       res.json({ success: true });
     } catch (error) {
       console.error("LNbits wallet delete error:", error);
@@ -406,14 +396,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save LNbits credentials
       const peer = await storage.updatePeerWallet(peerId, normalizedUrl, lnbitsAdminKey);
       console.log("LNbits wallet saved successfully for peer:", peerId);
-      
-      // SECURITY: Audit log wallet connection
-      await logAudit({
-        peerId,
-        action: 'wallet_connect_lnbits',
-        details: { lnbitsUrl: normalizedUrl, keyLength: lnbitsAdminKey.length }
-      });
-      
       res.json(sanitizePeerForClient(peer));
     } catch (error) {
       console.error("LNbits wallet setup error:", error);
@@ -455,14 +437,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save NWC credentials
       const peer = await storage.updatePeerNwcWallet(peerId, nwcConnectionString);
       console.log("NWC wallet saved successfully for peer:", peerId);
-      
-      // SECURITY: Audit log wallet connection
-      await logAudit({
-        peerId,
-        action: 'wallet_connect_nwc',
-        details: { connectionStringLength: nwcConnectionString.length }
-      });
-      
       res.json(sanitizePeerForClient(peer));
     } catch (error) {
       console.error("NWC wallet setup error:", error);
@@ -481,70 +455,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       await storage.clearPeerNwcWallet(peerId);
       console.log("NWC wallet deleted successfully for peer:", peerId);
-      
-      // SECURITY: Audit log wallet disconnection
-      await logAudit({
-        peerId,
-        action: 'wallet_disconnect',
-        details: { walletType: 'nwc' }
-      });
-      
       res.json({ success: true });
     } catch (error) {
       console.error("NWC wallet delete error:", error);
       res.status(500).json({ error: "Fehler beim Löschen der NWC-Verbindung" });
-    }
-  });
-
-  // SECURITY: Get current spending limits and usage
-  app.get("/api/spending-limits/:peerId", async (req, res) => {
-    try {
-      const peerId = parseInt(req.params.peerId);
-      const limits = getUserSpendingLimits(peerId);
-      const dailySpent = getDailySpending(peerId);
-      
-      res.json({
-        dailyLimit: limits.dailyLimit,
-        perTransactionLimit: limits.perTransactionLimit,
-        dailySpent,
-        dailyRemaining: Math.max(0, limits.dailyLimit - dailySpent)
-      });
-    } catch (error) {
-      console.error("Get spending limits error:", error);
-      res.status(500).json({ error: "Fehler beim Abrufen der Ausgabenlimits" });
-    }
-  });
-
-  // SECURITY: Set spending limits for parent
-  app.post("/api/spending-limits", async (req, res) => {
-    try {
-      const { peerId, dailyLimit, perTransactionLimit } = req.body;
-      
-      if (!peerId) {
-        return res.status(400).json({ error: "peerId erforderlich" });
-      }
-
-      const peer = await storage.getPeer(peerId);
-      if (!peer || peer.role !== "parent") {
-        return res.status(403).json({ error: "Nur Eltern können Ausgabenlimits setzen" });
-      }
-
-      setUserSpendingLimits(peerId, dailyLimit, perTransactionLimit);
-      
-      await logAudit({
-        peerId,
-        action: 'spending_limits_updated',
-        details: { dailyLimit, perTransactionLimit }
-      });
-
-      res.json({
-        success: true,
-        dailyLimit: dailyLimit || 100000,
-        perTransactionLimit: perTransactionLimit || 10000
-      });
-    } catch (error) {
-      console.error("Set spending limits error:", error);
-      res.status(500).json({ error: "Fehler beim Setzen der Ausgabenlimits" });
     }
   });
 
@@ -1075,38 +989,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!child || !parent) {
           return res.status(404).json({ error: "Child or parent not found" });
         }
-
-        // SECURITY: Rate limiting check
-        const rateLimitCheck = checkPaymentRateLimit(parent.id);
-        if (!rateLimitCheck.allowed) {
-          await logAudit({
-            peerId: parent.id,
-            action: 'payment_failed',
-            details: { reason: 'rate_limit_exceeded', taskId: id, retryAfterMs: rateLimitCheck.retryAfterMs }
-          });
-          return res.status(429).json({ 
-            error: "Too many payment requests. Please wait.", 
-            retryAfterMs: rateLimitCheck.retryAfterMs 
-          });
-        }
-
-        // SECURITY: Spending limit check
-        const spendingCheck = checkSpendingLimit(parent.id, task.sats);
-        if (!spendingCheck.allowed) {
-          await logAudit({
-            peerId: parent.id,
-            action: 'payment_failed',
-            details: { reason: 'spending_limit_exceeded', taskId: id, sats: task.sats, ...spendingCheck }
-          });
-          return res.status(403).json({ 
-            error: spendingCheck.reason,
-            dailyRemaining: spendingCheck.dailyRemaining,
-            dailySpent: spendingCheck.dailySpent
-          });
-        }
-
-        // Record this spending
-        recordSpending(parent.id, task.sats);
 
         // Update child's balance IMMEDIATELY (only for first approval)
         const newBalance = (child.balance || 0) + task.sats;
