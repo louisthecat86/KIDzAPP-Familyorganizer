@@ -290,7 +290,7 @@ async function deleteEvent(id: number): Promise<void> {
 
 
 export default function App() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [newTask, setNewTask] = useState({ title: "", description: "", sats: 50 });
   const [newEvent, setNewEvent] = useState({ title: "", description: "", location: "", startDate: "", endDate: "" });
@@ -6570,24 +6570,28 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     const moduleIds = ["m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m9", "m10", "m11", "m12", "m13", "m14", "m15", "m16", "m17", "m18", "m19", "m20"];
     const levelColors: Record<string, string> = { beginner: "text-green-600", intermediate: "text-yellow-600", advanced: "text-red-600" };
     
+    const currentLang = i18n.language?.startsWith('en') ? 'en' : 'de';
+    const allModules = i18n.getResourceBundle(currentLang, 'translation')?.education?.modules || {};
+    
     const modules = moduleIds.map((mid) => {
-      const moduleData = t(`education.modules.${mid}`, { returnObjects: true }) as { 
+      const moduleData = allModules[mid] as { 
         title: string; 
         content: string[]; 
         quiz: Array<{ question: string; option0: string; option1: string; option2: string }> 
-      };
+      } | undefined;
+      
       return {
         id: mid,
         level: mid <= "m5" ? "beginner" : mid <= "m10" ? "intermediate" : "advanced",
         levelColor: levelColors[mid <= "m5" ? "beginner" : mid <= "m10" ? "intermediate" : "advanced"],
-        title: moduleData.title,
+        title: moduleData?.title || `Module ${mid}`,
         icon: ["₿", "⚡", "🔄", "📍", "📈", "⚡", "🔗", "⛏️", "🤖", "🏆", "🔐", "🔑", "🛡️", "💸", "💪", "☠️", "⚖️", "📉", "🪙", "🚀"][moduleIds.indexOf(mid)],
-        content: moduleData.content || [],
-        quiz: (moduleData.quiz || []).map((q) => ({
+        content: Array.isArray(moduleData?.content) ? moduleData.content : [],
+        quiz: Array.isArray(moduleData?.quiz) ? moduleData.quiz.map((q) => ({
           question: q.question,
           options: [q.option0, q.option1, q.option2],
           correct: 0
-        }))
+        })) : []
       };
     });
 
