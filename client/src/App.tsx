@@ -6532,8 +6532,6 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       fetchBtcPrice();
     }, []);
     
-    const passedQuizzes = serverProgress?.completedModules ?? [];
-    
     // Return loading state while data fetches
     if (progressLoading) {
       return <div className="flex items-center justify-center min-h-screen"><p className="text-slate-600">Lädt...</p></div>;
@@ -6602,7 +6600,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       const passScore = Math.ceil(module.quiz.length * 0.7);
       
       if (score >= passScore) {
-        if (!passedQuizzes.includes(moduleId)) {
+        const completedModules = serverProgress?.completedModules || [];
+        if (!completedModules.includes(moduleId)) {
           try {
             const response = await fetch(`/api/learning-progress/${user.id}/add-xp`, {
               method: "POST",
@@ -6630,16 +6629,18 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       setQuizSubmitted({ ...quizSubmitted, [moduleId]: true });
     };
 
+    const completedModules = serverProgress?.completedModules || [];
+    
     const achievements = [
-      { id: "first-module", title: "Anfänger", icon: "🌱", condition: passedQuizzes.length >= 1 },
-      { id: "half-done", title: "Lernender", icon: "📚", condition: passedQuizzes.length >= 10 },
-      { id: "all-done", title: "Experte", icon: "👑", condition: passedQuizzes.length === modules.length },
-      { id: "beginner-master", title: "Anfänger-Meister", icon: "🟢", condition: modules.filter(m => m.level === "Anfänger").every(m => passedQuizzes.includes(m.id)) },
-      { id: "advanced-master", title: "Fortgeschritten-Meister", icon: "🔴", condition: modules.filter(m => m.level === "Fortgeschritten").every(m => passedQuizzes.includes(m.id)) }
+      { id: "first-module", title: "Anfänger", icon: "🌱", condition: completedModules.length >= 1 },
+      { id: "half-done", title: "Lernender", icon: "📚", condition: completedModules.length >= 10 },
+      { id: "all-done", title: "Experte", icon: "👑", condition: completedModules.length === modules.length },
+      { id: "beginner-master", title: "Anfänger-Meister", icon: "🟢", condition: modules.filter(m => m.level === "Anfänger").every(m => completedModules.includes(m.id)) },
+      { id: "advanced-master", title: "Fortgeschritten-Meister", icon: "🔴", condition: modules.filter(m => m.level === "Fortgeschritten").every(m => completedModules.includes(m.id)) }
     ];
 
     const xpPerModule = 100;
-    const userXp = serverProgress?.xp ?? (passedQuizzes.length * xpPerModule);
+    const userXp = serverProgress?.xp ?? (completedModules.length * xpPerModule);
     const userLevel = serverProgress?.level ?? (Math.floor(userXp / 300) + 1);
     const userStreak = serverProgress?.streak ?? 0;
     
@@ -6647,7 +6648,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       const idx = modules.findIndex(m => m.id === moduleId);
       if (idx === 0) return true;
       const prevModule = modules[idx - 1];
-      return passedQuizzes.includes(prevModule.id);
+      return completedModules.includes(prevModule.id);
     };
     
     const xpThresholds = [0, 100, 250, 500, 800, 1200, 1700, 2300, 3000, 4000, 5000];
@@ -6782,7 +6783,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 <h3 className={`text-sm font-semibold uppercase tracking-wide ${level === "Anfänger" ? "text-green-600" : level === "Mittelstufe" ? "text-yellow-600" : "text-red-600"}`}>{level} Level</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {modules.filter(m => m.level === level).map(module => {
-                    const isPassed = passedQuizzes.includes(module.id);
+                    const isPassed = completedModules.includes(module.id);
                     const isUnlocked = isModuleUnlocked(module.id);
                     const isQuizOpen = showQuiz === module.id && isUnlocked;
                     return (
@@ -7104,7 +7105,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           </div>
         )}
 
-        {passedQuizzes.length === modules.length && (
+        {completedModules.length === modules.length && (
           <Card className="border-green-500/50 bg-gradient-to-r from-green-500/10 to-blue-500/10">
             <CardContent className="pt-8 pb-8 text-center">
               <p className="text-4xl mb-3">🏆👑🚀</p>
@@ -7348,10 +7349,11 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
                 {/* Stats Modal */}
                 {showStatsModal && (() => {
+                  const completedModulesModal = serverProgress?.completedModules || [];
                   const achievements = [
-                    { id: "first", cond: passedQuizzes.length >= 1 },
-                    { id: "half", cond: passedQuizzes.length >= 10 },
-                    { id: "master", cond: passedQuizzes.length === 20 },
+                    { id: "first", cond: completedModulesModal.length >= 1 },
+                    { id: "half", cond: completedModulesModal.length >= 10 },
+                    { id: "master", cond: completedModulesModal.length === 20 },
                     { id: "lightning", cond: user.lightningAddress?.length > 0 },
                     { id: "star", cond: (user.balance || 0) > 50000 }
                   ];
@@ -7372,7 +7374,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                               <BookOpen className="h-4 w-4 text-green-600" />
                             </div>
                             <p className="text-xs text-slate-600 mb-1 font-medium">Module</p>
-                            <p className="text-2xl font-bold text-green-600">{passedQuizzes.length}/20</p>
+                            <p className="text-2xl font-bold text-green-600">{completedModulesModal.length}/20</p>
                           </div>
                           
                           <div className="rounded-lg bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200/50 p-4 text-center">
