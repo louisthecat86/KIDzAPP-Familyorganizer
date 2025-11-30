@@ -5509,7 +5509,24 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   const [xp, setXp] = useState(0);
   const [rsvps, setRsvps] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState<Record<number, boolean>>({});
+  const [serverProgress, setServerProgress] = useState<any>(null);
   const { toast } = useToast();
+  
+  // Load learning progress from server
+  useEffect(() => {
+    const fetchLearningProgress = async () => {
+      try {
+        const response = await fetch(`/api/learning-progress/${user.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setServerProgress(data);
+        }
+      } catch (error) {
+        console.error("[Learning Progress] Failed to fetch:", error);
+      }
+    };
+    fetchLearningProgress();
+  }, [user.id]);
 
   const { data: connectedPeers = [] } = useQuery({
     queryKey: ["peers", user.connectionId],
@@ -6502,17 +6519,6 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
   if (currentView === "bitcoin-education" && user.role === "child") {
     
-    const [serverProgress, setServerProgress] = useState<{
-      xp: number;
-      level: number;
-      streak: number;
-      longestStreak: number;
-      completedModules: string[];
-      unlockedAchievements: string[];
-      totalQuizzesPassed: number;
-      dailyChallengesCompleted: number;
-    } | null>(null);
-
     useEffect(() => {
       const fetchBtcPrice = async () => {
         try {
@@ -6525,25 +6531,6 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       };
       fetchBtcPrice();
     }, []);
-
-    useEffect(() => {
-      const fetchLearningProgress = async () => {
-        try {
-          setProgressLoading(true);
-          const response = await fetch(`/api/learning-progress/${user.id}`);
-          if (response.ok) {
-            const data = await response.json();
-            setServerProgress(data);
-            console.log("✅ Learning progress loaded from server:", data);
-          }
-        } catch (error) {
-          console.error("[Learning Progress] Failed to fetch:", error);
-        } finally {
-          setProgressLoading(false);
-        }
-      };
-      fetchLearningProgress();
-    }, [user.id]);
     
     const passedQuizzes = serverProgress?.completedModules ?? [];
     
@@ -6732,7 +6719,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           {/* Quick Stats */}
           <div className="grid grid-cols-3 gap-3">
             <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-center">
-              <p className="text-2xl font-bold text-green-600">{passedQuizzes.length}</p>
+              <p className="text-2xl font-bold text-green-600">{(serverProgress?.completedModules || []).length}</p>
               <p className="text-xs text-slate-600">Module bestanden</p>
             </div>
             <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-center">
@@ -6740,7 +6727,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
               <p className="text-xs text-slate-600">Abzeichen</p>
             </div>
             <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-center">
-              <p className="text-2xl font-bold text-amber-600">{modules.length - passedQuizzes.length}</p>
+              <p className="text-2xl font-bold text-amber-600">{(modules?.length || 0) - (serverProgress?.completedModules || []).length}</p>
               <p className="text-xs text-slate-600">Module übrig</p>
             </div>
           </div>
