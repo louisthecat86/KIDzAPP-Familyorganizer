@@ -3573,7 +3573,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 </div>,
                 index * 0.1
               );
-            } else if (cardId === "wallet-balance" && user.role === "parent") {
+            } else if (cardId === "wallet-balance") {
+              if (user.role !== "parent") return null;
               return createDraggableCard(
                 cardId,
                 <div className={`bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl ${displayBalance !== null ? "hover:bg-white/55" : "opacity-60"} transition-colors h-full shadow-lg p-6`}>
@@ -3594,7 +3595,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 </div>,
                 index * 0.1
               );
-            } else if (cardId === "learning-stats" && user.role === "child") {
+            } else if (cardId === "learning-stats") {
+              if (user.role !== "child") return null;
               return createDraggableCard(
                 cardId,
                 <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl hover:bg-white/55 transition-colors h-full shadow-lg p-6">
