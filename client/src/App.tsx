@@ -4917,6 +4917,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     onCheckedChange={(checked) => setNewTask({ ...newTask, isRequired: checked })}
                     data-testid="toggle-required-task"
                   />
+                  <Label htmlFor="is-required" className="cursor-pointer">Pflichtaufgabe</Label>
                 </div>
 
                 {/* Konditionale Sats-Eingabe */}
