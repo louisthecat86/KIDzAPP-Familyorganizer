@@ -420,12 +420,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSatsSpentByParent(peerId: number, connectionId: string): Promise<number> {
-    const result = await db.select().from(tasks)
-      .where(and(
-        eq(tasks.createdBy, peerId), 
-        eq(tasks.connectionId, connectionId),
-        eq(tasks.status, "approved")  // ONLY count approved tasks!
-      ));
+    // Get all transactions FROM this parent TO children
+    const result = await db.select()
+      .from(transactions)
+      .where(eq(transactions.fromPeerId, peerId));
+    
+    // Sum all outgoing payments (task_payment, instant_payout, allowance_payout)
     return result.reduce((sum, t) => sum + t.sats, 0);
   }
 
@@ -435,15 +435,15 @@ export class DatabaseStorage implements IStorage {
     
     const result = [];
     for (const child of children) {
-      const childTasks = await db.select().from(tasks)
+      // Get all transactions from this parent to this child
+      const childTransactions = await db.select()
+        .from(transactions)
         .where(and(
-          eq(tasks.createdBy, parentId),
-          eq(tasks.connectionId, connectionId),
-          eq(tasks.assignedTo, child.id),
-          eq(tasks.status, "approved")
+          eq(transactions.fromPeerId, parentId),
+          eq(transactions.toPeerId, child.id)
         ));
       
-      const satSpent = childTasks.reduce((sum, t) => sum + t.sats, 0);
+      const satSpent = childTransactions.reduce((sum, t) => sum + t.sats, 0);
       if (satSpent > 0) {
         result.push({
           childId: child.id,
