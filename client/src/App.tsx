@@ -8260,10 +8260,10 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.25)" />
                   <XAxis 
                     dataKey="date" 
-                    tick={{ fontSize: 12, fill: "#ffffff", fontWeight: "bold" }}
+                    tick={{ fontSize: 12, fill: "#ffffff" }}
                     interval={Math.floor(savingsChartData.length / 5)}
                   />
-                  <YAxis tick={{ fontSize: 12, fill: "#ffffff", fontWeight: "bold" }} />
+                  <YAxis tick={{ fontSize: 12, fill: "#ffffff" }} />
                   <Tooltip 
                     contentStyle={{ backgroundColor: "rgba(0,0,0,0.9)", border: "1px solid rgba(255,255,255,0.4)", color: "rgba(255,255,255,0.95)" }}
                     formatter={(value) => `€${(value as number).toFixed(2)}`}
@@ -8297,10 +8297,10 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.25)" />
                   <XAxis 
                     dataKey="date" 
-                    tick={{ fontSize: 12, fill: "#ffffff", fontWeight: "bold" }}
+                    tick={{ fontSize: 12, fill: "#ffffff" }}
                     interval={Math.floor(savingsChartData.length / 5)}
                   />
-                  <YAxis tick={{ fontSize: 12, fill: "#ffffff", fontWeight: "bold" }} />
+                  <YAxis tick={{ fontSize: 12, fill: "#ffffff" }} />
                   <Tooltip 
                     contentStyle={{ backgroundColor: "rgba(0,0,0,0.9)", border: "1px solid rgba(255,255,255,0.4)", color: "rgba(255,255,255,0.95)" }}
                     formatter={(value) => `€${(value as number).toFixed(2)}`}
