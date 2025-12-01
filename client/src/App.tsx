@@ -7726,7 +7726,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                       <div className="grid grid-cols-2 gap-3">
                         {/* Familienaufgaben Progress */}
                         <div 
-                          onClick={() => setCurrentView("tasks-family")}
+                          onClick={() => setCurrentView("tasks-open")}
                           className="border border-pink-400/40 bg-pink-500/20 backdrop-blur-sm rounded-xl p-3 cursor-pointer hover:bg-pink-500/30 hover:border-pink-400/60 transition-all"
                           data-testid="card-family-tasks"
                         >
@@ -7748,11 +7748,11 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                         
                         {/* Bezahlte Aufgaben - Lock Status */}
                         <div 
-                          onClick={() => unlockStatus.freeSlots > 0 ? setCurrentView("tasks-paid") : null}
-                          className={`border backdrop-blur-sm rounded-xl p-3 transition-all ${
+                          onClick={() => setCurrentView("tasks-open")}
+                          className={`border backdrop-blur-sm rounded-xl p-3 cursor-pointer transition-all ${
                             unlockStatus.freeSlots > 0 
-                              ? "border-orange-400/40 bg-orange-500/20 cursor-pointer hover:bg-orange-500/30 hover:border-orange-400/60" 
-                              : "border-gray-400/40 bg-gray-500/20 cursor-not-allowed opacity-60"
+                              ? "border-orange-400/40 bg-orange-500/20 hover:bg-orange-500/30 hover:border-orange-400/60" 
+                              : "border-gray-400/40 bg-gray-500/20 hover:bg-gray-500/30"
                           }`}
                           data-testid="card-paid-tasks"
                         >
