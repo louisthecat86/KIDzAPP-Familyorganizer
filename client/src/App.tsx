@@ -6848,7 +6848,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   {modules.filter(m => m.level === level).map(module => {
                     const isPassed = completedModules.includes(module.id);
                     const isUnlocked = isModuleUnlocked(module.id);
-                    const isQuizOpen = showQuiz === module.id && isUnlocked;
+                    const isQuizOpen = showQuiz === module.id && isUnlocked && (!quizSubmitted[module.id] || expandedQuizzes[module.id]);
+                    const isQuizSubmitted = quizSubmitted[module.id];
+                    const isQuizExpanded = expandedQuizzes[module.id];
                     return (
                       <Card key={module.id} className={`transition-all ${isPassed ? "border-green-500/50 bg-green-500/5" : !isUnlocked ? "border-red-300/50 bg-red-50/50 opacity-60" : "border-slate-200"} ${isQuizOpen ? "ring-2 ring-blue-500/50" : ""}`}>
                         <CardHeader className="pb-2">
@@ -6869,14 +6871,21 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                           </div>
                         </CardHeader>
                         {isUnlocked ? (
-                          !isQuizOpen ? (
+                          isQuizSubmitted && !isQuizExpanded ? (
+                            <>
+                              <CardContent className="pb-3 text-center py-6"><p className="text-sm text-green-600 font-semibold mb-3">✅ {t('education.quizPassed')}</p></CardContent>
+                              <CardFooter className="gap-2">
+                                <Button onClick={() => setExpandedQuizzes({...expandedQuizzes, [module.id]: true})} className="flex-1 bg-blue-600 hover:bg-blue-700" size="sm">▼ {t('education.repeatQuiz')}</Button>
+                              </CardFooter>
+                            </>
+                          ) : !isQuizOpen ? (
                             <>
                               <CardContent className="pb-3"><div className="space-y-2 mb-4">{module.content.map((text, idx) => (<p key={idx} className="text-sm text-slate-600">• {text}</p>))}</div></CardContent>
                               <CardFooter className="gap-2">
                                 {!isPassed ? (
                                   <Button onClick={() => setShowQuiz(module.id)} className="flex-1 bg-blue-600 hover:bg-blue-700" size="sm" data-testid={`button-quiz-${module.id}`}>{t('education.startQuizButton')} →</Button>
                                 ) : (
-                                  <Button onClick={() => setShowQuiz(module.id)} variant="outline" className="flex-1" size="sm">{t('education.repeatQuiz')}</Button>
+                                  <Button onClick={() => {setShowQuiz(module.id); setExpandedQuizzes({...expandedQuizzes, [module.id]: true});}} variant="outline" className="flex-1" size="sm">{t('education.repeatQuiz')}</Button>
                                 )}
                               </CardFooter>
                             </>
@@ -6896,7 +6905,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                                 </div>
                               ))}
                               <div className="flex gap-2 pt-3">
-                                <Button onClick={() => setShowQuiz(null)} variant="outline" className="flex-1" size="sm">{t('education.back')}</Button>
+                                <Button onClick={() => {setShowQuiz(null); if(isQuizExpanded) setExpandedQuizzes({...expandedQuizzes, [module.id]: false});}} variant="outline" className="flex-1" size="sm">{t('education.back')}</Button>
                                 <Button onClick={() => handleQuizSubmit(module.id)} className="flex-1 bg-green-600 hover:bg-green-700" size="sm" data-testid={`button-submit-quiz-${module.id}`}>{t('education.submit')}</Button>
                               </div>
                             </CardContent>
