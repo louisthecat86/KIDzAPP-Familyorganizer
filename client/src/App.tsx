@@ -8257,15 +8257,15 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
             {savingsChartData.length > 0 && (
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={savingsChartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.25)" />
                   <XAxis 
                     dataKey="date" 
-                    tick={{ fontSize: 12, fill: "rgba(255,255,255,0.5)" }}
+                    tick={{ fontSize: 12, fill: "rgba(255,255,255,0.85)" }}
                     interval={Math.floor(savingsChartData.length / 5)}
                   />
-                  <YAxis tick={{ fontSize: 12, fill: "rgba(255,255,255,0.5)" }} />
+                  <YAxis tick={{ fontSize: 12, fill: "rgba(255,255,255,0.85)" }} />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: "rgba(0,0,0,0.8)", border: "1px solid rgba(255,255,255,0.2)" }}
+                    contentStyle={{ backgroundColor: "rgba(0,0,0,0.9)", border: "1px solid rgba(255,255,255,0.4)", color: "rgba(255,255,255,0.95)" }}
                     formatter={(value) => `€${(value as number).toFixed(2)}`}
                   />
                   <Line 
@@ -8294,15 +8294,15 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
             {savingsChartData.length > 0 && (
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={savingsChartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.25)" />
                   <XAxis 
                     dataKey="date" 
-                    tick={{ fontSize: 12, fill: "rgba(255,255,255,0.5)" }}
+                    tick={{ fontSize: 12, fill: "rgba(255,255,255,0.85)" }}
                     interval={Math.floor(savingsChartData.length / 5)}
                   />
-                  <YAxis tick={{ fontSize: 12, fill: "rgba(255,255,255,0.5)" }} />
+                  <YAxis tick={{ fontSize: 12, fill: "rgba(255,255,255,0.85)" }} />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: "rgba(0,0,0,0.8)", border: "1px solid rgba(255,255,255,0.2)" }}
+                    contentStyle={{ backgroundColor: "rgba(0,0,0,0.9)", border: "1px solid rgba(255,255,255,0.4)", color: "rgba(255,255,255,0.95)" }}
                     formatter={(value) => `€${(value as number).toFixed(2)}`}
                   />
                   <Line 
