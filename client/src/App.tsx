@@ -7612,11 +7612,17 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   {(user.balance || 0).toLocaleString()} <span className="text-2xl opacity-70 text-foreground">SATS</span>
                 </h2>
                 {satsBreakdown && (
-                  <div className="flex gap-4 mt-3 text-xs">
+                  <div className="flex gap-4 mt-3 text-xs flex-wrap">
                     <div>
                       <span className="text-muted-foreground">{t('dashboard.earned')}:</span>
                       <span className="font-mono text-yellow-600 ml-1">{satsBreakdown.taskSats.toLocaleString()}</span>
                     </div>
+                    {(satsBreakdown.bonusSats || 0) > 0 && (
+                      <div>
+                        <span className="text-muted-foreground">Bonus:</span>
+                        <span className="font-mono text-purple-600 ml-1">{satsBreakdown.bonusSats.toLocaleString()}</span>
+                      </div>
+                    )}
                     <div>
                       <span className="text-muted-foreground">{t('family.allowance')}:</span>
                       <span className="font-mono text-green-600 ml-1">{satsBreakdown.allowanceSats.toLocaleString()}</span>

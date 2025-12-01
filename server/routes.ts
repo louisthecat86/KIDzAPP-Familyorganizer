@@ -748,12 +748,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const approvedTasks = tasks.filter(t => t.status === "approved" && t.assignedTo === childId);
       const taskSats = approvedTasks.reduce((sum, t) => sum + t.sats, 0);
       
-      // Allowance/Instant payout sats = total balance - task sats
-      const allowanceSats = Math.max(0, (child.balance || 0) - taskSats);
+      // Get all level bonus payouts for this child
+      const bonusPayouts = await storage.getLevelBonusPayouts(childId);
+      const bonusSats = bonusPayouts.reduce((sum, p) => sum + p.sats, 0);
+      
+      // Allowance/Instant payout sats = total balance - task sats - bonus sats
+      const allowanceSats = Math.max(0, (child.balance || 0) - taskSats - bonusSats);
+      
+      console.log(`[Sats Breakdown] ${child.name}: total=${child.balance}, tasks=${taskSats}, bonus=${bonusSats}, allowance=${allowanceSats}`);
       
       res.json({
         totalSats: child.balance || 0,
         taskSats: taskSats,
+        bonusSats: bonusSats,
         allowanceSats: allowanceSats
       });
     } catch (error) {
