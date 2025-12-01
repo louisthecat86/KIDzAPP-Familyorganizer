@@ -1691,13 +1691,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create transaction for sats breakdown tracking
       await storage.createTransaction({
-        from_peer_id: null,
-        to_peer_id: child.id,
+        fromPeerId: parentId,
+        toPeerId: child.id,
         sats,
         type: "allowance_payout",
         taskId: null,
-        connectionId: child.connectionId,
-        description: `Taschengeld für ${child.name}`
+        paymentHash: paymentHash,
+        status: "completed"
       });
 
       // Update allowance lastPaidDate
@@ -1757,13 +1757,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create transaction for sats breakdown tracking
       await storage.createTransaction({
-        from_peer_id: null,
-        to_peer_id: child.id,
+        fromPeerId: parentId,
+        toPeerId: child.id,
         sats,
         type: "instant_payout",
         taskId: null,
-        connectionId: child.connectionId,
-        description: memo
+        paymentHash: paymentHash,
+        status: "completed"
       });
 
       // Create Bitcoin snapshot for new balance with FRESH price
