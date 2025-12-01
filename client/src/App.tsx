@@ -3976,6 +3976,16 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               const approvedTasks = childTasks.filter((t: Task) => t.status === "approved");
               const totalSatsEarned = approvedTasks.reduce((sum: number, t: Task) => sum + t.sats, 0);
               
+              const { data: childLearningProgress = null } = useQuery({
+                queryKey: ["learning-progress", child.id],
+                queryFn: async () => {
+                  const res = await fetch(`/api/learning-progress/${child.id}`);
+                  if (!res.ok) return null;
+                  return res.json();
+                },
+                refetchInterval: 5000
+              });
+              
               return (
                 <motion.div
                   key={child.id}
@@ -4019,6 +4029,23 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     <div className="pt-2 border-t border-white/30 text-sm text-slate-600">
                       <p>💰 {t('dashboard.earned')}: {totalSatsEarned} Sats</p>
                     </div>
+
+                    {childLearningProgress && (
+                      <div className="pt-2 border-t border-white/30">
+                        <p className="text-xs font-bold text-violet-600 mb-2">📚 Bitcoin Learning</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="bg-violet-500/30 rounded p-2">
+                            <p className="text-sm font-bold text-violet-900">{childLearningProgress.xp}</p>
+                            <p className="text-xs text-violet-700">XP</p>
+                          </div>
+                          <div className="bg-cyan-500/30 rounded p-2">
+                            <p className="text-sm font-bold text-cyan-900">Level {childLearningProgress.level}</p>
+                            <p className="text-xs text-cyan-700">🏆</p>
+                          </div>
+                        </div>
+                        <p className="text-xs text-slate-600 mt-2">Streak: {childLearningProgress.streak} 🔥</p>
+                      </div>
+                    )}
 
                     <div className="flex gap-2 pt-2">
                       <Button 
