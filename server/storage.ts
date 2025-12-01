@@ -30,6 +30,7 @@ export interface IStorage {
   updateTask(id: number, task: Partial<Task>): Promise<Task | undefined>;
   deleteTask(id: number): Promise<boolean>;
   getCompletedRequiredTasksCount(childId: number, connectionId: string): Promise<number>;
+  getTaskUnlockStatus(childId: number, connectionId: string): Promise<{ familyTasksCompleted: number; paidTasksCompleted: number; freeSlots: number; progressToNext: number }>;
   
   // Transaction operations
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
@@ -309,6 +310,31 @@ export class DatabaseStorage implements IStorage {
         eq(tasks.status, "approved")
       ));
     return result.length;
+  }
+
+  async getTaskUnlockStatus(childId: number, connectionId: string): Promise<{ familyTasksCompleted: number; paidTasksCompleted: number; freeSlots: number; progressToNext: number }> {
+    const familyTasks = await db.select().from(tasks)
+      .where(and(
+        eq(tasks.assignedTo, childId),
+        eq(tasks.connectionId, connectionId),
+        eq(tasks.isRequired, true),
+        eq(tasks.status, "approved")
+      ));
+    
+    const paidTasks = await db.select().from(tasks)
+      .where(and(
+        eq(tasks.assignedTo, childId),
+        eq(tasks.connectionId, connectionId),
+        eq(tasks.isRequired, false),
+        eq(tasks.status, "approved")
+      ));
+    
+    const familyTasksCompleted = familyTasks.length;
+    const paidTasksCompleted = paidTasks.length;
+    const freeSlots = Math.floor(familyTasksCompleted / 3) - paidTasksCompleted;
+    const progressToNext = familyTasksCompleted % 3;
+    
+    return { familyTasksCompleted, paidTasksCompleted, freeSlots: Math.max(0, freeSlots), progressToNext };
   }
 
   async getLeaderboard(connectionId: string): Promise<Array<{ id: number; name: string; completedTasks: number; balance: number; satsEarned: number }>> {
