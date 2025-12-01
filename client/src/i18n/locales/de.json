@@ -298,7 +298,12 @@
     "noTasksAvailable": "Keine Aufgaben verfügbar",
     "tasksInProgress": "Aufgaben in Arbeit",
     "noTasksInProgress": "Keine Aufgaben in Arbeit",
-    "noTasksCompleted": "Noch keine Aufgaben erledigt"
+    "noTasksCompleted": "Noch keine Aufgaben erledigt",
+    "familyTasks": "Familienaufgaben",
+    "paidTasks": "Bezahlte Aufgaben",
+    "completeMoreFamily": "Erst 3 Familienaufgaben erledigen",
+    "familyTasksLocked": "Bezahlte Aufgabe gesperrt",
+    "completeRequiredFirst": "Du musst erst 3 Familienaufgaben erledigen"
   },
   "donation": {
     "title": "Spendenlink",

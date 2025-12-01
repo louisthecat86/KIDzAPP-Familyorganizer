@@ -5819,8 +5819,21 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     refetchInterval: 2000
   });
 
+  const { data: unlockStatus } = useQuery({
+    queryKey: ["unlock-status", user.id, user.connectionId],
+    queryFn: async () => {
+      const res = await fetch(`/api/tasks/unlock-status/${user.id}/${user.connectionId}`);
+      if (!res.ok) throw new Error("Failed to fetch unlock status");
+      return res.json();
+    },
+    refetchInterval: 5000,
+    enabled: user.role === "child" && !!user.connectionId
+  });
+
   const myTasks = tasks.filter((t: Task) => t.assignedTo === user.id);
   const availableTasks = tasks.filter((t: Task) => t.status === "open");
+  const familyTasks = availableTasks.filter((t: Task) => t.isRequired);
+  const paidTasks = availableTasks.filter((t: Task) => !t.isRequired);
 
   const handleLink = async () => {
     if (!parentConnectionId) return;
@@ -7718,6 +7731,64 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                       </div>
                     </div>
                   </div>
+
+                  {/* Familienaufgaben vs Bezahlte Aufgaben - Unlock System */}
+                  {unlockStatus && (
+                    <div className="mt-4 pt-4 border-t border-white/20">
+                      <div className="grid grid-cols-2 gap-3">
+                        {/* Familienaufgaben Progress */}
+                        <div 
+                          onClick={() => setCurrentView("tasks-family")}
+                          className="border border-pink-400/40 bg-pink-500/20 backdrop-blur-sm rounded-xl p-3 cursor-pointer hover:bg-pink-500/30 hover:border-pink-400/60 transition-all"
+                          data-testid="card-family-tasks"
+                        >
+                          <div className="text-center">
+                            <div className="text-lg md:text-2xl font-bold text-pink-600">
+                              {unlockStatus.progressToNext}/3
+                            </div>
+                            <p className="text-[10px] md:text-xs text-foreground mt-1 uppercase tracking-widest">
+                              {t('tasks.familyTasks')}
+                            </p>
+                            <div className="mt-2 h-1.5 bg-pink-200/50 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-pink-500 transition-all duration-500"
+                                style={{ width: `${(unlockStatus.progressToNext / 3) * 100}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Bezahlte Aufgaben - Lock Status */}
+                        <div 
+                          onClick={() => unlockStatus.freeSlots > 0 ? setCurrentView("tasks-paid") : null}
+                          className={`border backdrop-blur-sm rounded-xl p-3 transition-all ${
+                            unlockStatus.freeSlots > 0 
+                              ? "border-orange-400/40 bg-orange-500/20 cursor-pointer hover:bg-orange-500/30 hover:border-orange-400/60" 
+                              : "border-gray-400/40 bg-gray-500/20 cursor-not-allowed opacity-60"
+                          }`}
+                          data-testid="card-paid-tasks"
+                        >
+                          <div className="text-center">
+                            <div className={`text-lg md:text-2xl font-bold ${unlockStatus.freeSlots > 0 ? "text-orange-600" : "text-gray-500"}`}>
+                              {unlockStatus.freeSlots > 0 ? (
+                                <span>{unlockStatus.freeSlots} ⚡</span>
+                              ) : (
+                                <span>🔒</span>
+                              )}
+                            </div>
+                            <p className="text-[10px] md:text-xs text-foreground mt-1 uppercase tracking-widest">
+                              {t('tasks.paidTasks')}
+                            </p>
+                            {unlockStatus.freeSlots === 0 && (
+                              <p className="text-[8px] text-muted-foreground mt-1">
+                                {t('tasks.completeMoreFamily')}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>

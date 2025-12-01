@@ -298,7 +298,12 @@
     "noTasksAvailable": "No tasks available",
     "tasksInProgress": "Tasks in progress",
     "noTasksInProgress": "No tasks in progress",
-    "noTasksCompleted": "No tasks completed yet"
+    "noTasksCompleted": "No tasks completed yet",
+    "familyTasks": "Family Tasks",
+    "paidTasks": "Paid Tasks",
+    "completeMoreFamily": "Complete 3 family tasks first",
+    "familyTasksLocked": "Paid task locked",
+    "completeRequiredFirst": "You must complete 3 family tasks first"
   },
   "donation": {
     "title": "Donation Link",
