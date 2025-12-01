@@ -182,6 +182,7 @@ export const dailyBitcoinSnapshots = pgTable("daily_bitcoin_snapshots", {
   connectionId: text("connection_id").notNull(), // Family ID
   valueEur: integer("value_eur").notNull(), // Value in cents (to avoid decimals)
   satoshiAmount: integer("satoshi_amount").notNull(), // Sats at time of snapshot
+  btcPrice: integer("btc_price").notNull().default(0), // BTC price in cents at time of snapshot (EUR)
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

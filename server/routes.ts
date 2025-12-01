@@ -1078,7 +1078,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             peerId: child.id,
             connectionId: child.connectionId,
             valueEur: Math.round(valueEur * 100), // Convert to cents
-            satoshiAmount: newBalance
+            satoshiAmount: newBalance,
+            btcPrice: Math.round(btcPrice.eur * 100) // Store BTC price in cents
           });
           console.log(`[Task Approval Snapshot] ✓ Created for ${child.name}: €${valueEur.toFixed(2)}, Result:`, JSON.stringify(snapshotResult));
         } catch (snapshotError) {
@@ -1732,7 +1733,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           peerId: child.id,
           connectionId: child.connectionId,
           valueEur: Math.round(valueEur * 100),
-          satoshiAmount: newBalance
+          satoshiAmount: newBalance,
+          btcPrice: Math.round(btcPrice.eur * 100) // Store BTC price in cents
         });
         console.log(`[Instant Payout Snapshot] ✓ Created for ${child.name}: €${valueEur.toFixed(2)}`);
       } catch (snapshotError) {
@@ -1763,10 +1765,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json([]);
       }
 
-      // Convert snapshots to tracker format with calculated BTC price
+      // Convert snapshots to tracker format with stored BTC price
       const trackerEntries = snapshots.map(s => {
         const euroValue = s.valueEur / 100; // Convert from cents to euros
-        const btcPrice = (euroValue * 1e8) / s.satoshiAmount; // Reverse calculate BTC price from snapshot
+        // Use stored BTC price if available, otherwise fallback to reverse calculation for legacy snapshots
+        const btcPrice = s.btcPrice ? (s.btcPrice / 100) : ((euroValue * 1e8) / s.satoshiAmount);
         return {
           date: new Date(s.createdAt).toLocaleDateString("de-DE", { month: "short", day: "numeric" }),
           timestamp: s.createdAt,
@@ -1886,7 +1889,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           peerId: child.id,
           connectionId: child.connectionId,
           valueEur: Math.round(valueEur * 100),
-          satoshiAmount: newBalance
+          satoshiAmount: newBalance,
+          btcPrice: Math.round(btcPrice.eur * 100) // Store BTC price in cents
         });
         console.log(`[Allowance Snapshot] ✓ Created for ${child.name}: €${valueEur.toFixed(2)}`);
       } catch (snapshotError) {
