@@ -8186,7 +8186,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   </Badge>
                 ) : (
                   <Badge className="bg-gray-500/20 text-gray-600 border-gray-500/30">
-                    🔒 {t('tasks.completeMoreFamily')}
+                    🔒
                   </Badge>
                 )}
               </div>
@@ -8224,7 +8224,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     disabled={isLocked}
                     data-testid={`button-accept-task-${task.id}`}
                   >
-                    {isLocked ? `🔒 ${t('tasks.completeMoreFamily')}` : t('tasks.accept')}
+                    {isLocked ? `🔒` : t('tasks.accept')}
                   </Button>
                 </CardFooter>
               </Card>
