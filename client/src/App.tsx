@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,7 +58,10 @@ import {
   Zap,
   Flame,
   TrendingUp,
-  Globe
+  Globe,
+  Moon,
+  Sun,
+  Laptop
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PhotoUpload } from "@/components/PhotoUpload";
@@ -2758,6 +2762,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
 
 function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onClose, layoutView, setLayoutView }: any) {
   const { t } = useTranslation();
+  const { theme, setTheme } = useTheme();
   const queryClient = useQueryClient();
   const [editLnbitsUrl, setEditLnbitsUrl] = useState("");
   const [editLnbitsAdminKey, setEditLnbitsAdminKey] = useState("");
@@ -3008,6 +3013,47 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                     <span className="text-xs text-muted-foreground">{t('settings.boxesArrangedHorizontally')}</span>
                   </div>
                 </Button>
+              </div>
+
+              <Separator className="my-4" />
+
+              <div className="space-y-3 pt-2">
+                <Label className="text-sm font-semibold">Theme</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  <Button
+                    variant={theme === "light" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setTheme("light")}
+                    className="flex flex-col gap-1 h-auto py-3"
+                    data-testid="button-theme-light"
+                  >
+                    <Sun className="h-4 w-4" />
+                    <span className="text-xs">Light</span>
+                  </Button>
+                  <Button
+                    variant={theme === "dark" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setTheme("dark")}
+                    className="flex flex-col gap-1 h-auto py-3"
+                    data-testid="button-theme-dark"
+                  >
+                    <Moon className="h-4 w-4" />
+                    <span className="text-xs">Dark</span>
+                  </Button>
+                  <Button
+                    variant={theme === "system" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setTheme("system")}
+                    className="flex flex-col gap-1 h-auto py-3"
+                    data-testid="button-theme-system"
+                  >
+                    <Laptop className="h-4 w-4" />
+                    <span className="text-xs">System</span>
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  {theme === "system" ? "System theme wird automatisch angewendet" : `Aktuell: ${theme === "light" ? "Light Mode" : "Dark Mode"}`}
+                </p>
               </div>
             </div>
           )}
