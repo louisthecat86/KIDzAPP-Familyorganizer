@@ -1427,7 +1427,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
         initial={{ x: 250 }}
         animate={{ x: sidebarOpen ? 0 : 250 }}
         transition={{ duration: 0.3 }}
-        className="fixed right-0 top-0 h-screen w-64 bg-white/15 backdrop-blur-xl border-l border-white/50 z-40 flex flex-col pointer-events-none shadow-2xl"
+        className="fixed right-0 top-0 h-screen w-64 bg-white/15 dark:bg-black/30 backdrop-blur-xl border-l border-white/50 dark:border-white/20 z-40 flex flex-col pointer-events-none shadow-2xl"
         style={{ pointerEvents: sidebarOpen ? "auto" : "none" }}
       >
         <div className="p-3 md:p-4 border-b border-white/20 space-y-2 md:space-y-3">
@@ -1439,22 +1439,22 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
               variant="ghost"
               size="icon"
               onClick={() => setSidebarOpen(false)}
-              className="md:hidden text-slate-800 h-8 w-8"
+              className="md:hidden text-foreground h-8 w-8"
               data-testid="button-close-sidebar"
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
           <div className="space-y-1 md:space-y-2">
-            <p className="text-xs uppercase tracking-widest text-slate-600 font-semibold">{t('family.title')}</p>
-            <h2 className="text-xl md:text-2xl font-bold text-slate-900">{user.familyName || t('family.title')}</h2>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">{t('family.title')}</p>
+            <h2 className="text-xl md:text-2xl font-bold text-foreground">{user.familyName || t('family.title')}</h2>
             <div className="flex items-center gap-2 pt-1 md:pt-2">
               <div className="h-7 w-7 md:h-8 md:w-8 rounded-full bg-violet-500/30 text-violet-700 flex items-center justify-center font-bold text-xs md:text-sm">
                 {user.name[0]}
               </div>
               <div>
-                <p className="text-xs md:text-sm font-medium text-slate-800">{user.name}</p>
-                <p className="text-xs text-slate-600 capitalize">{user.role === "child" ? t('sidebar.child') : t('sidebar.parent')}</p>
+                <p className="text-xs md:text-sm font-medium text-foreground">{user.name}</p>
+                <p className="text-xs text-muted-foreground capitalize">{user.role === "child" ? t('sidebar.child') : t('sidebar.parent')}</p>
               </div>
             </div>
           </div>
@@ -1473,8 +1473,8 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                     onClick={() => setShowTasksSubmenu(!showTasksSubmenu)}
                     className={`w-full px-3 md:px-4 py-1.5 md:py-2 rounded-xl flex items-center gap-2 transition-colors text-sm md:text-base ${
                       isTasksActive
-                        ? "bg-violet-500/40 text-slate-900 font-medium"
-                        : "text-slate-700 hover:bg-white/20"
+                        ? "bg-violet-500/40 text-foreground font-medium"
+                        : "text-foreground hover:bg-white/20 dark:bg-black/20"
                     }`}
                     data-testid="menu-item-tasks"
                   >
@@ -1495,8 +1495,8 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                         }}
                         className={`w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm transition-colors text-left ${
                           currentView === "tasks"
-                            ? "bg-violet-500/40 text-slate-900 font-medium"
-                            : "text-slate-700 hover:bg-white/20"
+                            ? "bg-violet-500/40 text-foreground font-medium"
+                            : "text-foreground hover:bg-white/20 dark:bg-black/20"
                         }`}
                         data-testid="submenu-tasks-normal"
                       >
@@ -1509,8 +1509,8 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                         }}
                         className={`w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm transition-colors text-left ${
                           currentView === "recurring-tasks"
-                            ? "bg-violet-500/40 text-slate-900 font-medium"
-                            : "text-slate-700 hover:bg-white/20"
+                            ? "bg-violet-500/40 text-foreground font-medium"
+                            : "text-foreground hover:bg-white/20 dark:bg-black/20"
                         }`}
                         data-testid="submenu-tasks-recurring"
                       >
@@ -1531,8 +1531,8 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                     onClick={() => setShowCalendarSubmenu(!showCalendarSubmenu)}
                     className={`w-full px-3 md:px-4 py-1.5 md:py-2 rounded-xl flex items-center gap-2 transition-colors text-sm md:text-base ${
                       isCalendarActive
-                        ? "bg-violet-500/40 text-slate-900 font-medium"
-                        : "text-slate-700 hover:bg-white/20"
+                        ? "bg-violet-500/40 text-foreground font-medium"
+                        : "text-foreground hover:bg-white/20 dark:bg-black/20"
                     }`}
                     data-testid="menu-item-calendar"
                   >
@@ -1550,8 +1550,8 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                         }}
                         className={`w-full px-4 py-2 rounded-lg text-sm transition-colors text-left ${
                           currentView === "calendar-create"
-                            ? "bg-violet-500/40 text-slate-900 font-medium"
-                            : "text-slate-700 hover:bg-white/20"
+                            ? "bg-violet-500/40 text-foreground font-medium"
+                            : "text-foreground hover:bg-white/20 dark:bg-black/20"
                         }`}
                         data-testid="submenu-calendar-create"
                       >
@@ -1564,8 +1564,8 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                         }}
                         className={`w-full px-4 py-2 rounded-lg text-sm transition-colors text-left ${
                           currentView === "calendar-view"
-                            ? "bg-violet-500/40 text-slate-900 font-medium"
-                            : "text-slate-700 hover:bg-white/20"
+                            ? "bg-violet-500/40 text-foreground font-medium"
+                            : "text-foreground hover:bg-white/20 dark:bg-black/20"
                         }`}
                         data-testid="submenu-calendar-view"
                       >
@@ -1587,8 +1587,8 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                 }}
                 className={`w-full px-3 md:px-4 py-1.5 md:py-2 rounded-xl flex items-center gap-2 transition-colors text-sm md:text-base ${
                   isActive
-                    ? "bg-violet-500/40 text-slate-900 font-medium"
-                    : "text-slate-700 hover:bg-white/20"
+                    ? "bg-violet-500/40 text-foreground font-medium"
+                    : "text-foreground hover:bg-white/20 dark:bg-black/20"
                 }`}
                 data-testid={`menu-item-${item.id}`}
               >
@@ -1606,7 +1606,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
           <div className="relative">
             <button
               onClick={() => setShowSettingsMenu(!showSettingsMenu)}
-              className="w-full px-3 md:px-4 py-1.5 md:py-2 rounded-xl flex items-center gap-2 transition-colors text-slate-700 hover:bg-white/20 text-sm md:text-base"
+              className="w-full px-3 md:px-4 py-1.5 md:py-2 rounded-xl flex items-center gap-2 transition-colors text-foreground hover:bg-white/20 dark:bg-black/20 text-sm md:text-base"
               data-testid="menu-item-settings"
             >
               <Settings className="h-4 w-4" />
@@ -1618,7 +1618,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-3 md:ml-4 mt-0.5 md:mt-1 space-y-0.5 md:space-y-1 relative z-50">
                 <button
                   onClick={() => { handleSettingsClick("ansicht"); setSidebarOpen(false); }}
-                  className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-slate-700 hover:bg-white/20 transition-colors text-left"
+                  className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-foreground hover:bg-white/20 dark:bg-black/20 transition-colors text-left"
                   data-testid="submenu-ansicht"
                 >
                   {t('sidebar.view')}
@@ -1628,7 +1628,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                   <div>
                     <button
                       onClick={() => setShowWalletSubmenu(!showWalletSubmenu)}
-                      className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-slate-700 hover:bg-white/20 transition-colors text-left flex items-center justify-between"
+                      className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-foreground hover:bg-white/20 dark:bg-black/20 transition-colors text-left flex items-center justify-between"
                       data-testid="submenu-wallet"
                     >
                       <span>{t('sidebar.walletSettings')}</span>
@@ -1639,14 +1639,14 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-4 md:ml-6 mt-0.5 md:mt-1 space-y-0.5 md:space-y-1">
                         <button
                           onClick={() => { setWalletTab("lnbits"); handleSettingsClick("wallet"); setSidebarOpen(false); }}
-                          className="w-full px-3 md:px-4 py-0.5 md:py-2 rounded-lg text-xs text-slate-700 hover:bg-white/20 transition-colors text-left"
+                          className="w-full px-3 md:px-4 py-0.5 md:py-2 rounded-lg text-xs text-foreground hover:bg-white/20 dark:bg-black/20 transition-colors text-left"
                           data-testid="submenu-wallet-lnbits"
                         >
                           {t('sidebar.lnbitsConnection')}
                         </button>
                         <button
                           onClick={() => { setWalletTab("nwc"); handleSettingsClick("wallet"); setSidebarOpen(false); }}
-                          className="w-full px-3 md:px-4 py-0.5 md:py-2 rounded-lg text-xs text-slate-700 hover:bg-white/20 transition-colors text-left"
+                          className="w-full px-3 md:px-4 py-0.5 md:py-2 rounded-lg text-xs text-foreground hover:bg-white/20 dark:bg-black/20 transition-colors text-left"
                           data-testid="submenu-wallet-nwc"
                         >
                           {t('sidebar.nwcConnection')}
@@ -1657,7 +1657,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                 ) : (
                   <button
                     onClick={() => { handleSettingsClick("wallet"); setSidebarOpen(false); }}
-                    className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-slate-700 hover:bg-white/20 transition-colors text-left"
+                    className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-foreground hover:bg-white/20 dark:bg-black/20 transition-colors text-left"
                     data-testid="submenu-wallet-child"
                   >
                     {t('sidebar.walletSettings')}
@@ -1666,7 +1666,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
 
                 <button
                   onClick={() => { handleSettingsClick("peers"); setSidebarOpen(false); }}
-                  className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-slate-700 hover:bg-white/20 transition-colors text-left"
+                  className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-foreground hover:bg-white/20 dark:bg-black/20 transition-colors text-left"
                   data-testid="submenu-peers"
                 >
                   {t('sidebar.peers')}
@@ -1675,7 +1675,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                 {user.role === "parent" && (
                   <button
                     onClick={() => { setCurrentView("level-bonus-settings"); setSidebarOpen(false); setShowSettingsMenu(false); }}
-                    className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-slate-700 hover:bg-white/20 transition-colors text-left"
+                    className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-foreground hover:bg-white/20 dark:bg-black/20 transition-colors text-left"
                     data-testid="submenu-level-bonus"
                   >
                     {t('sidebar.levelBonus')}
@@ -1690,7 +1690,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
           <div className="p-2 md:p-4 border-t border-white/20">
             <button
               onClick={() => { setCurrentView("donate"); setSidebarOpen(false); }}
-              className="w-full px-3 md:px-4 py-1.5 md:py-2 rounded-xl flex items-center gap-2 transition-colors text-slate-700 hover:bg-white/20 text-sm md:text-base"
+              className="w-full px-3 md:px-4 py-1.5 md:py-2 rounded-xl flex items-center gap-2 transition-colors text-foreground hover:bg-white/20 dark:bg-black/20 text-sm md:text-base"
               data-testid="menu-item-donate"
             >
               <span className="text-base md:text-lg">🧡</span>
@@ -1730,7 +1730,7 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
     >
       <button
         onClick={toggleLanguage}
-        className="absolute top-4 right-4 flex items-center gap-2 px-3 py-2 bg-white/30 backdrop-blur-md border border-white/50 rounded-xl hover:bg-white/50 transition-all text-slate-800 font-medium text-sm"
+        className="absolute top-4 right-4 flex items-center gap-2 px-3 py-2 bg-white/30 dark:bg-black/30 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-xl hover:bg-white/5 dark:bg-black/30 transition-all text-foreground font-medium text-sm"
         data-testid="button-language-toggle"
       >
         <Globe className="h-4 w-4" />
@@ -1750,9 +1750,9 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
       <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md gap-4 -mt-12">
         
         {/* Info Box */}
-        <div className="bg-white/15 backdrop-blur-md border border-white/50 rounded-2xl p-5 w-full shadow-lg">
-          <h3 className="text-lg font-bold mb-3 text-slate-900">{t('landing.howItWorks')}</h3>
-          <div className="space-y-2 text-slate-800 text-sm">
+        <div className="bg-white/15 dark:bg-black/20 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-2xl p-5 w-full shadow-lg">
+          <h3 className="text-lg font-bold mb-3 text-foreground">{t('landing.howItWorks')}</h3>
+          <div className="space-y-2 text-foreground text-sm">
             <div className="flex gap-2">
               <span className="text-violet-600 flex-shrink-0">•</span>
               <span>{t('landing.step1')}</span>
@@ -1775,7 +1775,7 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
         {/* Buttons */}
         <div className="w-full space-y-3">
         <button 
-          className="w-full p-4 bg-white/25 backdrop-blur-md border border-white/40 rounded-2xl hover:bg-white/35 hover:border-white/60 transition-all flex items-center gap-4 group shadow-xl"
+          className="w-full p-4 bg-white/25 dark:bg-black/30 backdrop-blur-md border border-white/40 dark:border-white/20 rounded-2xl hover:bg-white/35 dark:bg-black/40 hover:border-white/60 transition-all flex items-center gap-4 group shadow-xl"
           onClick={() => onSelect("parent")}
           data-testid="button-select-parent"
         >
@@ -1783,14 +1783,14 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
             <UserIcon className="h-6 w-6 text-white" />
           </div>
           <div className="text-left">
-            <h3 className="font-bold text-lg text-slate-900 tracking-wide">{t('auth.parent').toUpperCase()}</h3>
-            <p className="text-sm text-slate-700">{t('landing.parentDesc')}</p>
+            <h3 className="font-bold text-lg text-foreground tracking-wide">{t('auth.parent').toUpperCase()}</h3>
+            <p className="text-sm text-foreground">{t('landing.parentDesc')}</p>
           </div>
           <span className="ml-auto text-amber-600 text-xl opacity-0 group-hover:opacity-100 transition-opacity">⚡</span>
         </button>
 
         <button 
-          className="w-full p-4 bg-white/25 backdrop-blur-md border border-white/40 rounded-2xl hover:bg-white/35 hover:border-white/60 transition-all flex items-center gap-4 group shadow-xl"
+          className="w-full p-4 bg-white/25 dark:bg-black/30 backdrop-blur-md border border-white/40 dark:border-white/20 rounded-2xl hover:bg-white/35 dark:bg-black/40 hover:border-white/60 transition-all flex items-center gap-4 group shadow-xl"
           onClick={() => onSelect("child")}
           data-testid="button-select-child"
         >
@@ -1798,8 +1798,8 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
             <Sparkles className="h-6 w-6 text-white" />
           </div>
           <div className="text-left">
-            <h3 className="font-bold text-lg text-slate-900 tracking-wide">{t('auth.child').toUpperCase()}</h3>
-            <p className="text-sm text-slate-700">{t('landing.childDesc')}</p>
+            <h3 className="font-bold text-lg text-foreground tracking-wide">{t('auth.child').toUpperCase()}</h3>
+            <p className="text-sm text-foreground">{t('landing.childDesc')}</p>
           </div>
           <span className="ml-auto text-amber-600 text-xl opacity-0 group-hover:opacity-100 transition-opacity">⚡</span>
         </button>
@@ -1807,40 +1807,40 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
 
         {/* Legal Disclaimers Section - Accordion */}
         <div className="w-full max-w-2xl mt-12 mb-6">
-          <Accordion type="single" collapsible className="bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl overflow-hidden">
+          <Accordion type="single" collapsible className="bg-white/10 dark:bg-black/20 backdrop-blur-md border border-white/30 dark:border-white/10 rounded-2xl overflow-hidden">
             <AccordionItem value="legal" className="border-none">
-              <AccordionTrigger className="hover:bg-white/10 px-6 py-4 text-slate-900 font-bold text-lg data-testid-trigger-legal-info">
+              <AccordionTrigger className="hover:bg-white/10 dark:bg-black/20 px-6 py-4 text-foreground font-bold text-lg data-testid-trigger-legal-info">
                 📋 {t('landing.legalDisclaimer')}
               </AccordionTrigger>
-              <AccordionContent className="px-6 pb-6 space-y-3 bg-white/5">
+              <AccordionContent className="px-6 pb-6 space-y-3 bg-white/5 dark:bg-black/10">
                 <div className="bg-red-500/10 border-l-4 border-red-500 pl-4 py-3 rounded">
                   <p className="font-bold text-red-900">⚠️ {t('landing.bitcoinWarning')}</p>
-                  <p className="text-sm text-slate-700 mt-1">{t('landing.bitcoinWarningDesc')}</p>
+                  <p className="text-sm text-foreground mt-1">{t('landing.bitcoinWarningDesc')}</p>
                 </div>
 
                 <div className="bg-blue-500/10 border-l-4 border-blue-500 pl-4 py-3 rounded">
                   <p className="font-bold text-blue-900">👨‍👩‍👧 {t('landing.parentalResponsibility')}</p>
-                  <p className="text-sm text-slate-700 mt-1">{t('landing.parentalResponsibilityDesc')}</p>
+                  <p className="text-sm text-foreground mt-1">{t('landing.parentalResponsibilityDesc')}</p>
                 </div>
 
                 <div className="bg-amber-500/10 border-l-4 border-amber-500 pl-4 py-3 rounded">
                   <p className="font-bold text-amber-900">📊 {t('landing.noGuarantee')}</p>
-                  <p className="text-sm text-slate-700 mt-1">{t('landing.noGuaranteeDesc')}</p>
+                  <p className="text-sm text-foreground mt-1">{t('landing.noGuaranteeDesc')}</p>
                 </div>
 
                 <div className="bg-green-500/10 border-l-4 border-green-500 pl-4 py-3 rounded">
                   <p className="font-bold text-green-900">👨‍👩‍👧‍👦 {t('landing.familyUse')}</p>
-                  <p className="text-sm text-slate-700 mt-1">{t('landing.familyUseDesc')}</p>
+                  <p className="text-sm text-foreground mt-1">{t('landing.familyUseDesc')}</p>
                 </div>
 
                 <div className="bg-cyan-500/10 border-l-4 border-cyan-500 pl-4 py-3 rounded">
                   <p className="font-bold text-cyan-900">🔒 {t('landing.dataPrivacy')}</p>
-                  <p className="text-sm text-slate-700 mt-1">{t('landing.dataPrivacyDesc')}</p>
+                  <p className="text-sm text-foreground mt-1">{t('landing.dataPrivacyDesc')}</p>
                 </div>
 
                 <div className="bg-purple-500/10 border-l-4 border-purple-500 pl-4 py-3 rounded">
                   <p className="font-bold text-purple-900">{t('landing.childrenInfo')}</p>
-                  <p className="text-sm text-slate-700 mt-1">{t('landing.childrenInfoDesc')}</p>
+                  <p className="text-sm text-foreground mt-1">{t('landing.childrenInfoDesc')}</p>
                 </div>
               </AccordionContent>
             </AccordionItem>
@@ -2009,41 +2009,41 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               variant="ghost" 
               size="sm" 
               onClick={onBack} 
-              className="w-fit mb-2 -ml-2 text-slate-700 hover:text-slate-900 hover:bg-white/20"
+              className="w-fit mb-2 -ml-2 text-foreground hover:text-foreground hover:bg-white/20 dark:bg-black/20"
               data-testid="button-back"
             >
               ← {t('common.back')}
             </Button>
             <div>
-              <h1 className="text-2xl font-bold mb-2 text-slate-900">{t('auth.selectFamily')}</h1>
-              <p className="text-slate-700">{t('auth.selectFamilyDesc')}</p>
+              <h1 className="text-2xl font-bold mb-2 text-foreground">{t('auth.selectFamily')}</h1>
+              <p className="text-foreground">{t('auth.selectFamilyDesc')}</p>
             </div>
           </div>
           <div className="space-y-3">
             <button
               onClick={() => setParentMode("new")}
-              className="w-full h-auto px-4 py-4 bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl hover:bg-white/60 transition-all flex items-center text-left shadow-lg"
+              className="w-full h-auto px-4 py-4 bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl hover:bg-white/60 transition-all flex items-center text-left shadow-lg"
               data-testid="button-create-new-family"
             >
               <div className="mr-3 h-10 w-10 rounded-full bg-violet-500/30 flex items-center justify-center flex-shrink-0">
                 <Plus className="h-5 w-5 text-violet-700" />
               </div>
               <div className="min-w-0">
-                <p className="font-semibold text-slate-900">{t('landing.newFamily')}</p>
-                <p className="text-xs text-slate-700">{t('landing.newFamilyDesc')}</p>
+                <p className="font-semibold text-foreground">{t('landing.newFamily')}</p>
+                <p className="text-xs text-foreground">{t('landing.newFamilyDesc')}</p>
               </div>
             </button>
             <button
               onClick={() => setParentMode("join")}
-              className="w-full h-auto px-4 py-4 bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl hover:bg-white/60 transition-all flex items-center text-left shadow-lg"
+              className="w-full h-auto px-4 py-4 bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl hover:bg-white/60 transition-all flex items-center text-left shadow-lg"
               data-testid="button-join-family"
             >
               <div className="mr-3 h-10 w-10 rounded-full bg-cyan-500/30 flex items-center justify-center flex-shrink-0">
                 <Users className="h-5 w-5 text-cyan-700" />
               </div>
               <div className="min-w-0">
-                <p className="font-semibold text-slate-900">{t('landing.joinFamily')}</p>
-                <p className="text-xs text-slate-700">{t('landing.joinFamilyDesc')}</p>
+                <p className="font-semibold text-foreground">{t('landing.joinFamily')}</p>
+                <p className="text-xs text-foreground">{t('landing.joinFamilyDesc')}</p>
               </div>
             </button>
           </div>
@@ -2069,31 +2069,31 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 onBack();
               }
             }}
-            className="w-fit mb-2 -ml-2 text-slate-700 hover:text-slate-900 hover:bg-white/20"
+            className="w-fit mb-2 -ml-2 text-foreground hover:text-foreground hover:bg-white/20 dark:bg-black/20"
             data-testid="button-back"
           >
             ← {t('common.back')}
           </Button>
           <div>
-            <h2 className="text-2xl font-bold mb-2 text-slate-900">
+            <h2 className="text-2xl font-bold mb-2 text-foreground">
               {isLogin ? t('auth.loginTitle') : t('auth.registerTitle')}
             </h2>
-            <p className="text-slate-700">
+            <p className="text-foreground">
               {isLogin ? t('auth.loginDesc') : t('auth.registerDesc')}
             </p>
           </div>
         </div>
 
-        <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl p-6 shadow-xl space-y-6">
+        <div className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl p-6 shadow-xl space-y-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && role === "parent" && parentMode === "new" && (
               <div className="space-y-2">
-                <Label htmlFor="familyName" className="text-slate-800">{t('auth.familyName')}</Label>
+                <Label htmlFor="familyName" className="text-foreground">{t('auth.familyName')}</Label>
                 <Input 
                   id="familyName"
                   value={familyName}
                   onChange={(e) => setFamilyName(e.target.value)}
-                  className="bg-white/50 border-white/60 focus:border-violet-500 focus:bg-white/70 text-slate-900 placeholder:text-gray-500"
+                  className="bg-white/5 dark:bg-black/30 border-white/60 focus:border-violet-500 focus:bg-white/70 text-foreground placeholder:text-gray-500"
                   disabled={isLoading}
                   autoComplete="off"
                   placeholder={t('auth.familyNamePlaceholder')}
@@ -2103,27 +2103,27 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             )}
             {!isLogin && role === "parent" && parentMode === "join" && (
               <div className="space-y-2">
-                <Label htmlFor="joinParentId" className="text-slate-800">{t('auth.familyCode')}</Label>
+                <Label htmlFor="joinParentId" className="text-foreground">{t('auth.familyCode')}</Label>
                 <Input 
                   id="joinParentId"
                   value={joinParentId}
                   onChange={(e) => setJoinParentId(e.target.value.toUpperCase())}
-                  className="bg-white/50 border-white/60 focus:border-violet-500 focus:bg-white/70 text-slate-900 placeholder:text-gray-500 font-mono text-center"
+                  className="bg-white/5 dark:bg-black/30 border-white/60 focus:border-violet-500 focus:bg-white/70 text-foreground placeholder:text-gray-500 font-mono text-center"
                   disabled={isLoading}
                   autoComplete="off"
                   placeholder={t('auth.familyCodePlaceholder')}
                   data-testid="input-join-parent-id"
                 />
-                <p className="text-xs text-slate-600">{t('auth.askParentForCode')}</p>
+                <p className="text-xs text-muted-foreground">{t('auth.askParentForCode')}</p>
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-slate-800">{t('auth.yourName')}</Label>
+              <Label htmlFor="name" className="text-foreground">{t('auth.yourName')}</Label>
               <Input 
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="bg-white/50 border-white/60 focus:border-violet-500 focus:bg-white/70 text-slate-900 placeholder:text-gray-500"
+                className="bg-white/5 dark:bg-black/30 border-white/60 focus:border-violet-500 focus:bg-white/70 text-foreground placeholder:text-gray-500"
                 disabled={isLoading}
                 autoFocus
                 autoComplete="off"
@@ -2132,36 +2132,36 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             </div>
             {!isLogin && role === "parent" && parentMode === "new" && (
               <div className="space-y-2">
-                <Label htmlFor="favoriteColor" className="text-slate-800">{t('auth.favoriteColorLabel')}</Label>
+                <Label htmlFor="favoriteColor" className="text-foreground">{t('auth.favoriteColorLabel')}</Label>
                 <Input 
                   id="favoriteColor"
                   value={favoriteColor}
                   onChange={(e) => setFavoriteColor(e.target.value)}
-                  className="bg-white/50 border-white/60 focus:border-violet-500 focus:bg-white/70 text-slate-900 placeholder:text-gray-500"
+                  className="bg-white/5 dark:bg-black/30 border-white/60 focus:border-violet-500 focus:bg-white/70 text-foreground placeholder:text-gray-500"
                   disabled={isLoading}
                   autoComplete="off"
                   placeholder={t('auth.colorPlaceholder')}
                   data-testid="input-favorite-color"
                 />
-                <p className="text-xs text-slate-600">{t('auth.colorHint')}</p>
+                <p className="text-xs text-muted-foreground">{t('auth.colorHint')}</p>
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="pin" className="text-slate-800">{isLogin ? t('auth.password') : t('auth.passwordWithLength')}</Label>
+              <Label htmlFor="pin" className="text-foreground">{isLogin ? t('auth.password') : t('auth.passwordWithLength')}</Label>
               <Input 
                 id="pin"
                 type="password"
                 placeholder={isLogin ? "••••••••" : t('auth.passwordPlaceholder')}
                 value={pin}
                 onChange={(e) => setPin(e.target.value.slice(0, 12))}
-                className="bg-white/50 border-white/60 focus:border-violet-500 focus:bg-white/70 text-slate-900 placeholder:text-gray-400"
+                className="bg-white/5 dark:bg-black/30 border-white/60 focus:border-violet-500 focus:bg-white/70 text-foreground placeholder:text-gray-400"
                 disabled={isLoading}
                 maxLength={12}
                 autoComplete="off"
                 data-testid="input-pin"
               />
               {!isLogin && (
-                <div className="text-xs text-slate-600 space-y-1">
+                <div className="text-xs text-muted-foreground space-y-1">
                   <p className={pin.length >= 8 && pin.length <= 12 ? "text-green-600" : ""}>
                     {pin.length >= 8 && pin.length <= 12 ? "✓" : "○"} {pin.length}/8-12 {t('auth.characters')}
                   </p>
@@ -2189,7 +2189,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               <Button 
                 type="button"
                 variant="outline"
-                className="w-full bg-white/30 border-white/40 text-slate-800 hover:bg-white/40"
+                className="w-full bg-white/30 dark:bg-black/30 border-white/40 dark:border-white/20 text-foreground hover:bg-white/40 dark:hover:bg-black/40"
                 onClick={() => setIsLogin(!isLogin)}
                 disabled={isLoading}
                 data-testid="button-toggle-mode"
@@ -2200,7 +2200,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 <Button
                   type="button"
                   variant="ghost"
-                  className="w-full text-xs text-slate-600 hover:text-slate-900 hover:bg-white/20"
+                  className="w-full text-xs text-muted-foreground hover:text-foreground hover:bg-white/20 dark:bg-black/20"
                   onClick={() => setShowForgotPin(true)}
                   disabled={isLoading}
                   data-testid="button-forgot-pin"
@@ -3566,47 +3566,47 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     
     return (
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold text-slate-900">{t('nav.dashboard')}</h1>
+        <h1 className="text-3xl font-bold text-foreground">{t('nav.dashboard')}</h1>
         
         {user.role === "parent" && (
           <div 
             onClick={() => setCurrentView("allowance-payout")}
             data-testid="card-active-allowances"
-            className="p-6 bg-gradient-to-br from-violet-500/30 to-cyan-500/30 backdrop-blur-md border border-white/50 rounded-2xl cursor-pointer hover:bg-white/55 transition-all shadow-xl overflow-hidden relative"
+            className="p-6 bg-gradient-to-br from-violet-500/30 to-cyan-500/30 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-2xl cursor-pointer hover:bg-white/5 dark:bg-black/105 transition-all shadow-xl overflow-hidden relative"
           >
             <div className="text-center relative z-10">
-              <div className="text-2xl font-bold text-slate-900">{t('family.allowances')}</div>
-              <div className="text-sm text-slate-700 mt-1">{t('dashboard.paymentsAndScheduled')}</div>
+              <div className="text-2xl font-bold text-foreground">{t('family.allowances')}</div>
+              <div className="text-sm text-foreground mt-1">{t('dashboard.paymentsAndScheduled')}</div>
             </div>
           </div>
         )}
         
         {showConnectionCode && (
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }}>
-            <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl p-5 shadow-xl">
+            <div className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl p-5 shadow-xl">
               <div className="flex flex-row items-start justify-between pb-3">
                 <div className="flex-1">
-                  <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
+                  <h3 className="flex items-center gap-2 text-lg font-bold text-foreground">
                     <LinkIcon className="h-5 w-5 text-violet-600" /> {t('dashboard.connectionCodeTitle')}
                   </h3>
-                  <p className="text-sm text-slate-700">{t('dashboard.connectionCodeDesc')}</p>
+                  <p className="text-sm text-foreground">{t('dashboard.connectionCodeDesc')}</p>
                 </div>
                 <Button 
                   variant="ghost" 
                   size="icon" 
                   onClick={hideConnectionCode}
-                  className="ml-2 text-slate-700"
+                  className="ml-2 text-foreground"
                   data-testid="button-hide-connection-code"
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
-              <div className="bg-white/30 border border-white/40 rounded-xl p-4 text-center">
-                <p className="text-xs text-slate-600 mb-2 uppercase tracking-widest">{t('dashboard.yourCode')}</p>
+              <div className="bg-white/30 dark:bg-black/30 border border-white/40 dark:border-white/20 rounded-xl p-4 text-center">
+                <p className="text-xs text-muted-foreground mb-2 uppercase tracking-widest">{t('dashboard.yourCode')}</p>
                 <p className="text-3xl font-mono font-bold text-violet-700 tracking-wider break-words word-break mb-3" data-testid="text-connection-code">
                   {user.connectionId}
                 </p>
-                <p className="text-xs text-slate-600">{t('dashboard.findCodeInSettings')}</p>
+                <p className="text-xs text-muted-foreground">{t('dashboard.findCodeInSettings')}</p>
               </div>
             </div>
           </motion.div>
@@ -3615,7 +3615,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         <motion.div 
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="relative overflow-hidden rounded-2xl bg-white/50 backdrop-blur-xl border border-white/50 p-8 cursor-pointer hover:bg-white/55 transition-colors shadow-xl"
+          className="relative overflow-hidden rounded-2xl bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 p-8 cursor-pointer hover:bg-white/5 dark:bg-black/105 transition-colors shadow-xl"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -3625,11 +3625,11 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <div className="relative z-10">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div className="flex-1">
-                <p className="text-slate-700 font-mono text-sm uppercase tracking-widest mb-2">{t('wallet.spent')}</p>
+                <p className="text-foreground font-mono text-sm uppercase tracking-widest mb-2">{t('wallet.spent')}</p>
                 <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-cyan-600" data-testid="text-sats-spent">
-                  {(satsSpent || 0).toLocaleString()} <span className="text-2xl opacity-70 text-slate-700">SATS</span>
+                  {(satsSpent || 0).toLocaleString()} <span className="text-2xl opacity-70 text-foreground">SATS</span>
                 </h2>
-                <p className="text-xs text-slate-600 mt-2">{t('dashboard.clickForBreakdown')}</p>
+                <p className="text-xs text-muted-foreground mt-2">{t('dashboard.clickForBreakdown')}</p>
               </div>
             </div>
           </div>
@@ -3641,13 +3641,13 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               return createDraggableCard(
                 cardId,
                 <div 
-                  className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl cursor-pointer hover:bg-white/55 transition-colors h-full shadow-lg p-6"
+                  className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl cursor-pointer hover:bg-white/5 dark:bg-black/105 transition-colors h-full shadow-lg p-6"
                   onClick={() => setCurrentView("tasks-open")}
                   data-testid="card-open-tasks"
                 >
                   <div className="text-center">
                     <div className="text-3xl font-bold text-violet-600">{openTasks.length}</div>
-                    <p className="text-sm text-slate-700 mt-2">{t('dashboard.openTasks')}</p>
+                    <p className="text-sm text-foreground mt-2">{t('dashboard.openTasks')}</p>
                   </div>
                 </div>,
                 index * 0.1
@@ -3656,13 +3656,13 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               return createDraggableCard(
                 cardId,
                 <div 
-                  className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl cursor-pointer hover:bg-white/55 transition-colors h-full shadow-lg p-6"
+                  className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl cursor-pointer hover:bg-white/5 dark:bg-black/105 transition-colors h-full shadow-lg p-6"
                   onClick={() => setCurrentView("tasks-pending")}
                   data-testid="card-submitted-tasks"
                 >
                   <div className="text-center">
                     <div className="text-3xl font-bold text-amber-500">{submittedTasks.length}</div>
-                    <p className="text-sm text-slate-700 mt-2">{t('dashboard.pendingApproval')}</p>
+                    <p className="text-sm text-foreground mt-2">{t('dashboard.pendingApproval')}</p>
                   </div>
                 </div>,
                 index * 0.1
@@ -3671,13 +3671,13 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               return createDraggableCard(
                 cardId,
                 <div 
-                  className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl cursor-pointer hover:bg-white/55 transition-colors h-full shadow-lg p-6"
+                  className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl cursor-pointer hover:bg-white/5 dark:bg-black/105 transition-colors h-full shadow-lg p-6"
                   onClick={() => setCurrentView("tasks-completed")}
                   data-testid="card-completed-tasks"
                 >
                   <div className="text-center">
                     <div className="text-3xl font-bold text-green-500">{completedTasks.length}</div>
-                    <p className="text-sm text-slate-700 mt-2">{t('dashboard.completedTasks')}</p>
+                    <p className="text-sm text-foreground mt-2">{t('dashboard.completedTasks')}</p>
                   </div>
                 </div>,
                 index * 0.1
@@ -3686,7 +3686,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               if (user.role !== "parent") return null;
               return createDraggableCard(
                 cardId,
-                <div className={`bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl ${displayBalance !== null ? "hover:bg-white/55" : "opacity-60"} transition-colors h-full shadow-lg p-6`}>
+                <div className={`bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl ${displayBalance !== null ? "hover:bg-white/5 dark:bg-black/105" : "opacity-60"} transition-colors h-full shadow-lg p-6`}>
                   <div className="space-y-4">
                     <div className="text-center">
                       <div className="text-3xl font-bold text-cyan-600 flex items-center justify-center gap-1">
@@ -3698,7 +3698,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                           "---"
                         )}
                       </div>
-                      <p className="text-sm text-slate-700 mt-2">{walletLabel}</p>
+                      <p className="text-sm text-foreground mt-2">{walletLabel}</p>
                     </div>
                   </div>
                 </div>,
@@ -3708,8 +3708,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           })}
           
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }} className="col-span-full">
-            <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl cursor-pointer hover:bg-white/55 transition-colors shadow-lg p-4" onClick={() => setCurrentView("calendar-view")} data-testid="card-calendar">
-                <h3 className="text-sm font-bold mb-2 flex items-center gap-1 text-slate-900">
+            <div className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl cursor-pointer hover:bg-white/5 dark:bg-black/105 transition-colors shadow-lg p-4" onClick={() => setCurrentView("calendar-view")} data-testid="card-calendar">
+                <h3 className="text-sm font-bold mb-2 flex items-center gap-1 text-foreground">
                   <Calendar className="h-4 w-4 text-violet-600" /> {t('nav.calendar')}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -3917,7 +3917,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     return (
       <div className="max-w-2xl">
         <h1 className="text-3xl font-bold mb-8 bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">Familienchat</h1>
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl">
+        <div className="bg-white/10 dark:bg-black/20 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl">
           <div className="p-6">
             <div className="space-y-4">
               <div className="h-96 overflow-y-auto bg-black/20 backdrop-blur-sm rounded-xl p-4 space-y-3 border border-white/10">
@@ -3930,7 +3930,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         className={`max-w-xs rounded-xl px-4 py-2 ${
                           msg.fromPeerId === user.id
                             ? "bg-gradient-to-r from-violet-500 to-cyan-500 text-white"
-                            : "bg-white/15 backdrop-blur-sm border border-white/20 text-white"
+                            : "bg-white/15 dark:bg-black/20 backdrop-blur-sm border border-white/20 text-white"
                         }`}
                       >
                         <p className="text-xs font-semibold mb-1 opacity-90">{msg.senderName}</p>
@@ -3949,7 +3949,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder={t('chat.placeholder')}
                   disabled={isLoadingMessage}
-                  className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                  className="flex-1 bg-white/10 dark:bg-black/20 border-white/20 text-white placeholder:text-white/50"
                   data-testid="input-chat-message"
                 />
                 <Button
@@ -4052,8 +4052,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">{t('sidebar.childrenOverview')}</h1>
-          <p className="text-slate-700 text-sm mt-2">{t('family.childrenOverviewDesc')}</p>
+          <h1 className="text-3xl font-bold text-foreground">{t('sidebar.childrenOverview')}</h1>
+          <p className="text-foreground text-sm mt-2">{t('family.childrenOverviewDesc')}</p>
         </div>
 
         {parentChildren.length > 0 ? (
@@ -4080,7 +4080,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   key={child.id}
                   initial={{ scale: 0.95, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  className="bg-gradient-to-br from-violet-500/20 to-cyan-500/20 backdrop-blur-md border border-white/50 rounded-2xl p-5 shadow-xl hover:shadow-2xl transition-all"
+                  className="bg-gradient-to-br from-violet-500/20 to-cyan-500/20 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-2xl p-5 shadow-xl hover:shadow-2xl transition-all"
                   data-testid={`card-child-${child.id}`}
                 >
                   <div className="flex items-start justify-between mb-4">
@@ -4089,38 +4089,38 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         {child.name[0].toUpperCase()}
                       </div>
                       <div>
-                        <h3 className="font-bold text-lg text-slate-900">{child.name}</h3>
-                        <p className="text-xs text-slate-600">Kind</p>
+                        <h3 className="font-bold text-lg text-foreground">{child.name}</h3>
+                        <p className="text-xs text-muted-foreground">Kind</p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-bold text-amber-600">{child.balance || 0}</p>
-                      <p className="text-xs text-slate-600">Sats</p>
+                      <p className="text-xs text-muted-foreground">Sats</p>
                     </div>
                   </div>
 
                   <div className="space-y-3">
                     <div className="grid grid-cols-3 gap-2 text-center">
-                      <div className="bg-white/30 rounded-lg p-2">
-                        <p className="text-lg font-bold text-slate-900">{openTasks.length}</p>
-                        <p className="text-xs text-slate-600">Offen</p>
+                      <div className="bg-white/30 dark:bg-black/30 rounded-lg p-2">
+                        <p className="text-lg font-bold text-foreground">{openTasks.length}</p>
+                        <p className="text-xs text-muted-foreground">Offen</p>
                       </div>
-                      <div className="bg-white/30 rounded-lg p-2">
+                      <div className="bg-white/30 dark:bg-black/30 rounded-lg p-2">
                         <p className="text-lg font-bold text-orange-600">{submittedTasks.length}</p>
-                        <p className="text-xs text-slate-600">Eingereicht</p>
+                        <p className="text-xs text-muted-foreground">Eingereicht</p>
                       </div>
-                      <div className="bg-white/30 rounded-lg p-2">
+                      <div className="bg-white/30 dark:bg-black/30 rounded-lg p-2">
                         <p className="text-lg font-bold text-green-600">{approvedTasks.length}</p>
-                        <p className="text-xs text-slate-600">Vollendet</p>
+                        <p className="text-xs text-muted-foreground">Vollendet</p>
                       </div>
                     </div>
 
-                    <div className="pt-2 border-t border-white/30 text-sm text-slate-600">
+                    <div className="pt-2 border-t border-white/30 dark:border-white/10 text-sm text-muted-foreground">
                       <p>💰 {t('dashboard.earned')}: {totalSatsEarned} Sats</p>
                     </div>
 
                     {childLearningProgress && (
-                      <div className="pt-2 border-t border-white/30">
+                      <div className="pt-2 border-t border-white/30 dark:border-white/10">
                         <p className="text-xs font-bold text-violet-600 mb-2">📚 Bitcoin Learning</p>
                         <div className="grid grid-cols-2 gap-2">
                           <div className="bg-violet-500/30 rounded p-2">
@@ -4132,7 +4132,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                             <p className="text-xs text-cyan-700">🏆</p>
                           </div>
                         </div>
-                        <p className="text-xs text-slate-600 mt-2">Streak: {childLearningProgress.streak} 🔥</p>
+                        <p className="text-xs text-muted-foreground mt-2">Streak: {childLearningProgress.streak} 🔥</p>
                       </div>
                     )}
 
@@ -4166,8 +4166,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         ) : (
           <Card className="border-dashed border-border p-12 text-center">
             <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">{t('dashboard.noChildrenConnected')}</h3>
-            <p className="text-slate-600 text-sm">{t('family.shareConnectionCode')}</p>
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t('dashboard.noChildrenConnected')}</h3>
+            <p className="text-muted-foreground text-sm">{t('family.shareConnectionCode')}</p>
           </Card>
         )}
       </div>
@@ -4219,11 +4219,11 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     return (
       <div className="space-y-6 max-w-2xl">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">{t('tasks.recurringTasks')}</h1>
-          <p className="text-slate-700 text-sm mt-2">{t('tasks.recurringDescription')}</p>
+          <h1 className="text-3xl font-bold text-foreground">{t('tasks.recurringTasks')}</h1>
+          <p className="text-foreground text-sm mt-2">{t('tasks.recurringDescription')}</p>
         </div>
 
-        <Card className="bg-gradient-to-br from-violet-500/20 to-cyan-500/20 border border-white/50 p-6">
+        <Card className="bg-gradient-to-br from-violet-500/20 to-cyan-500/20 border border-white/50 dark:border-white/20 p-6">
           <h3 className="font-bold mb-4">{t('tasks.newRecurringTask')}</h3>
           <div className="space-y-3">
             <Input placeholder={t('tasks.taskTitlePlaceholder')} value={newRecurring.title} onChange={(e) => setNewRecurring({ ...newRecurring, title: e.target.value })} data-testid="input-recurring-title" />
@@ -4267,13 +4267,13 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     <h4 className="font-bold">{task.title}</h4>
                     <span className="text-xs bg-violet-500/30 px-2 py-1 rounded text-violet-700 font-semibold" data-testid={`badge-sats-${task.id}`}>⚡ {task.sats} Sats</span>
                   </div>
-                  <p className="text-sm text-slate-600 mt-1">
+                  <p className="text-sm text-muted-foreground mt-1">
                     {task.frequency === 'weekly' && weekdays[task.dayOfWeek]} 
                     {task.frequency === 'daily' && 'Täglich'}
                     {task.frequency === 'monthly' && `Monatlich am ${task.dayOfMonth || 'Tag'}`}
                     • {task.time}
                   </p>
-                  <p className="text-xs text-slate-500 mt-1">{task.description}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{task.description}</p>
                 </div>
                 <Button variant="destructive" size="sm" onClick={() => {
                   fetch(`/api/recurring-tasks/${task.id}`, { method: "DELETE" });
@@ -4281,7 +4281,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 }} data-testid={`button-delete-recurring-${task.id}`}>✕</Button>
               </div>
             </Card>
-          )) : <p className="text-slate-600" data-testid="text-no-recurring">{t('tasks.noRecurringTasks')}</p>}
+          )) : <p className="text-muted-foreground" data-testid="text-no-recurring">{t('tasks.noRecurringTasks')}</p>}
         </div>
       </div>
     );
@@ -5054,8 +5054,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           </h2>
           <div className="grid gap-4">
             {events.length === 0 ? (
-              <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl p-8 text-center shadow-lg">
-                <p className="text-slate-700">{t('dashboard.noEventsPlanned')}</p>
+              <div className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl p-8 text-center shadow-lg">
+                <p className="text-foreground">{t('dashboard.noEventsPlanned')}</p>
               </div>
             ) : (
               events.map((event: FamilyEvent) => {
@@ -5064,23 +5064,23 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 const myRsvp = rsvps[event.id];
                 
                 return (
-                  <div key={event.id} className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl hover:bg-white/60 transition-colors shadow-lg">
+                  <div key={event.id} className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl hover:bg-white/60 transition-colors shadow-lg">
                     <div className="p-5">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <h3 className="font-bold text-lg text-slate-900" data-testid={`text-event-title-view-${event.id}`}>{event.title}</h3>
-                          <p className="text-xs text-slate-700 mt-2 flex items-center gap-1">
+                          <h3 className="font-bold text-lg text-foreground" data-testid={`text-event-title-view-${event.id}`}>{event.title}</h3>
+                          <p className="text-xs text-foreground mt-2 flex items-center gap-1">
                             <Calendar className="h-4 w-4" />
                             {new Date(event.startDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
                           </p>
-                          <p className="text-xs text-slate-700 flex items-center gap-1">
+                          <p className="text-xs text-foreground flex items-center gap-1">
                             <span>⏰</span>
                             {new Date(event.startDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
                             {event.endDate && ` - ${new Date(event.endDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`}
                           </p>
-                          {event.description && <p className="text-slate-600 text-sm mt-3">{event.description}</p>}
+                          {event.description && <p className="text-muted-foreground text-sm mt-3">{event.description}</p>}
                           {event.location && (
-                            <p className="text-sm text-slate-700 flex items-center gap-1 mt-2">
+                            <p className="text-sm text-foreground flex items-center gap-1 mt-2">
                               <MapPin className="h-4 w-4" /> {event.location}
                             </p>
                           )}
@@ -5883,8 +5883,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           </h2>
           <div className="grid gap-4">
             {events.length === 0 ? (
-              <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl p-8 text-center shadow-lg">
-                <p className="text-slate-700">{t('dashboard.noEventsPlanned')}</p>
+              <div className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl p-8 text-center shadow-lg">
+                <p className="text-foreground">{t('dashboard.noEventsPlanned')}</p>
               </div>
             ) : (
               events.map((event: FamilyEvent) => {
@@ -5893,23 +5893,23 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 const myRsvp = rsvps[event.id];
                 
                 return (
-                  <div key={event.id} className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl hover:bg-white/60 transition-colors shadow-lg">
+                  <div key={event.id} className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl hover:bg-white/60 transition-colors shadow-lg">
                     <div className="p-5">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <h3 className="font-bold text-lg text-slate-900" data-testid={`text-event-title-view-${event.id}`}>{event.title}</h3>
-                          <p className="text-xs text-slate-700 mt-2 flex items-center gap-1">
+                          <h3 className="font-bold text-lg text-foreground" data-testid={`text-event-title-view-${event.id}`}>{event.title}</h3>
+                          <p className="text-xs text-foreground mt-2 flex items-center gap-1">
                             <Calendar className="h-4 w-4" />
                             {new Date(event.startDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
                           </p>
-                          <p className="text-xs text-slate-700 flex items-center gap-1">
+                          <p className="text-xs text-foreground flex items-center gap-1">
                             <span>⏰</span>
                             {new Date(event.startDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
                             {event.endDate && ` - ${new Date(event.endDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`}
                           </p>
-                          {event.description && <p className="text-slate-600 text-sm mt-3">{event.description}</p>}
+                          {event.description && <p className="text-muted-foreground text-sm mt-3">{event.description}</p>}
                           {event.location && (
-                            <p className="text-sm text-slate-700 flex items-center gap-1 mt-2">
+                            <p className="text-sm text-foreground flex items-center gap-1 mt-2">
                               <MapPin className="h-4 w-4" /> {event.location}
                             </p>
                           )}
@@ -5985,31 +5985,31 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
     return (
       <div className="max-w-4xl">
-        <h1 className="text-3xl font-bold mb-8 text-slate-900">{t('calendar.title')}</h1>
+        <h1 className="text-3xl font-bold mb-8 text-foreground">{t('calendar.title')}</h1>
         <div className="grid gap-4">
           {events.length === 0 ? (
-            <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl p-8 text-center shadow-lg">
-              <p className="text-slate-700">{t('calendar.noEventsPlanned')}</p>
+            <div className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl p-8 text-center shadow-lg">
+              <p className="text-foreground">{t('calendar.noEventsPlanned')}</p>
             </div>
           ) : (
             events.map((event: FamilyEvent) => (
-              <div key={event.id} className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl hover:bg-white/60 transition-colors shadow-lg">
+              <div key={event.id} className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl hover:bg-white/60 transition-colors shadow-lg">
                 <div className="p-5">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg text-slate-900" data-testid={`text-event-title-child-${event.id}`}>{event.title}</h3>
-                      <p className="text-xs text-slate-700 mt-2 flex items-center gap-1">
+                      <h3 className="font-bold text-lg text-foreground" data-testid={`text-event-title-child-${event.id}`}>{event.title}</h3>
+                      <p className="text-xs text-foreground mt-2 flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
                         {new Date(event.startDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
                       </p>
-                      <p className="text-xs text-slate-700 flex items-center gap-1">
+                      <p className="text-xs text-foreground flex items-center gap-1">
                         <span>⏰</span>
                         {new Date(event.startDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
                         {event.endDate && ` - ${new Date(event.endDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`}
                       </p>
-                      {event.description && <p className="text-slate-600 text-sm mt-3">{event.description}</p>}
+                      {event.description && <p className="text-muted-foreground text-sm mt-3">{event.description}</p>}
                       {event.location && (
-                        <p className="text-sm text-slate-700 flex items-center gap-1 mt-2">
+                        <p className="text-sm text-foreground flex items-center gap-1 mt-2">
                           <MapPin className="h-4 w-4" /> {event.location}
                         </p>
                       )}
@@ -6090,13 +6090,13 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     
     return (
       <div className="max-w-2xl">
-        <h1 className="text-3xl font-bold mb-8 text-slate-900">{t('chat.title')}</h1>
-        <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl shadow-lg">
+        <h1 className="text-3xl font-bold mb-8 text-foreground">{t('chat.title')}</h1>
+        <div className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl shadow-lg">
           <div className="p-6">
             <div className="space-y-4">
-              <div className="h-96 overflow-y-auto bg-white/30 rounded-lg p-4 space-y-3">
+              <div className="h-96 overflow-y-auto bg-white/30 dark:bg-black/30 rounded-lg p-4 space-y-3">
                 {messages.length === 0 ? (
-                  <p className="text-slate-600 text-center py-8">{t('chat.noMessages')}</p>
+                  <p className="text-muted-foreground text-center py-8">{t('chat.noMessages')}</p>
                 ) : (
                   messages.map((msg, idx) => (
                     <div key={idx} className={`flex ${msg.fromPeerId === user.id ? "justify-end" : "justify-start"}`}>
@@ -6104,7 +6104,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                         className={`max-w-xs rounded-lg px-4 py-2 border ${
                           msg.fromPeerId === user.id
                             ? "bg-violet-600 text-white border-violet-500"
-                            : "bg-white/50 text-slate-800 border-white/40"
+                            : "bg-white/5 dark:bg-black/30 text-foreground border-white/40 dark:border-white/20"
                         }`}
                       >
                         <p className="text-xs font-semibold mb-1">{msg.senderName}</p>
@@ -6123,7 +6123,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder={t('chat.placeholder')}
                   disabled={isLoadingMessage}
-                  className="flex-1 bg-white/50 border-white/60 text-slate-900 placeholder:text-gray-500"
+                  className="flex-1 bg-white/5 dark:bg-black/30 border-white/60 text-foreground placeholder:text-gray-500"
                   data-testid="input-chat-message"
                 />
                 <Button
@@ -6190,8 +6190,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       if (completedTasks >= 12) return { emoji: "🚀", title: t('levels.level4'), color: "text-amber-500" };
       if (completedTasks >= 9) return { emoji: "🤝", title: t('levels.level3'), color: "text-green-500" };
       if (completedTasks >= 6) return { emoji: "🔍", title: t('levels.level2'), color: "text-green-600" };
-      if (completedTasks >= 3) return { emoji: "✨", title: t('levels.level1'), color: "text-slate-500" };
-      return { emoji: "🌱", title: t('common.beginner'), color: "text-slate-400" };
+      if (completedTasks >= 3) return { emoji: "✨", title: t('levels.level1'), color: "text-muted-foreground" };
+      return { emoji: "🌱", title: t('common.beginner'), color: "text-muted-foreground" };
     };
 
     const levels = [
@@ -6826,7 +6826,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       <div className="max-w-6xl space-y-6">
         {/* Gamification Header Dashboard */}
         <div className="space-y-4">
-          <h1 className="text-4xl font-bold text-slate-900">{t('education.educationCenter')}</h1>
+          <h1 className="text-4xl font-bold text-foreground">{t('education.educationCenter')}</h1>
           
           {/* Progress Dashboard */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -6839,8 +6839,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
                     <div>
-                      <span className="text-lg font-bold text-slate-900">{levelTitles[userLevel - 1] || t('education.levelBeginner')}</span>
-                      <span className="ml-2 text-sm text-slate-600">Level {userLevel}</span>
+                      <span className="text-lg font-bold text-foreground">{levelTitles[userLevel - 1] || t('education.levelBeginner')}</span>
+                      <span className="ml-2 text-sm text-muted-foreground">Level {userLevel}</span>
                     </div>
                     <span className="text-sm font-semibold text-violet-600">{userXp} XP</span>
                   </div>
@@ -6853,7 +6853,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                       <span className="text-[10px] font-bold text-white drop-shadow">{userXp} / {nextLevelXp} XP</span>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-500 mt-1">{t('education.xpToNextLevel', { xp: nextLevelXp - userXp, level: userLevel + 1 })}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{t('education.xpToNextLevel', { xp: nextLevelXp - userXp, level: userLevel + 1 })}</p>
                 </div>
               </div>
             </div>
@@ -6865,8 +6865,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   🔥
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-900">{userStreak} {userStreak === 1 ? t('common.day') : t('common.days')}</p>
-                  <p className="text-xs text-slate-600">{t('education.learningStreak')} {serverProgress?.longestStreak ? `(${t('education.record')}: ${serverProgress.longestStreak})` : ""}</p>
+                  <p className="text-2xl font-bold text-foreground">{userStreak} {userStreak === 1 ? t('common.day') : t('common.days')}</p>
+                  <p className="text-xs text-muted-foreground">{t('education.learningStreak')} {serverProgress?.longestStreak ? `(${t('education.record')}: ${serverProgress.longestStreak})` : ""}</p>
                 </div>
               </div>
               <div className="mt-3 flex gap-1">
@@ -6881,26 +6881,26 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           <div className="grid grid-cols-3 gap-3">
             <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-center">
               <p className="text-2xl font-bold text-green-600">{(serverProgress?.completedModules || []).length}</p>
-              <p className="text-xs text-slate-600">{t('education.modulesPassed')}</p>
+              <p className="text-xs text-muted-foreground">{t('education.modulesPassed')}</p>
             </div>
             <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-center">
               <p className="text-2xl font-bold text-blue-600">{achievements.filter(a => a.condition).length}/{achievements.length}</p>
-              <p className="text-xs text-slate-600">{t('education.badges')}</p>
+              <p className="text-xs text-muted-foreground">{t('education.badges')}</p>
             </div>
             <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-center">
               <p className="text-2xl font-bold text-amber-600">{(modules?.length || 0) - (serverProgress?.completedModules || []).length}</p>
-              <p className="text-xs text-slate-600">{t('education.modulesRemaining')}</p>
+              <p className="text-xs text-muted-foreground">{t('education.modulesRemaining')}</p>
             </div>
           </div>
 
           {/* Tab Navigation */}
           <div className="overflow-x-auto -mx-4 px-4 border-b">
             <div className="flex gap-1 min-w-max md:min-w-0">
-              <button onClick={() => setEducationTab("modules")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "modules" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-modules">📚 {t('education.tabModules')}</button>
-              <button onClick={() => setEducationTab("converter")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "converter" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-converter">🔄 {t('education.tabConverter')}</button>
-              <button onClick={() => setEducationTab("challenges")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "challenges" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-challenges">🎯 {t('education.tabChallenge')}</button>
-              <button onClick={() => setEducationTab("resources")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "resources" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-resources">🌐 {t('education.tabResources')}</button>
-              <button onClick={() => setEducationTab("glossar")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "glossar" ? "border-violet-500 text-slate-900" : "border-transparent text-slate-600 hover:text-slate-900"}`} data-testid="tab-glossar">📖 {t('education.tabGlossary')}</button>
+              <button onClick={() => setEducationTab("modules")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "modules" ? "border-violet-500 text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`} data-testid="tab-modules">📚 {t('education.tabModules')}</button>
+              <button onClick={() => setEducationTab("converter")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "converter" ? "border-violet-500 text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`} data-testid="tab-converter">🔄 {t('education.tabConverter')}</button>
+              <button onClick={() => setEducationTab("challenges")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "challenges" ? "border-violet-500 text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`} data-testid="tab-challenges">🎯 {t('education.tabChallenge')}</button>
+              <button onClick={() => setEducationTab("resources")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "resources" ? "border-violet-500 text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`} data-testid="tab-resources">🌐 {t('education.tabResources')}</button>
+              <button onClick={() => setEducationTab("glossar")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "glossar" ? "border-violet-500 text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`} data-testid="tab-glossar">📖 {t('education.tabGlossary')}</button>
             </div>
           </div>
         </div>
@@ -6910,8 +6910,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
             {/* Enhanced Achievements */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-slate-900">{t('education.yourBadges')} 🏆</h2>
-                <span className="text-sm text-slate-600">{t('education.unlockedOf', { count: achievements.filter(a => a.condition).length, total: achievements.length })}</span>
+                <h2 className="text-lg font-bold text-foreground">{t('education.yourBadges')} 🏆</h2>
+                <span className="text-sm text-muted-foreground">{t('education.unlockedOf', { count: achievements.filter(a => a.condition).length, total: achievements.length })}</span>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {achievements.map((badge, index) => {
@@ -6936,7 +6936,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     <div className={`text-4xl mb-2 ${isFirstUnlocked ? "animate-bounce" : ""}`} style={{ animationDuration: '2s' }}>
                       {badge.condition ? badge.icon : "🔒"}
                     </div>
-                    <p className={`text-xs font-bold ${isFirstUnlocked ? "text-amber-700" : badge.condition ? "text-blue-700" : isNextToUnlock ? "text-green-700" : "text-slate-400"}`}>{badge.title}</p>
+                    <p className={`text-xs font-bold ${isFirstUnlocked ? "text-amber-700" : badge.condition ? "text-blue-700" : isNextToUnlock ? "text-green-700" : "text-muted-foreground"}`}>{badge.title}</p>
                     {isFirstUnlocked && (
                       <div className="mt-1 flex justify-center">
                         <span className="relative inline-flex items-center gap-1">
@@ -6952,7 +6952,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     )}
                     {!badge.condition && (
                       <div className="mt-1">
-                        <p className={`text-[9px] ${isNextToUnlock ? "text-green-600 font-semibold" : "text-slate-400"}`}>{badge.requirement}</p>
+                        <p className={`text-[9px] ${isNextToUnlock ? "text-green-600 font-semibold" : "text-muted-foreground"}`}>{badge.requirement}</p>
                       </div>
                     )}
                   </div>
@@ -7005,7 +7005,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                             </>
                           ) : !isQuizOpen ? (
                             <>
-                              <CardContent className="pb-3"><div className="space-y-2 mb-4">{module.content.map((text, idx) => (<p key={idx} className="text-sm text-slate-600">• {text}</p>))}</div></CardContent>
+                              <CardContent className="pb-3"><div className="space-y-2 mb-4">{module.content.map((text, idx) => (<p key={idx} className="text-sm text-muted-foreground">• {text}</p>))}</div></CardContent>
                               <CardFooter className="gap-2">
                                 {!isPassed ? (
                                   <Button onClick={() => setShowQuiz(module.id)} className="flex-1 bg-blue-600 hover:bg-blue-700" size="sm" data-testid={`button-quiz-${module.id}`}>{t('education.startQuizButton')} →</Button>
@@ -7018,12 +7018,12 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                             <CardContent className="space-y-4">
                               {modules.find(m => m.id === module.id)?.quiz.map((q, idx) => (
                                 <div key={idx} className="space-y-2 pb-3 border-b last:border-0">
-                                  <p className="text-sm font-semibold text-slate-900">{idx + 1}. {q.question}</p>
+                                  <p className="text-sm font-semibold text-foreground">{idx + 1}. {q.question}</p>
                                   <div className="space-y-2">
                                     {q.options.map((option, optIdx) => (
                                       <label key={optIdx} className="flex items-center gap-3 p-2 rounded-lg border border-slate-200/50 hover:bg-slate-50/50 cursor-pointer">
                                         <input type="radio" name={`${module.id}-q${idx}`} checked={quizAnswers[`${module.id}-${idx}`] === optIdx} onChange={() => setQuizAnswers({...quizAnswers, [`${module.id}-${idx}`]: optIdx})} className="h-4 w-4" />
-                                        <span className="text-sm text-slate-700">{option}</span>
+                                        <span className="text-sm text-foreground">{option}</span>
                                       </label>
                                     ))}
                                   </div>
@@ -7037,7 +7037,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                           )
                         ) : (
                           <CardContent className="pt-4 pb-4 text-center">
-                            <p className="text-sm text-slate-600">🔒 {t('education.completePreviousModule')}</p>
+                            <p className="text-sm text-muted-foreground">🔒 {t('education.completePreviousModule')}</p>
                           </CardContent>
                         )}
                       </Card>
@@ -7056,7 +7056,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
               <CardHeader><CardTitle className="text-base">⚡ {t('education.satoshiToBitcoin')}</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 <div><Label className="text-xs">{t('education.satoshis')}</Label><Input type="number" value={satoshiInput} onChange={(e) => setSatoshiInput(e.target.value)} className="font-mono" data-testid="input-sats" /></div>
-                <div className="p-3 rounded-lg bg-slate-100/50 text-center"><p className="text-xs text-slate-600 mb-1">{t('education.bitcoin')}</p><p className="text-lg font-bold text-violet-600">{(parseFloat(satoshiInput) / 100000000).toFixed(8)} ₿</p></div>
+                <div className="p-3 rounded-lg bg-slate-100/50 text-center"><p className="text-xs text-muted-foreground mb-1">{t('education.bitcoin')}</p><p className="text-lg font-bold text-violet-600">{(parseFloat(satoshiInput) / 100000000).toFixed(8)} ₿</p></div>
               </CardContent>
             </Card>
 
@@ -7064,7 +7064,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
               <CardHeader><CardTitle className="text-base">₿ Bitcoin → Euro</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 <div><Label className="text-xs">Bitcoin</Label><Input type="number" value={bitcoinInput} onChange={(e) => setBitcoinInput(e.target.value)} className="font-mono" data-testid="input-btc" /></div>
-                <div className="p-3 rounded-lg bg-slate-100/50 text-center"><p className="text-xs text-slate-600 mb-1">Euro (Live)</p><p className="text-lg font-bold text-cyan-600">€{btcPrice ? (parseFloat(bitcoinInput) * btcPrice).toFixed(2) : "...loading"}</p></div>
+                <div className="p-3 rounded-lg bg-slate-100/50 text-center"><p className="text-xs text-muted-foreground mb-1">Euro (Live)</p><p className="text-lg font-bold text-cyan-600">€{btcPrice ? (parseFloat(bitcoinInput) * btcPrice).toFixed(2) : "...loading"}</p></div>
               </CardContent>
             </Card>
 
@@ -7072,7 +7072,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
               <CardHeader><CardTitle className="text-base">💶 Euro → Satoshis</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 <div><Label className="text-xs">Euro</Label><Input type="number" value={euroInput} onChange={(e) => setEuroInput(e.target.value)} className="font-mono" data-testid="input-eur" /></div>
-                <div className="p-3 rounded-lg bg-slate-100/50 text-center"><p className="text-xs text-slate-600 mb-1">Satoshis</p><p className="text-lg font-bold text-amber-600">{btcPrice ? Math.floor((parseFloat(euroInput) / btcPrice) * 100000000).toLocaleString() : "..."} sats</p></div>
+                <div className="p-3 rounded-lg bg-slate-100/50 text-center"><p className="text-xs text-muted-foreground mb-1">Satoshis</p><p className="text-lg font-bold text-amber-600">{btcPrice ? Math.floor((parseFloat(euroInput) / btcPrice) * 100000000).toLocaleString() : "..."} sats</p></div>
               </CardContent>
             </Card>
           </div>
@@ -7080,107 +7080,107 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
         {educationTab === "resources" && (
           <div className="space-y-6">
-            <p className="text-slate-600">{t('education.resourcesIntro')}</p>
+            <p className="text-muted-foreground">{t('education.resourcesIntro')}</p>
             
             <div className="space-y-6">
               <div className="border-2 border-green-500/30 rounded-xl p-4 bg-green-500/5">
                 <h3 className="text-lg font-bold text-green-700 mb-3 flex items-center gap-2">🌱 {t('education.ageGroup69')}</h3>
-                <p className="text-xs text-slate-600 mb-3">{t('education.ageGroup69Desc')}</p>
+                <p className="text-xs text-muted-foreground mb-3">{t('education.ageGroup69Desc')}</p>
                 <div className="grid grid-cols-1 gap-2">
-                  <a href="https://thebitcoinadviser.com/for-kids" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-slate-900 text-sm">The Bitcoin Adviser – "For Your Kids"</h4>
-                    <p className="text-xs text-slate-600">{t('education.resourceDesc15')}</p>
+                  <a href="https://thebitcoinadviser.com/for-kids" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-foreground text-sm">The Bitcoin Adviser – "For Your Kids"</h4>
+                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc15')}</p>
                   </a>
-                  <a href="https://bitcoinsavvykids.com" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-slate-900 text-sm">Bitcoin Savvy Kids – Early Kids</h4>
-                    <p className="text-xs text-slate-600">{t('education.resourceDesc16')}</p>
+                  <a href="https://bitcoinsavvykids.com" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-foreground text-sm">Bitcoin Savvy Kids – Early Kids</h4>
+                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc16')}</p>
                   </a>
-                  <a href="https://www.kindersache.de" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-slate-900 text-sm">Kindersache.de</h4>
-                    <p className="text-xs text-slate-600">{t('education.resourceDesc17')}</p>
+                  <a href="https://www.kindersache.de" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-foreground text-sm">Kindersache.de</h4>
+                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc17')}</p>
                   </a>
                 </div>
               </div>
 
               <div className="border-2 border-blue-500/30 rounded-xl p-4 bg-blue-500/5">
                 <h3 className="text-lg font-bold text-blue-700 mb-3 flex items-center gap-2">📚 {t('education.ageGroup1012')}</h3>
-                <p className="text-xs text-slate-600 mb-3">{t('education.ageGroup1012Desc')}</p>
+                <p className="text-xs text-muted-foreground mb-3">{t('education.ageGroup1012Desc')}</p>
                 <div className="grid grid-cols-1 gap-2">
-                  <a href="https://bitcoinsavvykids.com/middle" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-slate-900 text-sm">Bitcoin Savvy Kids – Middle Kids</h4>
-                    <p className="text-xs text-slate-600">{t('education.resourceDesc3')}</p>
+                  <a href="https://bitcoinsavvykids.com/middle" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-foreground text-sm">Bitcoin Savvy Kids – Middle Kids</h4>
+                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc3')}</p>
                   </a>
-                  <a href="https://thebitcoinadviser.com" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-slate-900 text-sm">The Bitcoin Adviser</h4>
-                    <p className="text-xs text-slate-600">{t('education.resourceDesc4')}</p>
+                  <a href="https://thebitcoinadviser.com" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-foreground text-sm">The Bitcoin Adviser</h4>
+                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc4')}</p>
                   </a>
                 </div>
               </div>
 
               <div className="border-2 border-amber-500/30 rounded-xl p-4 bg-amber-500/5">
                 <h3 className="text-lg font-bold text-amber-700 mb-3 flex items-center gap-2">🧠 {t('education.ageGroup1214')}</h3>
-                <p className="text-xs text-slate-600 mb-3">{t('education.ageGroup1214Desc')}</p>
+                <p className="text-xs text-muted-foreground mb-3">{t('education.ageGroup1214Desc')}</p>
                 <div className="grid grid-cols-1 gap-2">
-                  <a href="https://www.unicef.org/blockchain" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-slate-900 text-sm">UNICEF Blockchain Learning Hub</h4>
-                    <p className="text-xs text-slate-600">{t('education.resourceDesc5')}</p>
+                  <a href="https://www.unicef.org/blockchain" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-foreground text-sm">UNICEF Blockchain Learning Hub</h4>
+                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc5')}</p>
                   </a>
-                  <a href="https://bitcoinsavvykids.com/teens" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-slate-900 text-sm">Bitcoin Savvy Kids – Teens</h4>
-                    <p className="text-xs text-slate-600">{t('education.resourceDesc6')}</p>
+                  <a href="https://bitcoinsavvykids.com/teens" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-foreground text-sm">Bitcoin Savvy Kids – Teens</h4>
+                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc6')}</p>
                   </a>
                 </div>
               </div>
 
               <div className="border-2 border-red-500/30 rounded-xl p-4 bg-red-500/5">
                 <h3 className="text-lg font-bold text-red-700 mb-3 flex items-center gap-2">🎓 {t('education.ageGroup1416')}</h3>
-                <p className="text-xs text-slate-600 mb-3">{t('education.ageGroup1416Desc2')}</p>
+                <p className="text-xs text-muted-foreground mb-3">{t('education.ageGroup1416Desc2')}</p>
                 <div className="grid grid-cols-1 gap-2">
-                  <a href="https://www.unicef.org/blockchain" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-slate-900 text-sm">UNICEF Blockchain Hub – Intermediate</h4>
-                    <p className="text-xs text-slate-600">{t('education.resourceDesc7')}</p>
+                  <a href="https://www.unicef.org/blockchain" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-foreground text-sm">UNICEF Blockchain Hub – Intermediate</h4>
+                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc7')}</p>
                   </a>
-                  <a href="https://www.khanacademy.org/economics-finance-domain/core-finance/money-and-banking/bitcoin/v/bitcoin-what-is-it" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-slate-900 text-sm">Khan Academy – Bitcoin Kurse</h4>
-                    <p className="text-xs text-slate-600">{t('education.resourceDesc8')}</p>
+                  <a href="https://www.khanacademy.org/economics-finance-domain/core-finance/money-and-banking/bitcoin/v/bitcoin-what-is-it" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-foreground text-sm">Khan Academy – Bitcoin Kurse</h4>
+                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc8')}</p>
                   </a>
                 </div>
               </div>
 
               <div className="border-2 border-purple-500/30 rounded-xl p-4 bg-purple-500/5">
                 <h3 className="text-lg font-bold text-purple-700 mb-3 flex items-center gap-2">🚀 {t('education.ageGroup1618')}</h3>
-                <p className="text-xs text-slate-600 mb-3">{t('education.ageGroup1618Desc2')}</p>
+                <p className="text-xs text-muted-foreground mb-3">{t('education.ageGroup1618Desc2')}</p>
                 <div className="grid grid-cols-1 gap-2">
-                  <a href="https://www.unicef.org/blockchain" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-slate-900 text-sm">UNICEF Blockchain – Full Curriculum</h4>
-                    <p className="text-xs text-slate-600">{t('education.resourceDesc9')}</p>
+                  <a href="https://www.unicef.org/blockchain" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-foreground text-sm">UNICEF Blockchain – Full Curriculum</h4>
+                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc9')}</p>
                   </a>
-                  <a href="https://ocw.mit.edu/courses/15-s12-blockchain-and-money-fall-2018/" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-slate-900 text-sm">MIT – Blockchain & Money</h4>
-                    <p className="text-xs text-slate-600">{t('education.resourceDesc10')}</p>
+                  <a href="https://ocw.mit.edu/courses/15-s12-blockchain-and-money-fall-2018/" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-foreground text-sm">MIT – Blockchain & Money</h4>
+                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc10')}</p>
                   </a>
-                  <a href="https://www.khanacademy.org/computing/computer-science" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-slate-900 text-sm">Khan Academy – Computer Science</h4>
-                    <p className="text-xs text-slate-600">{t('education.resourceDesc11')}</p>
+                  <a href="https://www.khanacademy.org/computing/computer-science" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-foreground text-sm">Khan Academy – Computer Science</h4>
+                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc11')}</p>
                   </a>
                 </div>
               </div>
 
               <div className="border-2 border-slate-500/30 rounded-xl p-4 bg-slate-500/5">
-                <h3 className="text-lg font-bold text-slate-700 mb-3 flex items-center gap-2">👨‍👩‍👧‍👦 {t('education.forParents')}</h3>
-                <p className="text-xs text-slate-600 mb-3">{t('education.forParentsDesc2')}</p>
+                <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">👨‍👩‍👧‍👦 {t('education.forParents')}</h3>
+                <p className="text-xs text-muted-foreground mb-3">{t('education.forParentsDesc2')}</p>
                 <div className="grid grid-cols-1 gap-2">
-                  <a href="https://www.coin.space/teaching-kids-bitcoin" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-slate-900 text-sm">Teaching Your Kids About Bitcoin</h4>
-                    <p className="text-xs text-slate-600">{t('education.resourceDesc12')}</p>
+                  <a href="https://www.coin.space/teaching-kids-bitcoin" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-foreground text-sm">Teaching Your Kids About Bitcoin</h4>
+                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc12')}</p>
                   </a>
-                  <a href="https://bitcoinsavvykids.com/parents" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-slate-900 text-sm">Bitcoin Savvy Kids – Elternbereich</h4>
-                    <p className="text-xs text-slate-600">{t('education.resourceDesc13')}</p>
+                  <a href="https://bitcoinsavvykids.com/parents" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-foreground text-sm">Bitcoin Savvy Kids – Elternbereich</h4>
+                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc13')}</p>
                   </a>
-                  <a href="https://www.unicef.org/digital-safety" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/50 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-slate-900 text-sm">UNICEF – Digital Safety for Children</h4>
-                    <p className="text-xs text-slate-600">{t('education.resourceDesc14')}</p>
+                  <a href="https://www.unicef.org/digital-safety" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
+                    <h4 className="font-semibold text-foreground text-sm">UNICEF – Digital Safety for Children</h4>
+                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc14')}</p>
                   </a>
                 </div>
               </div>
@@ -7190,7 +7190,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
         {educationTab === "challenges" && !selectedChallenge && (
           <div className="space-y-6">
-            <h2 className="text-xl font-bold text-slate-900">{i18n.language === 'de' ? '🎯 Challenges - Deine Bitcoin-Abenteuer' : '🎯 Challenges - Your Bitcoin Adventures'}</h2>
+            <h2 className="text-xl font-bold text-foreground">{i18n.language === 'de' ? '🎯 Challenges - Deine Bitcoin-Abenteuer' : '🎯 Challenges - Your Bitcoin Adventures'}</h2>
             {(() => {
               const allChallenges = i18n.language === 'de' ? [
                 { id: 1, icon: "🧠", title: "Quiz-Challenge", difficulty: "⭐", desc: "Beantworte Fragen über Bitcoin-Grundlagen und verdiene XP", category: "quiz", questions: [{ q: "Was ist Bitcoin?", correct: "Digitale Währung", answers: ["Digitale Währung", "Spielkonsole", "Eine Person"] }, { q: "Wie viele Satoshi sind ein Bitcoin?", correct: "100 Millionen", answers: ["100 Millionen", "1 Million", "1 Milliarde"] }, { q: "Wer hat Bitcoin erfunden?", correct: "Satoshi Nakamoto", answers: ["Satoshi Nakamoto", "Elon Musk", "Steve Jobs"] }] },
@@ -7225,8 +7225,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                               <span className="text-4xl">{currentChallenge.icon}</span>
                               <span className="text-amber-600 font-bold">{currentChallenge.difficulty}</span>
                             </div>
-                            <h3 className="font-bold text-slate-900 mb-2">{currentChallenge.title}</h3>
-                            <p className="text-sm text-slate-600 mb-4">{currentChallenge.desc}</p>
+                            <h3 className="font-bold text-foreground mb-2">{currentChallenge.title}</h3>
+                            <p className="text-sm text-muted-foreground mb-4">{currentChallenge.desc}</p>
                             <Button onClick={() => setSelectedChallenge(currentChallenge)} className="w-full bg-violet-600 hover:bg-violet-700" size="sm">
                               {t('education.startChallenge')} →
                             </Button>
@@ -7235,9 +7235,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                       ) : (
                         <Card className="border-2 border-slate-200 bg-slate-50/50">
                           <CardContent className="pt-8 pb-8 text-center space-y-3">
-                            <p className="text-sm text-slate-600">{i18n.language === 'de' ? '✅ Heute schon abgeschlossen!' : '✅ Already completed today!'}</p>
-                            <p className="text-lg font-bold text-slate-900">{i18n.language === 'de' ? `Nächste Challenge verfügbar in ~${hoursUntilNextAvailable}h` : `Next challenge available in ~${hoursUntilNextAvailable}h`}</p>
-                            <p className="text-xs text-slate-500">{i18n.language === 'de' ? 'Komm morgen zurück um die nächste Challenge zu lösen! 🚀' : 'Come back tomorrow to solve the next challenge! 🚀'}</p>
+                            <p className="text-sm text-muted-foreground">{i18n.language === 'de' ? '✅ Heute schon abgeschlossen!' : '✅ Already completed today!'}</p>
+                            <p className="text-lg font-bold text-foreground">{i18n.language === 'de' ? `Nächste Challenge verfügbar in ~${hoursUntilNextAvailable}h` : `Next challenge available in ~${hoursUntilNextAvailable}h`}</p>
+                            <p className="text-xs text-muted-foreground">{i18n.language === 'de' ? 'Komm morgen zurück um die nächste Challenge zu lösen! 🚀' : 'Come back tomorrow to solve the next challenge! 🚀'}</p>
                           </CardContent>
                         </Card>
                       )}
@@ -7248,7 +7248,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                       <CardContent className="pt-8 pb-8 text-center">
                         <p className="text-4xl mb-3">🏆👑🚀</p>
                         <p className="text-2xl font-bold text-green-600 mb-2">{i18n.language === 'de' ? 'Alle Challenges abgeschlossen!' : 'All challenges completed!'}</p>
-                        <p className="text-sm text-slate-600">{i18n.language === 'de' ? 'Du hast alle Bitcoin-Challenges gemeistert! Glückwunsch! 🎉' : 'You have mastered all Bitcoin challenges! Congratulations! 🎉'}</p>
+                        <p className="text-sm text-muted-foreground">{i18n.language === 'de' ? 'Du hast alle Bitcoin-Challenges gemeistert! Glückwunsch! 🎉' : 'You have mastered all Bitcoin challenges! Congratulations! 🎉'}</p>
                       </CardContent>
                     </Card>
                   )}
@@ -7266,7 +7266,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
               <CardContent className="pt-8 pb-8 space-y-4">
                 <div className="text-center mb-6">
                   <div className="text-6xl mb-3">{selectedChallenge.icon}</div>
-                  <h2 className="text-2xl font-bold text-slate-900 mb-2">{selectedChallenge.title}</h2>
+                  <h2 className="text-2xl font-bold text-foreground mb-2">{selectedChallenge.title}</h2>
                   <div className="flex gap-3 justify-center">
                     <span className="px-3 py-1 bg-violet-600 text-white text-xs font-bold rounded-full">{selectedChallenge.difficulty}</span>
                     <span className="px-3 py-1 bg-amber-600 text-white text-xs font-bold rounded-full">+{selectedChallenge.id * 10} XP</span>
@@ -7288,13 +7288,13 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     return (
                     <div key={idx} className="p-4 bg-white rounded-lg border-2 border-slate-200 hover:border-violet-300 transition-all">
                       <button onClick={() => setExpandedChallengeQuestion(expandedChallengeQuestion === idx ? null : idx)} className="w-full text-left flex items-start justify-between gap-3">
-                        <p className="text-sm font-semibold text-slate-900">Frage {idx + 1}: {item.q}</p>
-                        <span className={`text-slate-400 transition-transform ${expandedChallengeQuestion === idx ? "rotate-180" : ""}`}>▼</span>
+                        <p className="text-sm font-semibold text-foreground">Frage {idx + 1}: {item.q}</p>
+                        <span className={`text-muted-foreground transition-transform ${expandedChallengeQuestion === idx ? "rotate-180" : ""}`}>▼</span>
                       </button>
                       {expandedChallengeQuestion === idx && (
                         <div className="mt-3 space-y-2 pt-3 border-t border-slate-200">
                           {shuffled.map((answer: string, aIdx: number) => (
-                            <button key={aIdx} onClick={() => setChallengAnswers({...challengeAnswers, [idx]: answer})} className={`w-full p-2 rounded text-sm transition-all text-left ${challengeAnswers[idx] === answer ? "bg-green-500 text-white border-2 border-green-600" : "bg-slate-100 text-slate-900 border-2 border-slate-200 hover:border-violet-400"}`}>
+                            <button key={aIdx} onClick={() => setChallengAnswers({...challengeAnswers, [idx]: answer})} className={`w-full p-2 rounded text-sm transition-all text-left ${challengeAnswers[idx] === answer ? "bg-green-500 text-white border-2 border-green-600" : "bg-slate-100 text-foreground border-2 border-slate-200 hover:border-violet-400"}`}>
                               {answer}
                             </button>
                           ))}
@@ -7377,8 +7377,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 .map((glossar, idx) => (
                   <Card key={idx} className="border-slate-200 hover:border-violet-300 transition-all">
                     <CardContent className="pt-4 pb-4">
-                      <p className="font-bold text-slate-900 mb-2">{glossar.term}</p>
-                      <p className="text-sm text-slate-600">{glossar.def}</p>
+                      <p className="font-bold text-foreground mb-2">{glossar.term}</p>
+                      <p className="text-sm text-muted-foreground">{glossar.def}</p>
                     </CardContent>
                   </Card>
                 ))}
@@ -7487,27 +7487,27 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
     return (
       <div className="max-w-4xl space-y-2">
-        <h1 className="text-3xl font-bold mb-4 text-slate-900">Dashboard</h1>
+        <h1 className="text-3xl font-bold mb-4 text-foreground">Dashboard</h1>
         <motion.section 
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="relative overflow-hidden rounded-2xl bg-white/50 backdrop-blur-xl border border-white/50 p-8 shadow-xl"
+          className="relative overflow-hidden rounded-2xl bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 p-8 shadow-xl"
         >
           <div className="relative z-10 space-y-6">
             <div className="flex items-start justify-between gap-1">
               <div className="flex-1">
-                <p className="text-slate-700 font-mono text-sm uppercase tracking-widest mb-2">{t('dashboard.received')}</p>
+                <p className="text-foreground font-mono text-sm uppercase tracking-widest mb-2">{t('dashboard.received')}</p>
                 <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-cyan-600" data-testid="text-earned-sats">
-                  {(user.balance || 0).toLocaleString()} <span className="text-2xl opacity-70 text-slate-700">SATS</span>
+                  {(user.balance || 0).toLocaleString()} <span className="text-2xl opacity-70 text-foreground">SATS</span>
                 </h2>
                 {satsBreakdown && (
                   <div className="flex gap-4 mt-3 text-xs">
                     <div>
-                      <span className="text-slate-600">{t('dashboard.earned')}:</span>
+                      <span className="text-muted-foreground">{t('dashboard.earned')}:</span>
                       <span className="font-mono text-yellow-600 ml-1">{satsBreakdown.taskSats.toLocaleString()}</span>
                     </div>
                     <div>
-                      <span className="text-slate-600">{t('family.allowance')}:</span>
+                      <span className="text-muted-foreground">{t('family.allowance')}:</span>
                       <span className="font-mono text-green-600 ml-1">{satsBreakdown.allowanceSats.toLocaleString()}</span>
                     </div>
                   </div>
@@ -7518,7 +7518,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-all flex-shrink-0 ${
                   showTrackerChart 
                     ? 'bg-violet-500/30 border-violet-500/50 text-violet-700' 
-                    : 'bg-white/30 border-white/40 text-slate-700 hover:text-slate-900'
+                    : 'bg-white/30 dark:bg-black/30 border-white/40 dark:border-white/20 text-foreground hover:text-foreground'
                 }`}
                 data-testid="toggle-tracker-chart"
               >
@@ -7555,7 +7555,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           <div className="space-y-4">
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
               <div 
-                className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl shadow-lg"
+                className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl shadow-lg"
                 data-testid="card-task-overview"
               >
                 <div className="pt-6 px-6 pb-6">
@@ -7568,7 +7568,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     >
                       <div className="text-center">
                         <div className="text-lg md:text-3xl font-bold text-blue-600">{availableTasks.length}</div>
-                        <p className="text-[10px] md:text-xs text-slate-700 mt-1 md:mt-2 uppercase tracking-widest">{t('dashboard.available')}</p>
+                        <p className="text-[10px] md:text-xs text-foreground mt-1 md:mt-2 uppercase tracking-widest">{t('dashboard.available')}</p>
                       </div>
                     </div>
                     
@@ -7580,7 +7580,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     >
                       <div className="text-center">
                         <div className="text-lg md:text-3xl font-bold text-violet-600">{assignedTasks.length}</div>
-                        <p className="text-[10px] md:text-xs text-slate-700 mt-1 md:mt-2 uppercase tracking-widest">{t('dashboard.inProgress')}</p>
+                        <p className="text-[10px] md:text-xs text-foreground mt-1 md:mt-2 uppercase tracking-widest">{t('dashboard.inProgress')}</p>
                       </div>
                     </div>
                     
@@ -7592,7 +7592,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     >
                       <div className="text-center">
                         <div className="text-lg md:text-3xl font-bold text-amber-600">{submittedTasks.length}</div>
-                        <p className="text-[10px] md:text-xs text-slate-700 mt-1 md:mt-2 uppercase tracking-widest">{t('dashboard.pendingApproval')}</p>
+                        <p className="text-[10px] md:text-xs text-foreground mt-1 md:mt-2 uppercase tracking-widest">{t('dashboard.pendingApproval')}</p>
                       </div>
                     </div>
                     
@@ -7604,7 +7604,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     >
                       <div className="text-center">
                         <div className="text-lg md:text-3xl font-bold text-green-600">{completedTasks.length}</div>
-                        <p className="text-[10px] md:text-xs text-slate-700 mt-1 md:mt-2 uppercase tracking-widest">{t('dashboard.completed')}</p>
+                        <p className="text-[10px] md:text-xs text-foreground mt-1 md:mt-2 uppercase tracking-widest">{t('dashboard.completed')}</p>
                       </div>
                     </div>
                   </div>
@@ -7620,12 +7620,12 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   animate={{ y: 0, opacity: 1 }} 
                   transition={{ delay: 0.2 }}
                   onClick={() => setShowStatsModal(true)}
-                  className="w-full rounded-2xl bg-white/50 backdrop-blur-xl border border-white/50 p-6 text-center hover:bg-white/70 transition-all cursor-pointer shadow-lg"
+                  className="w-full rounded-2xl bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 p-6 text-center hover:bg-white/70 transition-all cursor-pointer shadow-lg"
                 >
                   <div className="h-12 w-12 bg-gradient-to-br from-violet-500 to-cyan-500 rounded-lg flex items-center justify-center mx-auto mb-3">
                     <Sparkles className="h-6 w-6 text-white" />
                   </div>
-                  <p className="text-lg font-bold text-slate-900">{t('dashboard.learningStatistics')}</p>
+                  <p className="text-lg font-bold text-foreground">{t('dashboard.learningStatistics')}</p>
                 </motion.button>
 
                 {/* Stats Modal */}
@@ -7654,7 +7654,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                             <div className="h-8 w-8 bg-green-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
                               <BookOpen className="h-4 w-4 text-green-600" />
                             </div>
-                            <p className="text-xs text-slate-600 mb-1 font-medium">{t('education.modulesLabel')}</p>
+                            <p className="text-xs text-muted-foreground mb-1 font-medium">{t('education.modulesLabel')}</p>
                             <p className="text-2xl font-bold text-green-600">{completedModulesModal.length}/20</p>
                           </div>
                           
@@ -7662,7 +7662,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                             <div className="h-8 w-8 bg-purple-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
                               <Trophy className="h-4 w-4 text-purple-600" />
                             </div>
-                            <p className="text-xs text-slate-600 mb-1 font-medium">{t('education.badges')}</p>
+                            <p className="text-xs text-muted-foreground mb-1 font-medium">{t('education.badges')}</p>
                             <p className="text-2xl font-bold text-purple-600">{achievements.filter(a => a.cond).length}/5</p>
                           </div>
                           
@@ -7670,7 +7670,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                             <div className="h-8 w-8 bg-violet-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
                               <Flame className="h-4 w-4 text-violet-600" />
                             </div>
-                            <p className="text-xs text-slate-600 mb-1 font-medium">{t('dashboard.thisWeek')}</p>
+                            <p className="text-xs text-muted-foreground mb-1 font-medium">{t('dashboard.thisWeek')}</p>
                             <p className="text-2xl font-bold text-violet-600">{weeklyCompleted} {t('common.tasks')}</p>
                           </div>
                           
@@ -7678,7 +7678,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                             <div className="h-8 w-8 bg-cyan-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
                               <TrendingUp className="h-4 w-4 text-cyan-600" />
                             </div>
-                            <p className="text-xs text-slate-600 mb-1 font-medium">{t('education.sevenDays')}</p>
+                            <p className="text-xs text-muted-foreground mb-1 font-medium">{t('education.sevenDays')}</p>
                             <p className="text-2xl font-bold text-cyan-600">{weeklySats.toLocaleString()} Sats</p>
                           </div>
                         </div>
@@ -7691,12 +7691,12 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
             <div 
-              className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl shadow-lg cursor-pointer hover:bg-white/60 transition-colors"
+              className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl shadow-lg cursor-pointer hover:bg-white/60 transition-colors"
               onClick={() => setCurrentView("calendar")}
               data-testid="card-child-calendar"
             >
               <div className="p-2 md:p-4">
-                <h3 className="text-sm font-bold mb-2 flex items-center gap-1 text-slate-900">
+                <h3 className="text-sm font-bold mb-2 flex items-center gap-1 text-foreground">
                   <Calendar className="h-4 w-4 text-violet-600" /> {t('nav.calendar')}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -7816,7 +7816,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                           </div>
                         ))}
                       {events.filter(e => new Date(e.startDate).toDateString() === selectedDate.toDateString()).length === 0 && (
-                        <p className="text-xs text-slate-600 text-center py-1">{t('dashboard.noEvents')}</p>
+                        <p className="text-xs text-muted-foreground text-center py-1">{t('dashboard.noEvents')}</p>
                       )}
                     </div>
                   </div>
@@ -7828,12 +7828,12 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         )}
 
         {connectedParents.length === 0 && (
-          <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl p-6 -mt-2 shadow-lg">
+          <div className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl p-6 -mt-2 shadow-lg">
             <div className="flex gap-4">
               <Info className="h-5 w-5 text-violet-600 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-bold mb-1 text-slate-900">{t('connection.notConnected')}</h3>
-                <p className="text-sm text-slate-700 mb-3">
+                <h3 className="font-bold mb-1 text-foreground">{t('connection.notConnected')}</h3>
+                <p className="text-sm text-foreground mb-3">
                   {t('connection.connectToSeeTasksTitle')}
                 </p>
                 <Button 
@@ -7850,20 +7850,20 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         )}
 
         {showLink && (
-          <div className="bg-white/50 backdrop-blur-xl border border-white/50 rounded-2xl p-6 shadow-lg">
-            <h3 className="font-bold mb-4 text-slate-900">{t('dashboard.connectWithParentsTitle')}</h3>
+          <div className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl p-6 shadow-lg">
+            <h3 className="font-bold mb-4 text-foreground">{t('dashboard.connectWithParentsTitle')}</h3>
             <div className="space-y-3">
               <div>
-                <Label htmlFor="parent-code" className="text-slate-800">{t('dashboard.parentConnectionCode')}</Label>
+                <Label htmlFor="parent-code" className="text-foreground">{t('dashboard.parentConnectionCode')}</Label>
                 <Input 
                   id="parent-code"
                   placeholder={t('dashboard.connectionCodePlaceholder')}
                   value={parentConnectionId}
                   onChange={(e) => setParentConnectionId(e.target.value.toUpperCase())}
-                  className="bg-white/50 border-white/60 text-slate-900 font-mono text-center"
+                  className="bg-white/5 dark:bg-black/30 border-white/60 text-foreground font-mono text-center"
                   data-testid="input-parent-code"
                 />
-                <p className="text-xs text-slate-600 mt-1">{t('dashboard.askParentsForCode')}</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('dashboard.askParentsForCode')}</p>
               </div>
               <div className="flex gap-2">
                 <Button 
@@ -7878,7 +7878,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   variant="outline"
                   onClick={() => setShowLink(false)}
                   disabled={isLinking}
-                  className="bg-white/30 border-white/40 text-slate-800"
+                  className="bg-white/30 dark:bg-black/30 border-white/40 dark:border-white/20 text-foreground"
                   data-testid="button-cancel-link"
                 >
                   Abbrechen
@@ -8388,10 +8388,10 @@ function TrackerChart({ userId }: { userId: number }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-bold text-slate-900">{t('dashboard.yourEarnings')}</h3>
+        <h3 className="text-lg font-bold text-foreground">{t('dashboard.yourEarnings')}</h3>
         <button
           onClick={() => setShowInfo(!showInfo)}
-          className="text-xs text-slate-600 hover:text-slate-900 transition-colors"
+          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
           data-testid="toggle-info"
         >
           {showInfo ? t('education.hide') : t('education.whatDoesMean')}
@@ -8419,7 +8419,7 @@ function TrackerChart({ userId }: { userId: number }) {
           className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
             showEuro 
               ? 'bg-violet-500/20 border-violet-500/50 text-violet-600' 
-              : 'bg-white/30 border-slate-300/50 text-slate-500'
+              : 'bg-white/30 dark:bg-black/30 border-slate-300/50 text-muted-foreground'
           }`}
           data-testid="toggle-euro"
         >
@@ -8430,7 +8430,7 @@ function TrackerChart({ userId }: { userId: number }) {
           className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
             showSats 
               ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-600' 
-              : 'bg-white/30 border-slate-300/50 text-slate-500'
+              : 'bg-white/30 dark:bg-black/30 border-slate-300/50 text-muted-foreground'
           }`}
           data-testid="toggle-sats"
         >
@@ -8441,7 +8441,7 @@ function TrackerChart({ userId }: { userId: number }) {
           className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
             showBtcPrice 
               ? 'bg-amber-500/20 border-amber-500/50 text-amber-600' 
-              : 'bg-white/30 border-slate-300/50 text-slate-500'
+              : 'bg-white/30 dark:bg-black/30 border-slate-300/50 text-muted-foreground'
           }`}
           data-testid="toggle-btc-price"
         >
@@ -8449,7 +8449,7 @@ function TrackerChart({ userId }: { userId: number }) {
         </button>
       </div>
 
-      <div className="h-48 bg-white/40 backdrop-blur-md rounded-xl p-3 border border-white/50">
+      <div className="h-48 bg-white/40 backdrop-blur-md rounded-xl p-3 border border-white/50 dark:border-white/20">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={trackerData.map(d => ({ 
             ...d, 
@@ -8506,7 +8506,7 @@ function TrackerChart({ userId }: { userId: number }) {
                   const data = payload[0].payload;
                   return (
                     <div className="bg-white/90 backdrop-blur-md border border-slate-200 rounded-lg p-3 shadow-xl">
-                      <p className="text-xs text-slate-500 mb-2">{data.date}</p>
+                      <p className="text-xs text-muted-foreground mb-2">{data.date}</p>
                       <div className="space-y-1">
                         <p className="text-sm text-violet-600 font-medium">€{data.euroValue?.toFixed(2)}</p>
                         <p className="text-sm text-cyan-600 font-medium">⚡ {data.totalSats?.toLocaleString()} sats</p>
@@ -8556,22 +8556,22 @@ function TrackerChart({ userId }: { userId: number }) {
       </div>
 
       {showInfo && (
-        <div className="bg-white/40 backdrop-blur-md border border-white/50 rounded-xl p-4 space-y-3">
-          <p className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+        <div className="bg-white/40 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-xl p-4 space-y-3">
+          <p className="text-sm font-semibold text-foreground flex items-center gap-2">
             {t('education.chartTitle')}
           </p>
           <div className="grid gap-2">
             <div className="flex items-center gap-3 bg-violet-500/15 rounded-lg px-3 py-2">
               <div className="w-4 h-1 bg-violet-500 rounded-full"></div>
-              <span className="text-xs text-slate-700"><span className="text-violet-600 font-medium">Violett</span> = {t('common.chartViolet')}</span>
+              <span className="text-xs text-foreground"><span className="text-violet-600 font-medium">Violett</span> = {t('common.chartViolet')}</span>
             </div>
             <div className="flex items-center gap-3 bg-cyan-500/15 rounded-lg px-3 py-2">
               <div className="w-4 h-1 bg-cyan-500 rounded-full"></div>
-              <span className="text-xs text-slate-700"><span className="text-cyan-600 font-medium">Cyan</span> = {t('common.chartCyan')}</span>
+              <span className="text-xs text-foreground"><span className="text-cyan-600 font-medium">Cyan</span> = {t('common.chartCyan')}</span>
             </div>
             <div className="flex items-center gap-3 bg-amber-500/15 rounded-lg px-3 py-2">
               <div className="w-4 h-1 rounded-full" style={{background: 'repeating-linear-gradient(90deg, #d97706 0px, #d97706 4px, transparent 4px, transparent 8px)'}}></div>
-              <span className="text-xs text-slate-700"><span className="text-amber-600 font-medium">Orange (gestrichelt)</span> = {t('common.chartAmber')}</span>
+              <span className="text-xs text-foreground"><span className="text-amber-600 font-medium">Orange (gestrichelt)</span> = {t('common.chartAmber')}</span>
             </div>
           </div>
         </div>
