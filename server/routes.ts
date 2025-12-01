@@ -743,14 +743,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Child not found" });
       }
 
-      // Get all approved tasks for this child to calculate task sats
-      const tasks = await storage.getTasks(child.connectionId);
-      const approvedTasks = tasks.filter(t => t.status === "approved" && t.assignedTo === childId);
-      const taskSats = approvedTasks.reduce((sum, t) => sum + t.sats, 0);
+      // Get task payment transactions for this child (most reliable source of task sats)
+      const taskTransactions = await db.select()
+        .from(transactions)
+        .where(and(eq(transactions.toPeerId, childId), eq(transactions.type, "task_payment")));
+      const taskSats = taskTransactions.reduce((sum: number, t) => sum + t.sats, 0);
       
       // Get all level bonus payouts for this child
       const bonusPayouts = await storage.getLevelBonusPayouts(childId);
-      const bonusSats = bonusPayouts.reduce((sum, p) => sum + p.sats, 0);
+      const bonusSats = bonusPayouts.reduce((sum: number, p) => sum + p.sats, 0);
       
       // Allowance/Instant payout sats = total balance - task sats - bonus sats
       const allowanceSats = Math.max(0, (child.balance || 0) - taskSats - bonusSats);
