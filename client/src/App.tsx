@@ -8204,30 +8204,70 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     return (
       <div className="max-w-4xl">
         <h1 className="text-3xl font-bold mb-8">{t('tasks.availableTasks')}</h1>
-        <div className="grid gap-4 md:grid-cols-2">
-          {availableTasks.map((task: Task) => (
-            <Card key={task.id} className="border-border bg-card hover:border-primary/50 transition-colors">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 border-transparent font-mono">
-                    {task.sats} sats
-                  </Badge>
+        
+        {unlockStatus && (
+          <div className="mb-6 p-4 rounded-lg bg-gradient-to-r from-pink-500/10 to-orange-500/10 border border-pink-500/30">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🏠</span>
+                <div>
+                  <p className="font-medium text-foreground">{t('tasks.familyTasks')}: {unlockStatus.progressToNext}/3</p>
+                  <div className="w-24 h-1.5 bg-pink-200/50 rounded-full mt-1">
+                    <div className="h-full bg-pink-500 rounded-full transition-all" style={{ width: `${(unlockStatus.progressToNext / 3) * 100}%` }} />
+                  </div>
                 </div>
-                <CardTitle className="mt-2">{task.title}</CardTitle>
-                <CardDescription>{task.description}</CardDescription>
-              </CardHeader>
-              <CardFooter>
-                <Button 
-                  onClick={() => onAccept(task.id)} 
-                  variant="outline" 
-                  className="w-full hover:border-primary hover:text-primary"
-                  data-testid={`button-accept-task-${task.id}`}
-                >
-                  {t('tasks.accept')}
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+              </div>
+              <div className="flex items-center gap-2">
+                {unlockStatus.freeSlots > 0 ? (
+                  <Badge className="bg-green-500/20 text-green-600 border-green-500/30">
+                    ✅ {unlockStatus.freeSlots} {t('tasks.paidTasks')} freigeschaltet
+                  </Badge>
+                ) : (
+                  <Badge className="bg-gray-500/20 text-gray-600 border-gray-500/30">
+                    🔒 {t('tasks.completeMoreFamily')}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="grid gap-4 md:grid-cols-2">
+          {availableTasks.map((task: Task) => {
+            const isPaidTask = !task.isRequired;
+            const isLocked = isPaidTask && unlockStatus && unlockStatus.freeSlots <= 0;
+            
+            return (
+              <Card key={task.id} className={`border-border bg-card transition-colors ${isLocked ? "opacity-60" : "hover:border-primary/50"}`}>
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    {task.isRequired ? (
+                      <Badge variant="secondary" className="bg-pink-500/20 text-pink-600 border-pink-500/30">
+                        🏠 {t('tasks.familyTasks')}
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className={`font-mono ${isLocked ? "bg-gray-500/10 text-gray-500" : "bg-primary/10 text-primary hover:bg-primary/20"} border-transparent`}>
+                        {isLocked ? "🔒" : "⚡"} {task.sats} sats
+                      </Badge>
+                    )}
+                  </div>
+                  <CardTitle className="mt-2">{task.title}</CardTitle>
+                  <CardDescription>{task.description}</CardDescription>
+                </CardHeader>
+                <CardFooter>
+                  <Button 
+                    onClick={() => !isLocked && onAccept(task.id)} 
+                    variant="outline" 
+                    className={`w-full ${isLocked ? "cursor-not-allowed opacity-50" : "hover:border-primary hover:text-primary"}`}
+                    disabled={isLocked}
+                    data-testid={`button-accept-task-${task.id}`}
+                  >
+                    {isLocked ? `🔒 ${t('tasks.completeMoreFamily')}` : t('tasks.accept')}
+                  </Button>
+                </CardFooter>
+              </Card>
+            );
+          })}
           {availableTasks.length === 0 && (
             <div className="text-center py-8 border border-dashed border-border rounded-lg text-muted-foreground md:col-span-2">
               {t('tasks.noTasksAvailable')}

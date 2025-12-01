@@ -1011,21 +1011,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Task not found" });
       }
 
-      // LOCK-CHECK: If child is trying to accept task (status="assigned"), check mandatory tasks requirement
-      if (updates.status === "assigned" && task.minimumRequiredTasks && task.minimumRequiredTasks > 0) {
-        console.log(`[Task Lock] Checking mandatory tasks for task ${id}: minimumRequired=${task.minimumRequiredTasks}`);
-        const completedRequiredTasks = await storage.getCompletedRequiredTasksCount(task.assignedTo!, task.connectionId);
-        console.log(`[Task Lock] Child ${task.assignedTo} has completed ${completedRequiredTasks} required tasks, needs ${task.minimumRequiredTasks}`);
+      // LOCK-CHECK: If child is trying to accept a PAID task (isRequired=false), check freeSlots
+      if (updates.status === "assigned" && updates.assignedTo && task.isRequired === false) {
+        const unlockStatus = await storage.getTaskUnlockStatus(updates.assignedTo, task.connectionId);
+        console.log(`[Task Lock] Child ${updates.assignedTo} trying to accept paid task ${id}: freeSlots=${unlockStatus.freeSlots}, progress=${unlockStatus.progressToNext}/3`);
         
-        if (completedRequiredTasks < task.minimumRequiredTasks) {
-          console.log(`[Task Lock] BLOCKED: Child lacks ${task.minimumRequiredTasks - completedRequiredTasks} required tasks`);
+        if (unlockStatus.freeSlots <= 0) {
+          console.log(`[Task Lock] BLOCKED: No freeSlots available. Child must complete ${3 - unlockStatus.progressToNext} more family tasks`);
           return res.status(423).json({ 
-            error: `Du musst erst ${task.minimumRequiredTasks - completedRequiredTasks} Pflicht-Aufgaben erledigen`,
-            required: task.minimumRequiredTasks,
-            completed: completedRequiredTasks
+            error: `Du musst erst ${3 - unlockStatus.progressToNext} Familienaufgaben erledigen`,
+            freeSlots: unlockStatus.freeSlots,
+            progressToNext: unlockStatus.progressToNext,
+            familyTasksCompleted: unlockStatus.familyTasksCompleted
           });
         }
-        console.log(`[Task Lock] APPROVED: Child has enough required tasks`);
+        console.log(`[Task Lock] APPROVED: Child has ${unlockStatus.freeSlots} freeSlots`);
       }
 
       // IDEMPOTENCY CHECK: If task is already approved OR has a paymentHash, reject duplicate approval
