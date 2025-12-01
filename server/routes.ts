@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertPeerSchema, insertTaskSchema, insertFamilyEventSchema, insertEventRsvpSchema, insertChatMessageSchema, peers, recurringTasks } from "@shared/schema";
+import { insertPeerSchema, insertTaskSchema, insertFamilyEventSchema, insertEventRsvpSchema, insertChatMessageSchema, peers, recurringTasks, transactions } from "@shared/schema";
 import { z } from "zod";
 import { LNBitsClient } from "./lnbits";
 import { db } from "./db";
