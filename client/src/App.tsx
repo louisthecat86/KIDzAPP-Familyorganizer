@@ -7129,65 +7129,6 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                       </CardContent>
                     </Card>
                   )}
-                  {dailyChallenge && (
-              <div className="mt-8 pt-8 border-t-2 border-slate-200">
-                <h3 className="text-lg font-bold text-slate-900 mb-4">📅 Tägliche Challenge</h3>
-                <Card className={`border-2 ${dailyChallenge.completed ? "border-green-500/50 bg-green-500/5" : "border-amber-500/50 bg-amber-500/5"}`}>
-                  <CardContent className="pt-8 pb-8 space-y-4">
-                    <div className="text-center">
-                      <div className="text-5xl mb-3">{dailyChallenge.icon}</div>
-                      <h3 className="text-2xl font-bold text-slate-900 mb-1">{dailyChallenge.title}</h3>
-                      <p className="text-slate-600 text-sm">{dailyChallenge.description}</p>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-3 mb-4">
-                      <div className="bg-violet-100/50 p-4 rounded-lg text-center border-2 border-violet-300/50">
-                        <p className="text-xs text-slate-600 mb-1">{t('education.challengeType')}</p>
-                        <p className="text-lg font-bold text-violet-600">{dailyChallenge.type === "quiz" ? "🧠" : dailyChallenge.type === "conversion" ? "🔄" : dailyChallenge.type === "lightning" ? "⚡" : dailyChallenge.type === "security" ? "🔒" : dailyChallenge.type === "fun" ? "🎮" : "⛓️"}</p>
-                      </div>
-                      <div className="bg-amber-100/50 p-4 rounded-lg text-center border-2 border-amber-300/50">
-                        <p className="text-xs text-slate-600 mb-1">{t('education.difficulty')}</p>
-                        <p className="text-lg font-bold text-amber-600">{dailyChallenge.type === "quiz" || dailyChallenge.type === "conversion" ? "⭐" : dailyChallenge.type === "lightning" || dailyChallenge.type === "security" ? "⭐⭐" : "⭐⭐⭐"}</p>
-                      </div>
-                    </div>
-                    
-                    {!dailyChallenge.completed && (
-                      <Button 
-                        onClick={async () => {
-                          try {
-                            const today = new Date().toDateString();
-                            const response = await fetch("/api/daily-challenge/complete", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ peerId: user.id, challengeDate: today, challengeType: dailyChallenge.type })
-                            });
-                            if (response.ok) {
-                              const data = await response.json();
-                              setDailyChallenge({ ...dailyChallenge, completed: true });
-                              toast({ title: t('education.challengePassed'), description: t('education.challengePassedDesc') });
-                            }
-                          } catch (error) {
-                            toast({ title: t('common.error'), description: t('errors.challengeSaveFailed'), variant: "destructive" });
-                          }
-                        }}
-                        className="w-full bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-700 hover:to-cyan-700 h-12 text-lg font-bold"
-                        data-testid="button-complete-challenge"
-                      >
-                        {t('education.challengePassedButton')} 🎉
-                      </Button>
-                    )}
-                    
-                    {dailyChallenge.completed && (
-                      <div className="text-center p-5 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-lg border-2 border-green-400/50">
-                        <p className="text-2xl mb-2">🏆</p>
-                        <p className="text-lg font-bold text-green-700 mb-1">{t('education.challengePassedButton')}</p>
-                        <p className="text-xs text-green-600">{t('education.comeBackTomorrow')}</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-                  )}
                 </>
               );
             })()}
