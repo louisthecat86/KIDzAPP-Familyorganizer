@@ -300,7 +300,7 @@ async function deleteEvent(id: number): Promise<void> {
 export default function App() {
   const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
-  const [newTask, setNewTask] = useState({ title: "", description: "", sats: 50, isRequired: false, minimumRequiredTasks: 0 });
+  const [newTask, setNewTask] = useState({ title: "", description: "", sats: 50, isRequired: false });
   const [newEvent, setNewEvent] = useState({ title: "", description: "", location: "", startDate: "", endDate: "" });
   const [currentView, setCurrentView] = useState<string>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -363,7 +363,7 @@ export default function App() {
     onSuccess: (task) => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       toast({ title: t('tasks.created'), description: t('tasks.waitingForApproval') });
-      setNewTask({ title: "", description: "", sats: 50, isRequired: false, minimumRequiredTasks: 0 });
+      setNewTask({ title: "", description: "", sats: 50, isRequired: false });
       setCurrentView("dashboard");
     },
     onError: (error) => {
@@ -528,7 +528,6 @@ export default function App() {
       description: newTask.description,
       sats: satValue,
       isRequired: newTask.isRequired,
-      minimumRequiredTasks: newTask.isRequired ? newTask.minimumRequiredTasks : 0,
       status: "open",
     });
   };
@@ -4893,7 +4892,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <CardContent>
               <form onSubmit={(e) => {
                 e.preventDefault();
-                if (!isBalanceInsufficient && (!newTask.isRequired || newTask.minimumRequiredTasks > 0)) {
+                if (!isBalanceInsufficient) {
                   onCreate(e);
                 }
               }} className="space-y-4">
@@ -4968,45 +4967,17 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   )}
                 </div>
 
-                {/* Minimum Required Tasks Field (nur wenn Pflicht-Aufgabe) */}
-                {newTask.isRequired && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: -10 }} 
-                    animate={{ opacity: 1, y: 0 }}
-                    className="space-y-2 p-3 bg-primary/5 rounded-lg border border-primary/20"
-                  >
-                    <Label htmlFor="min-required" className="flex items-center gap-2">
-                      <span className="text-lg">📋</span>
-                      <span>Wie viele Pflicht-Aufgaben müssen erst erledigt sein?</span>
-                    </Label>
-                    <Input 
-                      id="min-required"
-                      type="number" 
-                      min="0"
-                      placeholder="0" 
-                      value={newTask.minimumRequiredTasks}
-                      onChange={(e) => setNewTask({ ...newTask, minimumRequiredTasks: parseInt(e.target.value) || 0 })}
-                      className="bg-secondary border-border focus:border-primary"
-                      autoComplete="off"
-                      data-testid="input-min-required-tasks"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Kind muss zuerst diese Anzahl erledigt haben, bevor diese Aufgabe angenommen werden kann
-                    </p>
-                  </motion.div>
-                )}
-
                 <Button 
                   type="submit" 
-                  disabled={isBalanceInsufficient || (newTask.isRequired && newTask.minimumRequiredTasks <= 0)}
+                  disabled={isBalanceInsufficient}
                   className={`w-full font-bold transition-all ${
-                    isBalanceInsufficient || (newTask.isRequired && newTask.minimumRequiredTasks <= 0)
+                    isBalanceInsufficient
                       ? "bg-gray-600 text-gray-300 cursor-not-allowed opacity-50"
                       : "bg-primary text-primary-foreground hover:bg-primary/90"
                   }`}
                   data-testid="button-create-task"
                 >
-                  {isBalanceInsufficient ? t('common.insufficientBalance') : (newTask.isRequired && newTask.minimumRequiredTasks <= 0) ? "Mindestanzahl erforderlich" : t('common.create')}
+                  {isBalanceInsufficient ? t('common.insufficientBalance') : t('common.create')}
                 </Button>
               </form>
             </CardContent>
