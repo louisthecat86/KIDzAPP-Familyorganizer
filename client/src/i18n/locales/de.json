@@ -15,7 +15,18 @@
     "newFamily": "Neue Familie gr\u00fcnden",
     "newFamilyDesc": "Erstelle eine neue Familie",
     "joinFamily": "Familie beitreten",
-    "joinFamilyDesc": "Beitreten mit Familie-ID"
+    "joinFamilyDesc": "Beitreten mit Familie-ID",
+    "legalDisclaimer": "Rechtliche Hinweise",
+    "bitcoinWarning": "Bitcoin-Zahlungen sind echte Transaktionen",
+    "bitcoinWarningDesc": "Diese App verwendet echte Sats - kein Spielgeld. Bitcoin-Zahlungen können nicht rückgängig gemacht werden.",
+    "parentalResponsibility": "Elterliche Haftung",
+    "parentalResponsibilityDesc": "Eltern tragen die volle Verantwortung für ihre Kinder und deren Transaktionen in dieser App.",
+    "noGuarantee": "Keine Wertgarantie",
+    "noGuaranteeDesc": "Wir geben keine Garantie für den Wert von Bitcoin. Eltern sollten ihre Kinder entsprechend beaufsichtigen.",
+    "familyUse": "Nur für Familien",
+    "familyUseDesc": "Diese App ist ausschließlich für den privaten Familiengebrauch gedacht und nicht für kommerzielle Zwecke.",
+    "dataPrivacy": "Datenschutz",
+    "dataPrivacyDesc": "Daten werden sicher gespeichert. Keine Weitergabe an Dritte. Weitere Informationen in unserer Datenschutzerklärung."
   },
   "auth": {
     "welcome": "Willkommen zurück!",

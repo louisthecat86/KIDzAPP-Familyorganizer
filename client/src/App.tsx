@@ -1799,6 +1799,40 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
           <span className="ml-auto text-amber-600 text-xl opacity-0 group-hover:opacity-100 transition-opacity">⚡</span>
         </button>
         </div>
+
+        {/* Legal Disclaimers Section */}
+        <div className="w-full max-w-2xl mt-12 mb-6">
+          <div className="bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl p-6 space-y-4">
+            <h2 className="text-xl font-bold text-slate-900 mb-4">{t('landing.legalDisclaimer')}</h2>
+            
+            <div className="space-y-3">
+              <div className="bg-red-500/10 border-l-4 border-red-500 pl-4 py-3 rounded">
+                <p className="font-bold text-red-900">⚠️ {t('landing.bitcoinWarning')}</p>
+                <p className="text-sm text-slate-700 mt-1">{t('landing.bitcoinWarningDesc')}</p>
+              </div>
+
+              <div className="bg-blue-500/10 border-l-4 border-blue-500 pl-4 py-3 rounded">
+                <p className="font-bold text-blue-900">👨‍👩‍👧 {t('landing.parentalResponsibility')}</p>
+                <p className="text-sm text-slate-700 mt-1">{t('landing.parentalResponsibilityDesc')}</p>
+              </div>
+
+              <div className="bg-amber-500/10 border-l-4 border-amber-500 pl-4 py-3 rounded">
+                <p className="font-bold text-amber-900">📊 {t('landing.noGuarantee')}</p>
+                <p className="text-sm text-slate-700 mt-1">{t('landing.noGuaranteeDesc')}</p>
+              </div>
+
+              <div className="bg-green-500/10 border-l-4 border-green-500 pl-4 py-3 rounded">
+                <p className="font-bold text-green-900">👨‍👩‍👧‍👦 {t('landing.familyUse')}</p>
+                <p className="text-sm text-slate-700 mt-1">{t('landing.familyUseDesc')}</p>
+              </div>
+
+              <div className="bg-cyan-500/10 border-l-4 border-cyan-500 pl-4 py-3 rounded">
+                <p className="font-bold text-cyan-900">🔒 {t('landing.dataPrivacy')}</p>
+                <p className="text-sm text-slate-700 mt-1">{t('landing.dataPrivacyDesc')}</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
