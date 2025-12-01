@@ -7075,48 +7075,63 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         {educationTab === "challenges" && !selectedChallenge && (
           <div className="space-y-6">
             <h2 className="text-xl font-bold text-slate-900">🎯 Challenges - Deine Bitcoin-Abenteuer</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[
-                { id: 1, icon: "🧠", title: "Quiz-Challenge", difficulty: "⭐", desc: "Beantworte Fragen über Bitcoin-Grundlagen und verdiene XP", category: "quiz", questions: [{ q: "Was ist Bitcoin?", answers: ["Digitale Währung", "Spielkonsole", "Eine Person"] }, { q: "Wie viele Satoshi sind ein Bitcoin?", answers: ["100 Millionen", "1 Million", "1 Milliarde"] }, { q: "Wer hat Bitcoin erfunden?", answers: ["Satoshi Nakamoto", "Elon Musk", "Steve Jobs"] }] },
-                { id: 2, icon: "🔄", title: "Umwandlungs-Challenge", difficulty: "⭐", desc: "Konvertiere zwischen Satoshi, Bitcoin und Euro", category: "conversion", questions: [{ q: "Konvertiere 1 Million Satoshi in Bitcoin", answers: ["0.01 BTC", "10 BTC", "1 BTC"] }, { q: "Konvertiere 0.005 BTC in Euro (bei 45000 EUR)", answers: ["225 EUR", "450 EUR", "2250 EUR"] }, { q: "Wieviel Satoshi sind 100 EUR?", answers: ["~222 Million", "~111 Million", "~333 Million"] }] },
-                { id: 3, icon: "⚡", title: "Lightning-Network", difficulty: "⭐⭐", desc: "Lerne über schnelle Zahlungen im Lightning Network", category: "lightning", questions: [{ q: "Was ist das Lightning Network?", answers: ["Ein schnelles Zahlungsnetzwerk", "Eine Bank", "Ein Spiel"] }, { q: "Wie schnell sind Lightning-Zahlungen?", answers: ["Sekunden", "Stunden", "Tage"] }, { q: "Wie viel kostet eine Lightning-Zahlung?", answers: ["Sehr günstig", "Sehr teuer", "Nichts"] }] },
-                { id: 4, icon: "🔒", title: "Sicherheits-Challenge", difficulty: "⭐⭐", desc: "Teste dein Wissen über Bitcoin-Sicherheit", category: "security", questions: [{ q: "Was ist ein Private Key?", answers: ["Geheimer Schlüssel", "Öffentlicher Schlüssel", "Ein Passwort"] }, { q: "Sollte ich meinen Seed-Phrase teilen?", answers: ["Niemals!", "Nur mit Freunden", "Ja, immer"] }, { q: "Was ist ein Brute-Force-Angriff?", answers: ["Viele Versuche hacken", "Eine Trainingsart", "Laut schreien"] }] },
-                { id: 5, icon: "🎮", title: "Spaß-Challenge", difficulty: "⭐⭐", desc: "Spannende und unterhaltsame Bitcoin-Aufgaben", category: "fun", questions: [{ q: "Bitcoin Pizza Day - Wie viele Pizzas für wie viele BTC?", answers: ["2 für 10.000 BTC", "1 für 1000 BTC", "5 für 50.000 BTC"] }, { q: "Welche Farbe hat das Bitcoin-Logo?", answers: ["Orange und Weiß", "Blau und Gelb", "Rot und Schwarz"] }, { q: "Was ist das Bitcoin-Symbol?", answers: ["₿", "$", "€"] }] },
-                { id: 6, icon: "⛓️", title: "Blockchain-Challenge", difficulty: "⭐⭐⭐", desc: "Tiefgreifendes Wissen über Blockchain-Technologie", category: "blockchain", questions: [{ q: "Was ist Proof of Work?", answers: ["Miners lösen schwierige Aufgaben", "Große Computer", "Eine neue Währung"] }, { q: "Wie lange dauert ein Block im Bitcoin-Netzwerk?", answers: ["~10 Minuten", "~1 Minute", "~1 Stunde"] }, { q: "Was ist ein Merkle Tree?", answers: ["Datenstruktur für Transaktionen", "Ein echter Baum", "Eine Programmiersprache"] }] }
-              ].map(challenge => {
-                const completedTime = completedChallenges[challenge.id];
-                const isCompleted = completedTime && (Date.now() - completedTime) < 86400000;
-                const nextAvailableTime = completedTime ? new Date(completedTime + 86400000) : null;
-                const hoursUntilAvailable = completedTime ? Math.ceil((completedTime + 86400000 - Date.now()) / 3600000) : 0;
-                
-                return (
-                <Card key={challenge.id} className={`border-2 transition-all ${isCompleted ? "border-green-500/50 bg-green-500/5" : "border-slate-200 hover:border-violet-300 cursor-pointer hover:shadow-lg"}`}>
-                  <CardContent className="pt-6 pb-6">
-                    <div className="flex items-start justify-between mb-3">
-                      <span className="text-4xl">{challenge.icon}</span>
-                      <span className="text-amber-600 font-bold">{challenge.difficulty}</span>
+            {(() => {
+              const allChallenges = [
+                { id: 1, icon: "🧠", title: "Quiz-Challenge", difficulty: "⭐", desc: "Beantworte Fragen über Bitcoin-Grundlagen und verdiene XP", category: "quiz", questions: [{ q: "Was ist Bitcoin?", correct: "Digitale Währung", answers: ["Digitale Währung", "Spielkonsole", "Eine Person"] }, { q: "Wie viele Satoshi sind ein Bitcoin?", correct: "100 Millionen", answers: ["100 Millionen", "1 Million", "1 Milliarde"] }, { q: "Wer hat Bitcoin erfunden?", correct: "Satoshi Nakamoto", answers: ["Satoshi Nakamoto", "Elon Musk", "Steve Jobs"] }] },
+                { id: 2, icon: "🔄", title: "Umwandlungs-Challenge", difficulty: "⭐", desc: "Konvertiere zwischen Satoshi, Bitcoin und Euro", category: "conversion", questions: [{ q: "Konvertiere 1 Million Satoshi in Bitcoin", correct: "0.01 BTC", answers: ["0.01 BTC", "10 BTC", "1 BTC"] }, { q: "Konvertiere 0.005 BTC in Euro (bei 45000 EUR)", correct: "225 EUR", answers: ["225 EUR", "450 EUR", "2250 EUR"] }, { q: "Wieviel Satoshi sind 100 EUR?", correct: "~222 Million", answers: ["~222 Million", "~111 Million", "~333 Million"] }] },
+                { id: 3, icon: "⚡", title: "Lightning-Network", difficulty: "⭐⭐", desc: "Lerne über schnelle Zahlungen im Lightning Network", category: "lightning", questions: [{ q: "Was ist das Lightning Network?", correct: "Ein schnelles Zahlungsnetzwerk", answers: ["Ein schnelles Zahlungsnetzwerk", "Eine Bank", "Ein Spiel"] }, { q: "Wie schnell sind Lightning-Zahlungen?", correct: "Sekunden", answers: ["Sekunden", "Stunden", "Tage"] }, { q: "Wie viel kostet eine Lightning-Zahlung?", correct: "Sehr günstig", answers: ["Sehr günstig", "Sehr teuer", "Nichts"] }] },
+                { id: 4, icon: "🔒", title: "Sicherheits-Challenge", difficulty: "⭐⭐", desc: "Teste dein Wissen über Bitcoin-Sicherheit", category: "security", questions: [{ q: "Was ist ein Private Key?", correct: "Geheimer Schlüssel", answers: ["Geheimer Schlüssel", "Öffentlicher Schlüssel", "Ein Passwort"] }, { q: "Sollte ich meinen Seed-Phrase teilen?", correct: "Niemals!", answers: ["Niemals!", "Nur mit Freunden", "Ja, immer"] }, { q: "Was ist ein Brute-Force-Angriff?", correct: "Viele Versuche hacken", answers: ["Viele Versuche hacken", "Eine Trainingsart", "Laut schreien"] }] },
+                { id: 5, icon: "🎮", title: "Spaß-Challenge", difficulty: "⭐⭐", desc: "Spannende und unterhaltsame Bitcoin-Aufgaben", category: "fun", questions: [{ q: "Bitcoin Pizza Day - Wie viele Pizzas für wie viele BTC?", correct: "2 für 10.000 BTC", answers: ["2 für 10.000 BTC", "1 für 1000 BTC", "5 für 50.000 BTC"] }, { q: "Welche Farbe hat das Bitcoin-Logo?", correct: "Orange und Weiß", answers: ["Orange und Weiß", "Blau und Gelb", "Rot und Schwarz"] }, { q: "Was ist das Bitcoin-Symbol?", correct: "₿", answers: ["₿", "$", "€"] }] },
+                { id: 6, icon: "⛓️", title: "Blockchain-Challenge", difficulty: "⭐⭐⭐", desc: "Tiefgreifendes Wissen über Blockchain-Technologie", category: "blockchain", questions: [{ q: "Was ist Proof of Work?", correct: "Miners lösen schwierige Aufgaben", answers: ["Miners lösen schwierige Aufgaben", "Große Computer", "Eine neue Währung"] }, { q: "Wie lange dauert ein Block im Bitcoin-Netzwerk?", correct: "~10 Minuten", answers: ["~10 Minuten", "~1 Minute", "~1 Stunde"] }, { q: "Was ist ein Merkle Tree?", correct: "Datenstruktur für Transaktionen", answers: ["Datenstruktur für Transaktionen", "Ein echter Baum", "Eine Programmiersprache"] }] }
+              ];
+              const completedIds = Object.keys(completedChallenges).map(Number).sort((a, b) => a - b);
+              const currentChallengeId = completedIds.length === 0 ? 1 : completedIds[completedIds.length - 1] + 1;
+              const lastCompletedTime = completedIds.length > 0 ? completedChallenges[completedIds[completedIds.length - 1]] : 0;
+              const canShowNextChallenge = completedIds.length === 0 || (Date.now() - lastCompletedTime) >= 86400000;
+              const hoursUntilNextAvailable = completedIds.length > 0 ? Math.ceil((lastCompletedTime + 86400000 - Date.now()) / 3600000) : 0;
+              const currentChallenge = allChallenges.find(c => c.id === currentChallengeId);
+              
+              return (
+                <>
+                  {currentChallengeId <= 6 && currentChallenge && (
+                    <div className="grid grid-cols-1 gap-4">
+                      {canShowNextChallenge ? (
+                        <Card key={currentChallenge.id} className="border-2 border-violet-300 hover:border-violet-400 transition-all cursor-pointer hover:shadow-lg">
+                          <CardContent className="pt-6 pb-6">
+                            <div className="flex items-start justify-between mb-3">
+                              <span className="text-4xl">{currentChallenge.icon}</span>
+                              <span className="text-amber-600 font-bold">{currentChallenge.difficulty}</span>
+                            </div>
+                            <h3 className="font-bold text-slate-900 mb-2">{currentChallenge.title}</h3>
+                            <p className="text-sm text-slate-600 mb-4">{currentChallenge.desc}</p>
+                            <Button onClick={() => setSelectedChallenge(currentChallenge)} className="w-full bg-violet-600 hover:bg-violet-700" size="sm">
+                              {t('education.startChallenge')} →
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      ) : (
+                        <Card className="border-2 border-slate-200 bg-slate-50/50">
+                          <CardContent className="pt-8 pb-8 text-center space-y-3">
+                            <p className="text-sm text-slate-600">✅ Heute schon abgeschlossen!</p>
+                            <p className="text-lg font-bold text-slate-900">Nächste Challenge verfügbar in ~{hoursUntilNextAvailable}h</p>
+                            <p className="text-xs text-slate-500">Komm morgen zurück um die nächste Challenge zu lösen! 🚀</p>
+                          </CardContent>
+                        </Card>
+                      )}
                     </div>
-                    <h3 className="font-bold text-slate-900 mb-2">{challenge.title}</h3>
-                    {isCompleted ? (
-                      <div className="space-y-3">
-                        <p className="text-sm text-green-700 font-semibold">✅ Heute abgeschlossen!</p>
-                        <p className="text-xs text-slate-600">Nächste Challenge verfügbar in ~{hoursUntilAvailable}h</p>
-                        <Button disabled className="w-full bg-slate-400" size="sm">
-                          {t('education.startChallenge')}
-                        </Button>
-                      </div>
-                    ) : (
-                      <>
-                        <p className="text-sm text-slate-600 mb-4">{challenge.desc}</p>
-                        <Button onClick={() => setSelectedChallenge(challenge)} className="w-full bg-violet-600 hover:bg-violet-700" size="sm">
-                          {t('education.startChallenge')} →
-                        </Button>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
+                  )}
+                  {currentChallengeId > 6 && (
+                    <Card className="border-2 border-green-500/50 bg-gradient-to-r from-green-500/10 to-blue-500/10">
+                      <CardContent className="pt-8 pb-8 text-center">
+                        <p className="text-4xl mb-3">🏆👑🚀</p>
+                        <p className="text-2xl font-bold text-green-600 mb-2">Alle Challenges abgeschlossen!</p>
+                        <p className="text-sm text-slate-600">Du hast alle Bitcoin-Challenges gemeistert! Glückwunsch! 🎉</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </>
               );
-              })}
+            })()}
             </div>
             
             {dailyChallenge && (
@@ -7178,7 +7193,6 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 </Card>
               </div>
             )}
-          </div>
         )}
 
         {educationTab === "challenges" && selectedChallenge && (
@@ -7197,7 +7211,18 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 </div>
 
                 <div className="bg-slate-100/50 p-6 rounded-lg space-y-3">
-                  {selectedChallenge.questions?.map((item: any, idx: number) => (
+                  {selectedChallenge.questions?.map((item: any, idx: number) => {
+                    const shuffled = (() => {
+                      const seed = idx * 12345;
+                      const shuffledAnswers = [...item.answers];
+                      for (let i = shuffledAnswers.length - 1; i > 0; i--) {
+                        const j = (seed + i) % (i + 1);
+                        [shuffledAnswers[i], shuffledAnswers[j]] = [shuffledAnswers[j], shuffledAnswers[i]];
+                      }
+                      return shuffledAnswers;
+                    })();
+                    
+                    return (
                     <div key={idx} className="p-4 bg-white rounded-lg border-2 border-slate-200 hover:border-violet-300 transition-all">
                       <button onClick={() => setExpandedChallengeQuestion(expandedChallengeQuestion === idx ? null : idx)} className="w-full text-left flex items-start justify-between gap-3">
                         <p className="text-sm font-semibold text-slate-900">Frage {idx + 1}: {item.q}</p>
@@ -7205,7 +7230,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                       </button>
                       {expandedChallengeQuestion === idx && (
                         <div className="mt-3 space-y-2 pt-3 border-t border-slate-200">
-                          {item.answers?.map((answer: string, aIdx: number) => (
+                          {shuffled.map((answer: string, aIdx: number) => (
                             <button key={aIdx} onClick={() => setChallengAnswers({...challengeAnswers, [idx]: answer})} className={`w-full p-2 rounded text-sm transition-all text-left ${challengeAnswers[idx] === answer ? "bg-green-500 text-white border-2 border-green-600" : "bg-slate-100 text-slate-900 border-2 border-slate-200 hover:border-violet-400"}`}>
                               {answer}
                             </button>
@@ -7216,7 +7241,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                         <div className="mt-2 text-xs text-green-600 font-semibold">✓ Antwort gespeichert</div>
                       )}
                     </div>
-                  ))}
+                  );})}
                 </div>
 
                 <Button onClick={() => {
