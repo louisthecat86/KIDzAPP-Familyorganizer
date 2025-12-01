@@ -5500,6 +5500,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   const [selectedChallenge, setSelectedChallenge] = useState<any>(null);
   const [expandedChallengeQuestion, setExpandedChallengeQuestion] = useState<number | null>(null);
   const [challengeAnswers, setChallengAnswers] = useState<Record<number, string>>({});
+  const [completedChallenges, setCompletedChallenges] = useState<Record<number, number>>({});
   const [educationTab, setEducationTab] = useState<"modules" | "converter" | "challenges" | "resources" | "glossar">("modules");
   const [glossarSearch, setGlossarSearch] = useState("");
   const [satoshiInput, setSatoshiInput] = useState("100000");
@@ -7082,21 +7083,40 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 { id: 4, icon: "🔒", title: "Sicherheits-Challenge", difficulty: "⭐⭐", desc: "Teste dein Wissen über Bitcoin-Sicherheit", category: "security", questions: [{ q: "Was ist ein Private Key?", answers: ["Geheimer Schlüssel", "Öffentlicher Schlüssel", "Ein Passwort"] }, { q: "Sollte ich meinen Seed-Phrase teilen?", answers: ["Niemals!", "Nur mit Freunden", "Ja, immer"] }, { q: "Was ist ein Brute-Force-Angriff?", answers: ["Viele Versuche hacken", "Eine Trainingsart", "Laut schreien"] }] },
                 { id: 5, icon: "🎮", title: "Spaß-Challenge", difficulty: "⭐⭐", desc: "Spannende und unterhaltsame Bitcoin-Aufgaben", category: "fun", questions: [{ q: "Bitcoin Pizza Day - Wie viele Pizzas für wie viele BTC?", answers: ["2 für 10.000 BTC", "1 für 1000 BTC", "5 für 50.000 BTC"] }, { q: "Welche Farbe hat das Bitcoin-Logo?", answers: ["Orange und Weiß", "Blau und Gelb", "Rot und Schwarz"] }, { q: "Was ist das Bitcoin-Symbol?", answers: ["₿", "$", "€"] }] },
                 { id: 6, icon: "⛓️", title: "Blockchain-Challenge", difficulty: "⭐⭐⭐", desc: "Tiefgreifendes Wissen über Blockchain-Technologie", category: "blockchain", questions: [{ q: "Was ist Proof of Work?", answers: ["Miners lösen schwierige Aufgaben", "Große Computer", "Eine neue Währung"] }, { q: "Wie lange dauert ein Block im Bitcoin-Netzwerk?", answers: ["~10 Minuten", "~1 Minute", "~1 Stunde"] }, { q: "Was ist ein Merkle Tree?", answers: ["Datenstruktur für Transaktionen", "Ein echter Baum", "Eine Programmiersprache"] }] }
-              ].map(challenge => (
-                <Card key={challenge.id} className="border-2 border-slate-200 hover:border-violet-300 transition-all cursor-pointer hover:shadow-lg">
+              ].map(challenge => {
+                const completedTime = completedChallenges[challenge.id];
+                const isCompleted = completedTime && (Date.now() - completedTime) < 86400000;
+                const nextAvailableTime = completedTime ? new Date(completedTime + 86400000) : null;
+                const hoursUntilAvailable = completedTime ? Math.ceil((completedTime + 86400000 - Date.now()) / 3600000) : 0;
+                
+                return (
+                <Card key={challenge.id} className={`border-2 transition-all ${isCompleted ? "border-green-500/50 bg-green-500/5" : "border-slate-200 hover:border-violet-300 cursor-pointer hover:shadow-lg"}`}>
                   <CardContent className="pt-6 pb-6">
                     <div className="flex items-start justify-between mb-3">
                       <span className="text-4xl">{challenge.icon}</span>
                       <span className="text-amber-600 font-bold">{challenge.difficulty}</span>
                     </div>
                     <h3 className="font-bold text-slate-900 mb-2">{challenge.title}</h3>
-                    <p className="text-sm text-slate-600 mb-4">{challenge.desc}</p>
-                    <Button onClick={() => setSelectedChallenge(challenge)} className="w-full bg-violet-600 hover:bg-violet-700" size="sm">
-                      {t('education.startChallenge')} →
-                    </Button>
+                    {isCompleted ? (
+                      <div className="space-y-3">
+                        <p className="text-sm text-green-700 font-semibold">✅ Heute abgeschlossen!</p>
+                        <p className="text-xs text-slate-600">Nächste Challenge verfügbar in ~{hoursUntilAvailable}h</p>
+                        <Button disabled className="w-full bg-slate-400" size="sm">
+                          {t('education.startChallenge')}
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-sm text-slate-600 mb-4">{challenge.desc}</p>
+                        <Button onClick={() => setSelectedChallenge(challenge)} className="w-full bg-violet-600 hover:bg-violet-700" size="sm">
+                          {t('education.startChallenge')} →
+                        </Button>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
-              ))}
+              );
+              })}
             </div>
             
             {dailyChallenge && (
@@ -7200,8 +7220,12 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 </div>
 
                 <Button onClick={() => {
+                  const now = Date.now();
+                  setCompletedChallenges({...completedChallenges, [selectedChallenge.id]: now});
                   setSelectedChallenge(null);
-                  toast({ title: "Challenge abgeschlossen! 🎉", description: `Du hast +${selectedChallenge.id * 10} XP verdient!` });
+                  setChallengAnswers({});
+                  setExpandedChallengeQuestion(null);
+                  toast({ title: "Challenge abgeschlossen! 🎉", description: `Du hast +${selectedChallenge.id * 10} XP verdient! Komm morgen zurück für die nächste Challenge.` });
                 }} className="w-full bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-700 hover:to-cyan-700 h-12 text-lg font-bold">
                   Challenge Abschließen 🏆
                 </Button>
