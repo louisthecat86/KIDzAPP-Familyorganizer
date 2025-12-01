@@ -7746,11 +7746,6 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                             <p className="text-[10px] md:text-xs text-foreground mt-1 uppercase tracking-widest">
                               {t('tasks.paidTasks')}
                             </p>
-                            {unlockStatus.freeSlots === 0 && (
-                              <p className="text-[8px] text-muted-foreground mt-1">
-                                {t('tasks.completeMoreFamily')}
-                              </p>
-                            )}
                           </div>
                         </div>
                       </div>
