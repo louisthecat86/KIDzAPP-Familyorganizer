@@ -7119,9 +7119,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                       ) : (
                         <Card className="border-2 border-slate-200 bg-slate-50/50">
                           <CardContent className="pt-8 pb-8 text-center space-y-3">
-                            <p className="text-sm text-slate-600">✅ Heute schon abgeschlossen!</p>
-                            <p className="text-lg font-bold text-slate-900">Nächste Challenge verfügbar in ~{hoursUntilNextAvailable}h</p>
-                            <p className="text-xs text-slate-500">Komm morgen zurück um die nächste Challenge zu lösen! 🚀</p>
+                            <p className="text-sm text-slate-600">{i18n.language === 'de' ? '✅ Heute schon abgeschlossen!' : '✅ Already completed today!'}</p>
+                            <p className="text-lg font-bold text-slate-900">{i18n.language === 'de' ? `Nächste Challenge verfügbar in ~${hoursUntilNextAvailable}h` : `Next challenge available in ~${hoursUntilNextAvailable}h`}</p>
+                            <p className="text-xs text-slate-500">{i18n.language === 'de' ? 'Komm morgen zurück um die nächste Challenge zu lösen! 🚀' : 'Come back tomorrow to solve the next challenge! 🚀'}</p>
                           </CardContent>
                         </Card>
                       )}
@@ -7131,8 +7131,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     <Card className="border-2 border-green-500/50 bg-gradient-to-r from-green-500/10 to-blue-500/10">
                       <CardContent className="pt-8 pb-8 text-center">
                         <p className="text-4xl mb-3">🏆👑🚀</p>
-                        <p className="text-2xl font-bold text-green-600 mb-2">Alle Challenges abgeschlossen!</p>
-                        <p className="text-sm text-slate-600">Du hast alle Bitcoin-Challenges gemeistert! Glückwunsch! 🎉</p>
+                        <p className="text-2xl font-bold text-green-600 mb-2">{i18n.language === 'de' ? 'Alle Challenges abgeschlossen!' : 'All challenges completed!'}</p>
+                        <p className="text-sm text-slate-600">{i18n.language === 'de' ? 'Du hast alle Bitcoin-Challenges gemeistert! Glückwunsch! 🎉' : 'You have mastered all Bitcoin challenges! Congratulations! 🎉'}</p>
                       </CardContent>
                     </Card>
                   )}
@@ -7203,8 +7203,11 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     });
                     
                     if (response.ok) {
+                      const updatedProgress = await response.json();
                       setCompletedChallenges({...completedChallenges, [selectedChallenge.id]: now});
-                      setXp((prev) => prev + xpReward);
+                      setXp(updatedProgress.xp || xpReward);
+                      setServerProgress(updatedProgress);
+                      queryClient.invalidateQueries({ queryKey: ['learningProgress', user.id] });
                       setSelectedChallenge(null);
                       setChallengAnswers({});
                       setExpandedChallengeQuestion(null);
