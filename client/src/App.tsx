@@ -7609,7 +7609,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
               <div className="flex-1">
                 <p className="text-foreground font-mono text-sm uppercase tracking-widest mb-2">{t('dashboard.received')}</p>
                 <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-cyan-600" data-testid="text-earned-sats">
-                  {(user.balance || 0).toLocaleString()} <span className="text-2xl opacity-70 text-foreground">SATS</span>
+                  {satsBreakdown ? satsBreakdown.totalSats.toLocaleString() : (user.balance || 0).toLocaleString()} <span className="text-2xl opacity-70 text-foreground">SATS</span>
                 </h2>
                 {satsBreakdown && (
                   <div className="flex gap-4 mt-3 text-xs flex-wrap">
