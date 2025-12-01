@@ -6577,11 +6577,16 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     const translations = currentLang === 'en' ? enTranslations : deTranslations;
     const allModules = (translations as any).education?.modules || {};
     
-    // Helper: Shuffle array and return [shuffled array, original index of first element]
-    const shuffleWithTracking = (arr: string[]) => {
+    // Helper: Deterministic shuffle using seeded random for consistent results
+    const seededRandom = (seed: number) => {
+      const x = Math.sin(seed) * 10000;
+      return x - Math.floor(x);
+    };
+    
+    const shuffleWithTracking = (arr: string[], seed: number) => {
       const indexed = arr.map((val, idx) => ({ val, originalIdx: idx }));
       for (let i = indexed.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = Math.floor(seededRandom(seed + i) * (i + 1));
         [indexed[i], indexed[j]] = [indexed[j], indexed[i]];
       }
       const correctIdx = indexed.findIndex(item => item.originalIdx === 0);
@@ -6605,8 +6610,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         title: moduleData?.title || `Module ${mid}`,
         icon: ["₿", "⚡", "🔄", "📍", "📈", "⚡", "🔗", "⛏️", "🤖", "🏆", "🔐", "🔑", "🛡️", "💸", "💪", "☠️", "⚖️", "📉", "🪙", "🚀"][moduleIds.indexOf(mid)],
         content: Array.isArray(moduleData?.content) ? moduleData.content : [],
-        quiz: Array.isArray(moduleData?.quiz) ? moduleData.quiz.map((q) => {
-          const { shuffled, correctIdx } = shuffleWithTracking([q.option0, q.option1, q.option2]);
+        quiz: Array.isArray(moduleData?.quiz) ? moduleData.quiz.map((q, qIdx) => {
+          const seed = moduleNum * 1000 + qIdx;
+          const { shuffled, correctIdx } = shuffleWithTracking([q.option0, q.option1, q.option2], seed);
           return {
             question: q.question,
             options: shuffled,
