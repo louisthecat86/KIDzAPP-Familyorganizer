@@ -6796,9 +6796,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {achievements.map((badge, index) => {
                   const unlockedBadges = achievements.filter(b => b.condition);
-                  const firstUnlockedIndex = unlockedBadges.length > 0 ? achievements.indexOf(unlockedBadges[0]) : -1;
-                  const isFirstUnlocked = badge.condition && index === firstUnlockedIndex;
-                  const isNextToUnlock = !badge.condition && index === 0;
+                  const lastUnlockedIndex = unlockedBadges.length > 0 ? achievements.indexOf(unlockedBadges[unlockedBadges.length - 1]) : -1;
+                  const isFirstUnlocked = badge.condition && index === lastUnlockedIndex;
+                  const isNextToUnlock = !badge.condition && index === achievements.findIndex(a => !a.condition);
                   
                   return (
                   <div 
