@@ -26,7 +26,9 @@
     "familyUse": "Nur für Familien",
     "familyUseDesc": "Diese App ist ausschließlich für den privaten Familiengebrauch gedacht und nicht für kommerzielle Zwecke.",
     "dataPrivacy": "Datenschutz",
-    "dataPrivacyDesc": "Daten werden sicher gespeichert. Keine Weitergabe an Dritte. Weitere Informationen in unserer Datenschutzerklärung."
+    "dataPrivacyDesc": "Daten werden sicher gespeichert. Keine Weitergabe an Dritte. Weitere Informationen in unserer Datenschutzerklärung.",
+    "childrenInfo": "👶 Info für Kinder",
+    "childrenInfoDesc": "Kinder können KEINE Transaktionen machen - sie können nur Sats empfangen. Eltern kontrollieren alle Bitcoin-Zahlungen und Wallet-Verwaltung. Du schuldest deinen Eltern nichts!"
   },
   "auth": {
     "welcome": "Willkommen zurück!",

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
@@ -1800,38 +1801,46 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
         </button>
         </div>
 
-        {/* Legal Disclaimers Section */}
+        {/* Legal Disclaimers Section - Accordion */}
         <div className="w-full max-w-2xl mt-12 mb-6">
-          <div className="bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl p-6 space-y-4">
-            <h2 className="text-xl font-bold text-slate-900 mb-4">{t('landing.legalDisclaimer')}</h2>
-            
-            <div className="space-y-3">
-              <div className="bg-red-500/10 border-l-4 border-red-500 pl-4 py-3 rounded">
-                <p className="font-bold text-red-900">⚠️ {t('landing.bitcoinWarning')}</p>
-                <p className="text-sm text-slate-700 mt-1">{t('landing.bitcoinWarningDesc')}</p>
-              </div>
+          <Accordion type="single" collapsible defaultValue="legal" className="bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl overflow-hidden">
+            <AccordionItem value="legal" className="border-none">
+              <AccordionTrigger className="hover:bg-white/10 px-6 py-4 text-slate-900 font-bold text-lg data-testid-trigger-legal-info">
+                📋 {t('landing.legalDisclaimer')}
+              </AccordionTrigger>
+              <AccordionContent className="px-6 pb-6 space-y-3 bg-white/5">
+                <div className="bg-red-500/10 border-l-4 border-red-500 pl-4 py-3 rounded">
+                  <p className="font-bold text-red-900">⚠️ {t('landing.bitcoinWarning')}</p>
+                  <p className="text-sm text-slate-700 mt-1">{t('landing.bitcoinWarningDesc')}</p>
+                </div>
 
-              <div className="bg-blue-500/10 border-l-4 border-blue-500 pl-4 py-3 rounded">
-                <p className="font-bold text-blue-900">👨‍👩‍👧 {t('landing.parentalResponsibility')}</p>
-                <p className="text-sm text-slate-700 mt-1">{t('landing.parentalResponsibilityDesc')}</p>
-              </div>
+                <div className="bg-blue-500/10 border-l-4 border-blue-500 pl-4 py-3 rounded">
+                  <p className="font-bold text-blue-900">👨‍👩‍👧 {t('landing.parentalResponsibility')}</p>
+                  <p className="text-sm text-slate-700 mt-1">{t('landing.parentalResponsibilityDesc')}</p>
+                </div>
 
-              <div className="bg-amber-500/10 border-l-4 border-amber-500 pl-4 py-3 rounded">
-                <p className="font-bold text-amber-900">📊 {t('landing.noGuarantee')}</p>
-                <p className="text-sm text-slate-700 mt-1">{t('landing.noGuaranteeDesc')}</p>
-              </div>
+                <div className="bg-amber-500/10 border-l-4 border-amber-500 pl-4 py-3 rounded">
+                  <p className="font-bold text-amber-900">📊 {t('landing.noGuarantee')}</p>
+                  <p className="text-sm text-slate-700 mt-1">{t('landing.noGuaranteeDesc')}</p>
+                </div>
 
-              <div className="bg-green-500/10 border-l-4 border-green-500 pl-4 py-3 rounded">
-                <p className="font-bold text-green-900">👨‍👩‍👧‍👦 {t('landing.familyUse')}</p>
-                <p className="text-sm text-slate-700 mt-1">{t('landing.familyUseDesc')}</p>
-              </div>
+                <div className="bg-green-500/10 border-l-4 border-green-500 pl-4 py-3 rounded">
+                  <p className="font-bold text-green-900">👨‍👩‍👧‍👦 {t('landing.familyUse')}</p>
+                  <p className="text-sm text-slate-700 mt-1">{t('landing.familyUseDesc')}</p>
+                </div>
 
-              <div className="bg-cyan-500/10 border-l-4 border-cyan-500 pl-4 py-3 rounded">
-                <p className="font-bold text-cyan-900">🔒 {t('landing.dataPrivacy')}</p>
-                <p className="text-sm text-slate-700 mt-1">{t('landing.dataPrivacyDesc')}</p>
-              </div>
-            </div>
-          </div>
+                <div className="bg-cyan-500/10 border-l-4 border-cyan-500 pl-4 py-3 rounded">
+                  <p className="font-bold text-cyan-900">🔒 {t('landing.dataPrivacy')}</p>
+                  <p className="text-sm text-slate-700 mt-1">{t('landing.dataPrivacyDesc')}</p>
+                </div>
+
+                <div className="bg-purple-500/10 border-l-4 border-purple-500 pl-4 py-3 rounded">
+                  <p className="font-bold text-purple-900">{t('landing.childrenInfo')}</p>
+                  <p className="text-sm text-slate-700 mt-1">{t('landing.childrenInfoDesc')}</p>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
       </div>
     </div>
