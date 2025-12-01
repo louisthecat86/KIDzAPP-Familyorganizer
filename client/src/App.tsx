@@ -3736,9 +3736,15 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                           font-size: 0.6rem;
                         }
                       }
+                      .dark .rdp-head_cell {
+                        color: rgb(200, 214, 229);
+                      }
                       .rdp-cell {
                         color: rgb(51, 65, 85);
                         padding: 0;
+                      }
+                      .dark .rdp-cell {
+                        color: rgb(226, 232, 240);
                       }
                       .rdp-day {
                         color: rgb(30, 41, 59);
@@ -3751,12 +3757,23 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                           font-size: 0.7rem;
                         }
                       }
+                      .dark .rdp-day {
+                        color: rgb(226, 232, 240);
+                      }
                       .rdp-day_selected {
                         background-color: rgb(124, 58, 237);
                         color: white;
                       }
+                      .dark .rdp-day_selected {
+                        background-color: rgb(168, 85, 247);
+                        color: white;
+                      }
                       .rdp-day_today {
                         color: rgb(124, 58, 237);
+                        font-weight: bold;
+                      }
+                      .dark .rdp-day_today {
+                        color: rgb(217, 119, 255);
                         font-weight: bold;
                       }
                       .rdp-caption {
@@ -3769,6 +3786,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         .rdp-caption {
                           font-size: 0.75rem;
                         }
+                      }
+                      .dark .rdp-caption {
+                        color: rgb(226, 232, 240);
                       }
                       .rdp-nav {
                         gap: 1px;
@@ -3784,6 +3804,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                           width: 20px;
                           height: 20px;
                         }
+                      }
+                      .dark .rdp-nav_button {
+                        color: rgb(148, 163, 184);
                       }
                     `}</style>
                     <DayPicker
@@ -7723,9 +7746,15 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                           font-size: 0.6rem;
                         }
                       }
+                      .dark .rdp-head_cell {
+                        color: rgb(200, 214, 229);
+                      }
                       .rdp-cell {
                         color: rgb(51, 65, 85);
                         padding: 0;
+                      }
+                      .dark .rdp-cell {
+                        color: rgb(226, 232, 240);
                       }
                       .rdp-day {
                         color: rgb(30, 41, 59);
@@ -7738,12 +7767,23 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                           font-size: 0.7rem;
                         }
                       }
+                      .dark .rdp-day {
+                        color: rgb(226, 232, 240);
+                      }
                       .rdp-day_selected {
                         background-color: rgb(124, 58, 237);
                         color: white;
                       }
+                      .dark .rdp-day_selected {
+                        background-color: rgb(168, 85, 247);
+                        color: white;
+                      }
                       .rdp-day_today {
                         color: rgb(124, 58, 237);
+                        font-weight: bold;
+                      }
+                      .dark .rdp-day_today {
+                        color: rgb(217, 119, 255);
                         font-weight: bold;
                       }
                       .rdp-caption {
@@ -7756,6 +7796,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                         .rdp-caption {
                           font-size: 0.75rem;
                         }
+                      }
+                      .dark .rdp-caption {
+                        color: rgb(226, 232, 240);
                       }
                       .rdp-nav {
                         gap: 1px;
@@ -7771,6 +7814,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                           width: 20px;
                           height: 20px;
                         }
+                      }
+                      .dark .rdp-nav_button {
+                        color: rgb(148, 163, 184);
                       }
                     `}</style>
                     <DayPicker
