@@ -8218,10 +8218,11 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         <div className="grid gap-4 md:grid-cols-2">
           {availableTasks.map((task: Task) => {
             const isPaidTask = !task.isRequired;
-            const isLocked = isPaidTask && unlockStatus && unlockStatus.freeSlots <= 0;
+            const isLocked = isPaidTask && unlockStatus && unlockStatus.freeSlots <= 0 && !task.bypassRatio;
+            const isBypassed = isPaidTask && task.bypassRatio;
             
             return (
-              <Card key={task.id} className={`border-border bg-card transition-colors ${isLocked ? "opacity-60" : "hover:border-primary/50"}`}>
+              <Card key={task.id} className={`border-border bg-card transition-colors ${isLocked ? "opacity-60" : "hover:border-primary/50"} ${isBypassed ? "ring-2 ring-green-500/50" : ""}`}>
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     {task.isRequired ? (
@@ -8229,8 +8230,13 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                         🏠 {t('tasks.familyTasks')}
                       </Badge>
                     ) : (
-                      <Badge variant="secondary" className={`font-mono ${isLocked ? "bg-gray-500/10 text-gray-500" : "bg-primary/10 text-primary hover:bg-primary/20"} border-transparent`}>
-                        {isLocked ? "🔒" : "⚡"} {task.sats} sats
+                      <Badge variant="secondary" className={`font-mono ${isLocked ? "bg-gray-500/10 text-gray-500" : isBypassed ? "bg-green-500/20 text-green-600" : "bg-primary/10 text-primary hover:bg-primary/20"} border-transparent`}>
+                        {isLocked ? "🔒" : isBypassed ? "⚡✓" : "⚡"} {task.sats} sats
+                      </Badge>
+                    )}
+                    {isBypassed && (
+                      <Badge variant="secondary" className="bg-green-500/20 text-green-600 border-green-500/30 text-xs">
+                        Sofort
                       </Badge>
                     )}
                   </div>
@@ -8241,7 +8247,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   <Button 
                     onClick={() => !isLocked && onAccept(task.id)} 
                     variant="outline" 
-                    className={`w-full ${isLocked ? "cursor-not-allowed opacity-50" : "hover:border-primary hover:text-primary"}`}
+                    className={`w-full ${isLocked ? "cursor-not-allowed opacity-50" : isBypassed ? "border-green-500/50 text-green-600 hover:border-green-500 hover:text-green-500" : "hover:border-primary hover:text-primary"}`}
                     disabled={isLocked}
                     data-testid={`button-accept-task-${task.id}`}
                   >
