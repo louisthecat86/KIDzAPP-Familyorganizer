@@ -321,20 +321,22 @@ export class DatabaseStorage implements IStorage {
         eq(tasks.status, "approved")
       ));
     
+    // Count both "assigned" (angenommen, noch nicht genehmigt) and "approved" (fertig, genehmigt) paid tasks
+    // Diese "blockieren" einen freeSlot
     const paidTasks = await db.select().from(tasks)
       .where(and(
         eq(tasks.assignedTo, childId),
         eq(tasks.connectionId, connectionId),
-        eq(tasks.isRequired, false),
-        eq(tasks.status, "approved")
+        eq(tasks.isRequired, false)
       ));
     
     const familyTasksCompleted = familyTasks.length;
-    const paidTasksCompleted = paidTasks.length;
-    const freeSlots = Math.floor(familyTasksCompleted / 3) - paidTasksCompleted;
+    // Count ALL paid tasks that are assigned (angenommen) or approved (genehmigt)
+    const paidTasksInProgress = paidTasks.filter(t => t.status === "assigned" || t.status === "approved").length;
+    const freeSlots = Math.floor(familyTasksCompleted / 3) - paidTasksInProgress;
     const progressToNext = familyTasksCompleted % 3;
     
-    return { familyTasksCompleted, paidTasksCompleted, freeSlots: Math.max(0, freeSlots), progressToNext };
+    return { familyTasksCompleted, paidTasksCompleted: paidTasksInProgress, freeSlots: Math.max(0, freeSlots), progressToNext };
   }
 
   async getLeaderboard(connectionId: string): Promise<Array<{ id: number; name: string; completedTasks: number; balance: number; satsEarned: number }>> {
