@@ -50,6 +50,7 @@ export const tasks = pgTable("tasks", {
   paymentHash: text("payment_hash"), // Payment hash from lightning payment
   isRequired: boolean("is_required").default(false).notNull(), // Pflicht-Aufgabe (nicht bezahlt) vs bezahlte Aufgabe
   minimumRequiredTasks: integer("minimum_required_tasks").default(0).notNull(), // Wieviele Pflicht-Tasks müssen erst erledigt sein
+  bypassRatio: boolean("bypass_ratio").default(false).notNull(), // Sofort freischalten (ignore 3:1 ratio)
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

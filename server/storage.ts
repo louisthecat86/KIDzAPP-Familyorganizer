@@ -322,7 +322,7 @@ export class DatabaseStorage implements IStorage {
       ));
     
     // Count both "assigned" (angenommen, noch nicht genehmigt) and "approved" (fertig, genehmigt) paid tasks
-    // Diese "blockieren" einen freeSlot
+    // Diese "blockieren" einen freeSlot - ABER nicht wenn bypassRatio=true
     const paidTasks = await db.select().from(tasks)
       .where(and(
         eq(tasks.assignedTo, childId),
@@ -331,8 +331,10 @@ export class DatabaseStorage implements IStorage {
       ));
     
     const familyTasksCompleted = familyTasks.length;
-    // Count ALL paid tasks that are assigned (angenommen) or approved (genehmigt)
-    const paidTasksInProgress = paidTasks.filter(t => t.status === "assigned" || t.status === "approved").length;
+    // Count ONLY paid tasks that block ratio (not bypassed)
+    const paidTasksInProgress = paidTasks.filter(t => 
+      !t.bypassRatio && (t.status === "assigned" || t.status === "approved")
+    ).length;
     const freeSlots = Math.floor(familyTasksCompleted / 3) - paidTasksInProgress;
     const progressToNext = familyTasksCompleted % 3;
     

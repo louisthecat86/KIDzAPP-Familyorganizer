@@ -300,7 +300,7 @@ async function deleteEvent(id: number): Promise<void> {
 export default function App() {
   const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
-  const [newTask, setNewTask] = useState({ title: "", description: "", sats: 50, isRequired: false });
+  const [newTask, setNewTask] = useState({ title: "", description: "", sats: 50, isRequired: false, bypassRatio: false });
   const [newEvent, setNewEvent] = useState({ title: "", description: "", location: "", startDate: "", endDate: "" });
   const [currentView, setCurrentView] = useState<string>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -363,7 +363,7 @@ export default function App() {
     onSuccess: (task) => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       toast({ title: t('tasks.created'), description: t('tasks.waitingForApproval') });
-      setNewTask({ title: "", description: "", sats: 50, isRequired: false });
+      setNewTask({ title: "", description: "", sats: 50, isRequired: false, bypassRatio: false });
       setCurrentView("dashboard");
     },
     onError: (error) => {
@@ -521,6 +521,9 @@ export default function App() {
       return;
     }
 
+    // bypassRatio nur für bezahlte Aufgaben
+    const bypass = !newTask.isRequired ? newTask.bypassRatio : false;
+
     createTaskMutation.mutate({
       connectionId: user.connectionId,
       createdBy: user.id,
@@ -528,6 +531,7 @@ export default function App() {
       description: newTask.description,
       sats: satValue,
       isRequired: newTask.isRequired,
+      bypassRatio: bypass,
       status: "open",
     });
   };
@@ -4919,6 +4923,22 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   />
                   <Label htmlFor="is-required" className="cursor-pointer">Pflichtaufgabe</Label>
                 </div>
+
+                {/* Sofort Freischalten Toggle (für bezahlte Aufgaben) */}
+                {!newTask.isRequired && (
+                  <div className="flex items-center gap-3 p-3 bg-accent/10 rounded-lg border border-accent/30">
+                    <Switch 
+                      id="bypass-ratio"
+                      checked={newTask.bypassRatio}
+                      onCheckedChange={(checked) => setNewTask({ ...newTask, bypassRatio: checked })}
+                      data-testid="toggle-bypass-ratio"
+                    />
+                    <Label htmlFor="bypass-ratio" className="cursor-pointer flex items-center gap-2">
+                      <Zap className="h-4 w-4" />
+                      Sofort freischalten (ignoriert 3:1 Regel)
+                    </Label>
+                  </div>
+                )}
 
                 {/* Konditionale Sats-Eingabe */}
                 <div className="space-y-2">
