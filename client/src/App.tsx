@@ -7191,15 +7191,37 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   );})}
                 </div>
 
-                <Button onClick={() => {
+                <Button onClick={async () => {
                   const now = Date.now();
-                  setCompletedChallenges({...completedChallenges, [selectedChallenge.id]: now});
-                  setSelectedChallenge(null);
-                  setChallengAnswers({});
-                  setExpandedChallengeQuestion(null);
-                  toast({ title: "Challenge abgeschlossen! 🎉", description: `Du hast +${selectedChallenge.id * 10} XP verdient! Komm morgen zurück für die nächste Challenge.` });
+                  const xpReward = selectedChallenge.id * 10;
+                  
+                  try {
+                    const response = await fetch(`/api/learning-progress/${user.id}/add-xp`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ xp: xpReward, challengeId: selectedChallenge.id })
+                    });
+                    
+                    if (response.ok) {
+                      setCompletedChallenges({...completedChallenges, [selectedChallenge.id]: now});
+                      setXp((prev) => prev + xpReward);
+                      setSelectedChallenge(null);
+                      setChallengAnswers({});
+                      setExpandedChallengeQuestion(null);
+                      const msg = i18n.language === 'de' 
+                        ? `Challenge abgeschlossen! 🎉` 
+                        : `Challenge completed! 🎉`;
+                      const desc = i18n.language === 'de'
+                        ? `Du hast +${xpReward} XP verdient! Komm morgen zurück für die nächste Challenge.`
+                        : `You earned +${xpReward} XP! Come back tomorrow for the next challenge.`;
+                      toast({ title: msg, description: desc });
+                    }
+                  } catch (error) {
+                    console.error("Failed to save XP:", error);
+                    toast({ title: "Error", description: "Failed to save XP", variant: "destructive" });
+                  }
                 }} className="w-full bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-700 hover:to-cyan-700 h-12 text-lg font-bold">
-                  Challenge Abschließen 🏆
+                  {i18n.language === 'de' ? 'Challenge Abschließen 🏆' : 'Complete Challenge 🏆'}
                 </Button>
               </CardContent>
             </Card>
