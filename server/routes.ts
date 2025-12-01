@@ -1013,7 +1013,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // LOCK-CHECK: If child is trying to accept a PAID task (isRequired=false), check freeSlots
       // BUT: Skip check if bypassRatio=true (sofort freischalten)
-      if (updates.status === "assigned" && updates.assignedTo && task.isRequired === false && !task.bypassRatio) {
+      if (updates.status === "assigned" && updates.assignedTo && task.isRequired === false && task.bypassRatio !== true) {
         const unlockStatus = await storage.getTaskUnlockStatus(updates.assignedTo, task.connectionId);
         console.log(`[Task Lock] Child ${updates.assignedTo} trying to accept paid task ${id}: freeSlots=${unlockStatus.freeSlots}, progress=${unlockStatus.progressToNext}/3`);
         
