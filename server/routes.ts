@@ -1012,7 +1012,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // LOCK-CHECK: If child is trying to accept a PAID task (isRequired=false), check freeSlots
-      if (updates.status === "assigned" && updates.assignedTo && task.isRequired === false) {
+      // BUT: Skip check if bypassRatio=true (sofort freischalten)
+      if (updates.status === "assigned" && updates.assignedTo && task.isRequired === false && !task.bypassRatio) {
         const unlockStatus = await storage.getTaskUnlockStatus(updates.assignedTo, task.connectionId);
         console.log(`[Task Lock] Child ${updates.assignedTo} trying to accept paid task ${id}: freeSlots=${unlockStatus.freeSlots}, progress=${unlockStatus.progressToNext}/3`);
         
@@ -1026,6 +1027,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
         console.log(`[Task Lock] APPROVED: Child has ${unlockStatus.freeSlots} freeSlots`);
+      } else if (updates.status === "assigned" && task.bypassRatio) {
+        console.log(`[Task Lock] BYPASSED: Task ${id} has bypassRatio=true, allowing immediate assignment`);
       }
 
       // IDEMPOTENCY CHECK: If task is already approved OR has a paymentHash, reject duplicate approval
