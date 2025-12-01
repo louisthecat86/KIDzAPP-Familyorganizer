@@ -4211,7 +4211,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         }}
                         data-testid={`button-allowance-${child.id}`}
                       >
-                        Taschengeld
+                        {t('family.allowance')}
                       </Button>
                       <Button 
                         size="sm" 
