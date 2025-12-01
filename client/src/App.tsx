@@ -4884,7 +4884,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
 
     return (
       <div className="space-y-8">
-        <h1 className="text-3xl font-bold mb-8">Neue Aufgabe erstellen</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('tasks.createNewTask')}</h1>
         <motion.section initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
           <Card className="border border-primary/20 shadow-[0_0_30px_-10px_rgba(247,147,26,0.15)] bg-card/50 overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-accent to-primary" />
@@ -4901,7 +4901,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 }
               }} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="title">Was ist zu tun?</Label>
+                  <Label htmlFor="title">{t('tasks.taskTitle')}</Label>
                   <Input 
                     id="title"
                     placeholder="z.B. Rasen mähen..." 
@@ -4921,7 +4921,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     onCheckedChange={(checked) => setNewTask({ ...newTask, isRequired: checked })}
                     data-testid="toggle-required-task"
                   />
-                  <Label htmlFor="is-required" className="cursor-pointer">Pflichtaufgabe</Label>
+                  <Label htmlFor="is-required" className="cursor-pointer">{t('tasks.requiredTask')}</Label>
                 </div>
 
                 {/* Sofort Freischalten Toggle (für bezahlte Aufgaben) */}
@@ -4935,7 +4935,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     />
                     <Label htmlFor="bypass-ratio" className="cursor-pointer flex items-center gap-2">
                       <Zap className="h-4 w-4" />
-                      Sofort freischalten (ignoriert 3:1 Regel)
+                      {t('tasks.bypassRatio')}
                     </Label>
                   </div>
                 )}
@@ -4944,7 +4944,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="sats" className="flex items-center gap-1">
-                      <Bitcoin className="h-4 w-4 text-primary" /> {newTask.isRequired ? "Keine Belohnung" : "Belohnung"}
+                      <Bitcoin className="h-4 w-4 text-primary" /> {newTask.isRequired ? t('tasks.noReward') : t('tasks.reward')}
                     </Label>
                     {!newTask.isRequired && (
                       <span className={`text-xs font-semibold ${isBalanceInsufficient ? "text-red-400" : "text-emerald-400"}`}>
@@ -4977,8 +4977,8 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     >
                       <span className="text-red-400 text-lg">⚠️</span>
                       <div className="flex-1">
-                        <p className="text-xs font-semibold text-red-300">Unzureichende Balance</p>
-                        <p className="text-xs text-red-200/70">Du benötigst {Math.ceil(newTask.sats - availableBalance)} Sats mehr</p>
+                        <p className="text-xs font-semibold text-red-300">{t('common.insufficientBalance')}</p>
+                        <p className="text-xs text-red-200/70">{t('tasks.needMoreSats', { amount: Math.ceil(newTask.sats - availableBalance) })}</p>
                       </div>
                     </motion.div>
                   )}

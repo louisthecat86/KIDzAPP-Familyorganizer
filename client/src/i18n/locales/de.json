@@ -302,6 +302,12 @@
     "familyTasks": "Familienaufgaben",
     "paidTasks": "Bezahlte Aufgaben",
     "completeMoreFamily": "Erst 3 Familienaufgaben erledigen",
+    "taskTitle": "Was ist zu tun?",
+    "requiredTask": "Pflichtaufgabe",
+    "bypassRatio": "Sofort freischalten (ignoriert 3:1 Regel)",
+    "noReward": "Keine Belohnung",
+    "reward": "Belohnung",
+    "needMoreSats": "Du benötigst {{amount}} Sats mehr",
     "familyTasksLocked": "Bezahlte Aufgabe gesperrt",
     "completeRequiredFirst": "Du musst erst 3 Familienaufgaben erledigen"
   },

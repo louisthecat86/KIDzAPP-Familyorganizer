@@ -302,6 +302,12 @@
     "familyTasks": "Family Tasks",
     "paidTasks": "Paid Tasks",
     "completeMoreFamily": "Complete 3 family tasks first",
+    "taskTitle": "What needs to be done?",
+    "requiredTask": "Required Task",
+    "bypassRatio": "Unlock immediately (ignores 3:1 ratio)",
+    "noReward": "No reward",
+    "reward": "Reward",
+    "needMoreSats": "You need {{amount}} more Sats",
     "familyTasksLocked": "Paid task locked",
     "completeRequiredFirst": "You must complete 3 family tasks first"
   },
