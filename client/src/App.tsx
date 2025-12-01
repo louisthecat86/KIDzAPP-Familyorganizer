@@ -5498,6 +5498,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   const [expandedQuizzes, setExpandedQuizzes] = useState<Record<string, boolean>>({});
   const [expandedLevels, setExpandedLevels] = useState<Record<string, boolean>>({ beginner: true, intermediate: false, advanced: false });
   const [selectedChallenge, setSelectedChallenge] = useState<any>(null);
+  const [expandedChallengeQuestion, setExpandedChallengeQuestion] = useState<number | null>(null);
+  const [challengeAnswers, setChallengAnswers] = useState<Record<number, string>>({});
   const [educationTab, setEducationTab] = useState<"modules" | "converter" | "challenges" | "resources" | "glossar">("modules");
   const [glossarSearch, setGlossarSearch] = useState("");
   const [satoshiInput, setSatoshiInput] = useState("100000");
@@ -7074,12 +7076,12 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
             <h2 className="text-xl font-bold text-slate-900">🎯 Challenges - Deine Bitcoin-Abenteuer</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
-                { id: 1, icon: "🧠", title: "Quiz-Challenge", difficulty: "⭐", desc: "Beantworte Fragen über Bitcoin-Grundlagen und verdiene XP", category: "quiz", questions: ["Was ist Bitcoin?", "Wie viele Satoshi sind ein Bitcoin?", "Wer hat Bitcoin erfunden?"] },
-                { id: 2, icon: "🔄", title: "Umwandlungs-Challenge", difficulty: "⭐", desc: "Konvertiere zwischen Satoshi, Bitcoin und Euro", category: "conversion", questions: ["Konvertiere 1 Million Satoshi in Bitcoin", "Konvertiere 0.005 BTC in Euro (bei 45000 EUR)", "Wieviel Satoshi sind 100 EUR?"] },
-                { id: 3, icon: "⚡", title: "Lightning-Network", difficulty: "⭐⭐", desc: "Lerne über schnelle Zahlungen im Lightning Network", category: "lightning", questions: ["Was ist das Lightning Network?", "Wie schnell sind Lightning-Zahlungen?", "Wie viel kostet eine Lightning-Zahlung?"] },
-                { id: 4, icon: "🔒", title: "Sicherheits-Challenge", difficulty: "⭐⭐", desc: "Teste dein Wissen über Bitcoin-Sicherheit", category: "security", questions: ["Was ist ein Private Key?", "Sollte ich meinen Seed-Phrase teilen?", "Was ist ein Brute-Force-Angriff?"] },
-                { id: 5, icon: "🎮", title: "Spaß-Challenge", difficulty: "⭐⭐", desc: "Spannende und unterhaltsame Bitcoin-Aufgaben", category: "fun", questions: ["Wieviele Satoshis laufen die 42km eines Marathons?", "Bitcoin Pizza Day - Wie viele Pizzas für wie viele BTC?", "Welche Farbe hat das Bitcoin-Logo?"] },
-                { id: 6, icon: "⛓️", title: "Blockchain-Challenge", difficulty: "⭐⭐⭐", desc: "Tiefgreifendes Wissen über Blockchain-Technologie", category: "blockchain", questions: ["Was ist Proof of Work?", "Wie lange dauert ein Block im Bitcoin-Netzwerk?", "Was ist ein Merkle Tree?"] }
+                { id: 1, icon: "🧠", title: "Quiz-Challenge", difficulty: "⭐", desc: "Beantworte Fragen über Bitcoin-Grundlagen und verdiene XP", category: "quiz", questions: [{ q: "Was ist Bitcoin?", answers: ["Digitale Währung", "Spielkonsole", "Eine Person"] }, { q: "Wie viele Satoshi sind ein Bitcoin?", answers: ["100 Millionen", "1 Million", "1 Milliarde"] }, { q: "Wer hat Bitcoin erfunden?", answers: ["Satoshi Nakamoto", "Elon Musk", "Steve Jobs"] }] },
+                { id: 2, icon: "🔄", title: "Umwandlungs-Challenge", difficulty: "⭐", desc: "Konvertiere zwischen Satoshi, Bitcoin und Euro", category: "conversion", questions: [{ q: "Konvertiere 1 Million Satoshi in Bitcoin", answers: ["0.01 BTC", "10 BTC", "1 BTC"] }, { q: "Konvertiere 0.005 BTC in Euro (bei 45000 EUR)", answers: ["225 EUR", "450 EUR", "2250 EUR"] }, { q: "Wieviel Satoshi sind 100 EUR?", answers: ["~222 Million", "~111 Million", "~333 Million"] }] },
+                { id: 3, icon: "⚡", title: "Lightning-Network", difficulty: "⭐⭐", desc: "Lerne über schnelle Zahlungen im Lightning Network", category: "lightning", questions: [{ q: "Was ist das Lightning Network?", answers: ["Ein schnelles Zahlungsnetzwerk", "Eine Bank", "Ein Spiel"] }, { q: "Wie schnell sind Lightning-Zahlungen?", answers: ["Sekunden", "Stunden", "Tage"] }, { q: "Wie viel kostet eine Lightning-Zahlung?", answers: ["Sehr günstig", "Sehr teuer", "Nichts"] }] },
+                { id: 4, icon: "🔒", title: "Sicherheits-Challenge", difficulty: "⭐⭐", desc: "Teste dein Wissen über Bitcoin-Sicherheit", category: "security", questions: [{ q: "Was ist ein Private Key?", answers: ["Geheimer Schlüssel", "Öffentlicher Schlüssel", "Ein Passwort"] }, { q: "Sollte ich meinen Seed-Phrase teilen?", answers: ["Niemals!", "Nur mit Freunden", "Ja, immer"] }, { q: "Was ist ein Brute-Force-Angriff?", answers: ["Viele Versuche hacken", "Eine Trainingsart", "Laut schreien"] }] },
+                { id: 5, icon: "🎮", title: "Spaß-Challenge", difficulty: "⭐⭐", desc: "Spannende und unterhaltsame Bitcoin-Aufgaben", category: "fun", questions: [{ q: "Bitcoin Pizza Day - Wie viele Pizzas für wie viele BTC?", answers: ["2 für 10.000 BTC", "1 für 1000 BTC", "5 für 50.000 BTC"] }, { q: "Welche Farbe hat das Bitcoin-Logo?", answers: ["Orange und Weiß", "Blau und Gelb", "Rot und Schwarz"] }, { q: "Was ist das Bitcoin-Symbol?", answers: ["₿", "$", "€"] }] },
+                { id: 6, icon: "⛓️", title: "Blockchain-Challenge", difficulty: "⭐⭐⭐", desc: "Tiefgreifendes Wissen über Blockchain-Technologie", category: "blockchain", questions: [{ q: "Was ist Proof of Work?", answers: ["Miners lösen schwierige Aufgaben", "Große Computer", "Eine neue Währung"] }, { q: "Wie lange dauert ein Block im Bitcoin-Netzwerk?", answers: ["~10 Minuten", "~1 Minute", "~1 Stunde"] }, { q: "Was ist ein Merkle Tree?", answers: ["Datenstruktur für Transaktionen", "Ein echter Baum", "Eine Programmiersprache"] }] }
               ].map(challenge => (
                 <Card key={challenge.id} className="border-2 border-slate-200 hover:border-violet-300 transition-all cursor-pointer hover:shadow-lg">
                   <CardContent className="pt-6 pb-6">
@@ -7174,16 +7176,27 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   </div>
                 </div>
 
-                <div className="bg-slate-100/50 p-6 rounded-lg space-y-4">
-                  {selectedChallenge.questions?.map((q: string, idx: number) => (
-                    <div key={idx} className="p-4 bg-white rounded-lg border-2 border-slate-200 hover:border-violet-300 transition-all cursor-pointer">
-                      <p className="text-sm font-semibold text-slate-900">Frage {idx + 1}: {q}</p>
+                <div className="bg-slate-100/50 p-6 rounded-lg space-y-3">
+                  {selectedChallenge.questions?.map((item: any, idx: number) => (
+                    <div key={idx} className="p-4 bg-white rounded-lg border-2 border-slate-200 hover:border-violet-300 transition-all">
+                      <button onClick={() => setExpandedChallengeQuestion(expandedChallengeQuestion === idx ? null : idx)} className="w-full text-left flex items-start justify-between gap-3">
+                        <p className="text-sm font-semibold text-slate-900">Frage {idx + 1}: {item.q}</p>
+                        <span className={`text-slate-400 transition-transform ${expandedChallengeQuestion === idx ? "rotate-180" : ""}`}>▼</span>
+                      </button>
+                      {expandedChallengeQuestion === idx && (
+                        <div className="mt-3 space-y-2 pt-3 border-t border-slate-200">
+                          {item.answers?.map((answer: string, aIdx: number) => (
+                            <button key={aIdx} onClick={() => setChallengAnswers({...challengeAnswers, [idx]: answer})} className={`w-full p-2 rounded text-sm transition-all text-left ${challengeAnswers[idx] === answer ? "bg-green-500 text-white border-2 border-green-600" : "bg-slate-100 text-slate-900 border-2 border-slate-200 hover:border-violet-400"}`}>
+                              {answer}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {challengeAnswers[idx] && (
+                        <div className="mt-2 text-xs text-green-600 font-semibold">✓ Antwort gespeichert</div>
+                      )}
                     </div>
                   ))}
-                </div>
-
-                <div className="bg-blue-50 border-2 border-blue-300 p-4 rounded-lg">
-                  <p className="text-sm text-blue-900"><strong>💡 Tipp:</strong> Klicke auf eine Frage um sie zu beantworten und deine Antwort zu speichern!</p>
                 </div>
 
                 <Button onClick={() => {
