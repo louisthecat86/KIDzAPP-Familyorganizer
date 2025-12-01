@@ -5495,6 +5495,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   const [showQuiz, setShowQuiz] = useState<string | null>(null);
   const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
   const [quizSubmitted, setQuizSubmitted] = useState<Record<string, boolean>>({});
+  const [expandedQuizzes, setExpandedQuizzes] = useState<Record<string, boolean>>({});
   const [educationTab, setEducationTab] = useState<"modules" | "converter" | "challenges" | "resources" | "glossar">("modules");
   const [glossarSearch, setGlossarSearch] = useState("");
   const [satoshiInput, setSatoshiInput] = useState("100000");
@@ -6643,6 +6644,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
               setServerProgress(updatedProgress);
               console.log("✅ Progress synced from server:", updatedProgress);
               toast({ title: t('education.quizPassed'), description: t('education.quizPassedDesc', { xp: xpPerModule, level: updatedProgress.level, score, total: module.quiz.length }) });
+              setExpandedQuizzes({ ...expandedQuizzes, [moduleId]: false });
               setShowQuiz(null);
             } else {
               toast({ title: t('education.saveError'), description: t('education.saveErrorDesc'), variant: "destructive" });
@@ -6653,6 +6655,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           }
         } else {
           toast({ title: t('education.quizAlreadyPassed'), description: t('education.quizAlreadyPassedDesc', { score, total: module.quiz.length }) });
+          setExpandedQuizzes({ ...expandedQuizzes, [moduleId]: false });
           setShowQuiz(null);
         }
       } else {
