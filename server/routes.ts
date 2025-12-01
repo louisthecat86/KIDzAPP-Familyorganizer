@@ -685,6 +685,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get task unlock status for a child (family tasks vs paid tasks)
+  app.get("/api/tasks/unlock-status/:childId/:connectionId", async (req, res) => {
+    try {
+      const { childId, connectionId } = req.params;
+      const status = await storage.getTaskUnlockStatus(parseInt(childId), connectionId);
+      res.json(status);
+    } catch (error) {
+      console.error("Unlock status error:", error);
+      res.status(500).json({ error: "Failed to fetch unlock status" });
+    }
+  });
+
   // Get spending breakdown by child
   app.get("/api/parent/:parentId/spending-by-child/:connectionId", async (req, res) => {
     try {
