@@ -7068,128 +7068,95 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           </div>
         )}
 
-        {educationTab === "challenges" && dailyChallenge ? (
-          <div className="space-y-4">
-            <Card className={`border-2 ${dailyChallenge.completed ? "border-green-500/50 bg-green-500/5" : "border-amber-500/50 bg-amber-500/5"}`}>
-              <CardContent className="pt-8 pb-8 space-y-4">
-                <div className="text-center">
-                  <div className="text-5xl mb-3">{dailyChallenge.icon}</div>
-                  <h3 className="text-2xl font-bold text-slate-900 mb-1">{dailyChallenge.title}</h3>
-                  <p className="text-slate-600 text-sm">{dailyChallenge.description}</p>
-                </div>
-                
-                {/* Quiz Challenge */}
-                {dailyChallenge.type === "quiz" && dailyChallenge.question && (
-                  <div className="bg-slate-100/30 p-4 rounded-lg space-y-3">
-                    <p className="font-semibold text-slate-900">{dailyChallenge.question}</p>
-                    <div className="grid grid-cols-1 gap-2">
-                      {dailyChallenge.options?.map((option: string, idx: number) => (
-                        <button key={idx} className={`p-2 rounded border-2 text-sm font-medium transition-all ${idx === dailyChallenge.correct ? "border-green-500 bg-green-500/10 text-green-700" : "border-slate-300 hover:border-slate-400"}`}>
-                          {option}
-                        </button>
-                      ))}
+        {educationTab === "challenges" && (
+          <div className="space-y-6">
+            <h2 className="text-xl font-bold text-slate-900">🎯 Challenges - Deine Bitcoin-Abenteuer</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { id: 1, icon: "🧠", title: "Quiz-Challenge", difficulty: "⭐", desc: "Beantworte Fragen über Bitcoin-Grundlagen und verdiene XP", category: "quiz" },
+                { id: 2, icon: "🔄", title: "Umwandlungs-Challenge", difficulty: "⭐", desc: "Konvertiere zwischen Satoshi, Bitcoin und Euro", category: "conversion" },
+                { id: 3, icon: "⚡", title: "Lightning-Network", difficulty: "⭐⭐", desc: "Lerne über schnelle Zahlungen im Lightning Network", category: "lightning" },
+                { id: 4, icon: "🔒", title: "Sicherheits-Challenge", difficulty: "⭐⭐", desc: "Teste dein Wissen über Bitcoin-Sicherheit", category: "security" },
+                { id: 5, icon: "🎮", title: "Spaß-Challenge", difficulty: "⭐⭐", desc: "Spannende und unterhaltsame Bitcoin-Aufgaben", category: "fun" },
+                { id: 6, icon: "⛓️", title: "Blockchain-Challenge", difficulty: "⭐⭐⭐", desc: "Tiefgreifendes Wissen über Blockchain-Technologie", category: "blockchain" }
+              ].map(challenge => (
+                <Card key={challenge.id} className="border-2 border-slate-200 hover:border-violet-300 transition-all cursor-pointer hover:shadow-lg">
+                  <CardContent className="pt-6 pb-6">
+                    <div className="flex items-start justify-between mb-3">
+                      <span className="text-4xl">{challenge.icon}</span>
+                      <span className="text-amber-600 font-bold">{challenge.difficulty}</span>
                     </div>
-                  </div>
-                )}
-                
-                {/* Conversion Challenge */}
-                {dailyChallenge.type === "conversion" && (
-                  <div className="bg-slate-100/30 p-4 rounded-lg space-y-2">
-                    <p className="font-semibold text-slate-900">{dailyChallenge.challenge}</p>
-                    <p className="text-sm text-slate-600">💡 Tipp: 100.000 Sats = 0.001 BTC</p>
-                  </div>
-                )}
-                
-                {/* Lightning Challenge */}
-                {dailyChallenge.type === "lightning" && dailyChallenge.question && (
-                  <div className="bg-slate-100/30 p-4 rounded-lg space-y-3">
-                    <p className="font-semibold text-slate-900">{dailyChallenge.question}</p>
-                    <div className="grid grid-cols-1 gap-2">
-                      {dailyChallenge.options?.map((option: string, idx: number) => (
-                        <button key={idx} className={`p-2 rounded border-2 text-sm font-medium transition-all ${idx === dailyChallenge.correct ? "border-green-500 bg-green-500/10 text-green-700" : "border-slate-300 hover:border-slate-400"}`}>
-                          {option}
-                        </button>
-                      ))}
+                    <h3 className="font-bold text-slate-900 mb-2">{challenge.title}</h3>
+                    <p className="text-sm text-slate-600 mb-4">{challenge.desc}</p>
+                    <Button className="w-full bg-violet-600 hover:bg-violet-700" size="sm">
+                      {t('education.startChallenge')} →
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            
+            {dailyChallenge && (
+              <div className="mt-8 pt-8 border-t-2 border-slate-200">
+                <h3 className="text-lg font-bold text-slate-900 mb-4">📅 Tägliche Challenge</h3>
+                <Card className={`border-2 ${dailyChallenge.completed ? "border-green-500/50 bg-green-500/5" : "border-amber-500/50 bg-amber-500/5"}`}>
+                  <CardContent className="pt-8 pb-8 space-y-4">
+                    <div className="text-center">
+                      <div className="text-5xl mb-3">{dailyChallenge.icon}</div>
+                      <h3 className="text-2xl font-bold text-slate-900 mb-1">{dailyChallenge.title}</h3>
+                      <p className="text-slate-600 text-sm">{dailyChallenge.description}</p>
                     </div>
-                  </div>
-                )}
-                
-                {/* Security Challenge */}
-                {dailyChallenge.type === "security" && dailyChallenge.question && (
-                  <div className="bg-slate-100/30 p-4 rounded-lg space-y-3">
-                    <p className="font-semibold text-slate-900">{dailyChallenge.question}</p>
-                    <div className="grid grid-cols-1 gap-2">
-                      {dailyChallenge.options?.map((option: string, idx: number) => (
-                        <button key={idx} className={`p-2 rounded border-2 text-sm font-medium transition-all ${idx === dailyChallenge.correct ? "border-green-500 bg-green-500/10 text-green-700" : "border-slate-300 hover:border-slate-400"}`}>
-                          {option}
-                        </button>
-                      ))}
+                    
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                      <div className="bg-violet-100/50 p-4 rounded-lg text-center border-2 border-violet-300/50">
+                        <p className="text-xs text-slate-600 mb-1">{t('education.challengeType')}</p>
+                        <p className="text-lg font-bold text-violet-600">{dailyChallenge.type === "quiz" ? "🧠" : dailyChallenge.type === "conversion" ? "🔄" : dailyChallenge.type === "lightning" ? "⚡" : dailyChallenge.type === "security" ? "🔒" : dailyChallenge.type === "fun" ? "🎮" : "⛓️"}</p>
+                      </div>
+                      <div className="bg-amber-100/50 p-4 rounded-lg text-center border-2 border-amber-300/50">
+                        <p className="text-xs text-slate-600 mb-1">{t('education.difficulty')}</p>
+                        <p className="text-lg font-bold text-amber-600">{dailyChallenge.type === "quiz" || dailyChallenge.type === "conversion" ? "⭐" : dailyChallenge.type === "lightning" || dailyChallenge.type === "security" ? "⭐⭐" : "⭐⭐⭐"}</p>
+                      </div>
                     </div>
-                  </div>
-                )}
-                
-                {/* Fun & Blockchain Challenges */}
-                {(dailyChallenge.type === "fun" || dailyChallenge.type === "blockchain") && dailyChallenge.question && (
-                  <div className="bg-slate-100/30 p-4 rounded-lg space-y-3">
-                    <p className="font-semibold text-slate-900">{dailyChallenge.question}</p>
-                    <div className="grid grid-cols-1 gap-2">
-                      {dailyChallenge.options?.map((option: string, idx: number) => (
-                        <button key={idx} className={`p-2 rounded border-2 text-sm font-medium transition-all ${idx === dailyChallenge.correct ? "border-green-500 bg-green-500/10 text-green-700" : "border-slate-300 hover:border-slate-400"}`}>
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div className="bg-violet-100/50 p-4 rounded-lg text-center border-2 border-violet-300/50">
-                    <p className="text-xs text-slate-600 mb-1">{t('education.challengeType')}</p>
-                    <p className="text-lg font-bold text-violet-600">{dailyChallenge.type === "quiz" ? "🧠" : dailyChallenge.type === "conversion" ? "🔄" : dailyChallenge.type === "lightning" ? "⚡" : dailyChallenge.type === "security" ? "🔒" : dailyChallenge.type === "fun" ? "🎮" : "⛓️"}</p>
-                  </div>
-                  <div className="bg-amber-100/50 p-4 rounded-lg text-center border-2 border-amber-300/50">
-                    <p className="text-xs text-slate-600 mb-1">{t('education.difficulty')}</p>
-                    <p className="text-lg font-bold text-amber-600">{dailyChallenge.type === "quiz" || dailyChallenge.type === "conversion" ? "⭐" : dailyChallenge.type === "lightning" || dailyChallenge.type === "security" ? "⭐⭐" : "⭐⭐⭐"}</p>
-                  </div>
-                </div>
-                
-                {!dailyChallenge.completed && (
-                  <Button 
-                    onClick={async () => {
-                      try {
-                        const today = new Date().toDateString();
-                        const response = await fetch("/api/daily-challenge/complete", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ peerId: user.id, challengeDate: today, challengeType: dailyChallenge.type })
-                        });
-                        if (response.ok) {
-                          const data = await response.json();
-                          setDailyChallenge({ ...dailyChallenge, completed: true });
-                          toast({ title: t('education.challengePassed'), description: t('education.challengePassedDesc') });
-                        }
-                      } catch (error) {
-                        toast({ title: t('common.error'), description: t('errors.challengeSaveFailed'), variant: "destructive" });
-                      }
-                    }}
-                    className="w-full bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-700 hover:to-cyan-700 h-12 text-lg font-bold"
-                    data-testid="button-complete-challenge"
-                  >
-                    {t('education.challengePassedButton')} 🎉
-                  </Button>
-                )}
-                
-                {dailyChallenge.completed && (
-                  <div className="text-center p-5 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-lg border-2 border-green-400/50">
-                    <p className="text-2xl mb-2">🏆</p>
-                    <p className="text-lg font-bold text-green-700 mb-1">{t('education.challengePassedButton')}</p>
-                    <p className="text-xs text-green-600">{t('education.comeBackTomorrow')}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                    
+                    {!dailyChallenge.completed && (
+                      <Button 
+                        onClick={async () => {
+                          try {
+                            const today = new Date().toDateString();
+                            const response = await fetch("/api/daily-challenge/complete", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ peerId: user.id, challengeDate: today, challengeType: dailyChallenge.type })
+                            });
+                            if (response.ok) {
+                              const data = await response.json();
+                              setDailyChallenge({ ...dailyChallenge, completed: true });
+                              toast({ title: t('education.challengePassed'), description: t('education.challengePassedDesc') });
+                            }
+                          } catch (error) {
+                            toast({ title: t('common.error'), description: t('errors.challengeSaveFailed'), variant: "destructive" });
+                          }
+                        }}
+                        className="w-full bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-700 hover:to-cyan-700 h-12 text-lg font-bold"
+                        data-testid="button-complete-challenge"
+                      >
+                        {t('education.challengePassedButton')} 🎉
+                      </Button>
+                    )}
+                    
+                    {dailyChallenge.completed && (
+                      <div className="text-center p-5 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-lg border-2 border-green-400/50">
+                        <p className="text-2xl mb-2">🏆</p>
+                        <p className="text-lg font-bold text-green-700 mb-1">{t('education.challengePassedButton')}</p>
+                        <p className="text-xs text-green-600">{t('education.comeBackTomorrow')}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </div>
-        ) : null}
+        )}
 
         {educationTab === "glossar" && (
           <div className="space-y-4">
