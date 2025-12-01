@@ -753,8 +753,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const bonusPayouts = await storage.getLevelBonusPayouts(childId);
       const bonusSats = bonusPayouts.reduce((sum: number, p) => sum + p.sats, 0);
       
-      // Allowance/Instant payout sats = total balance - task sats - bonus sats
-      const allowanceSats = Math.max(0, (child.balance || 0) - taskSats - bonusSats);
+      // Get instant payout and allowance payout transactions
+      const otherPayoutTransactions = await db.select()
+        .from(transactions)
+        .where(and(eq(transactions.toPeerId, childId), eq(transactions.type, "instant_payout")));
+      const allowanceTransactions = await db.select()
+        .from(transactions)
+        .where(and(eq(transactions.toPeerId, childId), eq(transactions.type, "allowance_payout")));
+      
+      const instantPayoutSats = otherPayoutTransactions.reduce((sum: number, t) => sum + t.sats, 0);
+      const allowancePayoutSats = allowanceTransactions.reduce((sum: number, t) => sum + t.sats, 0);
+      const allowanceSats = instantPayoutSats + allowancePayoutSats;
       
       console.log(`[Sats Breakdown] ${child.name}: total=${child.balance}, tasks=${taskSats}, bonus=${bonusSats}, allowance=${allowanceSats}`);
       
@@ -1676,6 +1685,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         paymentHash = await lnbits.payToLightningAddress(sats, child.lightningAddress, `Taschengeld für ${child.name}`);
       }
       
+      // Update child's balance
+      const newBalance = (child.balance || 0) + sats;
+      await storage.updateBalance(child.id, newBalance);
+
+      // Create transaction for sats breakdown tracking
+      await storage.createTransaction({
+        from_peer_id: null,
+        to_peer_id: child.id,
+        sats,
+        type: "allowance_payout",
+        taskId: null,
+        connectionId: child.connectionId,
+        description: `Taschengeld für ${child.name}`
+      });
+
       // Update allowance lastPaidDate
       await storage.updateAllowance(allowanceId, { lastPaidDate: new Date() });
 
@@ -1730,6 +1754,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update child's balance
       const newBalance = (child.balance || 0) + sats;
       await storage.updateBalance(child.id, newBalance);
+
+      // Create transaction for sats breakdown tracking
+      await storage.createTransaction({
+        from_peer_id: null,
+        to_peer_id: child.id,
+        sats,
+        type: "instant_payout",
+        taskId: null,
+        connectionId: child.connectionId,
+        description: memo
+      });
 
       // Create Bitcoin snapshot for new balance with FRESH price
       try {
