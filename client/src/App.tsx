@@ -7129,12 +7129,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                       </CardContent>
                     </Card>
                   )}
-                </>
-              );
-            })()}
-            </div>
-            
-            {dailyChallenge && (
+                  {dailyChallenge && (
               <div className="mt-8 pt-8 border-t-2 border-slate-200">
                 <h3 className="text-lg font-bold text-slate-900 mb-4">📅 Tägliche Challenge</h3>
                 <Card className={`border-2 ${dailyChallenge.completed ? "border-green-500/50 bg-green-500/5" : "border-amber-500/50 bg-amber-500/5"}`}>
@@ -7192,7 +7187,11 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   </CardContent>
                 </Card>
               </div>
-            )}
+                  )}
+                </>
+              );
+            })()}
+          </div>
         )}
 
         {educationTab === "challenges" && selectedChallenge && (
