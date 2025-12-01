@@ -1740,9 +1740,9 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
       {/* Logo */}
       <div className="pt-8 mb-4">
         <img 
-          src="/logo.svg" 
+          src="/logo.png" 
           alt="KID⚡APP - Family Organizer" 
-          className="max-w-[400px] w-full h-auto"
+          className="max-w-[400px] w-full h-auto dark:brightness-150 dark:drop-shadow-[0_0_16px_rgba(168,85,247,0.4)]"
           style={{ imageRendering: 'crisp-edges' }}
         />
       </div>
