@@ -1803,7 +1803,7 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
 
         {/* Legal Disclaimers Section - Accordion */}
         <div className="w-full max-w-2xl mt-12 mb-6">
-          <Accordion type="single" collapsible defaultValue="legal" className="bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl overflow-hidden">
+          <Accordion type="single" collapsible className="bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl overflow-hidden">
             <AccordionItem value="legal" className="border-none">
               <AccordionTrigger className="hover:bg-white/10 px-6 py-4 text-slate-900 font-bold text-lg data-testid-trigger-legal-info">
                 📋 {t('landing.legalDisclaimer')}
