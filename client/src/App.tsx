@@ -674,7 +674,7 @@ export default function App() {
 
   return (
     <div 
-      className="min-h-screen text-foreground font-sans selection:bg-primary selection:text-primary-foreground flex bg-cover bg-center bg-no-repeat bg-fixed"
+      className="min-h-screen text-foreground font-sans selection:bg-primary selection:text-primary-foreground flex bg-cover bg-center bg-no-repeat bg-fixed theme-bg"
       style={{ backgroundImage: 'url(/background.png)' }}
     >
       <Sidebar 
@@ -1725,7 +1725,7 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
   
   return (
     <div 
-      className="min-h-screen flex flex-col items-center p-6 bg-cover bg-center bg-no-repeat"
+      className="min-h-screen flex flex-col items-center p-6 bg-cover bg-center bg-no-repeat theme-bg"
       style={{ backgroundImage: 'url(/background.png)' }}
     >
       <button
@@ -2000,7 +2000,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
   if (!isLogin && role === "parent" && parentMode === null) {
     return (
       <div 
-        className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
+        className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat theme-bg"
         style={{ backgroundImage: 'url(/background.png)' }}
       >
         <div className="w-full max-w-lg">
@@ -2054,7 +2054,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
+      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat theme-bg"
       style={{ backgroundImage: 'url(/background.png)' }}
     >
       <div className="w-full max-w-lg">

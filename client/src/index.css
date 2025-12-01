@@ -119,6 +119,12 @@
   --ring: 263 70% 50%; /* Keep ring color */
 }
 
+/* Dark mode background override - show gray instead of light blue image */
+.dark .theme-bg {
+  background-image: none !important;
+  background-color: rgb(17, 24, 39); /* gray-900 */
+}
+
 @layer base {
   * {
     @apply border-border;
