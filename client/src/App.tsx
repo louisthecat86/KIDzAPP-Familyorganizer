@@ -6577,6 +6577,17 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     const translations = currentLang === 'en' ? enTranslations : deTranslations;
     const allModules = (translations as any).education?.modules || {};
     
+    // Helper: Shuffle array and return [shuffled array, original index of first element]
+    const shuffleWithTracking = (arr: string[]) => {
+      const indexed = arr.map((val, idx) => ({ val, originalIdx: idx }));
+      for (let i = indexed.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indexed[i], indexed[j]] = [indexed[j], indexed[i]];
+      }
+      const correctIdx = indexed.findIndex(item => item.originalIdx === 0);
+      return { shuffled: indexed.map(item => item.val), correctIdx };
+    };
+    
     const modules = moduleIds.map((mid) => {
       const moduleData = allModules[mid] as { 
         title: string; 
@@ -6594,11 +6605,14 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         title: moduleData?.title || `Module ${mid}`,
         icon: ["₿", "⚡", "🔄", "📍", "📈", "⚡", "🔗", "⛏️", "🤖", "🏆", "🔐", "🔑", "🛡️", "💸", "💪", "☠️", "⚖️", "📉", "🪙", "🚀"][moduleIds.indexOf(mid)],
         content: Array.isArray(moduleData?.content) ? moduleData.content : [],
-        quiz: Array.isArray(moduleData?.quiz) ? moduleData.quiz.map((q) => ({
-          question: q.question,
-          options: [q.option0, q.option1, q.option2],
-          correct: 0
-        })) : []
+        quiz: Array.isArray(moduleData?.quiz) ? moduleData.quiz.map((q) => {
+          const { shuffled, correctIdx } = shuffleWithTracking([q.option0, q.option1, q.option2]);
+          return {
+            question: q.question,
+            options: shuffled,
+            correct: correctIdx
+          };
+        }) : []
       };
     });
 
