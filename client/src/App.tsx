@@ -5496,6 +5496,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
   const [quizSubmitted, setQuizSubmitted] = useState<Record<string, boolean>>({});
   const [expandedQuizzes, setExpandedQuizzes] = useState<Record<string, boolean>>({});
+  const [expandedLevels, setExpandedLevels] = useState<Record<string, boolean>>({ beginner: true, intermediate: false, advanced: false });
   const [educationTab, setEducationTab] = useState<"modules" | "converter" | "challenges" | "resources" | "glossar">("modules");
   const [glossarSearch, setGlossarSearch] = useState("");
   const [satoshiInput, setSatoshiInput] = useState("100000");
@@ -6843,7 +6844,11 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
             {/* Learning Modules */}
             {["beginner", "intermediate", "advanced"].map(level => (
               <div key={level} className="space-y-3">
-                <h3 className={`text-sm font-semibold uppercase tracking-wide ${level === "beginner" ? "text-green-600" : level === "intermediate" ? "text-yellow-600" : "text-red-600"}`}>{level === "beginner" ? t('education.levelBeginnerModule') : level === "intermediate" ? t('education.levelIntermediateModule') : t('education.levelAdvancedModule')} {t('education.level')}</h3>
+                <button onClick={() => setExpandedLevels({...expandedLevels, [level]: !expandedLevels[level]})} className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all ${expandedLevels[level] ? "bg-slate-100/50 border border-slate-200" : "bg-slate-50/50 border border-slate-100 hover:bg-slate-100/30"}`}>
+                  <h3 className={`text-sm font-semibold uppercase tracking-wide ${level === "beginner" ? "text-green-600" : level === "intermediate" ? "text-yellow-600" : "text-red-600"}`}>{level === "beginner" ? t('education.levelBeginnerModule') : level === "intermediate" ? t('education.levelIntermediateModule') : t('education.levelAdvancedModule')} {t('education.level')}</h3>
+                  <span className={`transition-transform ${expandedLevels[level] ? "rotate-180" : ""}`}>▼</span>
+                </button>
+                {expandedLevels[level] && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {modules.filter(m => m.level === level).map(module => {
                     const isPassed = completedModules.includes(module.id);
@@ -6919,6 +6924,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     );
                   })}
                 </div>
+                )}
               </div>
             ))}
           </div>
