@@ -5497,6 +5497,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   const [quizSubmitted, setQuizSubmitted] = useState<Record<string, boolean>>({});
   const [expandedQuizzes, setExpandedQuizzes] = useState<Record<string, boolean>>({});
   const [expandedLevels, setExpandedLevels] = useState<Record<string, boolean>>({ beginner: true, intermediate: false, advanced: false });
+  const [selectedChallenge, setSelectedChallenge] = useState<any>(null);
   const [educationTab, setEducationTab] = useState<"modules" | "converter" | "challenges" | "resources" | "glossar">("modules");
   const [glossarSearch, setGlossarSearch] = useState("");
   const [satoshiInput, setSatoshiInput] = useState("100000");
@@ -7068,17 +7069,17 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           </div>
         )}
 
-        {educationTab === "challenges" && (
+        {educationTab === "challenges" && !selectedChallenge && (
           <div className="space-y-6">
             <h2 className="text-xl font-bold text-slate-900">🎯 Challenges - Deine Bitcoin-Abenteuer</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
-                { id: 1, icon: "🧠", title: "Quiz-Challenge", difficulty: "⭐", desc: "Beantworte Fragen über Bitcoin-Grundlagen und verdiene XP", category: "quiz" },
-                { id: 2, icon: "🔄", title: "Umwandlungs-Challenge", difficulty: "⭐", desc: "Konvertiere zwischen Satoshi, Bitcoin und Euro", category: "conversion" },
-                { id: 3, icon: "⚡", title: "Lightning-Network", difficulty: "⭐⭐", desc: "Lerne über schnelle Zahlungen im Lightning Network", category: "lightning" },
-                { id: 4, icon: "🔒", title: "Sicherheits-Challenge", difficulty: "⭐⭐", desc: "Teste dein Wissen über Bitcoin-Sicherheit", category: "security" },
-                { id: 5, icon: "🎮", title: "Spaß-Challenge", difficulty: "⭐⭐", desc: "Spannende und unterhaltsame Bitcoin-Aufgaben", category: "fun" },
-                { id: 6, icon: "⛓️", title: "Blockchain-Challenge", difficulty: "⭐⭐⭐", desc: "Tiefgreifendes Wissen über Blockchain-Technologie", category: "blockchain" }
+                { id: 1, icon: "🧠", title: "Quiz-Challenge", difficulty: "⭐", desc: "Beantworte Fragen über Bitcoin-Grundlagen und verdiene XP", category: "quiz", questions: ["Was ist Bitcoin?", "Wie viele Satoshi sind ein Bitcoin?", "Wer hat Bitcoin erfunden?"] },
+                { id: 2, icon: "🔄", title: "Umwandlungs-Challenge", difficulty: "⭐", desc: "Konvertiere zwischen Satoshi, Bitcoin und Euro", category: "conversion", questions: ["Konvertiere 1 Million Satoshi in Bitcoin", "Konvertiere 0.005 BTC in Euro (bei 45000 EUR)", "Wieviel Satoshi sind 100 EUR?"] },
+                { id: 3, icon: "⚡", title: "Lightning-Network", difficulty: "⭐⭐", desc: "Lerne über schnelle Zahlungen im Lightning Network", category: "lightning", questions: ["Was ist das Lightning Network?", "Wie schnell sind Lightning-Zahlungen?", "Wie viel kostet eine Lightning-Zahlung?"] },
+                { id: 4, icon: "🔒", title: "Sicherheits-Challenge", difficulty: "⭐⭐", desc: "Teste dein Wissen über Bitcoin-Sicherheit", category: "security", questions: ["Was ist ein Private Key?", "Sollte ich meinen Seed-Phrase teilen?", "Was ist ein Brute-Force-Angriff?"] },
+                { id: 5, icon: "🎮", title: "Spaß-Challenge", difficulty: "⭐⭐", desc: "Spannende und unterhaltsame Bitcoin-Aufgaben", category: "fun", questions: ["Wieviele Satoshis laufen die 42km eines Marathons?", "Bitcoin Pizza Day - Wie viele Pizzas für wie viele BTC?", "Welche Farbe hat das Bitcoin-Logo?"] },
+                { id: 6, icon: "⛓️", title: "Blockchain-Challenge", difficulty: "⭐⭐⭐", desc: "Tiefgreifendes Wissen über Blockchain-Technologie", category: "blockchain", questions: ["Was ist Proof of Work?", "Wie lange dauert ein Block im Bitcoin-Netzwerk?", "Was ist ein Merkle Tree?"] }
               ].map(challenge => (
                 <Card key={challenge.id} className="border-2 border-slate-200 hover:border-violet-300 transition-all cursor-pointer hover:shadow-lg">
                   <CardContent className="pt-6 pb-6">
@@ -7088,7 +7089,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     </div>
                     <h3 className="font-bold text-slate-900 mb-2">{challenge.title}</h3>
                     <p className="text-sm text-slate-600 mb-4">{challenge.desc}</p>
-                    <Button className="w-full bg-violet-600 hover:bg-violet-700" size="sm">
+                    <Button onClick={() => setSelectedChallenge(challenge)} className="w-full bg-violet-600 hover:bg-violet-700" size="sm">
                       {t('education.startChallenge')} →
                     </Button>
                   </CardContent>
@@ -7155,6 +7156,44 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 </Card>
               </div>
             )}
+          </div>
+        )}
+
+        {educationTab === "challenges" && selectedChallenge && (
+          <div className="space-y-6">
+            <Button onClick={() => setSelectedChallenge(null)} variant="outline" className="mb-4">← {t('education.back')}</Button>
+            
+            <Card className="border-2 border-violet-500/50 bg-gradient-to-br from-violet-500/10 to-cyan-500/10">
+              <CardContent className="pt-8 pb-8 space-y-4">
+                <div className="text-center mb-6">
+                  <div className="text-6xl mb-3">{selectedChallenge.icon}</div>
+                  <h2 className="text-2xl font-bold text-slate-900 mb-2">{selectedChallenge.title}</h2>
+                  <div className="flex gap-3 justify-center">
+                    <span className="px-3 py-1 bg-violet-600 text-white text-xs font-bold rounded-full">{selectedChallenge.difficulty}</span>
+                    <span className="px-3 py-1 bg-amber-600 text-white text-xs font-bold rounded-full">+{selectedChallenge.id * 10} XP</span>
+                  </div>
+                </div>
+
+                <div className="bg-slate-100/50 p-6 rounded-lg space-y-4">
+                  {selectedChallenge.questions?.map((q: string, idx: number) => (
+                    <div key={idx} className="p-4 bg-white rounded-lg border-2 border-slate-200 hover:border-violet-300 transition-all cursor-pointer">
+                      <p className="text-sm font-semibold text-slate-900">Frage {idx + 1}: {q}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="bg-blue-50 border-2 border-blue-300 p-4 rounded-lg">
+                  <p className="text-sm text-blue-900"><strong>💡 Tipp:</strong> Klicke auf eine Frage um sie zu beantworten und deine Antwort zu speichern!</p>
+                </div>
+
+                <Button onClick={() => {
+                  setSelectedChallenge(null);
+                  toast({ title: "Challenge abgeschlossen! 🎉", description: `Du hast +${selectedChallenge.id * 10} XP verdient!` });
+                }} className="w-full bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-700 hover:to-cyan-700 h-12 text-lg font-bold">
+                  Challenge Abschließen 🏆
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         )}
 
