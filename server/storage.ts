@@ -29,6 +29,7 @@ export interface IStorage {
   createTask(task: InsertTask): Promise<Task>;
   updateTask(id: number, task: Partial<Task>): Promise<Task | undefined>;
   deleteTask(id: number): Promise<boolean>;
+  getCompletedRequiredTasksCount(childId: number, connectionId: string): Promise<number>;
   
   // Transaction operations
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
@@ -297,6 +298,17 @@ export class DatabaseStorage implements IStorage {
   async deleteTask(id: number): Promise<boolean> {
     const result = await db.delete(tasks).where(eq(tasks.id, id));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  async getCompletedRequiredTasksCount(childId: number, connectionId: string): Promise<number> {
+    const result = await db.select().from(tasks)
+      .where(and(
+        eq(tasks.assignedTo, childId),
+        eq(tasks.connectionId, connectionId),
+        eq(tasks.isRequired, true),
+        eq(tasks.status, "approved")
+      ));
+    return result.length;
   }
 
   async getLeaderboard(connectionId: string): Promise<Array<{ id: number; name: string; completedTasks: number; balance: number; satsEarned: number }>> {

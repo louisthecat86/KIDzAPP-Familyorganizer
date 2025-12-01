@@ -999,6 +999,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Task not found" });
       }
 
+      // LOCK-CHECK: If child is trying to accept task (status="assigned"), check mandatory tasks requirement
+      if (updates.status === "assigned" && task.minimumRequiredTasks && task.minimumRequiredTasks > 0) {
+        console.log(`[Task Lock] Checking mandatory tasks for task ${id}: minimumRequired=${task.minimumRequiredTasks}`);
+        const completedRequiredTasks = await storage.getCompletedRequiredTasksCount(task.assignedTo!, task.connectionId);
+        console.log(`[Task Lock] Child ${task.assignedTo} has completed ${completedRequiredTasks} required tasks, needs ${task.minimumRequiredTasks}`);
+        
+        if (completedRequiredTasks < task.minimumRequiredTasks) {
+          console.log(`[Task Lock] BLOCKED: Child lacks ${task.minimumRequiredTasks - completedRequiredTasks} required tasks`);
+          return res.status(423).json({ 
+            error: `Du musst erst ${task.minimumRequiredTasks - completedRequiredTasks} Pflicht-Aufgaben erledigen`,
+            required: task.minimumRequiredTasks,
+            completed: completedRequiredTasks
+          });
+        }
+        console.log(`[Task Lock] APPROVED: Child has enough required tasks`);
+      }
+
       // IDEMPOTENCY CHECK: If task is already approved OR has a paymentHash, reject duplicate approval
       if (updates.status === "approved") {
         if (task.status === "approved") {

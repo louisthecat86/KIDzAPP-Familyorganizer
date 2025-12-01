@@ -300,7 +300,7 @@ async function deleteEvent(id: number): Promise<void> {
 export default function App() {
   const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
-  const [newTask, setNewTask] = useState({ title: "", description: "", sats: 50 });
+  const [newTask, setNewTask] = useState({ title: "", description: "", sats: 50, isRequired: false, minimumRequiredTasks: 0 });
   const [newEvent, setNewEvent] = useState({ title: "", description: "", location: "", startDate: "", endDate: "" });
   const [currentView, setCurrentView] = useState<string>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -363,7 +363,7 @@ export default function App() {
     onSuccess: (task) => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       toast({ title: t('tasks.created'), description: t('tasks.waitingForApproval') });
-      setNewTask({ title: "", description: "", sats: 50 });
+      setNewTask({ title: "", description: "", sats: 50, isRequired: false, minimumRequiredTasks: 0 });
       setCurrentView("dashboard");
     },
     onError: (error) => {
@@ -514,7 +514,9 @@ export default function App() {
     e.preventDefault();
     if (!newTask.title || !user) return;
 
-    if (newTask.sats <= 0) {
+    // Wenn Pflicht-Aufgabe, dann sats=0, sonst sats muss > 0 sein
+    const satValue = newTask.isRequired ? 0 : newTask.sats;
+    if (satValue < 0) {
       toast({ title: t('common.error'), description: t('tasks.rewardMustBePositive'), variant: "destructive" });
       return;
     }
@@ -524,18 +526,55 @@ export default function App() {
       createdBy: user.id,
       title: newTask.title,
       description: newTask.description,
-      sats: newTask.sats,
+      sats: satValue,
+      isRequired: newTask.isRequired,
+      minimumRequiredTasks: newTask.isRequired ? newTask.minimumRequiredTasks : 0,
       status: "open",
     });
   };
 
   const acceptTask = (taskId: number) => {
     if (!user) return;
-    updateTaskMutation.mutate({
-      id: taskId,
-      updates: { status: "assigned", assignedTo: user.id },
-    });
-    toast({ title: t('tasks.accepted'), description: t('tasks.letsStackSats') });
+    
+    // Manuell API aufrufen statt Mutation, um 423-Fehler zu prüfen
+    const performAccept = async () => {
+      try {
+        const res = await fetch(`/api/tasks/${taskId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "assigned", assignedTo: user.id }),
+        });
+        
+        if (res.status === 423) {
+          const data = await res.json();
+          toast({ 
+            title: "🔒 Aufgabe gesperrt", 
+            description: `${data.error} (${data.completed}/${data.required} erledigt)`,
+            variant: "destructive",
+            duration: 5000
+          });
+          return;
+        }
+        
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || "Failed to accept task");
+        }
+        
+        const result = await res.json();
+        queryClient.invalidateQueries({ queryKey: ["tasks"] });
+        toast({ title: t('tasks.accepted'), description: t('tasks.letsStackSats') });
+      } catch (error) {
+        console.error("Accept task error:", error);
+        toast({ 
+          title: t('common.error'), 
+          description: (error as Error).message,
+          variant: "destructive"
+        });
+      }
+    };
+    
+    performAccept();
   };
 
   const submitProof = (taskId: number) => {
@@ -4854,7 +4893,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <CardContent>
               <form onSubmit={(e) => {
                 e.preventDefault();
-                if (!isBalanceInsufficient) {
+                if (!isBalanceInsufficient && (!newTask.isRequired || newTask.minimumRequiredTasks > 0)) {
                   onCreate(e);
                 }
               }} className="space-y-4">
@@ -4870,24 +4909,44 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     data-testid="input-task-title"
                   />
                 </div>
-                
+
+                {/* Pflicht-Aufgabe Toggle */}
+                <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg border border-primary/20">
+                  <Switch 
+                    id="is-required"
+                    checked={newTask.isRequired}
+                    onCheckedChange={(checked) => setNewTask({ ...newTask, isRequired: checked })}
+                    data-testid="toggle-required-task"
+                  />
+                  <Label htmlFor="is-required" className="flex-1 cursor-pointer flex items-center gap-2">
+                    <span className="text-lg">🔒</span>
+                    <span>Pflicht-Aufgabe (nicht bezahlt)</span>
+                  </Label>
+                </div>
+
+                {/* Konditionale Sats-Eingabe */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="sats" className="flex items-center gap-1">
-                      <Bitcoin className="h-4 w-4 text-primary" /> Belohnung
+                      <Bitcoin className="h-4 w-4 text-primary" /> {newTask.isRequired ? "Keine Belohnung" : "Belohnung"}
                     </Label>
-                    <span className={`text-xs font-semibold ${isBalanceInsufficient ? "text-red-400" : "text-emerald-400"}`}>
-                      ⚡ {availableBalance > 0 ? availableBalance.toLocaleString("de-DE", { maximumFractionDigits: 0 }) : "---"} Sats
-                    </span>
+                    {!newTask.isRequired && (
+                      <span className={`text-xs font-semibold ${isBalanceInsufficient ? "text-red-400" : "text-emerald-400"}`}>
+                        ⚡ {availableBalance > 0 ? availableBalance.toLocaleString("de-DE", { maximumFractionDigits: 0 }) : "---"} Sats
+                      </span>
+                    )}
                   </div>
                   <Input 
                     id="sats"
                     type="number" 
                     placeholder="50" 
-                    value={newTask.sats}
-                    onChange={(e) => setNewTask({ ...newTask, sats: parseInt(e.target.value) || 0 })}
+                    value={newTask.isRequired ? 0 : newTask.sats}
+                    onChange={(e) => !newTask.isRequired && setNewTask({ ...newTask, sats: parseInt(e.target.value) || 0 })}
+                    disabled={newTask.isRequired}
                     className={`font-mono bg-secondary focus:border-primary transition-colors ${
-                      isBalanceInsufficient 
+                      newTask.isRequired
+                        ? "opacity-50 cursor-not-allowed"
+                        : isBalanceInsufficient 
                         ? "border-red-500/50 focus:border-red-500" 
                         : "border-border"
                     }`}
@@ -4909,17 +4968,45 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   )}
                 </div>
 
+                {/* Minimum Required Tasks Field (nur wenn Pflicht-Aufgabe) */}
+                {newTask.isRequired && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }} 
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-2 p-3 bg-primary/5 rounded-lg border border-primary/20"
+                  >
+                    <Label htmlFor="min-required" className="flex items-center gap-2">
+                      <span className="text-lg">📋</span>
+                      <span>Wie viele Pflicht-Aufgaben müssen erst erledigt sein?</span>
+                    </Label>
+                    <Input 
+                      id="min-required"
+                      type="number" 
+                      min="0"
+                      placeholder="0" 
+                      value={newTask.minimumRequiredTasks}
+                      onChange={(e) => setNewTask({ ...newTask, minimumRequiredTasks: parseInt(e.target.value) || 0 })}
+                      className="bg-secondary border-border focus:border-primary"
+                      autoComplete="off"
+                      data-testid="input-min-required-tasks"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Kind muss zuerst diese Anzahl erledigt haben, bevor diese Aufgabe angenommen werden kann
+                    </p>
+                  </motion.div>
+                )}
+
                 <Button 
                   type="submit" 
-                  disabled={isBalanceInsufficient}
+                  disabled={isBalanceInsufficient || (newTask.isRequired && newTask.minimumRequiredTasks <= 0)}
                   className={`w-full font-bold transition-all ${
-                    isBalanceInsufficient
+                    isBalanceInsufficient || (newTask.isRequired && newTask.minimumRequiredTasks <= 0)
                       ? "bg-gray-600 text-gray-300 cursor-not-allowed opacity-50"
                       : "bg-primary text-primary-foreground hover:bg-primary/90"
                   }`}
                   data-testid="button-create-task"
                 >
-                  {isBalanceInsufficient ? t('common.insufficientBalance') : t('common.create')}
+                  {isBalanceInsufficient ? t('common.insufficientBalance') : (newTask.isRequired && newTask.minimumRequiredTasks <= 0) ? "Mindestanzahl erforderlich" : t('common.create')}
                 </Button>
               </form>
             </CardContent>
