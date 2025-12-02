@@ -7912,7 +7912,11 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                             if (isCorrect) {
                               try {
                                 const today = new Date().toDateString();
-                                await fetch(`/api/daily-challenge/${user.id}/${today}/complete`, { method: 'POST' });
+                                await fetch(`/api/daily-challenge/complete`, { 
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ peerId: user.id, challengeDate: today, challengeType: 'daily' })
+                                });
                                 await fetch(`/api/learning-progress/${user.id}/add-xp`, {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
