@@ -66,6 +66,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { PhotoUpload } from "@/components/PhotoUpload";
 import { ProofViewer } from "@/components/ProofViewer";
+import kidzappLogo from "@/assets/kidzapp-logo.png";
 
 function NotificationBadge({ count }: { count: number }) {
   return (
@@ -1782,9 +1783,9 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
       {/* Logo */}
       <div className="pt-8 mb-4">
         <img 
-          src="/logo-transparent.png" 
+          src={kidzappLogo}
           alt="KID⚡APP - Family Organizer" 
-          className="max-w-[340px] w-full h-auto dark:brightness-150 dark:drop-shadow-[0_0_12px_rgba(255,255,255,0.5)]"
+          className="max-w-[380px] w-full h-auto drop-shadow-lg"
         />
       </div>
       
