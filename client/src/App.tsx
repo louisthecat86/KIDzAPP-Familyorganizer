@@ -6273,6 +6273,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
             if (wasNewlyGraduated) {
               setShowGraduationCelebration(true);
             }
+          } else {
+            // Reset graduation status if not graduated
+            setGraduationStatus(null);
           }
         }
       } catch (error) {
