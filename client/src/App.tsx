@@ -814,6 +814,10 @@ export default function App() {
                   handleCreateAllowance={handleCreateAllowance}
                   handleDeleteAllowance={handleDeleteAllowance}
                   shoppingListItems={shoppingListItems}
+                  newItem={newItem}
+                  setNewItem={setNewItem}
+                  newQuantity={newQuantity}
+                  setNewQuantity={setNewQuantity}
                 />
               ) : (
                 <ChildDashboard 
@@ -3423,7 +3427,7 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
   );
 }
 
-function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, approvingTaskId, queryClient, layoutView, setLayoutView, showSpendingStats, setShowSpendingStats, spendingStats, setSpendingStats, messages, setMessages, newMessage, setNewMessage, isLoadingMessage, setIsLoadingMessage, allowances, parentChildren, allowanceChildId, setAllowanceChildId, allowanceSats, setAllowanceSats, allowanceFrequency, setAllowanceFrequency, isCreatingAllowance, handleCreateAllowance, handleDeleteAllowance, shoppingListItems }: any) {
+function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, approvingTaskId, queryClient, layoutView, setLayoutView, showSpendingStats, setShowSpendingStats, spendingStats, setSpendingStats, messages, setMessages, newMessage, setNewMessage, isLoadingMessage, setIsLoadingMessage, allowances, parentChildren, allowanceChildId, setAllowanceChildId, allowanceSats, setAllowanceSats, allowanceFrequency, setAllowanceFrequency, isCreatingAllowance, handleCreateAllowance, handleDeleteAllowance, shoppingListItems, newItem, setNewItem, newQuantity, setNewQuantity }: any) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [lnbitsUrl, setLnbitsUrl] = useState("");
