@@ -1600,7 +1600,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
     ...(user.role === "parent" ? [{ id: "children-overview", label: t('sidebar.childrenOverview'), icon: Users, badge: 0 }] : []),
     { id: "calendar", label: t('nav.calendar'), icon: Calendar, badge: 0 },
     { id: "chat", label: t('sidebar.familyChat'), icon: MessageSquare, badge: chatNotificationCount },
-    { id: "shopping-list", label: "🛒 Einkaufsliste", icon: Home, badge: 0 },
+    { id: "shopping-list", label: t('nav.shoppingList'), icon: Home, badge: 0 },
     { id: "notifications", label: t('sidebar.activities'), icon: Bell, badge: 0 },
     { id: "leaderboard", label: t('sidebar.leaderboard'), icon: Trophy, badge: 0 },
     ...(user.role === "child" ? [{ id: "bitcoin-education", label: t('sidebar.bitcoinLearn'), icon: BookOpen, badge: 0 }] : []),
