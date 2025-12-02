@@ -2781,12 +2781,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const peerId = parseInt(req.params.peerId);
       const { bonusSats = 500 } = req.body;
-      const result = await storage.claimGraduationBonus(peerId, bonusSats);
-      if (result.success) {
-        res.json(result);
-      } else {
-        res.status(400).json({ error: "Could not claim graduation bonus" });
+      
+      const progress = await storage.getLearningProgress(peerId);
+      if (!progress || !progress.graduatedAt) {
+        return res.status(400).json({ error: "Not graduated yet" });
       }
+      if (progress.graduationBonusClaimed) {
+        return res.status(400).json({ error: "Bonus already claimed" });
+      }
+      
+      const child = await storage.getPeer(peerId);
+      if (!child || child.role !== 'child') {
+        return res.status(400).json({ error: "Invalid child account" });
+      }
+      
+      const familyMembers = await storage.getPeersByConnectionId(child.connectionId);
+      const parents = familyMembers.filter(p => p.role === 'parent');
+      
+      let payingParent = parents.find(p => p.nwcConnectionString) || parents.find(p => p.lnbitsUrl && p.lnbitsAdminKey);
+      
+      if (!payingParent) {
+        const result = await storage.claimGraduationBonus(peerId, bonusSats);
+        return res.json({ 
+          success: true, 
+          newBalance: result.newBalance,
+          paymentMethod: 'internal',
+          message: 'Bonus intern gutgeschrieben (kein Wallet konfiguriert)'
+        });
+      }
+      
+      let paymentHash = '';
+      let paymentSuccess = false;
+      
+      if (child.lightningAddress) {
+        try {
+          if (payingParent.nwcConnectionString) {
+            const decryptedNwc = decryptWalletData(payingParent.nwcConnectionString);
+            const nwc = new (await import('./nwc')).NWCClient(decryptedNwc);
+            paymentHash = await nwc.payToLightningAddress(
+              child.lightningAddress, 
+              bonusSats, 
+              `🎓 Satoshi Guardian Graduation Bonus für ${child.name}!`
+            );
+            paymentSuccess = true;
+          } else if (payingParent.lnbitsUrl && payingParent.lnbitsAdminKey) {
+            const decryptedUrl = decryptWalletData(payingParent.lnbitsUrl);
+            const decryptedKey = decryptWalletData(payingParent.lnbitsAdminKey);
+            const lnbits = new LNBitsClient(decryptedUrl, decryptedKey);
+            paymentHash = await lnbits.payToLightningAddress(
+              bonusSats, 
+              child.lightningAddress, 
+              `🎓 Satoshi Guardian Graduation Bonus für ${child.name}!`
+            );
+            paymentSuccess = true;
+          }
+        } catch (paymentError) {
+          console.error("[Graduation Bonus] Lightning payment failed:", paymentError);
+        }
+      }
+      
+      const result = await storage.claimGraduationBonus(peerId, bonusSats);
+      
+      if (paymentSuccess) {
+        await storage.createTransaction({
+          fromPeerId: payingParent.id,
+          toPeerId: peerId,
+          sats: bonusSats,
+          type: 'graduation_bonus',
+          status: 'completed',
+          paymentHash
+        });
+      }
+      
+      res.json({ 
+        success: true, 
+        newBalance: result.newBalance,
+        paymentMethod: paymentSuccess ? 'lightning' : 'internal',
+        paymentHash,
+        payingParent: payingParent.name
+      });
     } catch (error) {
       console.error("Error claiming graduation bonus:", error);
       res.status(500).json({ error: "Failed to claim graduation bonus" });
