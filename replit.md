@@ -227,3 +227,34 @@ The application uses PostgreSQL with Drizzle ORM. Schema is defined in `/shared/
 ### Date Handling
 - **date-fns** - Date utility library
 - **react-day-picker** - Calendar component for event scheduling
+
+## Data Retention & Cleanup Policy
+
+**CRITICAL PRINCIPLE:** Preserve all financial data and performance metrics. Delete only operational/media artifacts.
+
+### ✅ IMMUTABLE DATA (Never Delete)
+- **transactions** table - Complete audit trail of all satoshi movements
+- **peers.balance** - Historical balance snapshots for wealth tracking
+- **Task completion records** - Required for long-term performance analytics
+- **Level/XP progression** - Child's learning history must be preserved
+- **Allowance payment records** - Complete payment history
+
+### 🗑️ SAFE TO DELETE (Parent-controlled cleanup)
+- **Task details/descriptions** - Only if transaction link is preserved
+- **Photo proofs** - Storage bloat after task completion approved
+- **Chat messages** - Optional cleanup based on parent preference
+- **Event details** - After event date has passed
+- **Temporary data** - Incomplete/abandoned entries
+
+### ⚠️ DANGEROUS OPERATIONS (Future feature - requires confirmation)
+- Never delete tasks with linked transactions
+- Never delete user balance records
+- Archive instead of delete for compliance
+- Always maintain transaction-to-task foreign keys
+- Implement soft-delete where possible (add `deletedAt` flag)
+
+### Implementation Notes
+- Cleanup functionality should be parent-only in settings
+- Require explicit confirmation for destructive operations
+- Log all deletions for audit purposes
+- Consider data archival instead of permanent deletion for GDPR compliance
