@@ -1230,12 +1230,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 paymentHash: paymentHash,
               });
               updates.paymentHash = paymentHash;
+            } else {
+              // No Lightning payment but still record transaction for statistics
+              await storage.createTransaction({
+                fromPeerId: task.createdBy,
+                toPeerId: child.id,
+                sats: task.sats,
+                taskId: task.id,
+                type: "task_payment",
+                status: "internal",
+                paymentHash: null,
+              });
+              console.log(`[Task Payment] Internal transaction recorded (no Lightning payment)`);
             }
           } catch (error) {
             console.warn("Payment sending warning (but approval continues):", error);
+            // Still record transaction even if Lightning fails
+            await storage.createTransaction({
+              fromPeerId: task.createdBy,
+              toPeerId: child.id,
+              sats: task.sats,
+              taskId: task.id,
+              type: "task_payment",
+              status: "internal",
+              paymentHash: null,
+            });
           }
         } else {
-          console.warn(`Child ${child.name} has no lightning address configured`);
+          // No lightning address - record internal transaction for statistics
+          await storage.createTransaction({
+            fromPeerId: task.createdBy,
+            toPeerId: child.id,
+            sats: task.sats,
+            taskId: task.id,
+            type: "task_payment",
+            status: "internal",
+            paymentHash: null,
+          });
+          console.log(`[Task Payment] Internal transaction recorded for ${child.name} (no Lightning address)`);
         }
       }
 
