@@ -3167,7 +3167,7 @@ function DataManagementContent({ user, setUser, onClose }: any) {
               value={confirmCode}
               onChange={(e) => setConfirmCode(e.target.value)}
               placeholder="DELETE-ALL"
-              className="font-mono text-sm"
+              className="font-mono text-xs"
               data-testid="input-confirm-delete-all"
             />
             <div className="flex gap-2">
@@ -3215,7 +3215,7 @@ function DataManagementContent({ user, setUser, onClose }: any) {
               value={confirmCode}
               onChange={(e) => setConfirmCode(e.target.value)}
               placeholder="RESET-ACCOUNT"
-              className="font-mono text-sm"
+              className="font-mono text-xs"
               data-testid="input-confirm-reset"
             />
             <div className="flex gap-2">
@@ -3257,7 +3257,7 @@ function DataManagementContent({ user, setUser, onClose }: any) {
               value={confirmCode}
               onChange={(e) => setConfirmCode(e.target.value)}
               placeholder="DELETE-ACCOUNT-FOREVER"
-              className="font-mono text-sm border-destructive"
+              className="font-mono text-xs border-destructive"
               data-testid="input-confirm-delete-account"
             />
             <div className="flex gap-2">
