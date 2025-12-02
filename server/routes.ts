@@ -2998,6 +2998,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Check if parent is the last one in family (for warning before delete)
+  app.get("/api/account/:peerId/is-last-parent", async (req, res) => {
+    try {
+      const { peerId } = req.params;
+      
+      const peer = await storage.getPeer(parseInt(peerId));
+      if (!peer || peer.role !== 'parent') {
+        return res.status(403).json({ error: "Only parents can check this" });
+      }
+      
+      const otherParents = await storage.getOtherParentsWithConnectionId(peer.connectionId, parseInt(peerId));
+      const remainingParents = otherParents.filter(p => p.id !== parseInt(peerId));
+      const children = await storage.getChildrenWithConnectionId(peer.connectionId);
+      
+      res.json({ 
+        isLastParent: remainingParents.length === 0,
+        childrenCount: children.length,
+        otherParentsCount: remainingParents.length
+      });
+    } catch (error) {
+      console.error("[Account] Check last parent error:", error);
+      res.status(500).json({ error: "Failed to check parent status" });
+    }
+  });
+
   // DANGEROUS: Delete account permanently
   app.delete("/api/account/:peerId", async (req, res) => {
     try {
@@ -3013,9 +3038,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid confirmation code" });
       }
       
-      const success = await storage.deleteAccount(parseInt(peerId), peer.connectionId);
-      console.log(`[Account] DELETED account ${peerId}: ${success}`);
-      res.json({ success, message: "Account permanently deleted" });
+      const result = await storage.deleteAccount(parseInt(peerId), peer.connectionId);
+      console.log(`[Account] DELETED account ${peerId}:`, result);
+      
+      res.json({ 
+        success: result.success, 
+        message: "Account permanently deleted",
+        wasLastParent: result.wasLastParent,
+        childrenDisconnected: result.childrenDisconnected
+      });
     } catch (error) {
       console.error("[Account] Delete error:", error);
       res.status(500).json({ error: "Failed to delete account" });
