@@ -2814,8 +2814,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let paymentSuccess = false;
       
       if (child.lightningAddress) {
-        try {
-          if (payingParent.nwcConnectionString) {
+        if (payingParent.nwcConnectionString) {
+          try {
             const decryptedNwc = decryptWalletData(payingParent.nwcConnectionString);
             const nwc = new (await import('./nwc')).NWCClient(decryptedNwc);
             paymentHash = await nwc.payToLightningAddress(
@@ -2824,7 +2824,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
               `🎓 Satoshi Guardian Graduation Bonus für ${child.name}!`
             );
             paymentSuccess = true;
-          } else if (payingParent.lnbitsUrl && payingParent.lnbitsAdminKey) {
+            console.log("[Graduation Bonus] NWC payment successful:", paymentHash);
+          } catch (nwcError) {
+            console.error("[Graduation Bonus] NWC payment failed, trying LNBits:", nwcError);
+          }
+        }
+        
+        if (!paymentSuccess && payingParent.lnbitsUrl && payingParent.lnbitsAdminKey) {
+          try {
             const decryptedUrl = decryptWalletData(payingParent.lnbitsUrl);
             const decryptedKey = decryptWalletData(payingParent.lnbitsAdminKey);
             const lnbits = new LNBitsClient(decryptedUrl, decryptedKey);
@@ -2834,9 +2841,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
               `🎓 Satoshi Guardian Graduation Bonus für ${child.name}!`
             );
             paymentSuccess = true;
+            console.log("[Graduation Bonus] LNBits payment successful:", paymentHash);
+          } catch (lnbitsError) {
+            console.error("[Graduation Bonus] LNBits payment also failed:", lnbitsError);
           }
-        } catch (paymentError) {
-          console.error("[Graduation Bonus] Lightning payment failed:", paymentError);
+        }
+        
+        if (!paymentSuccess) {
+          console.log("[Graduation Bonus] No Lightning payment possible, using internal balance only");
         }
       }
       
