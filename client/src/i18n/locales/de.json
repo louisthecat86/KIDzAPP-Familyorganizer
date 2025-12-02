@@ -1312,7 +1312,9 @@
     "permissionDenied": "Berechtigung verweigert",
     "permissionDeniedDesc": "Bitte erlaube Benachrichtigungen in deinen Browser-Einstellungen",
     "notSupported": "Push-Benachrichtigungen werden von deinem Browser nicht unterstützt",
-    "active": "Push-Benachrichtigungen sind aktiv"
+    "active": "Push-Benachrichtigungen sind aktiv",
+    "openInNewTab": "Push-Benachrichtigungen funktionieren nur im eigenen Browser-Tab. Öffne die App in einem neuen Tab.",
+    "openNewTab": "In neuem Tab öffnen"
   },
   "dataManagement": {
     "title": "Datenverwaltung",

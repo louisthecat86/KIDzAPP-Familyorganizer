@@ -1314,7 +1314,9 @@
     "permissionDenied": "Permission denied",
     "permissionDeniedDesc": "Please allow notifications in your browser settings",
     "notSupported": "Push notifications are not supported by your browser",
-    "active": "Push notifications are active"
+    "active": "Push notifications are active",
+    "openInNewTab": "Push notifications only work in a separate browser tab. Open the app in a new tab.",
+    "openNewTab": "Open in new tab"
   },
   "dataManagement": {
     "title": "Data Management",

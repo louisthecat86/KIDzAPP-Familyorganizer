@@ -3079,6 +3079,9 @@ function PushNotificationSettings({ peerId, connectionId }: { peerId: number; co
     }
   };
 
+  const isInIframe = window !== window.top;
+  const isSecureContext = window.isSecureContext;
+
   if (!isSupported) {
     return (
       <div className="space-y-2">
@@ -3087,6 +3090,26 @@ function PushNotificationSettings({ peerId, connectionId }: { peerId: number; co
           {t('push.title')}
         </Label>
         <p className="text-xs text-muted-foreground">{t('push.notSupported')}</p>
+      </div>
+    );
+  }
+
+  if (isInIframe) {
+    return (
+      <div className="space-y-2">
+        <Label className="text-sm font-semibold flex items-center gap-2">
+          <Bell className="h-4 w-4" />
+          {t('push.title')}
+        </Label>
+        <p className="text-xs text-muted-foreground">{t('push.openInNewTab')}</p>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => window.open(window.location.href, '_blank')}
+          className="text-xs"
+        >
+          {t('push.openNewTab')}
+        </Button>
       </div>
     );
   }
