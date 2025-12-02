@@ -1,13 +1,14 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertPeerSchema, insertTaskSchema, insertFamilyEventSchema, insertEventRsvpSchema, insertChatMessageSchema, peers, recurringTasks, transactions } from "@shared/schema";
+import { insertPeerSchema, insertTaskSchema, insertFamilyEventSchema, insertEventRsvpSchema, insertChatMessageSchema, peers, recurringTasks, transactions, pushSubscriptions } from "@shared/schema";
 import { z } from "zod";
 import { LNBitsClient } from "./lnbits";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 import cron from "node-cron";
 import { encrypt, decrypt, isEncrypted } from "./crypto";
+import { getVapidPublicKey, notifyTaskCreated, notifyTaskSubmitted, notifyTaskApproved, notifyPaymentReceived, notifyLevelUp, notifyGraduation, notifyNewEvent, notifyNewChatMessage } from "./push";
 
 const DEV_FALLBACK_KEY = "kid-app-dev-encryption-key-32chars!!";
 
@@ -924,6 +925,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Send push notification for new task
+      try {
+        await notifyTaskCreated(data.connectionId, data.title, data.sats, createdBy);
+      } catch (pushError) {
+        console.warn("[Push] Failed to notify task created:", pushError);
+      }
+
       res.json({ 
         task,
         escrowLocked: escrowLocked,
@@ -1181,6 +1189,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     console.error(`[Level Bonus Snapshot] ✗ Failed:`, snapshotError);
                   }
 
+                  // Send push notification for level up
+                  try {
+                    await notifyLevelUp(child.id, currentLevel, bonusSettings.bonusSats);
+                  } catch (pushError) {
+                    console.warn("[Push] Failed to notify level up:", pushError);
+                  }
+
                   // Try to send bonus via Lightning if configured (decrypt wallet data)
                   if (child.lightningAddress) {
                     const decryptedNwcBonus = decryptWalletData(parent.nwcConnectionString || "");
@@ -1310,6 +1325,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } catch (snapshotError) {
           console.error(`[Task Payment Snapshot] ✗ Failed:`, snapshotError);
         }
+
+        // Send push notification for task approved
+        try {
+          await notifyTaskApproved(child.id, task.title, task.sats);
+        } catch (pushError) {
+          console.warn("[Push] Failed to notify task approved:", pushError);
+        }
       }
 
       const updatedTask = await storage.updateTask(id, updates);
@@ -1376,6 +1398,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: "submitted"
       });
 
+      // Send push notification for task submitted
+      try {
+        const child = task.assignedTo ? await storage.getPeer(task.assignedTo) : null;
+        if (child && task.connectionId) {
+          await notifyTaskSubmitted(task.connectionId, child.name, task.title);
+        }
+      } catch (pushError) {
+        console.warn("[Push] Failed to notify task submitted:", pushError);
+      }
+
       res.json({ success: true, proof: updatedTask?.proof });
     } catch (error) {
       console.error("Upload proof error:", error);
@@ -1398,6 +1430,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatedTask = await storage.updateTask(taskId, {
         status: "submitted"
       });
+
+      // Send push notification for task submitted
+      try {
+        const child = task.assignedTo ? await storage.getPeer(task.assignedTo) : null;
+        if (child && task.connectionId) {
+          await notifyTaskSubmitted(task.connectionId, child.name, task.title);
+        }
+      } catch (pushError) {
+        console.warn("[Push] Failed to notify task submitted:", pushError);
+      }
 
       res.json({ success: true, task: updatedTask });
     } catch (error) {
@@ -1503,6 +1545,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       const event = await storage.createEvent(eventData);
+
+      // Send push notification for new event
+      try {
+        await notifyNewEvent(data.connectionId, data.title, data.createdBy);
+      } catch (pushError) {
+        console.warn("[Push] Failed to notify new event:", pushError);
+      }
+
       res.json(event);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -1609,6 +1659,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fromPeerId,
         message,
       });
+
+      // Send push notification for new chat message
+      try {
+        const sender = await storage.getPeer(fromPeerId);
+        if (sender) {
+          await notifyNewChatMessage(connectionId, sender.name, message, fromPeerId);
+        }
+      } catch (pushError) {
+        console.warn("[Push] Failed to notify new chat message:", pushError);
+      }
+
       res.json(newMessage);
     } catch (error) {
       console.error("Send chat error:", error);
@@ -1789,6 +1850,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error(`[Allowance Snapshot] ✗ Failed:`, snapshotError);
       }
 
+      // Send push notification for allowance payment
+      try {
+        await notifyPaymentReceived(child.id, sats, 'Taschengeld');
+      } catch (pushError) {
+        console.warn("[Push] Failed to notify allowance payment:", pushError);
+      }
+
       // Update allowance lastPaidDate
       await storage.updateAllowance(allowanceId, { lastPaidDate: new Date() });
 
@@ -1871,6 +1939,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`[Instant Payout Snapshot] ✓ Created for ${child.name}: €${valueEur.toFixed(2)}`);
       } catch (snapshotError) {
         console.error(`[Instant Payout Snapshot] ✗ Failed for ${child.name}:`, snapshotError);
+      }
+
+      // Send push notification for instant payment
+      try {
+        await notifyPaymentReceived(child.id, sats, message || 'Sofortzahlung');
+      } catch (pushError) {
+        console.warn("[Push] Failed to notify instant payment:", pushError);
       }
 
       res.json({ success: true, paymentHash });
@@ -2999,6 +3074,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } catch (snapshotError) {
         console.error(`[Graduation Bonus Snapshot] ✗ Failed:`, snapshotError);
       }
+
+      // Send push notification for graduation
+      try {
+        await notifyGraduation(child.connectionId || '', child.name);
+      } catch (pushError) {
+        console.warn("[Push] Failed to notify graduation:", pushError);
+      }
       
       res.json({ 
         success: true, 
@@ -3368,6 +3450,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("[Account] Delete error:", error);
       res.status(500).json({ error: "Failed to delete account" });
+    }
+  });
+
+  // Push Notification Endpoints
+  app.get("/api/push/vapid-public-key", (req, res) => {
+    res.json({ publicKey: getVapidPublicKey() });
+  });
+
+  app.post("/api/push/subscribe", async (req, res) => {
+    try {
+      const { peerId, connectionId, subscription } = req.body;
+      
+      if (!peerId || !connectionId || !subscription) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const existingSubscription = await db.select().from(pushSubscriptions)
+        .where(and(
+          eq(pushSubscriptions.peerId, peerId),
+          eq(pushSubscriptions.endpoint, subscription.endpoint)
+        ));
+
+      if (existingSubscription.length > 0) {
+        await db.update(pushSubscriptions)
+          .set({
+            p256dh: subscription.keys.p256dh,
+            auth: subscription.keys.auth,
+            updatedAt: new Date()
+          })
+          .where(eq(pushSubscriptions.id, existingSubscription[0].id));
+        return res.json({ success: true, updated: true });
+      }
+
+      await db.insert(pushSubscriptions).values({
+        peerId,
+        connectionId,
+        endpoint: subscription.endpoint,
+        p256dh: subscription.keys.p256dh,
+        auth: subscription.keys.auth
+      });
+
+      res.json({ success: true, created: true });
+    } catch (error) {
+      console.error("[Push Subscribe Error]:", error);
+      res.status(500).json({ error: "Failed to save subscription" });
+    }
+  });
+
+  app.delete("/api/push/unsubscribe", async (req, res) => {
+    try {
+      const { peerId, endpoint } = req.body;
+      
+      if (!peerId || !endpoint) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      await db.delete(pushSubscriptions)
+        .where(and(
+          eq(pushSubscriptions.peerId, peerId),
+          eq(pushSubscriptions.endpoint, endpoint)
+        ));
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("[Push Unsubscribe Error]:", error);
+      res.status(500).json({ error: "Failed to remove subscription" });
+    }
+  });
+
+  app.get("/api/push/status/:peerId", async (req, res) => {
+    try {
+      const peerId = parseInt(req.params.peerId);
+      const subscriptions = await db.select().from(pushSubscriptions)
+        .where(eq(pushSubscriptions.peerId, peerId));
+      
+      res.json({ 
+        subscribed: subscriptions.length > 0,
+        count: subscriptions.length
+      });
+    } catch (error) {
+      console.error("[Push Status Error]:", error);
+      res.status(500).json({ error: "Failed to check push status" });
+    }
+  });
+
+  app.post("/api/push/resubscribe", async (req, res) => {
+    try {
+      const { oldEndpoint, newSubscription } = req.body;
+      
+      if (!oldEndpoint || !newSubscription) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const existingSubscriptions = await db.select().from(pushSubscriptions)
+        .where(eq(pushSubscriptions.endpoint, oldEndpoint));
+
+      if (existingSubscriptions.length === 0) {
+        return res.status(404).json({ error: "Old subscription not found" });
+      }
+
+      const oldSub = existingSubscriptions[0];
+      
+      await db.update(pushSubscriptions)
+        .set({
+          endpoint: newSubscription.endpoint,
+          p256dh: newSubscription.keys.p256dh,
+          auth: newSubscription.keys.auth,
+          updatedAt: new Date()
+        })
+        .where(eq(pushSubscriptions.id, oldSub.id));
+
+      console.log(`[Push] Resubscribed user ${oldSub.peerId} with new endpoint`);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("[Push Resubscribe Error]:", error);
+      res.status(500).json({ error: "Failed to resubscribe" });
     }
   });
 

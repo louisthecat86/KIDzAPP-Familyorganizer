@@ -1307,6 +1307,19 @@
     "itemAdded": "Artikel hinzugefügt",
     "itemDeleted": "Artikel gelöscht"
   },
+  "push": {
+    "title": "Push-Benachrichtigungen",
+    "receiveNotifications": "Benachrichtigungen erhalten",
+    "description": "Erhalte sofort Bescheid bei neuen Aufgaben, Belohnungen und Familien-Events",
+    "enabled": "Benachrichtigungen aktiviert",
+    "enabledDesc": "Du wirst jetzt über wichtige Events informiert",
+    "disabled": "Benachrichtigungen deaktiviert",
+    "disabledDesc": "Du erhältst keine Push-Benachrichtigungen mehr",
+    "permissionDenied": "Berechtigung verweigert",
+    "permissionDeniedDesc": "Bitte erlaube Benachrichtigungen in deinen Browser-Einstellungen",
+    "notSupported": "Push-Benachrichtigungen werden von deinem Browser nicht unterstützt",
+    "active": "Push-Benachrichtigungen sind aktiv"
+  },
   "dataManagement": {
     "title": "Datenverwaltung",
     "description": "Verwalte die gespeicherten Daten deiner Familie",

@@ -349,3 +349,24 @@ export const insertShoppingListSchema = createInsertSchema(shoppingList).omit({
 
 export type InsertShoppingList = z.infer<typeof insertShoppingListSchema>;
 export type ShoppingList = typeof shoppingList.$inferSelect;
+
+// Push Subscriptions Table (for web push notifications)
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: serial("id").primaryKey(),
+  peerId: integer("peer_id").notNull(), // User who subscribed
+  connectionId: text("connection_id").notNull(), // Family ID
+  endpoint: text("endpoint").notNull(), // Push service endpoint URL
+  p256dh: text("p256dh").notNull(), // Public key for encryption
+  auth: text("auth").notNull(), // Auth secret for encryption
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertPushSubscriptionSchema = createInsertSchema(pushSubscriptions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertPushSubscription = z.infer<typeof insertPushSubscriptionSchema>;
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;

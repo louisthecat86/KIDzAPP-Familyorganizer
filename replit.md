@@ -64,6 +64,11 @@ The application uses PostgreSQL with Drizzle ORM. Schema is defined in `/shared/
    - Configurable amount and day of week
    - Cron-based scheduling
 
+7. **push_subscriptions** - Web Push notification subscriptions
+   - Stores VAPID push subscription data per user
+   - Links to family via `connectionId`
+   - Manages subscription endpoints, p256dh keys, and auth tokens
+
 ### Authentication & Security
 
 **PIN-based Authentication:**
@@ -162,7 +167,29 @@ The application uses PostgreSQL with Drizzle ORM. Schema is defined in `/shared/
 - Configured per child with day-of-week and satoshi amount
 - Automated execution via node-cron
 - Payment via configured Bitcoin provider (NWC/LNBits)
-- Marks allowances as paid to prevent duplicates
+
+### Web Push Notifications
+
+**VAPID-based Push Notifications** (`/server/push.ts`):
+- Uses web-push library with VAPID authentication
+- Service Worker for background notification handling (`/client/public/sw.js`)
+- Family-scoped and user-targeted notifications
+- Automatic cleanup of expired subscriptions
+
+**Notification Types:**
+- New task created (notifies family members)
+- Task submitted (notifies parents)
+- Task approved (notifies child with reward amount)
+- Level up bonus (notifies child with new level and bonus)
+- Graduation celebration (notifies entire family)
+- New family event (notifies family members)
+- New chat message (notifies family members except sender)
+- Allowance/Instant payments (notifies child)
+
+**Settings Integration:**
+- Toggle in Settings Modal under "View" tab
+- Browser permission request on enable
+- Subscription status persistence in database
 
 ### Development vs Production
 

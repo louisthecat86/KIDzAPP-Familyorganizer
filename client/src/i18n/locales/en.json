@@ -1308,6 +1308,19 @@
     "itemAdded": "Item added",
     "itemDeleted": "Item deleted"
   },
+  "push": {
+    "title": "Push Notifications",
+    "receiveNotifications": "Receive notifications",
+    "description": "Get notified instantly about new tasks, rewards and family events",
+    "enabled": "Notifications enabled",
+    "enabledDesc": "You will now be notified about important events",
+    "disabled": "Notifications disabled",
+    "disabledDesc": "You will no longer receive push notifications",
+    "permissionDenied": "Permission denied",
+    "permissionDeniedDesc": "Please allow notifications in your browser settings",
+    "notSupported": "Push notifications are not supported by your browser",
+    "active": "Push notifications are active"
+  },
   "dataManagement": {
     "title": "Data Management",
     "description": "Manage your family's stored data",

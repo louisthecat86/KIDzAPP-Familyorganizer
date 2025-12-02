@@ -2972,6 +2972,152 @@ function PeersContent({ user, setUser, queryClient }: any) {
   }
 }
 
+function PushNotificationSettings({ peerId, connectionId }: { peerId: number; connectionId: string }) {
+  const { t } = useTranslation();
+  const { toast } = useToast();
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSupported, setIsSupported] = useState(true);
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      setIsLoading(true);
+      try {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+          setIsSupported(false);
+          setIsLoading(false);
+          return;
+        }
+
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        setIsSubscribed(!!subscription);
+      } catch (error) {
+        console.error('[Push] Check status failed:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    checkStatus();
+  }, []);
+
+  const handleToggle = async () => {
+    setIsLoading(true);
+    try {
+      if (isSubscribed) {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        if (subscription) {
+          await subscription.unsubscribe();
+          const unsubResponse = await fetch('/api/push/unsubscribe', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ peerId, endpoint: subscription.endpoint })
+          });
+          if (!unsubResponse.ok) {
+            throw new Error('Failed to unsubscribe from server');
+          }
+        }
+        setIsSubscribed(false);
+        toast({ title: t('push.disabled'), description: t('push.disabledDesc') });
+      } else {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+          toast({ title: t('push.permissionDenied'), description: t('push.permissionDeniedDesc'), variant: 'destructive' });
+          setIsLoading(false);
+          return;
+        }
+
+        await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+        const registration = await navigator.serviceWorker.ready;
+        
+        const vapidResponse = await fetch('/api/push/vapid-public-key');
+        if (!vapidResponse.ok) {
+          throw new Error('Failed to fetch VAPID key');
+        }
+        const { publicKey } = await vapidResponse.json();
+        
+        const urlBase64ToUint8Array = (base64String: string): Uint8Array => {
+          const padding = '='.repeat((4 - base64String.length % 4) % 4);
+          const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+          const rawData = window.atob(base64);
+          const outputArray = new Uint8Array(rawData.length);
+          for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+          }
+          return outputArray;
+        };
+
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(publicKey)
+        });
+
+        const subResponse = await fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            peerId,
+            connectionId,
+            subscription: subscription.toJSON()
+          })
+        });
+
+        if (!subResponse.ok) {
+          await subscription.unsubscribe();
+          throw new Error('Failed to save subscription to server');
+        }
+
+        setIsSubscribed(true);
+        toast({ title: t('push.enabled'), description: t('push.enabledDesc') });
+      }
+    } catch (error) {
+      console.error('[Push] Toggle failed:', error);
+      toast({ title: t('common.error'), description: (error as Error).message, variant: 'destructive' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!isSupported) {
+    return (
+      <div className="space-y-2">
+        <Label className="text-sm font-semibold flex items-center gap-2">
+          <Bell className="h-4 w-4" />
+          {t('push.title')}
+        </Label>
+        <p className="text-xs text-muted-foreground">{t('push.notSupported')}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <Label className="text-sm font-semibold flex items-center gap-2">
+        <Bell className="h-4 w-4" />
+        {t('push.title')}
+      </Label>
+      <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 border border-border">
+        <div className="flex-1">
+          <p className="text-sm font-medium">{t('push.receiveNotifications')}</p>
+          <p className="text-xs text-muted-foreground">{t('push.description')}</p>
+        </div>
+        <Switch
+          checked={isSubscribed}
+          onCheckedChange={handleToggle}
+          disabled={isLoading}
+          data-testid="switch-push-notifications"
+        />
+      </div>
+      {isSubscribed && (
+        <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+          <span>✓</span> {t('push.active')}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function DataManagementContent({ user, setUser, onClose }: any) {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -3617,6 +3763,10 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                   {theme === "system" ? "System theme wird automatisch angewendet" : `Aktuell: ${theme === "light" ? "Light Mode" : "Dark Mode"}`}
                 </p>
               </div>
+
+              <Separator className="my-4" />
+
+              <PushNotificationSettings peerId={user.id} connectionId={user.connectionId} />
             </div>
           )}
 
