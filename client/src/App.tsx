@@ -3099,12 +3099,12 @@ function DataManagementContent({ user, setUser, onClose }: any) {
             size="sm"
             onClick={() => handleCleanup("chat")}
             disabled={isDeleting}
-            className="justify-start h-auto py-2"
+            className="justify-start h-auto py-2 text-xs overflow-hidden"
             data-testid="button-cleanup-chat"
           >
-            <div className="text-left">
-              <p className="font-medium">{t('dataManagement.cleanupChat')}</p>
-              <p className="text-xs text-muted-foreground">{t('dataManagement.cleanupChatDesc')}</p>
+            <div className="text-left flex-1 min-w-0">
+              <p className="font-medium truncate">{t('dataManagement.cleanupChat')}</p>
+              <p className="text-xs text-muted-foreground truncate">{t('dataManagement.cleanupChatDesc')}</p>
             </div>
           </Button>
 
@@ -3113,12 +3113,12 @@ function DataManagementContent({ user, setUser, onClose }: any) {
             size="sm"
             onClick={() => handleCleanup("photos")}
             disabled={isDeleting}
-            className="justify-start h-auto py-2"
+            className="justify-start h-auto py-2 text-xs overflow-hidden"
             data-testid="button-cleanup-photos"
           >
-            <div className="text-left">
-              <p className="font-medium">{t('dataManagement.cleanupPhotos')}</p>
-              <p className="text-xs text-muted-foreground">{t('dataManagement.cleanupPhotosDesc')}</p>
+            <div className="text-left flex-1 min-w-0">
+              <p className="font-medium truncate">{t('dataManagement.cleanupPhotos')}</p>
+              <p className="text-xs text-muted-foreground truncate">{t('dataManagement.cleanupPhotosDesc')}</p>
             </div>
           </Button>
 
@@ -3127,12 +3127,12 @@ function DataManagementContent({ user, setUser, onClose }: any) {
             size="sm"
             onClick={() => handleCleanup("events")}
             disabled={isDeleting}
-            className="justify-start h-auto py-2"
+            className="justify-start h-auto py-2 text-xs overflow-hidden"
             data-testid="button-cleanup-events"
           >
-            <div className="text-left">
-              <p className="font-medium">{t('dataManagement.cleanupEvents')}</p>
-              <p className="text-xs text-muted-foreground">{t('dataManagement.cleanupEventsDesc')}</p>
+            <div className="text-left flex-1 min-w-0">
+              <p className="font-medium truncate">{t('dataManagement.cleanupEvents')}</p>
+              <p className="text-xs text-muted-foreground truncate">{t('dataManagement.cleanupEventsDesc')}</p>
             </div>
           </Button>
 
@@ -3141,12 +3141,12 @@ function DataManagementContent({ user, setUser, onClose }: any) {
             size="sm"
             onClick={() => handleCleanup("shopping")}
             disabled={isDeleting}
-            className="justify-start h-auto py-2"
+            className="justify-start h-auto py-2 text-xs overflow-hidden"
             data-testid="button-cleanup-shopping"
           >
-            <div className="text-left">
-              <p className="font-medium">{t('dataManagement.cleanupShopping')}</p>
-              <p className="text-xs text-muted-foreground">{t('dataManagement.cleanupShoppingDesc')}</p>
+            <div className="text-left flex-1 min-w-0">
+              <p className="font-medium truncate">{t('dataManagement.cleanupShopping')}</p>
+              <p className="text-xs text-muted-foreground truncate">{t('dataManagement.cleanupShoppingDesc')}</p>
             </div>
           </Button>
         </div>
@@ -3197,12 +3197,12 @@ function DataManagementContent({ user, setUser, onClose }: any) {
             variant="outline"
             size="sm"
             onClick={() => setActiveConfirm("deleteAll")}
-            className="w-full justify-start h-auto py-2 border-destructive/50 hover:bg-destructive/10"
+            className="w-full justify-start h-auto py-2 border-destructive/50 hover:bg-destructive/10 text-xs overflow-hidden"
             data-testid="button-delete-all"
           >
-            <div className="text-left">
-              <p className="font-medium text-destructive">{t('dataManagement.deleteAllData')}</p>
-              <p className="text-xs text-muted-foreground">{t('dataManagement.deleteAllDataDesc')}</p>
+            <div className="text-left flex-1 min-w-0">
+              <p className="font-medium text-destructive truncate">{t('dataManagement.deleteAllData')}</p>
+              <p className="text-xs text-muted-foreground truncate">{t('dataManagement.deleteAllDataDesc')}</p>
             </div>
           </Button>
         )}
@@ -3239,12 +3239,12 @@ function DataManagementContent({ user, setUser, onClose }: any) {
             variant="outline"
             size="sm"
             onClick={() => setActiveConfirm("resetAccount")}
-            className="w-full justify-start h-auto py-2"
+            className="w-full justify-start h-auto py-2 text-xs overflow-hidden"
             data-testid="button-reset-account"
           >
-            <div className="text-left">
-              <p className="font-medium">{t('dataManagement.resetAccount')}</p>
-              <p className="text-xs text-muted-foreground">{t('dataManagement.resetAccountDesc')}</p>
+            <div className="text-left flex-1 min-w-0">
+              <p className="font-medium truncate">{t('dataManagement.resetAccount')}</p>
+              <p className="text-xs text-muted-foreground truncate">{t('dataManagement.resetAccountDesc')}</p>
             </div>
           </Button>
         )}
@@ -3282,12 +3282,12 @@ function DataManagementContent({ user, setUser, onClose }: any) {
             variant="destructive"
             size="sm"
             onClick={() => setActiveConfirm("deleteAccount")}
-            className="w-full justify-start h-auto py-2"
+            className="w-full justify-start h-auto py-2 text-xs overflow-hidden"
             data-testid="button-delete-account"
           >
-            <div className="text-left">
-              <p className="font-medium">{t('dataManagement.deleteAccount')}</p>
-              <p className="text-xs opacity-80">{t('dataManagement.deleteAccountDesc')}</p>
+            <div className="text-left flex-1 min-w-0">
+              <p className="font-medium truncate">{t('dataManagement.deleteAccount')}</p>
+              <p className="text-xs opacity-80 truncate">{t('dataManagement.deleteAccountDesc')}</p>
             </div>
           </Button>
         )}
