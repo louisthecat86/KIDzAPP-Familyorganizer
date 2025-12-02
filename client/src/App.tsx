@@ -6250,6 +6250,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   const [loading, setLoading] = useState<Record<number, boolean>>({});
   const [serverProgress, setServerProgress] = useState<any>(null);
   const [dailyChallenge, setDailyChallenge] = useState<any>(null);
+  const [graduationStatus, setGraduationStatus] = useState<{ graduated: boolean; bonusPaid: boolean; guardianLevel: number } | null>(null);
+  const [showGraduationCelebration, setShowGraduationCelebration] = useState(false);
   const { toast } = useToast();
   
   // Load learning progress from server
@@ -6260,6 +6262,18 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         if (response.ok) {
           const data = await response.json();
           setServerProgress(data);
+          
+          if (data.graduatedAt) {
+            const wasNewlyGraduated = !graduationStatus?.graduated;
+            setGraduationStatus({ 
+              graduated: true, 
+              bonusPaid: data.graduationBonusClaimed || false,
+              guardianLevel: data.guardianLevel || 1
+            });
+            if (wasNewlyGraduated) {
+              setShowGraduationCelebration(true);
+            }
+          }
         }
       } catch (error) {
         console.error("[Learning Progress] Failed to fetch:", error);
@@ -7600,6 +7614,85 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
         {educationTab === "modules" && (
           <div className="space-y-8">
+            {/* Graduation Celebration */}
+            {graduationStatus?.graduated && (
+              <div className="relative overflow-hidden rounded-2xl border-4 border-amber-400 bg-gradient-to-br from-amber-500/20 via-yellow-400/20 to-orange-500/20 p-6 shadow-2xl">
+                <div className="absolute inset-0 opacity-20">
+                  <div className="absolute top-2 left-4 text-4xl animate-bounce" style={{ animationDelay: '0s' }}>🎉</div>
+                  <div className="absolute top-8 right-8 text-3xl animate-bounce" style={{ animationDelay: '0.2s' }}>⚡</div>
+                  <div className="absolute bottom-4 left-8 text-3xl animate-bounce" style={{ animationDelay: '0.4s' }}>🏆</div>
+                  <div className="absolute bottom-8 right-4 text-4xl animate-bounce" style={{ animationDelay: '0.6s' }}>🎊</div>
+                </div>
+                <div className="relative z-10 text-center space-y-4">
+                  <div className="inline-block px-4 py-2 rounded-full bg-amber-500 text-white text-sm font-bold">
+                    {graduationStatus.guardianLevel === 3 ? t('education.graduation.masterBadge') : 
+                     graduationStatus.guardianLevel === 2 ? t('education.graduation.ambassadorBadge') : 
+                     t('education.graduation.guardianBadge')} 🛡️
+                  </div>
+                  <h2 className="text-3xl font-bold text-foreground">{t('education.graduation.title')}</h2>
+                  <p className="text-lg text-amber-700 font-medium">{t('education.graduation.subtitle')}</p>
+                  <p className="text-sm text-muted-foreground max-w-md mx-auto">{t('education.graduation.description')}</p>
+                  
+                  <div className="mt-4 p-4 rounded-xl bg-white/50 border-2 border-amber-300 max-w-sm mx-auto">
+                    <h3 className="text-sm font-bold text-foreground mb-2">📜 {t('education.graduation.certificate')}</h3>
+                    <p className="text-xs text-muted-foreground">{t('education.graduation.certificateDesc')}</p>
+                    <div className="mt-3 text-lg font-bold text-amber-600">{user.name}</div>
+                    <div className="text-xs text-muted-foreground">{new Date().toLocaleDateString()}</div>
+                  </div>
+                  
+                  {!graduationStatus.bonusPaid ? (
+                    <Button 
+                      onClick={async () => {
+                        try {
+                          const response = await fetch(`/api/learning-progress/${user.id}/claim-graduation-bonus`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ bonusSats: 500 })
+                          });
+                          if (response.ok) {
+                            const data = await response.json();
+                            setGraduationStatus({ ...graduationStatus, bonusPaid: true });
+                            toast({ 
+                              title: t('education.graduation.bonusClaimed'), 
+                              description: t('education.graduation.bonusDesc', { sats: 500 }) 
+                            });
+                            queryClient.invalidateQueries({ queryKey: ['sats-breakdown', user.id] });
+                          }
+                        } catch (error) {
+                          console.error('Failed to claim bonus:', error);
+                        }
+                      }}
+                      className="mt-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold px-8"
+                    >
+                      🎁 {t('education.graduation.claimBonus')} (+500 Sats)
+                    </Button>
+                  ) : (
+                    <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-500/20 text-green-700 rounded-full font-semibold">
+                      ✅ {t('education.graduation.bonusClaimed')}
+                    </div>
+                  )}
+                  
+                  <div className="mt-6 pt-4 border-t border-amber-300/50">
+                    <p className="text-sm font-medium text-foreground">{t('education.graduation.masteryMode')}</p>
+                    <p className="text-xs text-muted-foreground">{t('education.graduation.masteryModeDesc')}</p>
+                    <div className="mt-2 flex items-center justify-center gap-4">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-violet-600">{serverProgress?.masteryStreakCount || 0}</p>
+                        <p className="text-[10px] text-muted-foreground">{t('education.graduation.masteryStreak')}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">
+                          {graduationStatus.guardianLevel < 2 ? t('education.graduation.nextLevel', { count: 10 - (serverProgress?.masteryStreakCount || 0) }) :
+                           graduationStatus.guardianLevel < 3 ? t('education.graduation.nextLevel', { count: 30 - (serverProgress?.masteryStreakCount || 0) }) :
+                           t('education.graduation.continueJourney')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {/* Enhanced Achievements */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -7911,11 +8004,10 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                             const isCorrect = idx === dailyChallenge.correct;
                             if (isCorrect) {
                               try {
-                                const today = new Date().toDateString();
                                 await fetch(`/api/daily-challenge/complete`, { 
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ peerId: user.id, challengeDate: today, challengeType: 'daily' })
+                                  body: JSON.stringify({ peerId: user.id, challengeType: 'daily' })
                                 });
                                 await fetch(`/api/learning-progress/${user.id}/add-xp`, {
                                   method: 'POST',

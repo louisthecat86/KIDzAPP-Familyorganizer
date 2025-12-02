@@ -2676,6 +2676,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      if (!progress.graduatedAt) {
+        const completedModules = progress.completedModules || [];
+        if (completedModules.length >= 20) {
+          const graduationResult = await storage.checkAndProcessGraduation(peerId);
+          if (graduationResult.graduated && graduationResult.newProgress) {
+            progress = graduationResult.newProgress;
+          }
+        }
+      }
+      
       res.json(progress);
     } catch (error) {
       console.error("Error fetching learning progress:", error);
@@ -2919,9 +2929,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/daily-challenge/complete", async (req, res) => {
     try {
-      const { peerId, challengeDate, challengeType } = req.body;
-      const challenge = await storage.completeTodayChallenge(parseInt(peerId), challengeDate, challengeType);
-      const progress = await storage.updateLearningProgress(parseInt(peerId), { dailyChallengesCompleted: (await storage.getLearningProgress(parseInt(peerId)))?.dailyChallengesCompleted || 0 + 1 });
+      const { peerId, challengeType } = req.body;
+      
+      const todayDate = getBerlinTime().toISOString().split('T')[0];
+      const existingChallenge = await storage.getTodayChallenge(parseInt(peerId), todayDate);
+      
+      if (existingChallenge?.completed) {
+        return res.status(400).json({ error: "Challenge already completed today", alreadyCompleted: true });
+      }
+      
+      const challenge = await storage.completeTodayChallenge(parseInt(peerId), todayDate, challengeType);
+      const currentProgress = await storage.getLearningProgress(parseInt(peerId));
+      const newCount = (currentProgress?.dailyChallengesCompleted || 0) + 1;
+      const progress = await storage.updateLearningProgress(parseInt(peerId), { dailyChallengesCompleted: newCount });
       res.json({ challenge, progress });
     } catch (error) {
       res.status(500).json({ error: "Failed to complete challenge" });
