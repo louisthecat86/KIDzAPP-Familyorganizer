@@ -814,10 +814,6 @@ export default function App() {
                   handleCreateAllowance={handleCreateAllowance}
                   handleDeleteAllowance={handleDeleteAllowance}
                   shoppingListItems={shoppingListItems}
-                  newItem={newItem}
-                  setNewItem={setNewItem}
-                  newQuantity={newQuantity}
-                  setNewQuantity={setNewQuantity}
                 />
               ) : (
                 <ChildDashboard 
@@ -848,6 +844,93 @@ export default function App() {
           </AnimatePresence>
         </div>
       </main>
+      {/* Shopping List View - Available to both parents and children */}
+      {currentView === "shopping-list" && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className="w-full"
+        >
+          <div className="px-4 py-8">
+            <div className="max-w-2xl mx-auto space-y-6">
+              <h1 className="text-3xl font-bold mb-6">🛒 Einkaufsliste</h1>
+
+              {/* Add Item Form */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Neuer Artikel</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="z.B. Milch, Brot..."
+                    value={newItem}
+                    onChange={(e) => setNewItem(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && addItem()}
+                    data-testid="input-shopping-item"
+                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Menge (optional, z.B. 2, 1 Liter...)"
+                    value={newQuantity}
+                    onChange={(e) => setNewQuantity(e.target.value)}
+                    data-testid="input-shopping-quantity"
+                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
+                  />
+                  <Button onClick={addItem} className="w-full bg-primary hover:bg-primary/90" data-testid="button-add-shopping-item">
+                    ➕ Hinzufügen
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Shopping List */}
+              <div className="space-y-3">
+                {shoppingListItems.length === 0 ? (
+                  <Card>
+                    <CardContent className="pt-6 text-center text-muted-foreground">
+                      📭 Liste ist leer - Artikel hinzufügen!
+                    </CardContent>
+                  </Card>
+                ) : (
+                  shoppingListItems.map((item: any) => (
+                    <Card key={item.id} className={item.completed ? "bg-green-500/10 border-green-500/30" : ""}>
+                      <CardContent className="p-4 flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={item.completed}
+                          onChange={() => toggleComplete(item.id, item.completed)}
+                          className="w-5 h-5 cursor-pointer"
+                          data-testid={`checkbox-shopping-${item.id}`}
+                        />
+                        <div className="flex-1">
+                          <p className={`font-semibold ${item.completed ? "line-through text-muted-foreground" : ""}`} data-testid={`text-shopping-item-${item.id}`}>
+                            {item.item}
+                          </p>
+                          {item.quantity && <p className="text-sm text-muted-foreground">{item.quantity}</p>}
+                        </div>
+                        {(user.role === "parent" || item.createdBy === user.id) && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => deleteItem(item.id, item.createdBy)}
+                            className="text-red-600 hover:bg-red-500/20"
+                            data-testid={`button-delete-shopping-${item.id}`}
+                          >
+                            🗑️
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
       {/* Allowances Management View */}
       {currentView === "allowances" && user.role === "parent" && (
         <motion.div
@@ -3427,7 +3510,7 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
   );
 }
 
-function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, approvingTaskId, queryClient, layoutView, setLayoutView, showSpendingStats, setShowSpendingStats, spendingStats, setSpendingStats, messages, setMessages, newMessage, setNewMessage, isLoadingMessage, setIsLoadingMessage, allowances, parentChildren, allowanceChildId, setAllowanceChildId, allowanceSats, setAllowanceSats, allowanceFrequency, setAllowanceFrequency, isCreatingAllowance, handleCreateAllowance, handleDeleteAllowance, shoppingListItems, newItem, setNewItem, newQuantity, setNewQuantity }: any) {
+function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, approvingTaskId, queryClient, layoutView, setLayoutView, showSpendingStats, setShowSpendingStats, spendingStats, setSpendingStats, messages, setMessages, newMessage, setNewMessage, isLoadingMessage, setIsLoadingMessage, allowances, parentChildren, allowanceChildId, setAllowanceChildId, allowanceSats, setAllowanceSats, allowanceFrequency, setAllowanceFrequency, isCreatingAllowance, handleCreateAllowance, handleDeleteAllowance, shoppingListItems }: any) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [lnbitsUrl, setLnbitsUrl] = useState("");
@@ -4504,84 +4587,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     }
   };
 
-  if (currentView === "shopping-list") {
-    return (
-      <div className="max-w-2xl space-y-6">
-        <h1 className="text-3xl font-bold mb-6">🛒 Einkaufsliste</h1>
-
-        {/* Add Item Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Neuer Artikel</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <input
-              type="text"
-              placeholder="z.B. Milch, Brot..."
-              value={newItem}
-              onChange={(e) => setNewItem(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addItem()}
-              data-testid="input-shopping-item"
-              className="w-full px-3 py-2 border border-input bg-background rounded-md"
-            />
-            <input
-              type="text"
-              placeholder="Menge (optional, z.B. 2, 1 Liter...)"
-              value={newQuantity}
-              onChange={(e) => setNewQuantity(e.target.value)}
-              data-testid="input-shopping-quantity"
-              className="w-full px-3 py-2 border border-input bg-background rounded-md"
-            />
-            <Button onClick={addItem} className="w-full bg-primary hover:bg-primary/90" data-testid="button-add-shopping-item">
-              ➕ Hinzufügen
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Shopping List */}
-        <div className="space-y-3">
-          {shoppingListItems.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6 text-center text-muted-foreground">
-                📭 Liste ist leer - Artikel hinzufügen!
-              </CardContent>
-            </Card>
-          ) : (
-            shoppingListItems.map((item: any) => (
-              <Card key={item.id} className={item.completed ? "bg-green-500/10 border-green-500/30" : ""}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    checked={item.completed}
-                    onChange={() => toggleComplete(item.id, item.completed)}
-                    className="w-5 h-5 cursor-pointer"
-                    data-testid={`checkbox-shopping-${item.id}`}
-                  />
-                  <div className="flex-1">
-                    <p className={`font-semibold ${item.completed ? "line-through text-muted-foreground" : ""}`} data-testid={`text-shopping-item-${item.id}`}>
-                      {item.item}
-                    </p>
-                    {item.quantity && <p className="text-sm text-muted-foreground">{item.quantity}</p>}
-                  </div>
-                  {(user.role === "parent" || item.createdBy === user.id) && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => deleteItem(item.id, item.createdBy)}
-                      className="text-red-600 hover:bg-red-500/20"
-                      data-testid={`button-delete-shopping-${item.id}`}
-                    >
-                      🗑️
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
-      </div>
-    );
-  }
 
   if (currentView === "donate") {
     return <DonateView user={user} onClose={() => setCurrentView("dashboard")} />;
