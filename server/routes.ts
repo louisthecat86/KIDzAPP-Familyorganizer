@@ -2798,9 +2798,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const familyMembers = await storage.getPeersByConnectionId(child.connectionId);
       const parents = familyMembers.filter(p => p.role === 'parent');
       
-      let payingParent = parents.find(p => p.nwcConnectionString) || parents.find(p => p.lnbitsUrl && p.lnbitsAdminKey);
+      const nwcParents = parents.filter(p => p.nwcConnectionString);
+      const lnbitsParents = parents.filter(p => p.lnbitsUrl && p.lnbitsAdminKey);
       
-      if (!payingParent) {
+      if (nwcParents.length === 0 && lnbitsParents.length === 0) {
         const result = await storage.claimGraduationBonus(peerId, bonusSats);
         return res.json({ 
           success: true, 
@@ -2812,11 +2813,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       let paymentHash = '';
       let paymentSuccess = false;
+      let payingParentId = 0;
+      let payingParentName = '';
       
       if (child.lightningAddress) {
-        if (payingParent.nwcConnectionString) {
+        for (const nwcParent of nwcParents) {
+          if (paymentSuccess) break;
           try {
-            const decryptedNwc = decryptWalletData(payingParent.nwcConnectionString);
+            console.log(`[Graduation Bonus] Trying NWC payment from ${nwcParent.name}...`);
+            const decryptedNwc = decryptWalletData(nwcParent.nwcConnectionString!);
             const nwc = new (await import('./nwc')).NWCClient(decryptedNwc);
             paymentHash = await nwc.payToLightningAddress(
               child.lightningAddress, 
@@ -2824,16 +2829,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
               `🎓 Satoshi Guardian Graduation Bonus für ${child.name}!`
             );
             paymentSuccess = true;
-            console.log("[Graduation Bonus] NWC payment successful:", paymentHash);
+            payingParentId = nwcParent.id;
+            payingParentName = nwcParent.name;
+            console.log(`[Graduation Bonus] NWC payment from ${nwcParent.name} successful:`, paymentHash);
           } catch (nwcError) {
-            console.error("[Graduation Bonus] NWC payment failed, trying LNBits:", nwcError);
+            console.error(`[Graduation Bonus] NWC payment from ${nwcParent.name} failed:`, nwcError);
           }
         }
         
-        if (!paymentSuccess && payingParent.lnbitsUrl && payingParent.lnbitsAdminKey) {
+        for (const lnbitsParent of lnbitsParents) {
+          if (paymentSuccess) break;
           try {
-            const decryptedUrl = decryptWalletData(payingParent.lnbitsUrl);
-            const decryptedKey = decryptWalletData(payingParent.lnbitsAdminKey);
+            console.log(`[Graduation Bonus] Trying LNBits payment from ${lnbitsParent.name}...`);
+            const decryptedUrl = decryptWalletData(lnbitsParent.lnbitsUrl!);
+            const decryptedKey = decryptWalletData(lnbitsParent.lnbitsAdminKey!);
             const lnbits = new LNBitsClient(decryptedUrl, decryptedKey);
             paymentHash = await lnbits.payToLightningAddress(
               bonusSats, 
@@ -2841,22 +2850,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
               `🎓 Satoshi Guardian Graduation Bonus für ${child.name}!`
             );
             paymentSuccess = true;
-            console.log("[Graduation Bonus] LNBits payment successful:", paymentHash);
+            payingParentId = lnbitsParent.id;
+            payingParentName = lnbitsParent.name;
+            console.log(`[Graduation Bonus] LNBits payment from ${lnbitsParent.name} successful:`, paymentHash);
           } catch (lnbitsError) {
-            console.error("[Graduation Bonus] LNBits payment also failed:", lnbitsError);
+            console.error(`[Graduation Bonus] LNBits payment from ${lnbitsParent.name} failed:`, lnbitsError);
           }
         }
         
         if (!paymentSuccess) {
-          console.log("[Graduation Bonus] No Lightning payment possible, using internal balance only");
+          console.log("[Graduation Bonus] All Lightning payments failed, using internal balance only");
         }
       }
       
       const result = await storage.claimGraduationBonus(peerId, bonusSats);
       
-      if (paymentSuccess) {
+      if (paymentSuccess && payingParentId > 0) {
         await storage.createTransaction({
-          fromPeerId: payingParent.id,
+          fromPeerId: payingParentId,
           toPeerId: peerId,
           sats: bonusSats,
           type: 'graduation_bonus',
@@ -2870,7 +2881,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         newBalance: result.newBalance,
         paymentMethod: paymentSuccess ? 'lightning' : 'internal',
         paymentHash,
-        payingParent: payingParent.name
+        payingParent: payingParentName || 'System'
       });
     } catch (error) {
       console.error("Error claiming graduation bonus:", error);
