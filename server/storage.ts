@@ -100,6 +100,11 @@ export interface IStorage {
   getTodayChallenge(peerId: number, challengeDate: string): Promise<any | undefined>;
   completeTodayChallenge(peerId: number, challengeDate: string, challengeType: string): Promise<any>;
 
+  // Graduation operations
+  checkAndProcessGraduation(peerId: number, graduationBonusSats?: number): Promise<{ graduated: boolean; newProgress: LearningProgress | undefined; bonusPaid: boolean }>;
+  claimGraduationBonus(peerId: number, bonusSats: number): Promise<{ success: boolean; newBalance: number }>;
+  incrementMasteryStreak(peerId: number): Promise<LearningProgress | undefined>;
+
   // Shopping List operations
   getShoppingList(connectionId: string): Promise<ShoppingList[]>;
   createShoppingListItem(item: InsertShoppingList): Promise<ShoppingList>;
@@ -881,6 +886,81 @@ export class DatabaseStorage implements IStorage {
     }
     const result = await db.insert(dailyChallenges)
       .values({ peerId, challengeDate, challengeType, completed: true })
+      .returning();
+    return result[0];
+  }
+
+  async checkAndProcessGraduation(peerId: number, graduationBonusSats: number = 500): Promise<{ graduated: boolean; newProgress: LearningProgress | undefined; bonusPaid: boolean }> {
+    const progress = await this.getLearningProgress(peerId);
+    if (!progress) {
+      return { graduated: false, newProgress: undefined, bonusPaid: false };
+    }
+
+    if (progress.graduatedAt) {
+      return { graduated: true, newProgress: progress, bonusPaid: progress.graduationBonusClaimed };
+    }
+
+    const completedModules = progress.completedModules || [];
+    const requiredModules = 20;
+    
+    if (completedModules.length >= requiredModules) {
+      const result = await db.update(learningProgress)
+        .set({ 
+          graduatedAt: new Date(),
+          guardianLevel: 1,
+          updatedAt: new Date()
+        })
+        .where(eq(learningProgress.peerId, peerId))
+        .returning();
+      
+      return { graduated: true, newProgress: result[0], bonusPaid: false };
+    }
+
+    return { graduated: false, newProgress: progress, bonusPaid: false };
+  }
+
+  async claimGraduationBonus(peerId: number, bonusSats: number): Promise<{ success: boolean; newBalance: number }> {
+    const progress = await this.getLearningProgress(peerId);
+    if (!progress || !progress.graduatedAt || progress.graduationBonusClaimed) {
+      return { success: false, newBalance: 0 };
+    }
+
+    await db.update(learningProgress)
+      .set({ graduationBonusClaimed: true, updatedAt: new Date() })
+      .where(eq(learningProgress.peerId, peerId));
+
+    const peer = await this.getPeer(peerId);
+    if (peer) {
+      const newBalance = peer.balance + bonusSats;
+      await db.update(peers)
+        .set({ balance: newBalance })
+        .where(eq(peers.id, peerId));
+      return { success: true, newBalance };
+    }
+
+    return { success: false, newBalance: 0 };
+  }
+
+  async incrementMasteryStreak(peerId: number): Promise<LearningProgress | undefined> {
+    const progress = await this.getLearningProgress(peerId);
+    if (!progress || !progress.graduatedAt) return undefined;
+
+    const newCount = (progress.masteryStreakCount || 0) + 1;
+    let newGuardianLevel = progress.guardianLevel;
+    
+    if (newCount >= 30 && newGuardianLevel < 3) {
+      newGuardianLevel = 3;
+    } else if (newCount >= 10 && newGuardianLevel < 2) {
+      newGuardianLevel = 2;
+    }
+
+    const result = await db.update(learningProgress)
+      .set({ 
+        masteryStreakCount: newCount,
+        guardianLevel: newGuardianLevel,
+        updatedAt: new Date()
+      })
+      .where(eq(learningProgress.peerId, peerId))
       .returning();
     return result[0];
   }

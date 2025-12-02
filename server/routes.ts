@@ -2756,6 +2756,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/learning-progress/:peerId/graduation-status", async (req, res) => {
+    try {
+      const peerId = parseInt(req.params.peerId);
+      const result = await storage.checkAndProcessGraduation(peerId);
+      res.json(result);
+    } catch (error) {
+      console.error("Error checking graduation status:", error);
+      res.status(500).json({ error: "Failed to check graduation status" });
+    }
+  });
+
+  app.post("/api/learning-progress/:peerId/claim-graduation-bonus", async (req, res) => {
+    try {
+      const peerId = parseInt(req.params.peerId);
+      const { bonusSats = 500 } = req.body;
+      const result = await storage.claimGraduationBonus(peerId, bonusSats);
+      if (result.success) {
+        res.json(result);
+      } else {
+        res.status(400).json({ error: "Could not claim graduation bonus" });
+      }
+    } catch (error) {
+      console.error("Error claiming graduation bonus:", error);
+      res.status(500).json({ error: "Failed to claim graduation bonus" });
+    }
+  });
+
+  app.post("/api/learning-progress/:peerId/mastery-complete", async (req, res) => {
+    try {
+      const peerId = parseInt(req.params.peerId);
+      const { xp = 25 } = req.body;
+      
+      await storage.addXpAndCheckLevel(peerId, xp);
+      const progress = await storage.incrementMasteryStreak(peerId);
+      
+      if (progress) {
+        res.json(progress);
+      } else {
+        res.status(400).json({ error: "Not graduated yet" });
+      }
+    } catch (error) {
+      console.error("Error completing mastery challenge:", error);
+      res.status(500).json({ error: "Failed to complete mastery challenge" });
+    }
+  });
+
   // Donation endpoint - send sats to developer
   const DEVELOPER_DONATION_ADDRESS = process.env.DEVELOPER_DONATION_ADDRESS || "satoshi@stacker.news";
   
