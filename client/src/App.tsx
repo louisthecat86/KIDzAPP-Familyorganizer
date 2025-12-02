@@ -314,6 +314,8 @@ export default function App() {
   const [newMessage, setNewMessage] = useState("");
   const [isLoadingMessage, setIsLoadingMessage] = useState(false);
   const [approvingTaskId, setApprovingTaskId] = useState<number | null>(null);
+  const [newItem, setNewItem] = useState("");
+  const [newQuantity, setNewQuantity] = useState("");
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -4442,65 +4444,63 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     );
   }
 
+  // Shopping List Functions
+  const addItem = async () => {
+    if (!newItem.trim()) return;
+    try {
+      const res = await fetch("/api/shopping-list", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          connectionId: user.connectionId,
+          createdBy: user.id,
+          item: newItem,
+          quantity: newQuantity || null
+        })
+      });
+      if (res.ok) {
+        setNewItem("");
+        setNewQuantity("");
+        queryClient.invalidateQueries({ queryKey: ["shopping-list"] });
+        toast({ title: "✓", description: "Artikel hinzugefügt" });
+      }
+    } catch (error) {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    }
+  };
+
+  const toggleComplete = async (id: number, completed: boolean) => {
+    try {
+      const res = await fetch(`/api/shopping-list/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed: !completed })
+      });
+      if (res.ok) {
+        queryClient.invalidateQueries({ queryKey: ["shopping-list"] });
+      }
+    } catch (error) {
+      console.error("Error toggling item:", error);
+    }
+  };
+
+  const deleteItem = async (id: number, createdBy: number) => {
+    if (user.role === "child" && createdBy !== user.id) {
+      toast({ title: "Fehler", description: "Du kannst nur deine eigenen Einträge löschen", variant: "destructive" });
+      return;
+    }
+    try {
+      const res = await fetch(`/api/shopping-list/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        queryClient.invalidateQueries({ queryKey: ["shopping-list"] });
+        toast({ title: "✓", description: "Artikel gelöscht" });
+      }
+    } catch (error) {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    }
+  };
+
   if (currentView === "shopping-list") {
-    const [newItem, setNewItem] = useState("");
-    const [newQuantity, setNewQuantity] = useState("");
-
-    const addItem = async () => {
-      if (!newItem.trim()) return;
-      try {
-        const res = await fetch("/api/shopping-list", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            connectionId: user.connectionId,
-            createdBy: user.id,
-            item: newItem,
-            quantity: newQuantity || null
-          })
-        });
-        if (res.ok) {
-          setNewItem("");
-          setNewQuantity("");
-          queryClient.invalidateQueries({ queryKey: ["shopping-list"] });
-          toast({ title: "✓", description: "Artikel hinzugefügt" });
-        }
-      } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
-      }
-    };
-
-    const toggleComplete = async (id: number, completed: boolean) => {
-      try {
-        const res = await fetch(`/api/shopping-list/${id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ completed: !completed })
-        });
-        if (res.ok) {
-          queryClient.invalidateQueries({ queryKey: ["shopping-list"] });
-        }
-      } catch (error) {
-        console.error("Error toggling item:", error);
-      }
-    };
-
-    const deleteItem = async (id: number, createdBy: number) => {
-      if (user.role === "child" && createdBy !== user.id) {
-        toast({ title: "Fehler", description: "Du kannst nur deine eigenen Einträge löschen", variant: "destructive" });
-        return;
-      }
-      try {
-        const res = await fetch(`/api/shopping-list/${id}`, { method: "DELETE" });
-        if (res.ok) {
-          queryClient.invalidateQueries({ queryKey: ["shopping-list"] });
-          toast({ title: "✓", description: "Artikel gelöscht" });
-        }
-      } catch (error) {
-        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
-      }
-    };
-
     return (
       <div className="max-w-2xl space-y-6">
         <h1 className="text-3xl font-bold mb-6">🛒 Einkaufsliste</h1>
@@ -4511,18 +4511,22 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <CardTitle className="text-lg">Neuer Artikel</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Input
+            <input
+              type="text"
               placeholder="z.B. Milch, Brot..."
               value={newItem}
               onChange={(e) => setNewItem(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addItem()}
               data-testid="input-shopping-item"
+              className="w-full px-3 py-2 border border-input bg-background rounded-md"
             />
-            <Input
+            <input
+              type="text"
               placeholder="Menge (optional, z.B. 2, 1 Liter...)"
               value={newQuantity}
               onChange={(e) => setNewQuantity(e.target.value)}
               data-testid="input-shopping-quantity"
+              className="w-full px-3 py-2 border border-input bg-background rounded-md"
             />
             <Button onClick={addItem} className="w-full bg-primary hover:bg-primary/90" data-testid="button-add-shopping-item">
               ➕ Hinzufügen

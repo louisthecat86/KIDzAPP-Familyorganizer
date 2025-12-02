@@ -2778,25 +2778,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/shopping-list/:connectionId", async (req, res) => {
     try {
       const { connectionId } = req.params;
+      console.log("[Shopping List] Fetching list for:", connectionId);
       const items = await storage.getShoppingList(connectionId);
       res.json(items);
     } catch (error) {
-      res.status(500).json({ error: "Failed to fetch shopping list" });
+      console.error("[Shopping List] Error fetching list:", error);
+      res.status(500).json({ error: (error as Error).message || "Failed to fetch shopping list" });
     }
   });
 
   app.post("/api/shopping-list", async (req, res) => {
     try {
       const { connectionId, createdBy, item, quantity } = req.body;
+      console.log("[Shopping List] Creating item:", { connectionId, createdBy, item, quantity });
       const result = await storage.createShoppingListItem({
         connectionId,
         createdBy: parseInt(createdBy),
         item,
-        quantity
+        quantity: quantity || null
       });
       res.json(result);
     } catch (error) {
-      res.status(500).json({ error: "Failed to create item" });
+      console.error("[Shopping List] Error creating item:", error);
+      res.status(500).json({ error: (error as Error).message || "Failed to create item" });
     }
   });
 
