@@ -1165,6 +1165,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     sats: bonusSettings.bonusSats
                   });
 
+                  // Create Bitcoin snapshot for level bonus (task approval)
+                  try {
+                    const btcPrice = await getFreshBitcoinPrice();
+                    const valueEur = (bonusBalance / 1e8) * btcPrice.eur;
+                    await storage.createDailyBitcoinSnapshot({
+                      peerId: child.id,
+                      connectionId: child.connectionId,
+                      valueEur: Math.round(valueEur * 100),
+                      satoshiAmount: bonusBalance,
+                      btcPrice: Math.round(btcPrice.eur * 100)
+                    });
+                    console.log(`[Level Bonus Snapshot] ✓ Created for ${child.name}: ${bonusSettings.bonusSats} sats (task approval)`);
+                  } catch (snapshotError) {
+                    console.error(`[Level Bonus Snapshot] ✗ Failed:`, snapshotError);
+                  }
+
                   // Try to send bonus via Lightning if configured (decrypt wallet data)
                   if (child.lightningAddress) {
                     const decryptedNwcBonus = decryptWalletData(parent.nwcConnectionString || "");
@@ -1277,6 +1293,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
             paymentHash: null,
           });
           console.log(`[Task Payment] Internal transaction recorded for ${child.name} (no Lightning address)`);
+        }
+        
+        // Create Bitcoin snapshot for task payment
+        try {
+          const btcPrice = await getFreshBitcoinPrice();
+          const valueEur = (newBalance / 1e8) * btcPrice.eur;
+          await storage.createDailyBitcoinSnapshot({
+            peerId: child.id,
+            connectionId: child.connectionId,
+            valueEur: Math.round(valueEur * 100),
+            satoshiAmount: newBalance,
+            btcPrice: Math.round(btcPrice.eur * 100)
+          });
+          console.log(`[Task Payment Snapshot] ✓ Created for ${child.name}: ${task.sats} sats, €${valueEur.toFixed(2)}`);
+        } catch (snapshotError) {
+          console.error(`[Task Payment Snapshot] ✗ Failed:`, snapshotError);
         }
       }
 
@@ -1740,6 +1772,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         paymentHash: paymentHash,
         status: "completed"
       });
+
+      // Create Bitcoin snapshot for allowance payment
+      try {
+        const btcPrice = await getFreshBitcoinPrice();
+        const valueEur = (newBalance / 1e8) * btcPrice.eur;
+        await storage.createDailyBitcoinSnapshot({
+          peerId: child.id,
+          connectionId: child.connectionId,
+          valueEur: Math.round(valueEur * 100),
+          satoshiAmount: newBalance,
+          btcPrice: Math.round(btcPrice.eur * 100)
+        });
+        console.log(`[Allowance Snapshot] ✓ Created for ${child.name}: ${sats} sats, €${valueEur.toFixed(2)}`);
+      } catch (snapshotError) {
+        console.error(`[Allowance Snapshot] ✗ Failed:`, snapshotError);
+      }
 
       // Update allowance lastPaidDate
       await storage.updateAllowance(allowanceId, { lastPaidDate: new Date() });
@@ -2451,7 +2499,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!hasLnbits && !hasNwc) {
         console.log(`[Level Bonus] No wallet configured, using internal balance`);
         // No wallet configured - just update balance internally
-        await storage.updateBalance(childId, (child.balance || 0) + settings.bonusSats);
+        const newBalance = (child.balance || 0) + settings.bonusSats;
+        await storage.updateBalance(childId, newBalance);
         
         // Record the payout
         await storage.createLevelBonusPayout({
@@ -2460,6 +2509,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           level: currentLevel,
           sats: settings.bonusSats
         });
+
+        // Create Bitcoin snapshot for level bonus
+        try {
+          const btcPrice = await getFreshBitcoinPrice();
+          const valueEur = (newBalance / 1e8) * btcPrice.eur;
+          await storage.createDailyBitcoinSnapshot({
+            peerId: child.id,
+            connectionId: child.connectionId,
+            valueEur: Math.round(valueEur * 100),
+            satoshiAmount: newBalance,
+            btcPrice: Math.round(btcPrice.eur * 100)
+          });
+          console.log(`[Level Bonus Snapshot] ✓ Created for ${child.name}: ${settings.bonusSats} sats, €${valueEur.toFixed(2)}`);
+        } catch (snapshotError) {
+          console.error(`[Level Bonus Snapshot] ✗ Failed:`, snapshotError);
+        }
 
         return res.json({ 
           bonusPaid: true, 
@@ -2497,6 +2562,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
             sats: settings.bonusSats
           });
 
+          // Create Bitcoin snapshot for level bonus (Lightning)
+          try {
+            const btcPrice = await getFreshBitcoinPrice();
+            const virtualBalance = (child.balance || 0) + settings.bonusSats;
+            const valueEur = (virtualBalance / 1e8) * btcPrice.eur;
+            await storage.createDailyBitcoinSnapshot({
+              peerId: child.id,
+              connectionId: child.connectionId,
+              valueEur: Math.round(valueEur * 100),
+              satoshiAmount: virtualBalance,
+              btcPrice: Math.round(btcPrice.eur * 100)
+            });
+            console.log(`[Level Bonus Snapshot] ✓ Created for ${child.name}: ${settings.bonusSats} sats (Lightning)`);
+          } catch (snapshotError) {
+            console.error(`[Level Bonus Snapshot] ✗ Failed:`, snapshotError);
+          }
+
           return res.json({ 
             bonusPaid: true, 
             sats: settings.bonusSats,
@@ -2512,7 +2594,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Fallback: update internal balance
-      await storage.updateBalance(childId, (child.balance || 0) + settings.bonusSats);
+      const newBalance = (child.balance || 0) + settings.bonusSats;
+      await storage.updateBalance(childId, newBalance);
       
       // Record the payout
       await storage.createLevelBonusPayout({
@@ -2521,6 +2604,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         level: currentLevel,
         sats: settings.bonusSats
       });
+
+      // Create Bitcoin snapshot for level bonus (fallback)
+      try {
+        const btcPrice = await getFreshBitcoinPrice();
+        const valueEur = (newBalance / 1e8) * btcPrice.eur;
+        await storage.createDailyBitcoinSnapshot({
+          peerId: child.id,
+          connectionId: child.connectionId,
+          valueEur: Math.round(valueEur * 100),
+          satoshiAmount: newBalance,
+          btcPrice: Math.round(btcPrice.eur * 100)
+        });
+        console.log(`[Level Bonus Snapshot] ✓ Created for ${child.name}: ${settings.bonusSats} sats (fallback)`);
+      } catch (snapshotError) {
+        console.error(`[Level Bonus Snapshot] ✗ Failed:`, snapshotError);
+      }
 
       res.json({ 
         bonusPaid: true, 
@@ -2883,6 +2982,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           status: 'completed',
           paymentHash
         });
+      }
+      
+      // Create Bitcoin snapshot for graduation bonus
+      try {
+        const btcPrice = await getFreshBitcoinPrice();
+        const valueEur = (result.newBalance / 1e8) * btcPrice.eur;
+        await storage.createDailyBitcoinSnapshot({
+          peerId: child.id,
+          connectionId: child.connectionId,
+          valueEur: Math.round(valueEur * 100),
+          satoshiAmount: result.newBalance,
+          btcPrice: Math.round(btcPrice.eur * 100)
+        });
+        console.log(`[Graduation Bonus Snapshot] ✓ Created for ${child.name}: ${bonusSats} sats, €${valueEur.toFixed(2)}`);
+      } catch (snapshotError) {
+        console.error(`[Graduation Bonus Snapshot] ✗ Failed:`, snapshotError);
       }
       
       res.json({ 
