@@ -811,6 +811,7 @@ export default function App() {
                   isCreatingAllowance={isCreatingAllowance}
                   handleCreateAllowance={handleCreateAllowance}
                   handleDeleteAllowance={handleDeleteAllowance}
+                  shoppingListItems={shoppingListItems}
                 />
               ) : (
                 <ChildDashboard 
@@ -1454,6 +1455,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
     ...(user.role === "parent" ? [{ id: "children-overview", label: t('sidebar.childrenOverview'), icon: Users, badge: 0 }] : []),
     { id: "calendar", label: t('nav.calendar'), icon: Calendar, badge: 0 },
     { id: "chat", label: t('sidebar.familyChat'), icon: MessageSquare, badge: chatNotificationCount },
+    { id: "shopping-list", label: "🛒 Einkaufsliste", icon: Home, badge: 0 },
     { id: "notifications", label: t('sidebar.activities'), icon: Bell, badge: 0 },
     { id: "leaderboard", label: t('sidebar.leaderboard'), icon: Trophy, badge: 0 },
     ...(user.role === "child" ? [{ id: "bitcoin-education", label: t('sidebar.bitcoinLearn'), icon: BookOpen, badge: 0 }] : []),
@@ -1738,17 +1740,6 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
               </motion.div>
             )}
           </div>
-        </div>
-
-        <div className="p-2 md:p-4 border-t border-white/20">
-          <button
-            onClick={() => { setCurrentView("shopping-list"); setSidebarOpen(false); }}
-            className="w-full px-3 md:px-4 py-1.5 md:py-2 rounded-xl flex items-center gap-2 transition-colors text-foreground hover:bg-white/20 dark:bg-black/20 text-sm md:text-base"
-            data-testid="menu-item-shopping-list"
-          >
-            <span className="text-base md:text-lg">🛒</span>
-            <span>{t('nav.shoppingList') || 'Einkaufsliste'}</span>
-          </button>
         </div>
 
         {user.role === "parent" && (
@@ -3430,7 +3421,7 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
   );
 }
 
-function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, approvingTaskId, queryClient, layoutView, setLayoutView, showSpendingStats, setShowSpendingStats, spendingStats, setSpendingStats, messages, setMessages, newMessage, setNewMessage, isLoadingMessage, setIsLoadingMessage, allowances, parentChildren, allowanceChildId, setAllowanceChildId, allowanceSats, setAllowanceSats, allowanceFrequency, setAllowanceFrequency, isCreatingAllowance, handleCreateAllowance, handleDeleteAllowance }: any) {
+function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, approvingTaskId, queryClient, layoutView, setLayoutView, showSpendingStats, setShowSpendingStats, spendingStats, setSpendingStats, messages, setMessages, newMessage, setNewMessage, isLoadingMessage, setIsLoadingMessage, allowances, parentChildren, allowanceChildId, setAllowanceChildId, allowanceSats, setAllowanceSats, allowanceFrequency, setAllowanceFrequency, isCreatingAllowance, handleCreateAllowance, handleDeleteAllowance, shoppingListItems }: any) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [lnbitsUrl, setLnbitsUrl] = useState("");
