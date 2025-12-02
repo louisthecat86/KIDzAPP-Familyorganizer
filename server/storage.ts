@@ -890,7 +890,7 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  async checkAndProcessGraduation(peerId: number, graduationBonusSats: number = 500): Promise<{ graduated: boolean; newProgress: LearningProgress | undefined; bonusPaid: boolean }> {
+  async checkAndProcessGraduation(peerId: number, graduationBonusSats: number = 2100): Promise<{ graduated: boolean; newProgress: LearningProgress | undefined; bonusPaid: boolean }> {
     const progress = await this.getLearningProgress(peerId);
     if (!progress) {
       return { graduated: false, newProgress: undefined, bonusPaid: false };

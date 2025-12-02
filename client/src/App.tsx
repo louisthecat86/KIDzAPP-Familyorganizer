@@ -7647,14 +7647,14 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                           const response = await fetch(`/api/learning-progress/${user.id}/claim-graduation-bonus`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ bonusSats: 500 })
+                            body: JSON.stringify({ bonusSats: 2100 })
                           });
                           if (response.ok) {
                             const data = await response.json();
                             setGraduationStatus({ ...graduationStatus, bonusPaid: true });
                             toast({ 
                               title: t('education.graduation.bonusClaimed'), 
-                              description: t('education.graduation.bonusDesc', { sats: 500 }) 
+                              description: t('education.graduation.bonusDesc', { sats: 2100 }) 
                             });
                             queryClient.invalidateQueries({ queryKey: ['sats-breakdown', user.id] });
                           }
@@ -7664,7 +7664,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                       }}
                       className="mt-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold px-8"
                     >
-                      🎁 {t('education.graduation.claimBonus')} (+500 Sats)
+                      🎁 {t('education.graduation.claimBonus')} (+2100 Sats)
                     </Button>
                   ) : (
                     <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-500/20 text-green-700 rounded-full font-semibold">

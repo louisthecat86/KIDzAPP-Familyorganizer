@@ -2780,7 +2780,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/learning-progress/:peerId/claim-graduation-bonus", async (req, res) => {
     try {
       const peerId = parseInt(req.params.peerId);
-      const { bonusSats = 500 } = req.body;
+      const { bonusSats = 2100 } = req.body;
       
       const progress = await storage.getLearningProgress(peerId);
       if (!progress || !progress.graduatedAt) {
