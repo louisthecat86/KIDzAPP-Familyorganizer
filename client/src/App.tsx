@@ -507,7 +507,7 @@ export default function App() {
       if (!res.ok) throw new Error("Failed to fetch allowances");
       return res.json();
     },
-    refetchInterval: 5000,
+    refetchInterval: 30000,
     enabled: user?.role === "parent" && !!user?.connectionId
   });
 
@@ -518,7 +518,7 @@ export default function App() {
       if (!res.ok) throw new Error("Failed to fetch children");
       return res.json();
     },
-    refetchInterval: 5000,
+    refetchInterval: 30000,
     enabled: user?.role === "parent"
   });
 
@@ -2600,7 +2600,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
         if (!res.ok) throw new Error("Failed to fetch peers");
         return res.json();
       },
-      refetchInterval: 2000
+      refetchInterval: 30000
     });
 
     const parents = connectedPeers.filter((p: any) => p.role === "parent");
@@ -2913,7 +2913,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
         if (!res.ok) throw new Error("Failed to fetch peers");
         return res.json();
       },
-      refetchInterval: 2000
+      refetchInterval: 30000
     });
 
     const parent = connectedPeers
@@ -3848,7 +3848,7 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
 
   useEffect(() => {
     fetchRsvps();
-    const interval = setInterval(fetchRsvps, 3000); // Auto-refresh every 3 seconds
+    const interval = setInterval(fetchRsvps, 30000); // Auto-refresh every 30 seconds
     return () => clearInterval(interval);
   }, [events]);
 
@@ -4115,7 +4115,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         const data = await res.json();
         return data.satsSpent;
       },
-      refetchInterval: 5000
+      refetchInterval: 30000
     });
 
     const handleShowSpendingStats = async () => {
@@ -4472,7 +4472,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         }
       };
       fetchMessages();
-      const interval = setInterval(fetchMessages, 2000);
+      const interval = setInterval(fetchMessages, 10000);
       return () => clearInterval(interval);
     }, [user.connectionId]);
     
@@ -4565,7 +4565,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         if (!res.ok) throw new Error("Failed to fetch peers");
         return res.json();
       },
-      refetchInterval: 2000
+      refetchInterval: 30000
     });
 
     const children = connectedPeers.filter((p: any) => p.role === "child");
@@ -4661,7 +4661,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   if (!res.ok) return null;
                   return res.json();
                 },
-                refetchInterval: 5000
+                refetchInterval: 30000
               });
               
               return (
@@ -4884,7 +4884,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         if (!res.ok) throw new Error("Failed to fetch leaderboard");
         return res.json();
       },
-      refetchInterval: 2000
+      refetchInterval: 30000
     });
 
     const getMedalEmoji = (position: number) => {
@@ -5333,7 +5333,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         if (!res.ok) throw new Error("Failed to fetch peers");
         return res.json();
       },
-      refetchInterval: 5000
+      refetchInterval: 30000
     });
 
     const getChildName = (childId?: number) => {
@@ -6328,7 +6328,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       if (!res.ok) throw new Error("Failed to fetch peers");
       return res.json();
     },
-    refetchInterval: 2000
+    refetchInterval: 30000
   });
 
   const { data: unlockStatus } = useQuery({
@@ -6338,7 +6338,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       if (!res.ok) throw new Error("Failed to fetch unlock status");
       return res.json();
     },
-    refetchInterval: 5000,
+    refetchInterval: 30000,
     enabled: user.role === "child" && !!user.connectionId
   });
 
@@ -6692,7 +6692,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         }
       };
       fetchMessages();
-      const interval = setInterval(fetchMessages, 2000);
+      const interval = setInterval(fetchMessages, 10000);
       return () => clearInterval(interval);
     }, [user.connectionId]);
     
@@ -6786,7 +6786,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         if (!res.ok) throw new Error("Failed to fetch leaderboard");
         return res.json();
       },
-      refetchInterval: 2000
+      refetchInterval: 30000
     });
 
     const { data: bonusSettings } = useQuery({
@@ -6980,7 +6980,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         if (!res.ok) throw new Error("Failed to fetch peers");
         return res.json();
       },
-      refetchInterval: 2000
+      refetchInterval: 30000
     });
 
     const parent = connectedPeers
@@ -7057,7 +7057,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         if (!res.ok) throw new Error("Failed to fetch peers");
         return res.json();
       },
-      refetchInterval: 5000
+      refetchInterval: 30000
     });
 
     const children = connectedPeers.filter((p: any) => p.role === "child");
@@ -8049,7 +8049,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         if (!res.ok) throw new Error("Failed to fetch allowances");
         return res.json();
       },
-      refetchInterval: 5000,
+      refetchInterval: 30000,
       enabled: user.role === "parent"
     });
 
