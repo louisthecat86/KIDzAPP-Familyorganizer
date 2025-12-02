@@ -902,7 +902,7 @@ export class DatabaseStorage implements IStorage {
 
     const completedModules = progress.completedModules || [];
     const requiredModules = 20;
-    const requiredChallenges = 5;
+    const requiredChallenges = 1;
     
     const actualChallengeRows = await db.select().from(dailyChallenges)
       .where(and(eq(dailyChallenges.peerId, peerId), eq(dailyChallenges.completed, true)));
