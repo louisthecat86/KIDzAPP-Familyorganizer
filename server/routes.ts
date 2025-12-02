@@ -751,7 +751,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get all level bonus payouts for this child
       const bonusPayouts = await storage.getLevelBonusPayouts(childId);
-      const bonusSats = bonusPayouts.reduce((sum: number, p) => sum + p.sats, 0);
+      const levelBonusSats = bonusPayouts.reduce((sum: number, p) => sum + p.sats, 0);
+      
+      // Get graduation bonus transactions for this child
+      const graduationBonusTransactions = await db.select()
+        .from(transactions)
+        .where(and(eq(transactions.toPeerId, childId), eq(transactions.type, "graduation_bonus")));
+      const graduationBonusSats = graduationBonusTransactions.reduce((sum: number, t) => sum + t.sats, 0);
+      
+      // Total bonus = level bonus + graduation bonus
+      const bonusSats = levelBonusSats + graduationBonusSats;
       
       // Get instant payout and allowance payout transactions
       const otherPayoutTransactions = await db.select()
@@ -765,7 +774,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allowancePayoutSats = allowanceTransactions.reduce((sum: number, t) => sum + t.sats, 0);
       const allowanceSats = instantPayoutSats + allowancePayoutSats;
       
-      console.log(`[Sats Breakdown] ${child.name}: total=${child.balance}, tasks=${taskSats}, bonus=${bonusSats}, allowance=${allowanceSats}`);
+      console.log(`[Sats Breakdown] ${child.name}: total=${child.balance}, tasks=${taskSats}, bonus=${bonusSats} (level=${levelBonusSats}+grad=${graduationBonusSats}), allowance=${allowanceSats}`);
       
       res.json({
         totalSats: child.balance || 0,
