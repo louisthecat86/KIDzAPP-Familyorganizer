@@ -1068,6 +1068,7 @@
     "deleteAccount": "DELETE ACCOUNT",
     "deleteAccountDesc": "Remove yourself from family",
     "deleteAccountWarning": "FINAL: Your entire account will be deleted. You will NOT be able to log in anymore!",
+    "lastParentWarning": "You are the LAST parent! {{count}} child(ren) will lose connection and need to reconnect.",
     "confirmDelete": "Type to confirm",
     "typeToConfirm": "Type '{{code}}' to confirm",
     "cancel": "Cancel",

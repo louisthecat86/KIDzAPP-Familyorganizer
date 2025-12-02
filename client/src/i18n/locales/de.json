@@ -1066,6 +1066,7 @@
     "deleteAccount": "KONTO LÖSCHEN",
     "deleteAccountDesc": "Dich komplett aus Familie entfernen",
     "deleteAccountWarning": "ENDGÜLTIG: Dein gesamter Account wird gelöscht. Du kannst dich danach NICHT mehr anmelden!",
+    "lastParentWarning": "Du bist der LETZTE Elternteil! {{count}} Kind(er) werden die Verbindung verlieren und muessen sich neu verbinden.",
     "confirmDelete": "Zum Bestätigen eingeben",
     "typeToConfirm": "Tippe '{{code}}' um zu bestätigen",
     "cancel": "Abbrechen",

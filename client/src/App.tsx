@@ -2978,6 +2978,24 @@ function DataManagementContent({ user, setUser, onClose }: any) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmCode, setConfirmCode] = useState("");
   const [activeConfirm, setActiveConfirm] = useState<string | null>(null);
+  const [lastParentInfo, setLastParentInfo] = useState<{ isLastParent: boolean; childrenCount: number } | null>(null);
+  
+  useEffect(() => {
+    const checkLastParent = async () => {
+      try {
+        const res = await fetch(`/api/account/${user.id}/is-last-parent`);
+        if (res.ok) {
+          const data = await res.json();
+          setLastParentInfo(data);
+        }
+      } catch (error) {
+        console.error("Failed to check last parent status:", error);
+      }
+    };
+    if (user.role === 'parent') {
+      checkLastParent();
+    }
+  }, [user.id, user.role]);
 
   const handleCleanup = async (type: "chat" | "photos" | "events" | "shopping") => {
     setIsDeleting(true);
@@ -3252,6 +3270,13 @@ function DataManagementContent({ user, setUser, onClose }: any) {
         {activeConfirm === "deleteAccount" && (
           <div className="p-3 rounded-lg bg-destructive/20 border-2 border-destructive space-y-3">
             <p className="text-sm text-destructive font-bold">{t('dataManagement.deleteAccountWarning')}</p>
+            {lastParentInfo?.isLastParent && lastParentInfo.childrenCount > 0 && (
+              <div className="p-2 rounded bg-amber-500/20 border border-amber-500">
+                <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">
+                  {t('dataManagement.lastParentWarning', { count: lastParentInfo.childrenCount })}
+                </p>
+              </div>
+            )}
             <p className="text-xs">{t('dataManagement.typeToConfirm', { code: 'DELETE-ACCOUNT-FOREVER' })}</p>
             <Input
               value={confirmCode}
