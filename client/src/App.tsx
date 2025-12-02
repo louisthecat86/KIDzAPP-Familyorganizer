@@ -3079,8 +3079,13 @@ function PushNotificationSettings({ peerId, connectionId }: { peerId: number; co
     }
   };
 
-  const isInIframe = window !== window.top;
-  const isSecureContext = window.isSecureContext;
+  const isInIframe = (() => {
+    try {
+      return window !== window.top || window.self !== window.top;
+    } catch (e) {
+      return true;
+    }
+  })();
 
   if (!isSupported) {
     return (
