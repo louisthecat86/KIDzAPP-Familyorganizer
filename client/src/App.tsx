@@ -2983,15 +2983,37 @@ function PushNotificationSettings({ peerId, connectionId }: { peerId: number; co
     const checkStatus = async () => {
       setIsLoading(true);
       try {
-        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
           setIsSupported(false);
           setIsLoading(false);
           return;
         }
 
-        const registration = await navigator.serviceWorker.ready;
-        const subscription = await registration.pushManager.getSubscription();
-        setIsSubscribed(!!subscription);
+        // Register service worker first if not already registered
+        let registration = await navigator.serviceWorker.getRegistration('/');
+        if (!registration) {
+          try {
+            registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+            console.log('[Push] Service Worker registered');
+          } catch (swError) {
+            console.error('[Push] SW registration failed:', swError);
+            setIsLoading(false);
+            return;
+          }
+        }
+
+        // Wait for service worker to be ready with timeout
+        const timeoutPromise = new Promise<null>((_, reject) => 
+          setTimeout(() => reject(new Error('SW ready timeout')), 5000)
+        );
+        
+        try {
+          await Promise.race([navigator.serviceWorker.ready, timeoutPromise]);
+          const subscription = await registration.pushManager.getSubscription();
+          setIsSubscribed(!!subscription);
+        } catch (readyError) {
+          console.error('[Push] SW ready timeout or error:', readyError);
+        }
       } catch (error) {
         console.error('[Push] Check status failed:', error);
       } finally {
