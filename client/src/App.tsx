@@ -359,6 +359,17 @@ export default function App() {
     enabled: !!user?.connectionId,
   });
 
+  const { data: shoppingListItems = [] } = useQuery({
+    queryKey: ["shopping-list", user?.connectionId],
+    queryFn: async () => {
+      const res = await fetch(`/api/shopping-list/${user!.connectionId}`);
+      if (!res.ok) throw new Error("Failed to fetch shopping list");
+      return res.json();
+    },
+    enabled: !!user?.connectionId,
+    refetchInterval: 30000,
+  });
+
   const createTaskMutation = useMutation({
     mutationFn: createTask,
     onSuccess: (task) => {
@@ -1727,6 +1738,17 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
               </motion.div>
             )}
           </div>
+        </div>
+
+        <div className="p-2 md:p-4 border-t border-white/20">
+          <button
+            onClick={() => { setCurrentView("shopping-list"); setSidebarOpen(false); }}
+            className="w-full px-3 md:px-4 py-1.5 md:py-2 rounded-xl flex items-center gap-2 transition-colors text-foreground hover:bg-white/20 dark:bg-black/20 text-sm md:text-base"
+            data-testid="menu-item-shopping-list"
+          >
+            <span className="text-base md:text-lg">🛒</span>
+            <span>{t('nav.shoppingList') || 'Einkaufsliste'}</span>
+          </button>
         </div>
 
         {user.role === "parent" && (
@@ -4425,6 +4447,139 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             ))}
           </div>
         )}
+      </div>
+    );
+  }
+
+  if (currentView === "shopping-list") {
+    const [newItem, setNewItem] = useState("");
+    const [newQuantity, setNewQuantity] = useState("");
+
+    const addItem = async () => {
+      if (!newItem.trim()) return;
+      try {
+        const res = await fetch("/api/shopping-list", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            connectionId: user.connectionId,
+            createdBy: user.id,
+            item: newItem,
+            quantity: newQuantity || null
+          })
+        });
+        if (res.ok) {
+          setNewItem("");
+          setNewQuantity("");
+          queryClient.invalidateQueries({ queryKey: ["shopping-list"] });
+          toast({ title: "✓", description: "Artikel hinzugefügt" });
+        }
+      } catch (error) {
+        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      }
+    };
+
+    const toggleComplete = async (id: number, completed: boolean) => {
+      try {
+        const res = await fetch(`/api/shopping-list/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ completed: !completed })
+        });
+        if (res.ok) {
+          queryClient.invalidateQueries({ queryKey: ["shopping-list"] });
+        }
+      } catch (error) {
+        console.error("Error toggling item:", error);
+      }
+    };
+
+    const deleteItem = async (id: number, createdBy: number) => {
+      if (user.role === "child" && createdBy !== user.id) {
+        toast({ title: "Fehler", description: "Du kannst nur deine eigenen Einträge löschen", variant: "destructive" });
+        return;
+      }
+      try {
+        const res = await fetch(`/api/shopping-list/${id}`, { method: "DELETE" });
+        if (res.ok) {
+          queryClient.invalidateQueries({ queryKey: ["shopping-list"] });
+          toast({ title: "✓", description: "Artikel gelöscht" });
+        }
+      } catch (error) {
+        toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+      }
+    };
+
+    return (
+      <div className="max-w-2xl space-y-6">
+        <h1 className="text-3xl font-bold mb-6">🛒 Einkaufsliste</h1>
+
+        {/* Add Item Form */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Neuer Artikel</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Input
+              placeholder="z.B. Milch, Brot..."
+              value={newItem}
+              onChange={(e) => setNewItem(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addItem()}
+              data-testid="input-shopping-item"
+            />
+            <Input
+              placeholder="Menge (optional, z.B. 2, 1 Liter...)"
+              value={newQuantity}
+              onChange={(e) => setNewQuantity(e.target.value)}
+              data-testid="input-shopping-quantity"
+            />
+            <Button onClick={addItem} className="w-full bg-primary hover:bg-primary/90" data-testid="button-add-shopping-item">
+              ➕ Hinzufügen
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Shopping List */}
+        <div className="space-y-3">
+          {shoppingListItems.length === 0 ? (
+            <Card>
+              <CardContent className="pt-6 text-center text-muted-foreground">
+                📭 Liste ist leer - Artikel hinzufügen!
+              </CardContent>
+            </Card>
+          ) : (
+            shoppingListItems.map((item: any) => (
+              <Card key={item.id} className={item.completed ? "bg-green-500/10 border-green-500/30" : ""}>
+                <CardContent className="p-4 flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={item.completed}
+                    onChange={() => toggleComplete(item.id, item.completed)}
+                    className="w-5 h-5 cursor-pointer"
+                    data-testid={`checkbox-shopping-${item.id}`}
+                  />
+                  <div className="flex-1">
+                    <p className={`font-semibold ${item.completed ? "line-through text-muted-foreground" : ""}`} data-testid={`text-shopping-item-${item.id}`}>
+                      {item.item}
+                    </p>
+                    {item.quantity && <p className="text-sm text-muted-foreground">{item.quantity}</p>}
+                  </div>
+                  {(user.role === "parent" || item.createdBy === user.id) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteItem(item.id, item.createdBy)}
+                      className="text-red-600 hover:bg-red-500/20"
+                      data-testid={`button-delete-shopping-${item.id}`}
+                    >
+                      🗑️
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
       </div>
     );
   }

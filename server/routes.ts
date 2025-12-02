@@ -2774,6 +2774,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Shopping List endpoints
+  app.get("/api/shopping-list/:connectionId", async (req, res) => {
+    try {
+      const { connectionId } = req.params;
+      const items = await storage.getShoppingList(connectionId);
+      res.json(items);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch shopping list" });
+    }
+  });
+
+  app.post("/api/shopping-list", async (req, res) => {
+    try {
+      const { connectionId, createdBy, item, quantity } = req.body;
+      const result = await storage.createShoppingListItem({
+        connectionId,
+        createdBy: parseInt(createdBy),
+        item,
+        quantity
+      });
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create item" });
+    }
+  });
+
+  app.patch("/api/shopping-list/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { completed, quantity } = req.body;
+      const result = await storage.updateShoppingListItem(parseInt(id), {
+        completed: completed !== undefined ? completed : undefined,
+        quantity: quantity !== undefined ? quantity : undefined
+      });
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update item" });
+    }
+  });
+
+  app.delete("/api/shopping-list/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteShoppingListItem(parseInt(id));
+      res.json({ success });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete item" });
+    }
+  });
+
   // Daily Challenge endpoints
   app.get("/api/daily-challenge/:peerId/:date", async (req, res) => {
     try {

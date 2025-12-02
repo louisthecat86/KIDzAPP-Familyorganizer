@@ -324,3 +324,24 @@ export const insertDailyChallengeSchema = createInsertSchema(dailyChallenges).om
 
 export type InsertDailyChallenge = z.infer<typeof insertDailyChallengeSchema>;
 export type DailyChallenge = typeof dailyChallenges.$inferSelect;
+
+// Shopping List Table (Einkaufsliste - shared family list)
+export const shoppingList = pgTable("shopping_list", {
+  id: serial("id").primaryKey(),
+  connectionId: text("connection_id").notNull(), // Family ID
+  createdBy: integer("created_by").notNull(), // Peer ID who added this
+  item: text("item").notNull(), // Item description (e.g. "Milk", "Bread")
+  quantity: text("quantity"), // Optional quantity (e.g. "2", "1 liter")
+  completed: boolean("completed").default(false).notNull(), // Mark as bought
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertShoppingListSchema = createInsertSchema(shoppingList).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertShoppingList = z.infer<typeof insertShoppingListSchema>;
+export type ShoppingList = typeof shoppingList.$inferSelect;
