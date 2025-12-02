@@ -385,7 +385,9 @@
     "locationOptional": "Ort (optional)",
     "months": ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
     "weekdays": ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
-    "weekdaysShort": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"]
+    "weekdaysShort": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+    "rsvps": "Zusagen",
+    "noRsvps": "Noch keine Zusagen erhalten"
   },
   "chat": {
     "title": "Familien-Chat",
@@ -557,7 +559,10 @@
     "pairingIdForChildren": "Kopplungs-ID für Kinder",
     "shareIdWithChildren": "Teile diese ID mit deinen Kindern, um sie mit der Familie zu verbinden",
     "boxesArrangedVertically": "Kästchen untereinander angeordnet",
-    "boxesArrangedHorizontally": "2 Kästchen nebeneinander"
+    "boxesArrangedHorizontally": "2 Kästchen nebeneinander",
+    "dashboardView": "Dashboard Ansicht",
+    "singleColumn": "Einreihig",
+    "twoColumn": "Zweireihig"
   },
   "education": {
     "title": "Bitcoin Bildungszentrum",

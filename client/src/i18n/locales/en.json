@@ -855,6 +855,7 @@
     "download": "Download",
     "upload": "Upload",
     "configured": "Configured",
+    "notConfigured": "Not configured",
     "connected": "Connected",
     "notConnected": "Not connected",
     "sending": "Sending...",
