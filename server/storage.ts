@@ -113,7 +113,12 @@ export interface IStorage {
   cleanupShoppingList(connectionId: string): Promise<number>;
   cleanupAllFamilyData(connectionId: string): Promise<{ chat: number; photos: number; events: number; shopping: number; tasks: number }>;
   resetAccountData(peerId: number): Promise<boolean>;
-  deleteAccount(peerId: number, connectionId: string): Promise<boolean>;
+  deleteAccount(peerId: number, connectionId: string): Promise<{ success: boolean; wasLastParent: boolean; childrenDisconnected: number }>;
+  
+  // Connection management helpers
+  getOtherParentsWithConnectionId(connectionId: string, excludePeerId: number): Promise<Peer[]>;
+  getChildrenWithConnectionId(connectionId: string): Promise<Peer[]>;
+  disconnectChildrenFromFamily(connectionId: string): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -992,9 +997,40 @@ export class DatabaseStorage implements IStorage {
     return true;
   }
 
-  async deleteAccount(peerId: number, connectionId: string): Promise<boolean> {
+  async getOtherParentsWithConnectionId(connectionId: string, excludePeerId: number): Promise<Peer[]> {
+    return await db.select().from(peers)
+      .where(and(
+        eq(peers.connectionId, connectionId),
+        eq(peers.role, 'parent'),
+        // Exclude the peer being deleted
+        // Using SQL to check NOT equal
+      ));
+  }
+
+  async getChildrenWithConnectionId(connectionId: string): Promise<Peer[]> {
+    return await db.select().from(peers)
+      .where(and(
+        eq(peers.connectionId, connectionId),
+        eq(peers.role, 'child')
+      ));
+  }
+
+  async disconnectChildrenFromFamily(connectionId: string): Promise<number> {
+    const result = await db.update(peers)
+      .set({ connectionId: null })
+      .where(and(
+        eq(peers.connectionId, connectionId),
+        eq(peers.role, 'child')
+      ));
+    return result.rowCount ?? 0;
+  }
+
+  async deleteAccount(peerId: number, connectionId: string): Promise<{ success: boolean; wasLastParent: boolean; childrenDisconnected: number }> {
     const peer = await this.getPeer(peerId);
-    if (!peer) return false;
+    if (!peer) return { success: false, wasLastParent: false, childrenDisconnected: 0 };
+
+    let wasLastParent = false;
+    let childrenDisconnected = 0;
 
     await db.delete(chatMessages).where(eq(chatMessages.senderId, peerId));
     await db.delete(eventRsvps).where(eq(eventRsvps.peerId, peerId));
@@ -1011,9 +1047,28 @@ export class DatabaseStorage implements IStorage {
       .where(eq(tasks.assignedTo, peerId));
     
     if (peer.role === 'parent') {
-      await db.delete(recurringTasks).where(eq(recurringTasks.connectionId, connectionId));
-      await db.delete(levelBonusSettings).where(eq(levelBonusSettings.connectionId, connectionId));
+      // Check if there are other parents in this family
+      const otherParents = await db.select().from(peers)
+        .where(and(
+          eq(peers.connectionId, connectionId),
+          eq(peers.role, 'parent')
+        ));
       
+      // Filter out the current peer being deleted
+      const remainingParents = otherParents.filter(p => p.id !== peerId);
+      
+      if (remainingParents.length === 0) {
+        // This is the LAST parent - disconnect all children
+        wasLastParent = true;
+        childrenDisconnected = await this.disconnectChildrenFromFamily(connectionId);
+        
+        // Also clean up family-wide settings since no parents remain
+        await db.delete(recurringTasks).where(eq(recurringTasks.connectionId, connectionId));
+        await db.delete(levelBonusSettings).where(eq(levelBonusSettings.connectionId, connectionId));
+      }
+      // If other parents remain, the connectionId stays with them - no action needed
+      
+      // Delete events created by this parent
       const eventIds = await db.select({ id: familyEvents.id })
         .from(familyEvents)
         .where(eq(familyEvents.createdBy, peerId));
@@ -1027,7 +1082,7 @@ export class DatabaseStorage implements IStorage {
     
     await db.delete(peers).where(eq(peers.id, peerId));
     
-    return true;
+    return { success: true, wasLastParent, childrenDisconnected };
   }
 
 }
