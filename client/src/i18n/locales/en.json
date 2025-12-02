@@ -1031,5 +1031,16 @@
     "10minutes": "About 10 minutes",
     "1minute": "About 1 minute",
     "1hour": "About 1 hour"
+  },
+  "shoppingList": {
+    "title": "🛒 Shopping List",
+    "newItem": "New Item",
+    "itemPlaceholder": "e.g. Milk, Bread...",
+    "quantityLabel": "Quantity (optional, e.g. 2, 1 liter...)",
+    "addButton": "➕ Add",
+    "empty": "📭 List is empty - add items!",
+    "canOnlyDeleteOwn": "You can only delete your own items",
+    "itemAdded": "Item added",
+    "itemDeleted": "Item deleted"
   }
 }

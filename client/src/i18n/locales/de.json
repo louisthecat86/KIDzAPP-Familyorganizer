@@ -1029,5 +1029,16 @@
     "10minutes": "Ca. 10 Minuten",
     "1minute": "Ca. 1 Minute",
     "1hour": "Ca. 1 Stunde"
+  },
+  "shoppingList": {
+    "title": "🛒 Einkaufsliste",
+    "newItem": "Neuer Artikel",
+    "itemPlaceholder": "z.B. Milch, Brot...",
+    "quantityLabel": "Menge (optional, z.B. 2, 1 Liter...)",
+    "addButton": "➕ Hinzufügen",
+    "empty": "📭 Liste ist leer - Artikel hinzufügen!",
+    "canOnlyDeleteOwn": "Du kannst nur deine eigenen Einträge löschen",
+    "itemAdded": "Artikel hinzugefügt",
+    "itemDeleted": "Artikel gelöscht"
   }
 }
