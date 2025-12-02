@@ -320,6 +320,62 @@ export default function App() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Shopping List Functions
+  const addItem = async () => {
+    if (!newItem.trim()) return;
+    try {
+      const res = await fetch("/api/shopping-list", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          connectionId: user?.connectionId,
+          createdBy: user?.id,
+          item: newItem,
+          quantity: newQuantity || null
+        })
+      });
+      if (res.ok) {
+        setNewItem("");
+        setNewQuantity("");
+        queryClient.invalidateQueries({ queryKey: ["shopping-list"] });
+        toast({ title: "✓", description: "Artikel hinzugefügt" });
+      }
+    } catch (error) {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    }
+  };
+
+  const toggleComplete = async (id: number, completed: boolean) => {
+    try {
+      const res = await fetch(`/api/shopping-list/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed: !completed })
+      });
+      if (res.ok) {
+        queryClient.invalidateQueries({ queryKey: ["shopping-list"] });
+      }
+    } catch (error) {
+      console.error("Error toggling item:", error);
+    }
+  };
+
+  const deleteItem = async (id: number, createdBy: number) => {
+    if (user?.role === "child" && createdBy !== user?.id) {
+      toast({ title: "Fehler", description: "Du kannst nur deine eigenen Einträge löschen", variant: "destructive" });
+      return;
+    }
+    try {
+      const res = await fetch(`/api/shopping-list/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        queryClient.invalidateQueries({ queryKey: ["shopping-list"] });
+        toast({ title: "✓", description: "Artikel gelöscht" });
+      }
+    } catch (error) {
+      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
+    }
+  };
+
   useEffect(() => {
     // Load user
     const stored = localStorage.getItem("sats-user");
@@ -4530,63 +4586,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       </div>
     );
   }
-
-  // Shopping List Functions
-  const addItem = async () => {
-    if (!newItem.trim()) return;
-    try {
-      const res = await fetch("/api/shopping-list", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          connectionId: user.connectionId,
-          createdBy: user.id,
-          item: newItem,
-          quantity: newQuantity || null
-        })
-      });
-      if (res.ok) {
-        setNewItem("");
-        setNewQuantity("");
-        queryClient.invalidateQueries({ queryKey: ["shopping-list"] });
-        toast({ title: "✓", description: "Artikel hinzugefügt" });
-      }
-    } catch (error) {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
-    }
-  };
-
-  const toggleComplete = async (id: number, completed: boolean) => {
-    try {
-      const res = await fetch(`/api/shopping-list/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ completed: !completed })
-      });
-      if (res.ok) {
-        queryClient.invalidateQueries({ queryKey: ["shopping-list"] });
-      }
-    } catch (error) {
-      console.error("Error toggling item:", error);
-    }
-  };
-
-  const deleteItem = async (id: number, createdBy: number) => {
-    if (user.role === "child" && createdBy !== user.id) {
-      toast({ title: "Fehler", description: "Du kannst nur deine eigenen Einträge löschen", variant: "destructive" });
-      return;
-    }
-    try {
-      const res = await fetch(`/api/shopping-list/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        queryClient.invalidateQueries({ queryKey: ["shopping-list"] });
-        toast({ title: "✓", description: "Artikel gelöscht" });
-      }
-    } catch (error) {
-      toast({ title: "Fehler", description: (error as Error).message, variant: "destructive" });
-    }
-  };
-
 
   if (currentView === "donate") {
     return <DonateView user={user} onClose={() => setCurrentView("dashboard")} />;
