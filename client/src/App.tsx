@@ -61,7 +61,8 @@ import {
   Globe,
   Moon,
   Sun,
-  Laptop
+  Laptop,
+  AlertTriangle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PhotoUpload } from "@/components/PhotoUpload";
@@ -1589,7 +1590,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [showWalletSubmenu, setShowWalletSubmenu] = useState(false);
   const [showCalendarSubmenu, setShowCalendarSubmenu] = useState(false);
-  const [activeSettingsTab, setActiveSettingsTab] = useState<"ansicht" | "wallet" | "peers" | null>(null);
+  const [activeSettingsTab, setActiveSettingsTab] = useState<"ansicht" | "wallet" | "peers" | "dataManagement" | null>(null);
   const [walletTab, setWalletTab] = useState("lnbits");
   
   const [showTasksSubmenu, setShowTasksSubmenu] = useState(false);
@@ -1606,7 +1607,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
     ...(user.role === "child" ? [{ id: "bitcoin-education", label: t('sidebar.bitcoinLearn'), icon: BookOpen, badge: 0 }] : []),
   ];
 
-  const handleSettingsClick = (tab: "ansicht" | "wallet" | "peers") => {
+  const handleSettingsClick = (tab: "ansicht" | "wallet" | "peers" | "dataManagement") => {
     setActiveSettingsTab(tab);
   };
 
@@ -1880,6 +1881,16 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                     data-testid="submenu-level-bonus"
                   >
                     {t('sidebar.levelBonus')}
+                  </button>
+                )}
+
+                {user.role === "parent" && (
+                  <button
+                    onClick={() => { handleSettingsClick("dataManagement"); setSidebarOpen(false); }}
+                    className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-destructive hover:bg-destructive/20 transition-colors text-left"
+                    data-testid="submenu-data-management"
+                  >
+                    {t('dataManagement.title')}
                   </button>
                 )}
               </motion.div>
@@ -2961,6 +2972,330 @@ function PeersContent({ user, setUser, queryClient }: any) {
   }
 }
 
+function DataManagementContent({ user, setUser, onClose }: any) {
+  const { t } = useTranslation();
+  const { toast } = useToast();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmCode, setConfirmCode] = useState("");
+  const [activeConfirm, setActiveConfirm] = useState<string | null>(null);
+
+  const handleCleanup = async (type: "chat" | "photos" | "events" | "shopping") => {
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/cleanup/${type}/${user.connectionId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ peerId: user.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      
+      toast({ 
+        title: t('dataManagement.deleted'), 
+        description: data.deleted > 0 
+          ? t('dataManagement.itemsDeleted', { count: data.deleted })
+          : t('dataManagement.noItemsToDelete')
+      });
+    } catch (error) {
+      toast({ title: t('dataManagement.error'), description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    if (confirmCode !== "DELETE-ALL") {
+      toast({ title: t('dataManagement.error'), description: "Invalid confirmation code", variant: "destructive" });
+      return;
+    }
+    
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/cleanup/all/${user.connectionId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ peerId: user.id, confirmationCode: "DELETE-ALL" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      
+      toast({ title: t('dataManagement.allDataDeleted') });
+      setActiveConfirm(null);
+      setConfirmCode("");
+    } catch (error) {
+      toast({ title: t('dataManagement.error'), description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleResetAccount = async () => {
+    if (confirmCode !== "RESET-ACCOUNT") {
+      toast({ title: t('dataManagement.error'), description: "Invalid confirmation code", variant: "destructive" });
+      return;
+    }
+    
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/account/reset`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ peerId: user.id, confirmationCode: "RESET-ACCOUNT" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      
+      toast({ title: t('dataManagement.accountReset') });
+      setActiveConfirm(null);
+      setConfirmCode("");
+    } catch (error) {
+      toast({ title: t('dataManagement.error'), description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (confirmCode !== "DELETE-ACCOUNT-FOREVER") {
+      toast({ title: t('dataManagement.error'), description: "Invalid confirmation code", variant: "destructive" });
+      return;
+    }
+    
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/account/${user.id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirmationCode: "DELETE-ACCOUNT-FOREVER" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      
+      toast({ title: t('dataManagement.accountDeleted') });
+      localStorage.removeItem("sats-user");
+      setUser(null);
+      onClose();
+    } catch (error) {
+      toast({ title: t('dataManagement.error'), description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/30 text-green-700 dark:text-green-300">
+        <p className="text-sm font-semibold flex items-center gap-2">
+          <span>✓</span> {t('dataManagement.preservedData')}
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase">{t('dataManagement.cleanupSection')}</h3>
+        
+        <div className="grid gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleCleanup("chat")}
+            disabled={isDeleting}
+            className="justify-start h-auto py-2"
+            data-testid="button-cleanup-chat"
+          >
+            <div className="text-left">
+              <p className="font-medium">{t('dataManagement.cleanupChat')}</p>
+              <p className="text-xs text-muted-foreground">{t('dataManagement.cleanupChatDesc')}</p>
+            </div>
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleCleanup("photos")}
+            disabled={isDeleting}
+            className="justify-start h-auto py-2"
+            data-testid="button-cleanup-photos"
+          >
+            <div className="text-left">
+              <p className="font-medium">{t('dataManagement.cleanupPhotos')}</p>
+              <p className="text-xs text-muted-foreground">{t('dataManagement.cleanupPhotosDesc')}</p>
+            </div>
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleCleanup("events")}
+            disabled={isDeleting}
+            className="justify-start h-auto py-2"
+            data-testid="button-cleanup-events"
+          >
+            <div className="text-left">
+              <p className="font-medium">{t('dataManagement.cleanupEvents')}</p>
+              <p className="text-xs text-muted-foreground">{t('dataManagement.cleanupEventsDesc')}</p>
+            </div>
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleCleanup("shopping")}
+            disabled={isDeleting}
+            className="justify-start h-auto py-2"
+            data-testid="button-cleanup-shopping"
+          >
+            <div className="text-left">
+              <p className="font-medium">{t('dataManagement.cleanupShopping')}</p>
+              <p className="text-xs text-muted-foreground">{t('dataManagement.cleanupShoppingDesc')}</p>
+            </div>
+          </Button>
+        </div>
+      </div>
+
+      <Separator />
+
+      <div className="space-y-3">
+        <h3 className="text-sm font-semibold text-destructive uppercase flex items-center gap-2">
+          <AlertTriangle className="h-4 w-4" /> {t('dataManagement.dangerZone')}
+        </h3>
+
+        {activeConfirm === "deleteAll" && (
+          <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 space-y-3">
+            <p className="text-sm text-destructive font-medium">{t('dataManagement.deleteAllWarning')}</p>
+            <p className="text-xs">{t('dataManagement.typeToConfirm', { code: 'DELETE-ALL' })}</p>
+            <Input
+              value={confirmCode}
+              onChange={(e) => setConfirmCode(e.target.value)}
+              placeholder="DELETE-ALL"
+              className="font-mono text-sm"
+              data-testid="input-confirm-delete-all"
+            />
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => { setActiveConfirm(null); setConfirmCode(""); }}
+                data-testid="button-cancel-delete-all"
+              >
+                {t('dataManagement.cancel')}
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDeleteAll}
+                disabled={confirmCode !== "DELETE-ALL" || isDeleting}
+                data-testid="button-confirm-delete-all"
+              >
+                {isDeleting ? "..." : t('dataManagement.confirm')}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {activeConfirm !== "deleteAll" && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setActiveConfirm("deleteAll")}
+            className="w-full justify-start h-auto py-2 border-destructive/50 hover:bg-destructive/10"
+            data-testid="button-delete-all"
+          >
+            <div className="text-left">
+              <p className="font-medium text-destructive">{t('dataManagement.deleteAllData')}</p>
+              <p className="text-xs text-muted-foreground">{t('dataManagement.deleteAllDataDesc')}</p>
+            </div>
+          </Button>
+        )}
+
+        {activeConfirm === "resetAccount" && (
+          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 space-y-3">
+            <p className="text-sm text-amber-700 dark:text-amber-300">{t('dataManagement.permanentAction')}</p>
+            <p className="text-xs">{t('dataManagement.typeToConfirm', { code: 'RESET-ACCOUNT' })}</p>
+            <Input
+              value={confirmCode}
+              onChange={(e) => setConfirmCode(e.target.value)}
+              placeholder="RESET-ACCOUNT"
+              className="font-mono text-sm"
+              data-testid="input-confirm-reset"
+            />
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => { setActiveConfirm(null); setConfirmCode(""); }}>
+                {t('dataManagement.cancel')}
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleResetAccount}
+                disabled={confirmCode !== "RESET-ACCOUNT" || isDeleting}
+              >
+                {isDeleting ? "..." : t('dataManagement.confirm')}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {activeConfirm !== "resetAccount" && activeConfirm !== "deleteAll" && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setActiveConfirm("resetAccount")}
+            className="w-full justify-start h-auto py-2"
+            data-testid="button-reset-account"
+          >
+            <div className="text-left">
+              <p className="font-medium">{t('dataManagement.resetAccount')}</p>
+              <p className="text-xs text-muted-foreground">{t('dataManagement.resetAccountDesc')}</p>
+            </div>
+          </Button>
+        )}
+
+        {activeConfirm === "deleteAccount" && (
+          <div className="p-3 rounded-lg bg-destructive/20 border-2 border-destructive space-y-3">
+            <p className="text-sm text-destructive font-bold">{t('dataManagement.deleteAccountWarning')}</p>
+            <p className="text-xs">{t('dataManagement.typeToConfirm', { code: 'DELETE-ACCOUNT-FOREVER' })}</p>
+            <Input
+              value={confirmCode}
+              onChange={(e) => setConfirmCode(e.target.value)}
+              placeholder="DELETE-ACCOUNT-FOREVER"
+              className="font-mono text-sm border-destructive"
+              data-testid="input-confirm-delete-account"
+            />
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => { setActiveConfirm(null); setConfirmCode(""); }}>
+                {t('dataManagement.cancel')}
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDeleteAccount}
+                disabled={confirmCode !== "DELETE-ACCOUNT-FOREVER" || isDeleting}
+                data-testid="button-confirm-delete-account"
+              >
+                {isDeleting ? "..." : t('dataManagement.confirm')}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {activeConfirm !== "deleteAccount" && activeConfirm !== "resetAccount" && activeConfirm !== "deleteAll" && (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setActiveConfirm("deleteAccount")}
+            className="w-full justify-start h-auto py-2"
+            data-testid="button-delete-account"
+          >
+            <div className="text-left">
+              <p className="font-medium">{t('dataManagement.deleteAccount')}</p>
+              <p className="text-xs opacity-80">{t('dataManagement.deleteAccountDesc')}</p>
+            </div>
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onClose, layoutView, setLayoutView }: any) {
   const { t } = useTranslation();
   const { theme, setTheme } = useTheme();
@@ -3135,6 +3470,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
             {activeTab === "ansicht" && t('sidebar.view')}
             {activeTab === "wallet" && t('sidebar.walletSettings')}
             {activeTab === "peers" && t('sidebar.peers')}
+            {activeTab === "dataManagement" && t('dataManagement.title')}
           </CardTitle>
           <Button 
             variant="ghost" 
@@ -3446,6 +3782,10 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
           {/* PEERS TAB */}
           {activeTab === "peers" && (
             <PeersContent user={user} setUser={setUser} queryClient={queryClient} />
+          )}
+
+          {activeTab === "dataManagement" && (
+            <DataManagementContent user={user} setUser={setUser} onClose={onClose} />
           )}
         </CardContent>
         

@@ -2850,6 +2850,178 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============================================================
+  // DATA CLEANUP ENDPOINTS (PARENT ONLY)
+  // CRITICAL: These routes NEVER delete transactions, balances, or XP data!
+  // ============================================================
+
+  // Cleanup chat messages only
+  app.delete("/api/cleanup/chat/:connectionId", async (req, res) => {
+    try {
+      const { connectionId } = req.params;
+      const { peerId } = req.body;
+      
+      const peer = await storage.getPeer(parseInt(peerId));
+      if (!peer || peer.role !== 'parent') {
+        return res.status(403).json({ error: "Only parents can delete data" });
+      }
+      if (peer.connectionId !== connectionId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const deleted = await storage.cleanupChatMessages(connectionId);
+      console.log(`[Cleanup] Deleted ${deleted} chat messages for family ${connectionId}`);
+      res.json({ success: true, deleted });
+    } catch (error) {
+      console.error("[Cleanup] Error:", error);
+      res.status(500).json({ error: "Failed to cleanup chat" });
+    }
+  });
+
+  // Cleanup photo proofs only
+  app.delete("/api/cleanup/photos/:connectionId", async (req, res) => {
+    try {
+      const { connectionId } = req.params;
+      const { peerId } = req.body;
+      
+      const peer = await storage.getPeer(parseInt(peerId));
+      if (!peer || peer.role !== 'parent') {
+        return res.status(403).json({ error: "Only parents can delete data" });
+      }
+      if (peer.connectionId !== connectionId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const deleted = await storage.cleanupPhotoProofs(connectionId);
+      console.log(`[Cleanup] Cleared ${deleted} photo proofs for family ${connectionId}`);
+      res.json({ success: true, deleted });
+    } catch (error) {
+      console.error("[Cleanup] Error:", error);
+      res.status(500).json({ error: "Failed to cleanup photos" });
+    }
+  });
+
+  // Cleanup old events only
+  app.delete("/api/cleanup/events/:connectionId", async (req, res) => {
+    try {
+      const { connectionId } = req.params;
+      const { peerId } = req.body;
+      
+      const peer = await storage.getPeer(parseInt(peerId));
+      if (!peer || peer.role !== 'parent') {
+        return res.status(403).json({ error: "Only parents can delete data" });
+      }
+      if (peer.connectionId !== connectionId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const deleted = await storage.cleanupOldEvents(connectionId);
+      console.log(`[Cleanup] Deleted ${deleted} old events for family ${connectionId}`);
+      res.json({ success: true, deleted });
+    } catch (error) {
+      console.error("[Cleanup] Error:", error);
+      res.status(500).json({ error: "Failed to cleanup events" });
+    }
+  });
+
+  // Cleanup shopping list only
+  app.delete("/api/cleanup/shopping/:connectionId", async (req, res) => {
+    try {
+      const { connectionId } = req.params;
+      const { peerId } = req.body;
+      
+      const peer = await storage.getPeer(parseInt(peerId));
+      if (!peer || peer.role !== 'parent') {
+        return res.status(403).json({ error: "Only parents can delete data" });
+      }
+      if (peer.connectionId !== connectionId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const deleted = await storage.cleanupShoppingList(connectionId);
+      console.log(`[Cleanup] Deleted ${deleted} shopping list items for family ${connectionId}`);
+      res.json({ success: true, deleted });
+    } catch (error) {
+      console.error("[Cleanup] Error:", error);
+      res.status(500).json({ error: "Failed to cleanup shopping list" });
+    }
+  });
+
+  // DANGEROUS: Cleanup ALL family data (except transactions/balances)
+  app.delete("/api/cleanup/all/:connectionId", async (req, res) => {
+    try {
+      const { connectionId } = req.params;
+      const { peerId, confirmationCode } = req.body;
+      
+      const peer = await storage.getPeer(parseInt(peerId));
+      if (!peer || peer.role !== 'parent') {
+        return res.status(403).json({ error: "Only parents can delete data" });
+      }
+      if (peer.connectionId !== connectionId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      // Require confirmation code for safety
+      if (confirmationCode !== 'DELETE-ALL') {
+        return res.status(400).json({ error: "Invalid confirmation code" });
+      }
+      
+      const result = await storage.cleanupAllFamilyData(connectionId);
+      console.log(`[Cleanup] DELETED ALL for family ${connectionId}:`, result);
+      res.json({ success: true, deleted: result });
+    } catch (error) {
+      console.error("[Cleanup] Error:", error);
+      res.status(500).json({ error: "Failed to cleanup all data" });
+    }
+  });
+
+  // Reset account data (keeps account, clears activity)
+  app.post("/api/account/reset", async (req, res) => {
+    try {
+      const { peerId, confirmationCode } = req.body;
+      
+      const peer = await storage.getPeer(parseInt(peerId));
+      if (!peer || peer.role !== 'parent') {
+        return res.status(403).json({ error: "Only parents can reset data" });
+      }
+      
+      if (confirmationCode !== 'RESET-ACCOUNT') {
+        return res.status(400).json({ error: "Invalid confirmation code" });
+      }
+      
+      const success = await storage.resetAccountData(parseInt(peerId));
+      console.log(`[Account] Reset data for peer ${peerId}: ${success}`);
+      res.json({ success });
+    } catch (error) {
+      console.error("[Account] Reset error:", error);
+      res.status(500).json({ error: "Failed to reset account" });
+    }
+  });
+
+  // DANGEROUS: Delete account permanently
+  app.delete("/api/account/:peerId", async (req, res) => {
+    try {
+      const { peerId } = req.params;
+      const { confirmationCode } = req.body;
+      
+      const peer = await storage.getPeer(parseInt(peerId));
+      if (!peer || peer.role !== 'parent') {
+        return res.status(403).json({ error: "Only parents can delete accounts" });
+      }
+      
+      if (confirmationCode !== 'DELETE-ACCOUNT-FOREVER') {
+        return res.status(400).json({ error: "Invalid confirmation code" });
+      }
+      
+      const success = await storage.deleteAccount(parseInt(peerId), peer.connectionId);
+      console.log(`[Account] DELETED account ${peerId}: ${success}`);
+      res.json({ success, message: "Account permanently deleted" });
+    } catch (error) {
+      console.error("[Account] Delete error:", error);
+      res.status(500).json({ error: "Failed to delete account" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

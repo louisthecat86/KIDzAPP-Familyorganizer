@@ -1,6 +1,6 @@
 import { db } from "./db";
 import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks, type LearningProgress, type InsertLearningProgress, learningProgress, type DailyChallenge, dailyChallenges, type ShoppingList, type InsertShoppingList, shoppingList } from "@shared/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, lt, isNull, or, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // Peer operations
@@ -105,6 +105,15 @@ export interface IStorage {
   createShoppingListItem(item: InsertShoppingList): Promise<ShoppingList>;
   updateShoppingListItem(id: number, updates: Partial<ShoppingList>): Promise<ShoppingList | undefined>;
   deleteShoppingListItem(id: number): Promise<boolean>;
+
+  // Data Cleanup operations (PARENT ONLY - NEVER delete transactions/balances/XP)
+  cleanupChatMessages(connectionId: string): Promise<number>;
+  cleanupPhotoProofs(connectionId: string): Promise<number>;
+  cleanupOldEvents(connectionId: string): Promise<number>;
+  cleanupShoppingList(connectionId: string): Promise<number>;
+  cleanupAllFamilyData(connectionId: string): Promise<{ chat: number; photos: number; events: number; shopping: number; tasks: number }>;
+  resetAccountData(peerId: number): Promise<boolean>;
+  deleteAccount(peerId: number, connectionId: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -894,6 +903,131 @@ export class DatabaseStorage implements IStorage {
   async deleteShoppingListItem(id: number): Promise<boolean> {
     const result = await db.delete(shoppingList).where(eq(shoppingList.id, id));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  // ============================================================
+  // DATA CLEANUP OPERATIONS (PARENT ONLY)
+  // CRITICAL: NEVER delete transactions, balances, or XP/Level data!
+  // ============================================================
+
+  async cleanupChatMessages(connectionId: string): Promise<number> {
+    const result = await db.delete(chatMessages)
+      .where(eq(chatMessages.connectionId, connectionId));
+    return result.rowCount ?? 0;
+  }
+
+  async cleanupPhotoProofs(connectionId: string): Promise<number> {
+    const result = await db.update(tasks)
+      .set({ proof: null })
+      .where(and(
+        eq(tasks.connectionId, connectionId),
+        eq(tasks.status, 'approved')
+      ));
+    return result.rowCount ?? 0;
+  }
+
+  async cleanupOldEvents(connectionId: string): Promise<number> {
+    const now = new Date();
+    const eventIds = await db.select({ id: familyEvents.id })
+      .from(familyEvents)
+      .where(and(
+        eq(familyEvents.connectionId, connectionId),
+        lt(familyEvents.startDate, now)
+      ));
+    
+    if (eventIds.length > 0) {
+      const ids = eventIds.map(e => e.id);
+      await db.delete(eventRsvps).where(inArray(eventRsvps.eventId, ids));
+    }
+    
+    const result = await db.delete(familyEvents)
+      .where(and(
+        eq(familyEvents.connectionId, connectionId),
+        lt(familyEvents.startDate, now)
+      ));
+    return result.rowCount ?? 0;
+  }
+
+  async cleanupShoppingList(connectionId: string): Promise<number> {
+    const result = await db.delete(shoppingList)
+      .where(eq(shoppingList.connectionId, connectionId));
+    return result.rowCount ?? 0;
+  }
+
+  async cleanupAllFamilyData(connectionId: string): Promise<{ chat: number; photos: number; events: number; shopping: number; tasks: number }> {
+    const chat = await this.cleanupChatMessages(connectionId);
+    const photos = await this.cleanupPhotoProofs(connectionId);
+    const events = await this.cleanupOldEvents(connectionId);
+    const shopping = await this.cleanupShoppingList(connectionId);
+    
+    const taskResult = await db.delete(tasks)
+      .where(and(
+        eq(tasks.connectionId, connectionId),
+        or(
+          eq(tasks.status, 'open'),
+          eq(tasks.status, 'approved')
+        )
+      ));
+    const tasksDeleted = taskResult.rowCount ?? 0;
+    
+    return { chat, photos, events, shopping, tasks: tasksDeleted };
+  }
+
+  async resetAccountData(peerId: number): Promise<boolean> {
+    const peer = await this.getPeer(peerId);
+    if (!peer) return false;
+
+    await db.delete(chatMessages).where(eq(chatMessages.senderId, peerId));
+    
+    await db.delete(eventRsvps).where(eq(eventRsvps.peerId, peerId));
+    
+    await db.delete(dailyChallenges).where(eq(dailyChallenges.peerId, peerId));
+    
+    if (peer.role === 'child') {
+      await db.update(tasks)
+        .set({ assignedTo: null, status: 'open', proof: null })
+        .where(eq(tasks.assignedTo, peerId));
+    }
+    
+    return true;
+  }
+
+  async deleteAccount(peerId: number, connectionId: string): Promise<boolean> {
+    const peer = await this.getPeer(peerId);
+    if (!peer) return false;
+
+    await db.delete(chatMessages).where(eq(chatMessages.senderId, peerId));
+    await db.delete(eventRsvps).where(eq(eventRsvps.peerId, peerId));
+    await db.delete(dailyChallenges).where(eq(dailyChallenges.peerId, peerId));
+    await db.delete(allowances).where(eq(allowances.childId, peerId));
+    await db.delete(levelBonusPayouts).where(eq(levelBonusPayouts.childId, peerId));
+    await db.delete(learningProgress).where(eq(learningProgress.peerId, peerId));
+    await db.delete(dailyBitcoinSnapshots).where(eq(dailyBitcoinSnapshots.peerId, peerId));
+    await db.delete(monthlySavingsSnapshots).where(eq(monthlySavingsSnapshots.peerId, peerId));
+    await db.delete(shoppingList).where(eq(shoppingList.addedBy, peerId));
+    
+    await db.update(tasks)
+      .set({ assignedTo: null, status: 'open', proof: null })
+      .where(eq(tasks.assignedTo, peerId));
+    
+    if (peer.role === 'parent') {
+      await db.delete(recurringTasks).where(eq(recurringTasks.connectionId, connectionId));
+      await db.delete(levelBonusSettings).where(eq(levelBonusSettings.connectionId, connectionId));
+      
+      const eventIds = await db.select({ id: familyEvents.id })
+        .from(familyEvents)
+        .where(eq(familyEvents.createdBy, peerId));
+      if (eventIds.length > 0) {
+        const ids = eventIds.map(e => e.id);
+        await db.delete(eventRsvps).where(inArray(eventRsvps.eventId, ids));
+      }
+      await db.delete(familyEvents).where(eq(familyEvents.createdBy, peerId));
+      await db.delete(tasks).where(eq(tasks.createdBy, peerId));
+    }
+    
+    await db.delete(peers).where(eq(peers.id, peerId));
+    
+    return true;
   }
 
 }
