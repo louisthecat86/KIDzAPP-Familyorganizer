@@ -2817,7 +2817,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
           {showParentPinChange && (
             <div className="p-3 rounded-lg border-2 border-amber-500/50 bg-amber-500/10 space-y-2">
               <div className="space-y-2">
-                <Label htmlFor="old-pin">Altes Passwort</Label>
+                <Label htmlFor="old-pin">{t('settings.oldPassword')}</Label>
                 <Input
                   id="old-pin"
                   type="password"
@@ -3551,7 +3551,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                   </Button>
                 </div>
               )}
-              <Label>Dashboard Ansicht</Label>
+              <Label>{t('settings.dashboardView')}</Label>
               <div className="space-y-2">
                 <Button
                   variant={layoutView === "one-column" ? "default" : "outline"}
@@ -3560,7 +3560,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                   data-testid="button-layout-one-column"
                 >
                   <div className="flex flex-col gap-1">
-                    <span className="font-semibold">Einreihig</span>
+                    <span className="font-semibold">{t('settings.singleColumn')}</span>
                     <span className="text-xs text-muted-foreground">{t('settings.boxesArrangedVertically')}</span>
                   </div>
                 </Button>
@@ -3571,7 +3571,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                   data-testid="button-layout-two-column"
                 >
                   <div className="flex flex-col gap-1">
-                    <span className="font-semibold">Zweireihig</span>
+                    <span className="font-semibold">{t('settings.twoColumn')}</span>
                     <span className="text-xs text-muted-foreground">{t('settings.boxesArrangedHorizontally')}</span>
                   </div>
                 </Button>
@@ -4824,9 +4824,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="daily">Täglich</SelectItem>
-                  <SelectItem value="weekly">Wöchentlich</SelectItem>
-                  <SelectItem value="monthly">Monatlich</SelectItem>
+                  <SelectItem value="daily">{t('common.daily')}</SelectItem>
+                  <SelectItem value="weekly">{t('common.weekly')}</SelectItem>
+                  <SelectItem value="monthly">{t('common.monthly')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -4858,7 +4858,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
                     {task.frequency === 'weekly' && weekdays[task.dayOfWeek]} 
-                    {task.frequency === 'daily' && 'Täglich'}
+                    {task.frequency === 'daily' && t('common.daily')}
                     {task.frequency === 'monthly' && `Monatlich am ${task.dayOfMonth || 'Tag'}`}
                     • {task.time}
                   </p>
