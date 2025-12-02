@@ -294,6 +294,10 @@ export const learningProgress = pgTable("learning_progress", {
   totalQuizzesPassed: integer("total_quizzes_passed").default(0).notNull(),
   totalSatsEarned: integer("total_sats_earned").default(0).notNull(),
   dailyChallengesCompleted: integer("daily_challenges_completed").default(0).notNull(),
+  graduatedAt: timestamp("graduated_at"), // When child completed all learning content
+  guardianLevel: integer("guardian_level").default(0).notNull(), // 0=not graduated, 1=Guardian, 2=Ambassador, 3=Master
+  masteryStreakCount: integer("mastery_streak_count").default(0).notNull(), // Post-graduation mastery refresher completions
+  graduationBonusClaimed: boolean("graduation_bonus_claimed").default(false).notNull(), // Whether graduation sats bonus was claimed
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
