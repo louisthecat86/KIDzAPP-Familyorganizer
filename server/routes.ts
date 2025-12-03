@@ -579,30 +579,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Peer nicht gefunden" });
       }
 
-      const memoText = memo || "KIDzAPP Spende";
+      const memoText = memo || `Spende von ${peer.name}`;
       let paymentHash = null;
 
       try {
-        // Try NWC first
+        // Try NWC first (more reliable for external addresses)
         if (peer.nwcConnectionString) {
-          const decryptedNwc = decryptWalletData(peer.nwcConnectionString);
-          if (decryptedNwc) {
-            const { NWCClient } = await import("./nwc");
-            const nwc = new NWCClient(decryptedNwc);
-            paymentHash = await nwc.payToLightningAddress(DEVELOPER_DONATION_ADDRESS, donationSats, memoText);
-            nwc.close();
-            console.log("[Donation] Payment sent via NWC:", paymentHash);
+          try {
+            const decryptedNwc = decryptWalletData(peer.nwcConnectionString);
+            if (decryptedNwc) {
+              const { NWCClient } = await import("./nwc");
+              const nwc = new NWCClient(decryptedNwc);
+              paymentHash = await nwc.payToLightningAddress(DEVELOPER_DONATION_ADDRESS, donationSats, memoText);
+              nwc.close();
+              console.log("[Donation] Payment sent via NWC:", paymentHash);
+            }
+          } catch (nwcError) {
+            console.warn("[Donation] NWC payment failed, trying LNbits:", nwcError);
           }
         }
-        // Fall back to LNbits
-        if (!paymentHash && peer.lnbitsUrl && peer.lnbitsAdminKey) {
+
+        // Fall back to LNbits if NWC failed or not configured
+        if (!paymentHash) {
+          if (!peer.lnbitsUrl || !peer.lnbitsAdminKey) {
+            return res.status(400).json({ error: "Keine Wallet (NWC oder LNbits) konfiguriert. Bitte konfiguriere eine Wallet in den Einstellungen." });
+          }
+          
           const lnbits = new LNBitsClient(peer.lnbitsUrl, peer.lnbitsAdminKey);
           paymentHash = await lnbits.payToLightningAddress(donationSats, DEVELOPER_DONATION_ADDRESS, memoText);
           console.log("[Donation] Payment sent via LNbits:", paymentHash);
-        }
-
-        if (!paymentHash) {
-          return res.status(400).json({ error: "Keine Wallet konfiguriert" });
         }
 
         // Record transaction
@@ -615,10 +620,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           paymentHash
         });
 
+        console.log("[Donation] Success:", { peerId, donationSats, paymentHash, address: DEVELOPER_DONATION_ADDRESS });
         res.json({ success: true, paymentHash, sats: donationSats });
       } catch (walletError) {
         console.error("[Donation] Wallet error:", walletError);
-        res.status(400).json({ error: "Wallet-Fehler: " + (walletError as Error).message });
+        res.status(400).json({ error: "Zahlungsfehler: " + (walletError as Error).message });
       }
     } catch (error) {
       console.error("[Donation] Error:", error);
