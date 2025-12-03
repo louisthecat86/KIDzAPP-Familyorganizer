@@ -5293,69 +5293,50 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('wallet.donationLink')}</CardTitle>
-                  <CardDescription>{t('wallet.receiveDonations')}</CardDescription>
+                  <CardTitle>Unterstütze die Entwicklung</CardTitle>
+                  <CardDescription>Spende an die Entwickler von KIDzAPP</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="donation-addr">{t('wallet.donationAddress')}</Label>
-                    <Input 
-                      id="donation-addr"
-                      placeholder={t('wallet.lightningAddressPlaceholder')}
-                      value={user.donationAddress || ""}
-                      onChange={(e) => setUser({ ...user, donationAddress: e.target.value })}
-                      className="font-mono text-sm"
-                      data-testid="input-donation-address"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {t('wallet.enterDonationAddress')}
-                    </p>
-                  </div>
-                  <Button 
-                    onClick={async () => {
-                      if (!user.donationAddress) {
-                        useToast()({ title: t('common.error'), description: t('donation.addressRequired'), variant: "destructive" });
-                        return;
-                      }
-                      try {
-                        const res = await fetch("/api/donation/set-address", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ peerId: user.id, donationAddress: user.donationAddress })
-                        });
-                        const data = await res.json();
-                        if (res.ok) {
-                          useToast()({ title: t('common.success'), description: t('donation.savedSuccess') });
-                        }
-                      } catch (error) {
-                        useToast()({ title: t('common.error'), description: t('donation.saveError'), variant: "destructive" });
-                      }
-                    }}
-                    className="bg-primary hover:bg-primary/90 w-full"
-                    data-testid="button-save-donation-address"
-                  >
-                    {t('common.save')}
-                  </Button>
-                  {user.donationAddress && (
-                    <div className="p-4 bg-primary/10 border border-primary/30 rounded-lg space-y-2">
-                      <p className="text-xs font-semibold text-primary">{t('wallet.yourDonationLink')}:</p>
-                      <code className="text-xs break-all text-muted-foreground font-mono">
-                        lightning:{user.donationAddress}
-                      </code>
-                      <Button 
-                        onClick={() => {
-                          navigator.clipboard.writeText(`lightning:${user.donationAddress}`);
-                          useToast()({ title: t('donation.copied'), description: t('donation.copiedDesc') });
+                  <p className="text-sm text-muted-foreground">
+                    KIDzAPP ist kostenlos und wird von Entwicklern betreut. Deine Spende hilft uns, die App weiter zu verbessern.
+                  </p>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[10, 50, 100].map((amount) => (
+                      <Button
+                        key={amount}
+                        onClick={async () => {
+                          if (!user.hasNwcConfigured && !user.hasLnbitsConfigured) {
+                            useToast()({ title: t('common.error'), description: "Bitte konfiguriere NWC oder LNbits in den Wallet-Einstellungen", variant: "destructive" });
+                            return;
+                          }
+                          try {
+                            const res = await fetch("/api/donate", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ peerId: user.id, donationSats: amount })
+                            });
+                            const data = await res.json();
+                            if (res.ok) {
+                              useToast()({ title: t('common.success'), description: `${amount} sats gespendet! ✓` });
+                            } else {
+                              useToast()({ title: t('common.error'), description: data.error, variant: "destructive" });
+                            }
+                          } catch (error) {
+                            useToast()({ title: t('common.error'), description: "Spende fehlgeschlagen", variant: "destructive" });
+                          }
                         }}
-                        size="sm"
                         variant="outline"
                         className="w-full"
-                        data-testid="button-copy-donation-link"
+                        data-testid={`button-donate-${amount}`}
                       >
-                        <Copy className="h-4 w-4 mr-2" /> {t('wallet.copyDonationLink')}
+                        {amount} Sats
                       </Button>
-                    </div>
-                  )}
+                    ))}
+                  </div>
+                  <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg text-xs">
+                    <p className="font-semibold mb-1">💡 Hinweis:</p>
+                    <p className="text-muted-foreground">Spenden werden von deiner konfigurierten Wallet verarbeitet.</p>
+                  </div>
                 </CardContent>
               </Card>
             </div>

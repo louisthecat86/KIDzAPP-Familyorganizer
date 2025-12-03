@@ -11,6 +11,7 @@ import { encrypt, decrypt, isEncrypted } from "./crypto";
 import { getVapidPublicKey, notifyTaskCreated, notifyTaskSubmitted, notifyTaskApproved, notifyPaymentReceived, notifyLevelUp, notifyGraduation, notifyNewEvent, notifyNewChatMessage } from "./push";
 
 const DEV_FALLBACK_KEY = "kid-app-dev-encryption-key-32chars!!";
+const DEVELOPER_DONATION_ADDRESS = "mw860602@blink.sv"; // Fixed developer donation address
 
 function getWalletEncryptionKey(): string {
   if (process.env.WALLET_ENCRYPTION_KEY) {
