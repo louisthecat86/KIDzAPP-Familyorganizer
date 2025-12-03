@@ -5306,7 +5306,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         key={amount}
                         onClick={async () => {
                           if (!user.hasNwcConfigured && !user.hasLnbitsConfigured) {
-                            useToast()({ title: t('common.error'), description: "Bitte konfiguriere NWC oder LNbits in den Wallet-Einstellungen", variant: "destructive" });
+                            useToast().toast({ title: t('common.error'), description: "Bitte konfiguriere NWC oder LNbits in den Wallet-Einstellungen", variant: "destructive" });
                             return;
                           }
                           try {
@@ -5317,12 +5317,12 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                             });
                             const data = await res.json();
                             if (res.ok) {
-                              useToast()({ title: t('common.success'), description: `${amount} sats gespendet! ✓` });
+                              useToast().toast({ title: t('common.success'), description: `${amount} sats gespendet! ✓` });
                             } else {
-                              useToast()({ title: t('common.error'), description: data.error, variant: "destructive" });
+                              useToast().toast({ title: t('common.error'), description: data.error, variant: "destructive" });
                             }
                           } catch (error) {
-                            useToast()({ title: t('common.error'), description: "Spende fehlgeschlagen", variant: "destructive" });
+                            useToast().toast({ title: t('common.error'), description: "Spende fehlgeschlagen", variant: "destructive" });
                           }
                         }}
                         variant="outline"
