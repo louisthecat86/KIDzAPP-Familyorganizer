@@ -624,14 +624,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Zahlung fehlgeschlagen - keine erfolgreiche Wallet-Verbindung" });
       }
 
-      // Record transaction
+      // Record transaction (fromPeerId = parent who pays, toPeerId = null for external)
       await storage.createTransaction({
-        peerId,
-        connectionId: peer.connectionId,
+        fromPeerId: peerId,
+        toPeerId: null,
         sats: donationSats,
         type: "donation",
         description: `Spende: ${memoText}`,
-        paymentHash
+        paymentHash,
+        status: "completed"
       });
 
       console.log("[Donation] Success:", { peerId, donationSats, paymentHash, address: DEVELOPER_DONATION_ADDRESS });
@@ -3245,14 +3246,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log("[Donation] NWC fallback payment successful:", paymentHash);
         }
 
-        // Record transaction
+        // Record transaction (fromPeerId = parent who pays, toPeerId = null for external)
         await storage.createTransaction({
-          peerId,
-          connectionId: peer.connectionId,
+          fromPeerId: peerId,
+          toPeerId: null,
           sats,
           type: "donation",
           description: `Spende: ${memo}`,
-          paymentHash
+          paymentHash,
+          status: "completed"
         });
 
         console.log("[Donation] Success:", { peerId, sats, paymentHash, address: DEVELOPER_DONATION_ADDRESS });
