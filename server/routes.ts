@@ -565,6 +565,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Donate to developer
+  app.post("/api/donate", async (req, res) => {
+    try {
+      const { peerId, donationSats, memo } = req.body;
+      
+      if (!peerId || !donationSats || donationSats <= 0) {
+        return res.status(400).json({ error: "peerId und donationSats erforderlich" });
+      }
+
+      const peer = await storage.getPeer(peerId);
+      if (!peer) {
+        return res.status(404).json({ error: "Peer nicht gefunden" });
+      }
+
+      const memoText = memo || "KIDzAPP Spende";
+      let paymentHash = null;
+
+      try {
+        // Try NWC first
+        if (peer.nwcConnectionString) {
+          const decryptedNwc = decryptWalletData(peer.nwcConnectionString);
+          if (decryptedNwc) {
+            const { NWCClient } = await import("./nwc");
+            const nwc = new NWCClient(decryptedNwc);
+            paymentHash = await nwc.payToLightningAddress(DEVELOPER_DONATION_ADDRESS, donationSats, memoText);
+            nwc.close();
+            console.log("[Donation] Payment sent via NWC:", paymentHash);
+          }
+        }
+        // Fall back to LNbits
+        if (!paymentHash && peer.lnbitsUrl && peer.lnbitsAdminKey) {
+          const lnbits = new LNBitsClient(peer.lnbitsUrl, peer.lnbitsAdminKey);
+          paymentHash = await lnbits.payToLightningAddress(donationSats, DEVELOPER_DONATION_ADDRESS, memoText);
+          console.log("[Donation] Payment sent via LNbits:", paymentHash);
+        }
+
+        if (!paymentHash) {
+          return res.status(400).json({ error: "Keine Wallet konfiguriert" });
+        }
+
+        // Record transaction
+        await storage.createTransaction({
+          peerId,
+          connectionId: peer.connectionId,
+          sats: donationSats,
+          type: "donation",
+          description: `Spende: ${memoText}`,
+          paymentHash
+        });
+
+        res.json({ success: true, paymentHash, sats: donationSats });
+      } catch (walletError) {
+        console.error("[Donation] Wallet error:", walletError);
+        res.status(400).json({ error: "Wallet-Fehler: " + (walletError as Error).message });
+      }
+    } catch (error) {
+      console.error("[Donation] Error:", error);
+      res.status(500).json({ error: "Spende fehlgeschlagen: " + (error as Error).message });
+    }
+  });
+
   // Get NWC balance
   app.get("/api/wallet/nwc-balance/:peerId", async (req, res) => {
     try {
