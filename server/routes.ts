@@ -3191,16 +3191,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Donation endpoint - send sats to developer
-  const DEVELOPER_DONATION_ADDRESS = process.env.DEVELOPER_DONATION_ADDRESS || "satoshi@stacker.news";
-  
+  // Donation endpoint - send sats to developer (FIXED with decryption like child payments)
   app.post("/api/donate/:peerId", async (req, res) => {
     try {
       const peerId = parseInt(req.params.peerId);
       const { sats } = req.body;
       
-      if (!sats || sats < 100) {
-        return res.status(400).json({ error: "Mindestens 100 Sats erforderlich" });
+      if (!sats || sats < 10) {
+        return res.status(400).json({ error: "Mindestens 10 Sats erforderlich" });
       }
 
       const peer = await storage.getPeer(peerId);
@@ -3208,9 +3206,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "User nicht gefunden" });
       }
 
-      const hasLnbits = peer.lnbitsUrl && peer.lnbitsAdminKey;
-      const hasNwc = peer.nwcConnectionString;
-      const activeWallet = peer.walletType || (hasLnbits ? "lnbits" : hasNwc ? "nwc" : null);
+      // DECRYPT wallet credentials (same as child payments!)
+      const decryptedNwc = decryptWalletData(peer.nwcConnectionString || "");
+      const decryptedLnbitsKey = decryptWalletData(peer.lnbitsAdminKey || "");
+      const hasNwc = !!decryptedNwc;
+      const hasLnbits = !!(peer.lnbitsUrl && decryptedLnbitsKey);
+      const activeWallet = peer.walletType || (hasNwc ? "nwc" : hasLnbits ? "lnbits" : null);
       
       if (!hasLnbits && !hasNwc) {
         return res.status(400).json({ error: "Wallet nicht konfiguriert" });
@@ -3219,25 +3220,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let paymentHash = "";
       const memo = `Spende von ${peer.name}`;
 
+      console.log("[Donation] Starting payment to", DEVELOPER_DONATION_ADDRESS, "amount:", sats, "sats");
+      console.log("[Donation] Wallet config: activeWallet=", activeWallet, "hasNwc=", hasNwc, "hasLnbits=", hasLnbits);
+
       try {
         if (activeWallet === "nwc" && hasNwc) {
+          console.log("[Donation] Using NWC for payment");
           const { NWCClient } = await import("./nwc");
-          const nwc = new NWCClient(peer.nwcConnectionString!);
+          const nwc = new NWCClient(decryptedNwc);
           paymentHash = await nwc.payToLightningAddress(DEVELOPER_DONATION_ADDRESS, sats, memo);
           nwc.close();
+          console.log("[Donation] NWC payment successful:", paymentHash);
         } else if (hasLnbits) {
-          const lnbits = new LNBitsClient(peer.lnbitsUrl!, peer.lnbitsAdminKey!);
+          console.log("[Donation] Using LNbits for payment, URL:", peer.lnbitsUrl);
+          const lnbits = new LNBitsClient(peer.lnbitsUrl!, decryptedLnbitsKey);
           paymentHash = await lnbits.payToLightningAddress(sats, DEVELOPER_DONATION_ADDRESS, memo);
+          console.log("[Donation] LNbits payment successful:", paymentHash);
+        } else if (hasNwc) {
+          console.log("[Donation] Falling back to NWC");
+          const { NWCClient } = await import("./nwc");
+          const nwc = new NWCClient(decryptedNwc);
+          paymentHash = await nwc.payToLightningAddress(DEVELOPER_DONATION_ADDRESS, sats, memo);
+          nwc.close();
+          console.log("[Donation] NWC fallback payment successful:", paymentHash);
         }
 
-        res.json({ success: true, paymentHash });
+        // Record transaction
+        await storage.createTransaction({
+          peerId,
+          connectionId: peer.connectionId,
+          sats,
+          type: "donation",
+          description: `Spende: ${memo}`,
+          paymentHash
+        });
+
+        console.log("[Donation] Success:", { peerId, sats, paymentHash, address: DEVELOPER_DONATION_ADDRESS });
+        res.json({ success: true, paymentHash, sats });
       } catch (walletError) {
-        console.error("Wallet error during donation:", walletError);
+        console.error("[Donation] Wallet error:", walletError);
         return res.status(400).json({ error: "Wallet-Fehler: " + (walletError as Error).message });
       }
     } catch (error) {
-      console.error("Donation error:", error);
-      res.status(500).json({ error: "Spende fehlgeschlagen" });
+      console.error("[Donation] Error:", error);
+      res.status(500).json({ error: "Spende fehlgeschlagen: " + (error as Error).message });
     }
   });
 
