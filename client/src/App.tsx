@@ -6113,15 +6113,13 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       <div className="space-y-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">{t('calendar.title')}</h1>
-          {user.role === "parent" && (
-            <Button 
-              onClick={() => setCurrentView("calendar-create")} 
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-              data-testid="button-new-event"
-            >
-              <Plus className="h-4 w-4 mr-2" /> {t('calendar.createNewEvent')}
-            </Button>
-          )}
+          <Button 
+            onClick={() => setCurrentView("calendar-create")} 
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            data-testid="button-new-event"
+          >
+            <Plus className="h-4 w-4 mr-2" /> {t('calendar.createNewEvent')}
+          </Button>
         </div>
         <section>
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
@@ -7068,15 +7066,13 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       <div className="space-y-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">{t('calendar.title')}</h1>
-          {user.role === "parent" && (
-            <Button 
-              onClick={() => setCurrentView("calendar-create")} 
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-              data-testid="button-new-event"
-            >
-              <Plus className="h-4 w-4 mr-2" /> {t('calendar.createNewEvent')}
-            </Button>
-          )}
+          <Button 
+            onClick={() => setCurrentView("calendar-create")} 
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            data-testid="button-new-event"
+          >
+            <Plus className="h-4 w-4 mr-2" /> {t('calendar.createNewEvent')}
+          </Button>
         </div>
         <section>
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
