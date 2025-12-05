@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { de, enUS } from "date-fns/locale";
-import { ChevronLeft, MapPin, Check, Trash2, ExternalLink, Map } from "lucide-react";
+import { ChevronLeft, MapPin, Check, Trash2, ExternalLink, Navigation, Loader2 } from "lucide-react";
 
 type LocationPing = {
   id: number;
@@ -49,10 +49,13 @@ export function LocationSharing({ user, familyMembers, onClose }: {
   
   const [note, setNote] = useState("");
   const [status, setStatus] = useState("arrived");
-  const [address, setAddress] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [gpsStatus, setGpsStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [currentPosition, setCurrentPosition] = useState<{lat: number, lng: number} | null>(null);
 
   const isParent = user.role === "parent";
+  const isSecureContext = typeof window !== 'undefined' && window.isSecureContext;
+  const hasGeolocation = typeof navigator !== 'undefined' && 'geolocation' in navigator;
 
   const { data: pings = [], isLoading } = useQuery<LocationPing[]>({
     queryKey: ["/api/locations", user.connectionId],
@@ -83,7 +86,6 @@ export function LocationSharing({ user, familyMembers, onClose }: {
       queryClient.invalidateQueries({ queryKey: ["/api/locations"] });
       toast({ title: t("locationSharing.locationSent") });
       setNote("");
-      setAddress("");
       setIsSending(false);
     },
     onError: () => {
@@ -107,19 +109,54 @@ export function LocationSharing({ user, familyMembers, onClose }: {
     return user.role === "parent" || ping.childId === user.id;
   };
 
-  const generateMapUrl = (addr: string) => {
-    if (!addr.trim()) return undefined;
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr.trim())}`;
+  const getGpsPosition = () => {
+    if (!hasGeolocation) {
+      setGpsStatus("error");
+      toast({ 
+        title: t("locationSharing.gpsNotSupported"),
+        variant: "destructive" 
+      });
+      return;
+    }
+
+    setGpsStatus("loading");
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setCurrentPosition({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+        setGpsStatus("success");
+        toast({ title: t("locationSharing.gpsSuccess") });
+      },
+      (error) => {
+        console.error("GPS Error:", error);
+        setGpsStatus("error");
+        toast({ 
+          title: t("locationSharing.gpsError"),
+          description: t("locationSharing.gpsErrorDesc"),
+          variant: "destructive" 
+        });
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
   };
 
   const handleSendLocation = async () => {
     setIsSending(true);
-    const mapUrl = generateMapUrl(address);
+    let mapUrl: string | undefined;
+    
+    if (currentPosition) {
+      mapUrl = `https://www.google.com/maps?q=${currentPosition.lat},${currentPosition.lng}`;
+    }
+    
     sendLocation.mutate({ 
       note: note.trim(), 
       status,
       mapUrl
     });
+    setCurrentPosition(null);
+    setGpsStatus("idle");
   };
 
   const getMemberName = (memberId: number) => {
@@ -173,16 +210,35 @@ export function LocationSharing({ user, familyMembers, onClose }: {
           </div>
           <div>
             <Label className="flex items-center gap-1">
-              <Map className="h-4 w-4" />
-              {t("locationSharing.addressLabel")}
+              <Navigation className="h-4 w-4" />
+              {t("locationSharing.gpsLabel")}
             </Label>
-            <Input
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder={t("locationSharing.addressPlaceholder")}
-              data-testid="input-location-address"
-            />
-            <p className="text-xs text-muted-foreground mt-1">{t("locationSharing.addressHint")}</p>
+            <Button 
+              onClick={getGpsPosition} 
+              disabled={gpsStatus === "loading"}
+              variant={gpsStatus === "success" ? "default" : "outline"}
+              className={`w-full gap-2 ${gpsStatus === "success" ? "bg-blue-600 hover:bg-blue-700" : ""}`}
+              data-testid="button-get-gps"
+            >
+              {gpsStatus === "loading" ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Navigation className="h-4 w-4" />
+              )}
+              {gpsStatus === "success" 
+                ? t("locationSharing.gpsReady") 
+                : gpsStatus === "loading"
+                  ? t("locationSharing.gpsLoading")
+                  : t("locationSharing.getGps")}
+            </Button>
+            {gpsStatus === "success" && currentPosition && (
+              <p className="text-xs text-green-600 mt-1">
+                {t("locationSharing.gpsCoords")}: {currentPosition.lat.toFixed(5)}, {currentPosition.lng.toFixed(5)}
+              </p>
+            )}
+            {!isSecureContext && (
+              <p className="text-xs text-orange-600 mt-1">{t("locationSharing.httpsRequired")}</p>
+            )}
           </div>
           <div>
             <Label>{t("locationSharing.noteLabel")}</Label>
