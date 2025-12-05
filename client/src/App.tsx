@@ -63,7 +63,9 @@ import {
   Sun,
   Laptop,
   AlertTriangle,
-  Key
+  Key,
+  ClipboardList,
+  RefreshCw
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PhotoUpload } from "@/components/PhotoUpload";
@@ -1788,34 +1790,36 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                   </button>
                   
                   {showTasksSubmenu && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-3 md:ml-4 mt-0.5 md:mt-1 space-y-0.5 md:space-y-1">
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-3 md:ml-4 mt-1 flex flex-col gap-1">
                       <button
                         onClick={() => {
                           setCurrentView("tasks");
                           setSidebarOpen(false);
                         }}
-                        className={`w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm transition-colors text-left ${
+                        className={`w-full px-3 md:px-4 py-2 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
                           currentView === "tasks"
                             ? "bg-violet-500/40 text-foreground font-medium"
-                            : "text-foreground hover:bg-white/20 dark:bg-black/20"
+                            : "text-foreground hover:bg-white/20 dark:hover:bg-black/20"
                         }`}
                         data-testid="submenu-tasks-normal"
                       >
-                        {t('sidebar.normalTasks')}
+                        <ClipboardList className="h-4 w-4 shrink-0" />
+                        <span>{t('sidebar.normalTasks')}</span>
                       </button>
                       <button
                         onClick={() => {
                           setCurrentView("recurring-tasks");
                           setSidebarOpen(false);
                         }}
-                        className={`w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm transition-colors text-left ${
+                        className={`w-full px-3 md:px-4 py-2 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
                           currentView === "recurring-tasks"
                             ? "bg-violet-500/40 text-foreground font-medium"
-                            : "text-foreground hover:bg-white/20 dark:bg-black/20"
+                            : "text-foreground hover:bg-white/20 dark:hover:bg-black/20"
                         }`}
                         data-testid="submenu-tasks-recurring"
                       >
-                        {t('sidebar.recurringTasks')}
+                        <RefreshCw className="h-4 w-4 shrink-0" />
+                        <span>{t('sidebar.recurringTasks')}</span>
                       </button>
                     </motion.div>
                   )}
@@ -1842,92 +1846,92 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                   </button>
                   
                   {showFamilySubmenu && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-3 md:ml-4 mt-0.5 md:mt-1 space-y-0.5 md:space-y-1">
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-3 md:ml-4 mt-1 flex flex-col gap-1">
                       <button
                         onClick={() => { setCurrentView("calendar-view"); setSidebarOpen(false); }}
-                        className={`w-full px-3 py-1.5 rounded-lg text-xs md:text-sm transition-colors text-left flex items-center gap-2 ${
+                        className={`w-full px-3 md:px-4 py-2 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
                           currentView === "calendar-view" || currentView === "calendar-create"
                             ? "bg-violet-500/40 text-foreground font-medium"
-                            : "text-foreground hover:bg-white/20 dark:bg-black/20"
+                            : "text-foreground hover:bg-white/20 dark:hover:bg-black/20"
                         }`}
                         data-testid="submenu-family-calendar"
                       >
-                        <Calendar className="h-3 w-3" />
-                        {t('nav.calendar')}
+                        <Calendar className="h-4 w-4 shrink-0" />
+                        <span>{t('nav.calendar')}</span>
                       </button>
                       <button
                         onClick={() => { setCurrentView("shopping-list"); setSidebarOpen(false); }}
-                        className={`w-full px-3 py-1.5 rounded-lg text-xs md:text-sm transition-colors text-left flex items-center gap-2 ${
+                        className={`w-full px-3 md:px-4 py-2 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
                           currentView === "shopping-list"
                             ? "bg-violet-500/40 text-foreground font-medium"
-                            : "text-foreground hover:bg-white/20 dark:bg-black/20"
+                            : "text-foreground hover:bg-white/20 dark:hover:bg-black/20"
                         }`}
                         data-testid="submenu-family-shopping"
                       >
-                        <Home className="h-3 w-3" />
-                        {t('nav.shoppingList')}
+                        <Home className="h-4 w-4 shrink-0" />
+                        <span>{t('nav.shoppingList')}</span>
                       </button>
                       <button
                         onClick={() => { setCurrentView("family-board"); setSidebarOpen(false); }}
-                        className={`w-full px-3 py-1.5 rounded-lg text-xs md:text-sm transition-colors text-left flex items-center gap-2 ${
+                        className={`w-full px-3 md:px-4 py-2 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
                           currentView === "family-board"
                             ? "bg-violet-500/40 text-foreground font-medium"
-                            : "text-foreground hover:bg-white/20 dark:bg-black/20"
+                            : "text-foreground hover:bg-white/20 dark:hover:bg-black/20"
                         }`}
                         data-testid="submenu-family-board"
                       >
-                        <Home className="h-3 w-3" />
-                        {t('familyBoard.title')}
+                        <Home className="h-4 w-4 shrink-0" />
+                        <span>{t('familyBoard.title')}</span>
                       </button>
                       <button
                         onClick={() => { setCurrentView("location-sharing"); setSidebarOpen(false); }}
-                        className={`w-full px-3 py-1.5 rounded-lg text-xs md:text-sm transition-colors text-left flex items-center gap-2 ${
+                        className={`w-full px-3 md:px-4 py-2 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
                           currentView === "location-sharing"
                             ? "bg-violet-500/40 text-foreground font-medium"
-                            : "text-foreground hover:bg-white/20 dark:bg-black/20"
+                            : "text-foreground hover:bg-white/20 dark:hover:bg-black/20"
                         }`}
                         data-testid="submenu-family-location"
                       >
-                        <MapPin className="h-3 w-3" />
-                        {t('locationSharing.title')}
+                        <MapPin className="h-4 w-4 shrink-0" />
+                        <span>{t('locationSharing.title')}</span>
                       </button>
                       <button
                         onClick={() => { setCurrentView("emergency-contacts"); setSidebarOpen(false); }}
-                        className={`w-full px-3 py-1.5 rounded-lg text-xs md:text-sm transition-colors text-left flex items-center gap-2 ${
+                        className={`w-full px-3 md:px-4 py-2 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
                           currentView === "emergency-contacts"
                             ? "bg-violet-500/40 text-foreground font-medium"
-                            : "text-foreground hover:bg-white/20 dark:bg-black/20"
+                            : "text-foreground hover:bg-white/20 dark:hover:bg-black/20"
                         }`}
                         data-testid="submenu-family-emergency"
                       >
-                        <Bell className="h-3 w-3" />
-                        {t('emergencyContacts.title')}
+                        <Bell className="h-4 w-4 shrink-0" />
+                        <span>{t('emergencyContacts.title')}</span>
                       </button>
                       {user.role === "parent" && (
                         <button
                           onClick={() => { setCurrentView("password-safe"); setSidebarOpen(false); }}
-                          className={`w-full px-3 py-1.5 rounded-lg text-xs md:text-sm transition-colors text-left flex items-center gap-2 ${
+                          className={`w-full px-3 md:px-4 py-2 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
                             currentView === "password-safe"
                               ? "bg-violet-500/40 text-foreground font-medium"
-                              : "text-foreground hover:bg-white/20 dark:bg-black/20"
+                              : "text-foreground hover:bg-white/20 dark:hover:bg-black/20"
                           }`}
                           data-testid="submenu-family-passwords"
                         >
-                          <Key className="h-3 w-3" />
-                          {t('passwordSafe.title')}
+                          <Key className="h-4 w-4 shrink-0" />
+                          <span>{t('passwordSafe.title')}</span>
                         </button>
                       )}
                       <button
                         onClick={() => { setCurrentView("birthdays"); setSidebarOpen(false); }}
-                        className={`w-full px-3 py-1.5 rounded-lg text-xs md:text-sm transition-colors text-left flex items-center gap-2 ${
+                        className={`w-full px-3 md:px-4 py-2 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
                           currentView === "birthdays"
                             ? "bg-violet-500/40 text-foreground font-medium"
-                            : "text-foreground hover:bg-white/20 dark:bg-black/20"
+                            : "text-foreground hover:bg-white/20 dark:hover:bg-black/20"
                         }`}
                         data-testid="submenu-family-birthdays"
                       >
-                        <Calendar className="h-3 w-3" />
-                        {t('birthdays.title')}
+                        <Calendar className="h-4 w-4 shrink-0" />
+                        <span>{t('birthdays.title')}</span>
                       </button>
                     </motion.div>
                   )}
@@ -1973,41 +1977,45 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
             </button>
             
             {showSettingsMenu && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-3 md:ml-4 mt-0.5 md:mt-1 space-y-0.5 md:space-y-1 relative z-50">
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-3 md:ml-4 mt-1 flex flex-col gap-1 relative z-50">
                 <button
                   onClick={() => { handleSettingsClick("ansicht"); setSidebarOpen(false); }}
-                  className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-foreground hover:bg-white/20 dark:bg-black/20 transition-colors text-left"
+                  className="w-full px-3 md:px-4 py-2 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
                   data-testid="submenu-ansicht"
                 >
-                  {t('sidebar.view')}
+                  <Eye className="h-4 w-4 shrink-0" />
+                  <span>{t('sidebar.view')}</span>
                 </button>
 
                 {user.role === "parent" ? (
                   <div>
                     <button
                       onClick={() => setShowWalletSubmenu(!showWalletSubmenu)}
-                      className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-foreground hover:bg-white/20 dark:bg-black/20 transition-colors text-left flex items-center justify-between"
+                      className="w-full px-3 md:px-4 py-2 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
                       data-testid="submenu-wallet"
                     >
-                      <span>{t('sidebar.walletSettings')}</span>
-                      <ChevronDown className={`h-3 w-3 transition-transform ${showWalletSubmenu ? "rotate-180" : ""}`} />
+                      <Bitcoin className="h-4 w-4 shrink-0" />
+                      <span className="flex-1">{t('sidebar.walletSettings')}</span>
+                      <ChevronDown className={`h-4 w-4 transition-transform ${showWalletSubmenu ? "rotate-180" : ""}`} />
                     </button>
                     
                     {showWalletSubmenu && (
-                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-4 md:ml-6 mt-0.5 md:mt-1 space-y-0.5 md:space-y-1">
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-4 md:ml-6 mt-1 flex flex-col gap-1">
                         <button
                           onClick={() => { setWalletTab("lnbits"); handleSettingsClick("wallet"); setSidebarOpen(false); }}
-                          className="w-full px-3 md:px-4 py-0.5 md:py-2 rounded-lg text-xs text-foreground hover:bg-white/20 dark:bg-black/20 transition-colors text-left"
+                          className="w-full px-3 md:px-4 py-2 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
                           data-testid="submenu-wallet-lnbits"
                         >
-                          {t('sidebar.lnbitsConnection')}
+                          <Zap className="h-4 w-4 shrink-0" />
+                          <span>{t('sidebar.lnbitsConnection')}</span>
                         </button>
                         <button
                           onClick={() => { setWalletTab("nwc"); handleSettingsClick("wallet"); setSidebarOpen(false); }}
-                          className="w-full px-3 md:px-4 py-0.5 md:py-2 rounded-lg text-xs text-foreground hover:bg-white/20 dark:bg-black/20 transition-colors text-left"
+                          className="w-full px-3 md:px-4 py-2 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
                           data-testid="submenu-wallet-nwc"
                         >
-                          {t('sidebar.nwcConnection')}
+                          <LinkIcon className="h-4 w-4 shrink-0" />
+                          <span>{t('sidebar.nwcConnection')}</span>
                         </button>
                       </motion.div>
                     )}
@@ -2015,38 +2023,42 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                 ) : (
                   <button
                     onClick={() => { handleSettingsClick("wallet"); setSidebarOpen(false); }}
-                    className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-foreground hover:bg-white/20 dark:bg-black/20 transition-colors text-left"
+                    className="w-full px-3 md:px-4 py-2 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
                     data-testid="submenu-wallet-child"
                   >
-                    {t('sidebar.walletSettings')}
+                    <Bitcoin className="h-4 w-4 shrink-0" />
+                    <span>{t('sidebar.walletSettings')}</span>
                   </button>
                 )}
 
                 <button
                   onClick={() => { handleSettingsClick("peers"); setSidebarOpen(false); }}
-                  className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-foreground hover:bg-white/20 dark:bg-black/20 transition-colors text-left"
+                  className="w-full px-3 md:px-4 py-2 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
                   data-testid="submenu-peers"
                 >
-                  {t('sidebar.peers')}
+                  <Users className="h-4 w-4 shrink-0" />
+                  <span>{t('sidebar.peers')}</span>
                 </button>
 
                 {user.role === "parent" && (
                   <button
                     onClick={() => { setCurrentView("level-bonus-settings"); setSidebarOpen(false); setShowSettingsMenu(false); }}
-                    className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-foreground hover:bg-white/20 dark:bg-black/20 transition-colors text-left"
+                    className="w-full px-3 md:px-4 py-2 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
                     data-testid="submenu-level-bonus"
                   >
-                    {t('sidebar.levelBonus')}
+                    <Trophy className="h-4 w-4 shrink-0" />
+                    <span>{t('sidebar.levelBonus')}</span>
                   </button>
                 )}
 
                 {user.role === "parent" && (
                   <button
                     onClick={() => { handleSettingsClick("dataManagement"); setSidebarOpen(false); }}
-                    className="w-full px-3 md:px-4 py-1 md:py-2 rounded-lg text-xs md:text-sm text-destructive hover:bg-destructive/20 transition-colors text-left"
+                    className="w-full px-3 md:px-4 py-2 rounded-lg text-sm text-destructive hover:bg-destructive/20 transition-colors text-left flex items-center gap-3"
                     data-testid="submenu-data-management"
                   >
-                    {t('dataManagement.title')}
+                    <Trash2 className="h-4 w-4 shrink-0" />
+                    <span>{t('dataManagement.title')}</span>
                   </button>
                 )}
               </motion.div>
