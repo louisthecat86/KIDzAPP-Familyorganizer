@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks, type LearningProgress, type InsertLearningProgress, learningProgress, type DailyChallenge, dailyChallenges, type ShoppingList, type InsertShoppingList, shoppingList } from "@shared/schema";
+import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks, type LearningProgress, type InsertLearningProgress, learningProgress, type DailyChallenge, dailyChallenges, type ShoppingList, type InsertShoppingList, shoppingList, type FamilyBoardPost, type InsertFamilyBoardPost, familyBoardPosts, type LocationPing, type InsertLocationPing, locationPings, type EmergencyContact, type InsertEmergencyContact, emergencyContacts, type PasswordSafeEntry, type InsertPasswordSafeEntry, passwordSafeEntries, type BirthdayReminder, type InsertBirthdayReminder, birthdayReminders } from "@shared/schema";
 import { eq, and, desc, lt, isNull, or, inArray } from "drizzle-orm";
 
 export interface IStorage {
@@ -124,6 +124,37 @@ export interface IStorage {
   getOtherParentsWithConnectionId(connectionId: string, excludePeerId: number): Promise<Peer[]>;
   getChildrenWithConnectionId(connectionId: string): Promise<Peer[]>;
   disconnectChildrenFromFamily(connectionId: string): Promise<number>;
+
+  // Family Board operations
+  getFamilyBoardPosts(connectionId: string): Promise<FamilyBoardPost[]>;
+  createFamilyBoardPost(post: InsertFamilyBoardPost): Promise<FamilyBoardPost>;
+  updateFamilyBoardPost(id: number, updates: Partial<FamilyBoardPost>): Promise<FamilyBoardPost | undefined>;
+  deleteFamilyBoardPost(id: number): Promise<boolean>;
+
+  // Location Pings operations
+  getLocationPings(connectionId: string, limit?: number): Promise<LocationPing[]>;
+  createLocationPing(ping: InsertLocationPing): Promise<LocationPing>;
+  getChildLocationPings(childId: number, limit?: number): Promise<LocationPing[]>;
+
+  // Emergency Contacts operations
+  getEmergencyContacts(connectionId: string): Promise<EmergencyContact[]>;
+  createEmergencyContact(contact: InsertEmergencyContact): Promise<EmergencyContact>;
+  updateEmergencyContact(id: number, updates: Partial<EmergencyContact>): Promise<EmergencyContact | undefined>;
+  deleteEmergencyContact(id: number): Promise<boolean>;
+
+  // Password Safe operations
+  getPasswordSafeEntries(connectionId: string): Promise<PasswordSafeEntry[]>;
+  getPasswordSafeEntry(id: number): Promise<PasswordSafeEntry | undefined>;
+  createPasswordSafeEntry(entry: InsertPasswordSafeEntry): Promise<PasswordSafeEntry>;
+  updatePasswordSafeEntry(id: number, updates: Partial<PasswordSafeEntry>): Promise<PasswordSafeEntry | undefined>;
+  deletePasswordSafeEntry(id: number): Promise<boolean>;
+
+  // Birthday Reminders operations
+  getBirthdayReminders(connectionId: string): Promise<BirthdayReminder[]>;
+  getUpcomingBirthdays(connectionId: string, daysAhead?: number): Promise<BirthdayReminder[]>;
+  createBirthdayReminder(reminder: InsertBirthdayReminder): Promise<BirthdayReminder>;
+  updateBirthdayReminder(id: number, updates: Partial<BirthdayReminder>): Promise<BirthdayReminder | undefined>;
+  deleteBirthdayReminder(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1169,6 +1200,157 @@ export class DatabaseStorage implements IStorage {
     await db.delete(peers).where(eq(peers.id, peerId));
     
     return { success: true, wasLastParent, childrenDisconnected };
+  }
+
+  // Family Board operations
+  async getFamilyBoardPosts(connectionId: string): Promise<FamilyBoardPost[]> {
+    return await db.select().from(familyBoardPosts)
+      .where(eq(familyBoardPosts.connectionId, connectionId))
+      .orderBy(desc(familyBoardPosts.pinned), desc(familyBoardPosts.createdAt));
+  }
+
+  async createFamilyBoardPost(post: InsertFamilyBoardPost): Promise<FamilyBoardPost> {
+    const result = await db.insert(familyBoardPosts).values(post).returning();
+    return result[0];
+  }
+
+  async updateFamilyBoardPost(id: number, updates: Partial<FamilyBoardPost>): Promise<FamilyBoardPost | undefined> {
+    const result = await db.update(familyBoardPosts)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(familyBoardPosts.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteFamilyBoardPost(id: number): Promise<boolean> {
+    const result = await db.delete(familyBoardPosts).where(eq(familyBoardPosts.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Location Pings operations
+  async getLocationPings(connectionId: string, limit: number = 50): Promise<LocationPing[]> {
+    return await db.select().from(locationPings)
+      .where(eq(locationPings.connectionId, connectionId))
+      .orderBy(desc(locationPings.createdAt))
+      .limit(limit);
+  }
+
+  async createLocationPing(ping: InsertLocationPing): Promise<LocationPing> {
+    const result = await db.insert(locationPings).values(ping).returning();
+    return result[0];
+  }
+
+  async getChildLocationPings(childId: number, limit: number = 10): Promise<LocationPing[]> {
+    return await db.select().from(locationPings)
+      .where(eq(locationPings.childId, childId))
+      .orderBy(desc(locationPings.createdAt))
+      .limit(limit);
+  }
+
+  // Emergency Contacts operations
+  async getEmergencyContacts(connectionId: string): Promise<EmergencyContact[]> {
+    return await db.select().from(emergencyContacts)
+      .where(eq(emergencyContacts.connectionId, connectionId))
+      .orderBy(emergencyContacts.priority, emergencyContacts.label);
+  }
+
+  async createEmergencyContact(contact: InsertEmergencyContact): Promise<EmergencyContact> {
+    const result = await db.insert(emergencyContacts).values(contact).returning();
+    return result[0];
+  }
+
+  async updateEmergencyContact(id: number, updates: Partial<EmergencyContact>): Promise<EmergencyContact | undefined> {
+    const result = await db.update(emergencyContacts)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(emergencyContacts.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteEmergencyContact(id: number): Promise<boolean> {
+    const result = await db.delete(emergencyContacts).where(eq(emergencyContacts.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Password Safe operations
+  async getPasswordSafeEntries(connectionId: string): Promise<PasswordSafeEntry[]> {
+    return await db.select().from(passwordSafeEntries)
+      .where(eq(passwordSafeEntries.connectionId, connectionId))
+      .orderBy(passwordSafeEntries.category, passwordSafeEntries.label);
+  }
+
+  async getPasswordSafeEntry(id: number): Promise<PasswordSafeEntry | undefined> {
+    const result = await db.select().from(passwordSafeEntries)
+      .where(eq(passwordSafeEntries.id, id))
+      .limit(1);
+    return result[0];
+  }
+
+  async createPasswordSafeEntry(entry: InsertPasswordSafeEntry): Promise<PasswordSafeEntry> {
+    const result = await db.insert(passwordSafeEntries).values(entry).returning();
+    return result[0];
+  }
+
+  async updatePasswordSafeEntry(id: number, updates: Partial<PasswordSafeEntry>): Promise<PasswordSafeEntry | undefined> {
+    const result = await db.update(passwordSafeEntries)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(passwordSafeEntries.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deletePasswordSafeEntry(id: number): Promise<boolean> {
+    const result = await db.delete(passwordSafeEntries).where(eq(passwordSafeEntries.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Birthday Reminders operations
+  async getBirthdayReminders(connectionId: string): Promise<BirthdayReminder[]> {
+    return await db.select().from(birthdayReminders)
+      .where(eq(birthdayReminders.connectionId, connectionId))
+      .orderBy(birthdayReminders.birthMonth, birthdayReminders.birthDay);
+  }
+
+  async getUpcomingBirthdays(connectionId: string, daysAhead: number = 30): Promise<BirthdayReminder[]> {
+    const all = await this.getBirthdayReminders(connectionId);
+    const today = new Date();
+    const currentMonth = today.getMonth() + 1;
+    const currentDay = today.getDate();
+    
+    return all.filter(b => {
+      const thisYear = new Date(today.getFullYear(), b.birthMonth - 1, b.birthDay);
+      const nextYear = new Date(today.getFullYear() + 1, b.birthMonth - 1, b.birthDay);
+      
+      const nextBirthday = thisYear >= today ? thisYear : nextYear;
+      const daysUntil = Math.floor((nextBirthday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      
+      return daysUntil >= 0 && daysUntil <= daysAhead;
+    }).sort((a, b) => {
+      const getNextBirthday = (bd: BirthdayReminder) => {
+        const thisYear = new Date(today.getFullYear(), bd.birthMonth - 1, bd.birthDay);
+        const nextYear = new Date(today.getFullYear() + 1, bd.birthMonth - 1, bd.birthDay);
+        return thisYear >= today ? thisYear : nextYear;
+      };
+      return getNextBirthday(a).getTime() - getNextBirthday(b).getTime();
+    });
+  }
+
+  async createBirthdayReminder(reminder: InsertBirthdayReminder): Promise<BirthdayReminder> {
+    const result = await db.insert(birthdayReminders).values(reminder).returning();
+    return result[0];
+  }
+
+  async updateBirthdayReminder(id: number, updates: Partial<BirthdayReminder>): Promise<BirthdayReminder | undefined> {
+    const result = await db.update(birthdayReminders)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(birthdayReminders.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteBirthdayReminder(id: number): Promise<boolean> {
+    const result = await db.delete(birthdayReminders).where(eq(birthdayReminders.id, id));
+    return (result.rowCount ?? 0) > 0;
   }
 
 }

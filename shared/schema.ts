@@ -371,3 +371,121 @@ export const insertPushSubscriptionSchema = createInsertSchema(pushSubscriptions
 
 export type InsertPushSubscription = z.infer<typeof insertPushSubscriptionSchema>;
 export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+
+// Family Board Posts Table (Pinnwand für Familie)
+export const familyBoardPosts = pgTable("family_board_posts", {
+  id: serial("id").primaryKey(),
+  connectionId: text("connection_id").notNull(),
+  createdBy: integer("created_by").notNull(),
+  title: text("title").notNull(),
+  body: text("body").notNull(),
+  pinned: boolean("pinned").default(false).notNull(),
+  tags: text("tags").array().default([]),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertFamilyBoardPostSchema = createInsertSchema(familyBoardPosts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertFamilyBoardPost = z.infer<typeof insertFamilyBoardPostSchema>;
+export type FamilyBoardPost = typeof familyBoardPosts.$inferSelect;
+
+// Location Pings Table (Standort-Sharing: "Bin angekommen")
+export const locationPings = pgTable("location_pings", {
+  id: serial("id").primaryKey(),
+  connectionId: text("connection_id").notNull(),
+  childId: integer("child_id").notNull(),
+  latitude: text("latitude"),
+  longitude: text("longitude"),
+  accuracy: integer("accuracy"),
+  note: text("note"),
+  status: text("status").notNull().default("arrived"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertLocationPingSchema = createInsertSchema(locationPings).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertLocationPing = z.infer<typeof insertLocationPingSchema>;
+export type LocationPing = typeof locationPings.$inferSelect;
+
+// Emergency Contacts Table (Notfallkontakte)
+export const emergencyContacts = pgTable("emergency_contacts", {
+  id: serial("id").primaryKey(),
+  connectionId: text("connection_id").notNull(),
+  createdBy: integer("created_by").notNull(),
+  label: text("label").notNull(),
+  name: text("name").notNull(),
+  phone: text("phone").notNull(),
+  notes: text("notes"),
+  priority: integer("priority").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertEmergencyContactSchema = createInsertSchema(emergencyContacts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertEmergencyContact = z.infer<typeof insertEmergencyContactSchema>;
+export type EmergencyContact = typeof emergencyContacts.$inferSelect;
+
+// Password Safe Entries Table (Passwort-Tresor - verschlüsselt)
+export const passwordSafeEntries = pgTable("password_safe_entries", {
+  id: serial("id").primaryKey(),
+  connectionId: text("connection_id").notNull(),
+  createdBy: integer("created_by").notNull(),
+  label: text("label").notNull(),
+  username: text("username"),
+  passwordEnc: text("password_enc").notNull(),
+  url: text("url"),
+  notesEnc: text("notes_enc"),
+  category: text("category").default("general"),
+  lastRotatedAt: timestamp("last_rotated_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertPasswordSafeEntrySchema = createInsertSchema(passwordSafeEntries).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastRotatedAt: true,
+});
+
+export type InsertPasswordSafeEntry = z.infer<typeof insertPasswordSafeEntrySchema>;
+export type PasswordSafeEntry = typeof passwordSafeEntries.$inferSelect;
+
+// Birthday Reminders Table (Geburtstagserinnerungen)
+export const birthdayReminders = pgTable("birthday_reminders", {
+  id: serial("id").primaryKey(),
+  connectionId: text("connection_id").notNull(),
+  createdBy: integer("created_by").notNull(),
+  personName: text("person_name").notNull(),
+  birthMonth: integer("birth_month").notNull(),
+  birthDay: integer("birth_day").notNull(),
+  birthYear: integer("birth_year"),
+  relation: text("relation"),
+  notifyDaysBefore: integer("notify_days_before").array().default([0, 1, 7]),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertBirthdayReminderSchema = createInsertSchema(birthdayReminders).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertBirthdayReminder = z.infer<typeof insertBirthdayReminderSchema>;
+export type BirthdayReminder = typeof birthdayReminders.$inferSelect;
