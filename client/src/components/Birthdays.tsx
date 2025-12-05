@@ -218,7 +218,7 @@ export function Birthdays({ user, onClose }: {
                   <SelectTrigger data-testid="select-birth-month">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-60 overflow-y-auto">
                     {months.map(m => (
                       <SelectItem key={m} value={m.toString()}>
                         {t(`birthdays.months.${m}`)}
