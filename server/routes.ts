@@ -923,6 +923,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Parent not found" });
       }
 
+      // Validate assignedFor child belongs to same family
+      if (data.assignedFor) {
+        const targetChild = await storage.getPeer(data.assignedFor);
+        if (!targetChild || targetChild.connectionId !== data.connectionId || targetChild.role !== "child") {
+          return res.status(400).json({ error: "Ausgewähltes Kind gehört nicht zur Familie" });
+        }
+      }
+
       let invoice = "";
       let escrowLocked = false;
 
