@@ -62,7 +62,8 @@ import {
   Moon,
   Sun,
   Laptop,
-  AlertTriangle
+  AlertTriangle,
+  Key
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PhotoUpload } from "@/components/PhotoUpload";
@@ -1685,23 +1686,21 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [showWalletSubmenu, setShowWalletSubmenu] = useState(false);
   const [showCalendarSubmenu, setShowCalendarSubmenu] = useState(false);
+  const [showFamilySubmenu, setShowFamilySubmenu] = useState(false);
   const [activeSettingsTab, setActiveSettingsTab] = useState<"ansicht" | "wallet" | "peers" | "dataManagement" | null>(null);
   const [walletTab, setWalletTab] = useState("lnbits");
   
   const [showTasksSubmenu, setShowTasksSubmenu] = useState(false);
   
+  const familyViews = ["calendar-create", "calendar-view", "shopping-list", "family-board", "location-sharing", "emergency-contacts", "password-safe", "birthdays"];
+  const isFamilyActive = familyViews.includes(currentView);
+  
   const menuItems = [
     { id: "dashboard", label: user.role === "parent" ? t('nav.dashboard') : t('sidebar.myDashboard'), icon: Home, badge: 0 },
     ...(user.role === "parent" ? [{ id: "tasks", label: t('nav.tasks'), icon: CheckCircle, badge: tasksNotificationCount, submenu: true }] : []),
     ...(user.role === "parent" ? [{ id: "children-overview", label: t('sidebar.childrenOverview'), icon: Users, badge: 0 }] : []),
-    { id: "calendar", label: t('nav.calendar'), icon: Calendar, badge: 0 },
+    { id: "family", label: t('nav.family'), icon: Users, badge: 0, submenu: true },
     { id: "chat", label: t('sidebar.familyChat'), icon: MessageSquare, badge: chatNotificationCount },
-    { id: "shopping-list", label: t('nav.shoppingList'), icon: Home, badge: 0 },
-    { id: "family-board", label: t('familyBoard.title'), icon: Home, badge: 0 },
-    { id: "location-sharing", label: t('locationSharing.title'), icon: MapPin, badge: 0 },
-    { id: "emergency-contacts", label: t('emergencyContacts.title'), icon: Bell, badge: 0 },
-    ...(user.role === "parent" ? [{ id: "password-safe", label: t('passwordSafe.title'), icon: Home, badge: 0 }] : []),
-    { id: "birthdays", label: t('birthdays.title'), icon: Calendar, badge: 0 },
     { id: "notifications", label: t('sidebar.activities'), icon: Bell, badge: 0 },
     { id: "leaderboard", label: t('sidebar.leaderboard'), icon: Trophy, badge: 0 },
     ...(user.role === "child" ? [{ id: "bitcoin-education", label: t('sidebar.bitcoinLearn'), icon: BookOpen, badge: 0 }] : []),
@@ -1824,54 +1823,111 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
               );
             }
             
-            // Calendar Dropdown
-            if (item.id === "calendar") {
-              const isCalendarActive = currentView === "calendar-create" || currentView === "calendar-view";
+            // Familie Dropdown - alle familienbezogenen Features
+            if (item.id === "family") {
               return (
                 <div key={item.id}>
                   <button
-                    onClick={() => setShowCalendarSubmenu(!showCalendarSubmenu)}
+                    onClick={() => setShowFamilySubmenu(!showFamilySubmenu)}
                     className={`w-full px-3 md:px-4 py-1.5 md:py-2 rounded-xl flex items-center gap-2 transition-colors text-sm md:text-base ${
-                      isCalendarActive
+                      isFamilyActive
                         ? "bg-violet-500/40 text-foreground font-medium"
                         : "text-foreground hover:bg-white/20 dark:bg-black/20"
                     }`}
-                    data-testid="menu-item-calendar"
+                    data-testid="menu-item-family"
                   >
                     <Icon className="h-4 w-4" />
                     <span>{item.label}</span>
-                    <ChevronDown className={`h-4 w-4 ml-auto transition-transform ${showCalendarSubmenu ? "rotate-180" : ""}`} />
+                    <ChevronDown className={`h-4 w-4 ml-auto transition-transform ${showFamilySubmenu ? "rotate-180" : ""}`} />
                   </button>
                   
-                  {showCalendarSubmenu && (
+                  {showFamilySubmenu && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-3 md:ml-4 mt-0.5 md:mt-1 space-y-0.5 md:space-y-1">
                       <button
-                        onClick={() => {
-                          setCurrentView("calendar-create");
-                          setSidebarOpen(false);
-                        }}
-                        className={`w-full px-4 py-2 rounded-lg text-sm transition-colors text-left ${
-                          currentView === "calendar-create"
+                        onClick={() => { setCurrentView("calendar-view"); setSidebarOpen(false); }}
+                        className={`w-full px-3 py-1.5 rounded-lg text-xs md:text-sm transition-colors text-left flex items-center gap-2 ${
+                          currentView === "calendar-view" || currentView === "calendar-create"
                             ? "bg-violet-500/40 text-foreground font-medium"
                             : "text-foreground hover:bg-white/20 dark:bg-black/20"
                         }`}
-                        data-testid="submenu-calendar-create"
+                        data-testid="submenu-family-calendar"
                       >
-                        {t('sidebar.createEvent')}
+                        <Calendar className="h-3 w-3" />
+                        {t('nav.calendar')}
                       </button>
                       <button
-                        onClick={() => {
-                          setCurrentView("calendar-view");
-                          setSidebarOpen(false);
-                        }}
-                        className={`w-full px-4 py-2 rounded-lg text-sm transition-colors text-left ${
-                          currentView === "calendar-view"
+                        onClick={() => { setCurrentView("shopping-list"); setSidebarOpen(false); }}
+                        className={`w-full px-3 py-1.5 rounded-lg text-xs md:text-sm transition-colors text-left flex items-center gap-2 ${
+                          currentView === "shopping-list"
                             ? "bg-violet-500/40 text-foreground font-medium"
                             : "text-foreground hover:bg-white/20 dark:bg-black/20"
                         }`}
-                        data-testid="submenu-calendar-view"
+                        data-testid="submenu-family-shopping"
                       >
-                        {t('sidebar.viewEvents')}
+                        <Home className="h-3 w-3" />
+                        {t('nav.shoppingList')}
+                      </button>
+                      <button
+                        onClick={() => { setCurrentView("family-board"); setSidebarOpen(false); }}
+                        className={`w-full px-3 py-1.5 rounded-lg text-xs md:text-sm transition-colors text-left flex items-center gap-2 ${
+                          currentView === "family-board"
+                            ? "bg-violet-500/40 text-foreground font-medium"
+                            : "text-foreground hover:bg-white/20 dark:bg-black/20"
+                        }`}
+                        data-testid="submenu-family-board"
+                      >
+                        <Home className="h-3 w-3" />
+                        {t('familyBoard.title')}
+                      </button>
+                      <button
+                        onClick={() => { setCurrentView("location-sharing"); setSidebarOpen(false); }}
+                        className={`w-full px-3 py-1.5 rounded-lg text-xs md:text-sm transition-colors text-left flex items-center gap-2 ${
+                          currentView === "location-sharing"
+                            ? "bg-violet-500/40 text-foreground font-medium"
+                            : "text-foreground hover:bg-white/20 dark:bg-black/20"
+                        }`}
+                        data-testid="submenu-family-location"
+                      >
+                        <MapPin className="h-3 w-3" />
+                        {t('locationSharing.title')}
+                      </button>
+                      <button
+                        onClick={() => { setCurrentView("emergency-contacts"); setSidebarOpen(false); }}
+                        className={`w-full px-3 py-1.5 rounded-lg text-xs md:text-sm transition-colors text-left flex items-center gap-2 ${
+                          currentView === "emergency-contacts"
+                            ? "bg-violet-500/40 text-foreground font-medium"
+                            : "text-foreground hover:bg-white/20 dark:bg-black/20"
+                        }`}
+                        data-testid="submenu-family-emergency"
+                      >
+                        <Bell className="h-3 w-3" />
+                        {t('emergencyContacts.title')}
+                      </button>
+                      {user.role === "parent" && (
+                        <button
+                          onClick={() => { setCurrentView("password-safe"); setSidebarOpen(false); }}
+                          className={`w-full px-3 py-1.5 rounded-lg text-xs md:text-sm transition-colors text-left flex items-center gap-2 ${
+                            currentView === "password-safe"
+                              ? "bg-violet-500/40 text-foreground font-medium"
+                              : "text-foreground hover:bg-white/20 dark:bg-black/20"
+                          }`}
+                          data-testid="submenu-family-passwords"
+                        >
+                          <Key className="h-3 w-3" />
+                          {t('passwordSafe.title')}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => { setCurrentView("birthdays"); setSidebarOpen(false); }}
+                        className={`w-full px-3 py-1.5 rounded-lg text-xs md:text-sm transition-colors text-left flex items-center gap-2 ${
+                          currentView === "birthdays"
+                            ? "bg-violet-500/40 text-foreground font-medium"
+                            : "text-foreground hover:bg-white/20 dark:bg-black/20"
+                        }`}
+                        data-testid="submenu-family-birthdays"
+                      >
+                        <Calendar className="h-3 w-3" />
+                        {t('birthdays.title')}
                       </button>
                     </motion.div>
                   )}
