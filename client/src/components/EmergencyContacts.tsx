@@ -49,7 +49,7 @@ export function EmergencyContacts({ user, onClose }: {
   const { data: contacts = [], isLoading } = useQuery<EmergencyContact[]>({
     queryKey: ["/api/emergency-contacts", user.connectionId],
     queryFn: async () => {
-      const res = await fetch(`/api/emergency-contacts/${user.connectionId}`);
+      const res = await fetch(`/api/emergency-contacts/${user.connectionId}?peerId=${user.id}`);
       if (!res.ok) throw new Error("Failed to fetch contacts");
       return res.json();
     },
@@ -79,7 +79,7 @@ export function EmergencyContacts({ user, onClose }: {
 
   const deleteContact = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/emergency-contacts/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/emergency-contacts/${id}?peerId=${user.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete contact");
       return res.json();
     },

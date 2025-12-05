@@ -54,7 +54,7 @@ export function PasswordSafe({ user, onClose }: {
   const { data: entries = [], isLoading } = useQuery<PasswordEntry[]>({
     queryKey: ["/api/password-safe", user.connectionId],
     queryFn: async () => {
-      const res = await fetch(`/api/password-safe/${user.connectionId}`);
+      const res = await fetch(`/api/password-safe/${user.connectionId}?peerId=${user.id}`);
       if (!res.ok) throw new Error("Failed to fetch passwords");
       return res.json();
     },

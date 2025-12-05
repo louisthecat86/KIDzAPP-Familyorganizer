@@ -3688,6 +3688,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.get("/api/board/:connectionId", async (req, res) => {
     try {
+      const { peerId } = req.query;
+      if (!peerId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+      const peer = await storage.getPeer(parseInt(peerId as string));
+      if (!peer || peer.connectionId !== req.params.connectionId) {
+        return res.status(403).json({ error: "Access denied - family mismatch" });
+      }
       const posts = await storage.getFamilyBoardPosts(req.params.connectionId);
       res.json(posts);
     } catch (error) {
@@ -3702,6 +3710,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!connectionId || !createdBy || !title || !body) {
         return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const peer = await storage.getPeer(createdBy);
+      if (!peer || peer.connectionId !== connectionId) {
+        return res.status(403).json({ error: "Access denied - family mismatch" });
       }
 
       const post = await storage.createFamilyBoardPost({
@@ -3724,7 +3737,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/board/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const updates = req.body;
+      const { peerId, ...updates } = req.body;
+      
+      if (!peerId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+      
+      const peer = await storage.getPeer(peerId);
+      if (!peer) {
+        return res.status(403).json({ error: "Access denied" });
+      }
       
       if (updates.expiresAt) {
         updates.expiresAt = new Date(updates.expiresAt);
@@ -3744,6 +3766,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/board/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      const { peerId } = req.query;
+      
+      if (!peerId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+      
+      const peer = await storage.getPeer(parseInt(peerId as string));
+      if (!peer) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
       const success = await storage.deleteFamilyBoardPost(id);
       res.json({ success });
     } catch (error) {
@@ -3753,11 +3786,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ============================================
-  // LOCATION PINGS API
+  // LOCATION PINGS API (Parent-only GET, Child-only POST)
   // ============================================
   
   app.get("/api/locations/:connectionId", async (req, res) => {
     try {
+      const { peerId } = req.query;
+      if (!peerId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+      
+      const peer = await storage.getPeer(parseInt(peerId as string));
+      if (!peer || peer.role !== "parent" || peer.connectionId !== req.params.connectionId) {
+        return res.status(403).json({ error: "Only parents can view location history" });
+      }
+      
       const limit = parseInt(req.query.limit as string) || 50;
       const pings = await storage.getLocationPings(req.params.connectionId, limit);
       res.json(pings);
@@ -3769,6 +3812,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/locations/child/:childId", async (req, res) => {
     try {
+      const { peerId } = req.query;
+      if (!peerId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+      
+      const peer = await storage.getPeer(parseInt(peerId as string));
+      if (!peer || peer.role !== "parent") {
+        return res.status(403).json({ error: "Only parents can view child locations" });
+      }
+      
       const childId = parseInt(req.params.childId);
       const limit = parseInt(req.query.limit as string) || 10;
       const pings = await storage.getChildLocationPings(childId, limit);
@@ -3785,6 +3838,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!connectionId || !childId) {
         return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const child = await storage.getPeer(childId);
+      if (!child || child.role !== "child" || child.connectionId !== connectionId) {
+        return res.status(403).json({ error: "Only children can send arrival notifications" });
       }
 
       const ping = await storage.createLocationPing({
@@ -3805,11 +3863,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ============================================
-  // EMERGENCY CONTACTS API
+  // EMERGENCY CONTACTS API (All family can read, parent-only write)
   // ============================================
   
   app.get("/api/emergency-contacts/:connectionId", async (req, res) => {
     try {
+      const { peerId } = req.query;
+      if (!peerId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+      
+      const peer = await storage.getPeer(parseInt(peerId as string));
+      if (!peer || peer.connectionId !== req.params.connectionId) {
+        return res.status(403).json({ error: "Access denied - family mismatch" });
+      }
+      
       const contacts = await storage.getEmergencyContacts(req.params.connectionId);
       res.json(contacts);
     } catch (error) {
@@ -3824,6 +3892,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!connectionId || !createdBy || !label || !name || !phone) {
         return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const peer = await storage.getPeer(createdBy);
+      if (!peer || peer.role !== "parent" || peer.connectionId !== connectionId) {
+        return res.status(403).json({ error: "Only parents can add emergency contacts" });
       }
 
       const contact = await storage.createEmergencyContact({
@@ -3846,7 +3919,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/emergency-contacts/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const contact = await storage.updateEmergencyContact(id, req.body);
+      const { peerId, ...updates } = req.body;
+      
+      if (!peerId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+      
+      const peer = await storage.getPeer(peerId);
+      if (!peer || peer.role !== "parent") {
+        return res.status(403).json({ error: "Only parents can update emergency contacts" });
+      }
+      
+      const contact = await storage.updateEmergencyContact(id, updates);
       if (!contact) {
         return res.status(404).json({ error: "Contact not found" });
       }
@@ -3860,6 +3944,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/emergency-contacts/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      const { peerId } = req.query;
+      
+      if (!peerId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+      
+      const peer = await storage.getPeer(parseInt(peerId as string));
+      if (!peer || peer.role !== "parent") {
+        return res.status(403).json({ error: "Only parents can delete emergency contacts" });
+      }
+      
       const success = await storage.deleteEmergencyContact(id);
       res.json({ success });
     } catch (error) {
@@ -3874,8 +3969,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.get("/api/password-safe/:connectionId", async (req, res) => {
     try {
+      const { peerId } = req.query;
+      if (!peerId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+      
+      const peer = await storage.getPeer(parseInt(peerId as string));
+      if (!peer || peer.role !== "parent" || peer.connectionId !== req.params.connectionId) {
+        return res.status(403).json({ error: "Only parents can access the password safe" });
+      }
+      
       const entries = await storage.getPasswordSafeEntries(req.params.connectionId);
-      // Don't decrypt passwords - just return metadata
       const safeEntries = entries.map(e => ({
         ...e,
         passwordEnc: "***",
@@ -4020,11 +4124,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ============================================
-  // BIRTHDAY REMINDERS API
+  // BIRTHDAY REMINDERS API (All family can read, parent-only write)
   // ============================================
   
   app.get("/api/birthdays/:connectionId", async (req, res) => {
     try {
+      const { peerId } = req.query;
+      if (!peerId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+      
+      const peer = await storage.getPeer(parseInt(peerId as string));
+      if (!peer || peer.connectionId !== req.params.connectionId) {
+        return res.status(403).json({ error: "Access denied - family mismatch" });
+      }
+      
       const birthdays = await storage.getBirthdayReminders(req.params.connectionId);
       res.json(birthdays);
     } catch (error) {
@@ -4035,6 +4149,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/birthdays/upcoming/:connectionId", async (req, res) => {
     try {
+      const { peerId } = req.query;
+      if (!peerId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+      
+      const peer = await storage.getPeer(parseInt(peerId as string));
+      if (!peer || peer.connectionId !== req.params.connectionId) {
+        return res.status(403).json({ error: "Access denied - family mismatch" });
+      }
+      
       const daysAhead = parseInt(req.query.days as string) || 30;
       const birthdays = await storage.getUpcomingBirthdays(req.params.connectionId, daysAhead);
       res.json(birthdays);
@@ -4050,6 +4174,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!connectionId || !createdBy || !personName || !birthMonth || !birthDay) {
         return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const peer = await storage.getPeer(createdBy);
+      if (!peer || peer.role !== "parent" || peer.connectionId !== connectionId) {
+        return res.status(403).json({ error: "Only parents can add birthday reminders" });
       }
 
       const birthday = await storage.createBirthdayReminder({
@@ -4074,7 +4203,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/birthdays/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const birthday = await storage.updateBirthdayReminder(id, req.body);
+      const { peerId, ...updates } = req.body;
+      
+      if (!peerId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+      
+      const peer = await storage.getPeer(peerId);
+      if (!peer || peer.role !== "parent") {
+        return res.status(403).json({ error: "Only parents can update birthday reminders" });
+      }
+      
+      const birthday = await storage.updateBirthdayReminder(id, updates);
       if (!birthday) {
         return res.status(404).json({ error: "Birthday not found" });
       }
@@ -4088,6 +4228,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/birthdays/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      const { peerId } = req.query;
+      
+      if (!peerId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+      
+      const peer = await storage.getPeer(parseInt(peerId as string));
+      if (!peer || peer.role !== "parent") {
+        return res.status(403).json({ error: "Only parents can delete birthday reminders" });
+      }
+      
       const success = await storage.deleteBirthdayReminder(id);
       res.json({ success });
     } catch (error) {

@@ -52,7 +52,7 @@ export function Birthdays({ user, onClose }: {
   const { data: birthdays = [], isLoading } = useQuery<BirthdayReminder[]>({
     queryKey: ["/api/birthdays", user.connectionId],
     queryFn: async () => {
-      const res = await fetch(`/api/birthdays/${user.connectionId}`);
+      const res = await fetch(`/api/birthdays/${user.connectionId}?peerId=${user.id}`);
       if (!res.ok) throw new Error("Failed to fetch birthdays");
       return res.json();
     },
@@ -62,7 +62,7 @@ export function Birthdays({ user, onClose }: {
   const { data: upcomingBirthdays = [] } = useQuery<BirthdayReminder[]>({
     queryKey: ["/api/birthdays/upcoming", user.connectionId],
     queryFn: async () => {
-      const res = await fetch(`/api/birthdays/upcoming/${user.connectionId}?days=30`);
+      const res = await fetch(`/api/birthdays/upcoming/${user.connectionId}?days=30&peerId=${user.id}`);
       if (!res.ok) throw new Error("Failed to fetch upcoming birthdays");
       return res.json();
     },
@@ -93,7 +93,7 @@ export function Birthdays({ user, onClose }: {
 
   const deleteBirthday = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/birthdays/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/birthdays/${id}?peerId=${user.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete birthday");
       return res.json();
     },

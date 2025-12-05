@@ -56,7 +56,7 @@ export function LocationSharing({ user, familyMembers, onClose }: {
   const { data: pings = [], isLoading } = useQuery<LocationPing[]>({
     queryKey: ["/api/locations", user.connectionId],
     queryFn: async () => {
-      const res = await fetch(`/api/locations/${user.connectionId}?limit=20`);
+      const res = await fetch(`/api/locations/${user.connectionId}?limit=20&peerId=${user.id}`);
       if (!res.ok) throw new Error("Failed to fetch locations");
       return res.json();
     },

@@ -50,7 +50,7 @@ export function FamilyBoard({ user, familyMembers, onClose }: {
   const { data: posts = [], isLoading } = useQuery<FamilyBoardPost[]>({
     queryKey: ["/api/board", user.connectionId],
     queryFn: async () => {
-      const res = await fetch(`/api/board/${user.connectionId}`);
+      const res = await fetch(`/api/board/${user.connectionId}?peerId=${user.id}`);
       if (!res.ok) throw new Error("Failed to fetch posts");
       return res.json();
     },
@@ -84,7 +84,7 @@ export function FamilyBoard({ user, familyMembers, onClose }: {
 
   const deletePost = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/board/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/board/${id}?peerId=${user.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete post");
       return res.json();
     },
@@ -99,7 +99,7 @@ export function FamilyBoard({ user, familyMembers, onClose }: {
       const res = await fetch(`/api/board/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pinned })
+        body: JSON.stringify({ peerId: user.id, pinned })
       });
       if (!res.ok) throw new Error("Failed to update post");
       return res.json();
