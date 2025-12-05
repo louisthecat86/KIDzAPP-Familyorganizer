@@ -89,7 +89,7 @@ export function Birthdays({ user, onClose }: {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/birthdays"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/events"] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
       toast({ title: t("birthdays.birthdayAdded") });
       resetForm();
     },
@@ -106,7 +106,7 @@ export function Birthdays({ user, onClose }: {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/birthdays"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/events"] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
       toast({ title: t("birthdays.birthdayDeleted") });
     },
     onError: (error: Error) => {
