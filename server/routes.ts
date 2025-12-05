@@ -3786,7 +3786,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ============================================
-  // LOCATION PINGS API (Parent-only GET, Child-only POST)
+  // LOCATION PINGS API (All family members can view and send)
   // ============================================
   
   app.get("/api/locations/:connectionId", async (req, res) => {
@@ -3797,8 +3797,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const peer = await storage.getPeer(parseInt(peerId as string));
-      if (!peer || peer.role !== "parent" || peer.connectionId !== req.params.connectionId) {
-        return res.status(403).json({ error: "Only parents can view location history" });
+      if (!peer || peer.connectionId !== req.params.connectionId) {
+        return res.status(403).json({ error: "Access denied - family mismatch" });
       }
       
       const limit = parseInt(req.query.limit as string) || 50;
@@ -3818,8 +3818,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const peer = await storage.getPeer(parseInt(peerId as string));
-      if (!peer || peer.role !== "parent") {
-        return res.status(403).json({ error: "Only parents can view child locations" });
+      if (!peer) {
+        return res.status(403).json({ error: "Access denied" });
       }
       
       const childId = parseInt(req.params.childId);
@@ -3840,9 +3840,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Missing required fields" });
       }
 
-      const child = await storage.getPeer(childId);
-      if (!child || child.role !== "child" || child.connectionId !== connectionId) {
-        return res.status(403).json({ error: "Only children can send arrival notifications" });
+      const peer = await storage.getPeer(childId);
+      if (!peer || peer.connectionId !== connectionId) {
+        return res.status(403).json({ error: "Access denied - family mismatch" });
       }
 
       const ping = await storage.createLocationPing({

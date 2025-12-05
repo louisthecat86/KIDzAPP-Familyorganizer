@@ -60,7 +60,7 @@ export function LocationSharing({ user, familyMembers, onClose }: {
       if (!res.ok) throw new Error("Failed to fetch locations");
       return res.json();
     },
-    enabled: !!user.connectionId && isParent,
+    enabled: !!user.connectionId,
     refetchInterval: 30000
   });
 
@@ -113,8 +113,8 @@ export function LocationSharing({ user, familyMembers, onClose }: {
     }
   };
 
-  const getChildName = (childId: number) => {
-    const member = familyMembers.find(m => m.id === childId);
+  const getMemberName = (memberId: number) => {
+    const member = familyMembers.find(m => m.id === memberId);
     return member?.name || "Unknown";
   };
 
@@ -198,46 +198,44 @@ export function LocationSharing({ user, familyMembers, onClose }: {
         </CardContent>
       </Card>
 
-      {isParent && (
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold">{t("locationSharing.recentArrivals")}</h2>
-          
-          {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading...</div>
-          ) : pings.length === 0 ? (
-            <Card className="py-12 text-center text-muted-foreground">
-              <MapPin className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>{t("locationSharing.noArrivals")}</p>
-            </Card>
-          ) : (
-            <div className="space-y-2">
-              {pings.map((ping) => (
-                <Card key={ping.id} className="hover:bg-muted/50 transition-colors" data-testid={`card-ping-${ping.id}`}>
-                  <CardContent className="py-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                          <MapPin className="h-5 w-5 text-blue-600" />
-                        </div>
-                        <div>
-                          <div className="font-medium">{getChildName(ping.childId)}</div>
-                          <div className="text-sm text-muted-foreground flex items-center gap-2">
-                            <span>{getStatusLabel(ping.status)}</span>
-                            {ping.note && <span>• {ping.note}</span>}
-                          </div>
-                        </div>
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold">{t("locationSharing.recentArrivals")}</h2>
+        
+        {isLoading ? (
+          <div className="text-center py-8 text-muted-foreground">Loading...</div>
+        ) : pings.length === 0 ? (
+          <Card className="py-12 text-center text-muted-foreground">
+            <MapPin className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>{t("locationSharing.noArrivals")}</p>
+          </Card>
+        ) : (
+          <div className="space-y-2">
+            {pings.map((ping) => (
+              <Card key={ping.id} className="hover:bg-muted/50 transition-colors" data-testid={`card-ping-${ping.id}`}>
+                <CardContent className="py-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                        <MapPin className="h-5 w-5 text-blue-600" />
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        {formatDistanceToNow(new Date(ping.createdAt), { addSuffix: true, locale })}
+                      <div>
+                        <div className="font-medium">{getMemberName(ping.childId)}</div>
+                        <div className="text-sm text-muted-foreground flex items-center gap-2">
+                          <span>{getStatusLabel(ping.status)}</span>
+                          {ping.note && <span>• {ping.note}</span>}
+                        </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+                    <div className="text-sm text-muted-foreground">
+                      {formatDistanceToNow(new Date(ping.createdAt), { addSuffix: true, locale })}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
