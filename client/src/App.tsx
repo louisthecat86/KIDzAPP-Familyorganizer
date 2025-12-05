@@ -6633,7 +6633,11 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   });
 
   const myTasks = tasks.filter((t: Task) => t.assignedTo === user.id);
-  const availableTasks = tasks.filter((t: Task) => t.status === "open");
+  // Filter available tasks: only show tasks that are either for all children (assignedFor is null) or specifically for this child
+  const availableTasks = tasks.filter((t: Task) => 
+    t.status === "open" && 
+    (t.assignedFor === null || t.assignedFor === undefined || t.assignedFor === user.id)
+  );
   const familyTasks = availableTasks.filter((t: Task) => t.isRequired);
   const paidTasks = availableTasks.filter((t: Task) => !t.isRequired);
 
