@@ -6111,11 +6111,11 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
 
     return (
       <div className="space-y-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">{t('calendar.title')}</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold">{t('calendar.title')}</h1>
           <Button 
             onClick={() => setCurrentView("calendar-create")} 
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto"
             data-testid="button-new-event"
           >
             <Plus className="h-4 w-4 mr-2" /> {t('calendar.createNewEvent')}
@@ -7064,11 +7064,11 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
     return (
       <div className="space-y-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">{t('calendar.title')}</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold">{t('calendar.title')}</h1>
           <Button 
             onClick={() => setCurrentView("calendar-create")} 
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto"
             data-testid="button-new-event"
           >
             <Plus className="h-4 w-4 mr-2" /> {t('calendar.createNewEvent')}
