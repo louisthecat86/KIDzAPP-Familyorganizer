@@ -4793,12 +4793,22 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       modifiers={{
                         hasEvent: (date) => events.some(e => {
                           const eventDate = new Date(e.startDate);
-                          return eventDate.toDateString() === date.toDateString();
+                          const isBirthday = (e as any).eventType === "birthday" || e.id < 0;
+                          return eventDate.toDateString() === date.toDateString() && !isBirthday;
+                        }),
+                        hasBirthday: (date) => events.some(e => {
+                          const eventDate = new Date(e.startDate);
+                          const isBirthday = (e as any).eventType === "birthday" || e.id < 0;
+                          return eventDate.toDateString() === date.toDateString() && isBirthday;
                         })
                       }}
                       modifiersStyles={{
                         hasEvent: {
                           backgroundColor: "rgba(59, 130, 246, 0.2)",
+                          fontWeight: "bold"
+                        },
+                        hasBirthday: {
+                          backgroundColor: "rgba(236, 72, 153, 0.3)",
                           fontWeight: "bold"
                         }
                       }}
@@ -4812,18 +4822,29 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     <div className="space-y-1 max-h-32 md:max-h-40 overflow-y-auto">
                       {events
                         .filter(e => new Date(e.startDate).toDateString() === selectedDate.toDateString())
-                        .map((event: FamilyEvent) => (
-                          <div 
-                            key={event.id} 
-                            className="text-xs border-l border-primary/50 pl-1.5 py-0.5 bg-primary/5 rounded cursor-pointer hover:bg-primary/10 transition-colors"
-                            data-testid={`text-calendar-event-${event.id}`}
-                          >
-                            <p className="font-semibold text-primary text-xs truncate">{event.title}</p>
-                            <p className="text-muted-foreground text-xs">
-                              ⏰ {new Date(event.startDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
-                            </p>
-                          </div>
-                        ))}
+                        .map((event: any) => {
+                          const isBirthday = event.eventType === "birthday" || event.id < 0;
+                          return (
+                            <div 
+                              key={event.id} 
+                              className={`text-xs pl-1.5 py-0.5 rounded cursor-pointer transition-colors ${
+                                isBirthday 
+                                  ? "border-l border-pink-500/50 bg-pink-500/10 hover:bg-pink-500/20" 
+                                  : "border-l border-primary/50 bg-primary/5 hover:bg-primary/10"
+                              }`}
+                              data-testid={`text-calendar-event-${event.id}`}
+                            >
+                              <p className={`font-semibold text-xs truncate ${isBirthday ? "text-pink-500" : "text-primary"}`}>
+                                {isBirthday ? "🎂 " : ""}{event.title}
+                              </p>
+                              {!isBirthday && (
+                                <p className="text-muted-foreground text-xs">
+                                  ⏰ {new Date(event.startDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })}
                       {events.filter(e => new Date(e.startDate).toDateString() === selectedDate.toDateString()).length === 0 && (
                         <p className="text-xs text-muted-foreground text-center py-1">{t('dashboard.noEvents')}</p>
                       )}
@@ -9039,12 +9060,22 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                       modifiers={{
                         hasEvent: (date) => events.some(e => {
                           const eventDate = new Date(e.startDate);
-                          return eventDate.toDateString() === date.toDateString();
+                          const isBirthday = (e as any).eventType === "birthday" || e.id < 0;
+                          return eventDate.toDateString() === date.toDateString() && !isBirthday;
+                        }),
+                        hasBirthday: (date) => events.some(e => {
+                          const eventDate = new Date(e.startDate);
+                          const isBirthday = (e as any).eventType === "birthday" || e.id < 0;
+                          return eventDate.toDateString() === date.toDateString() && isBirthday;
                         })
                       }}
                       modifiersStyles={{
                         hasEvent: {
                           backgroundColor: "rgba(59, 130, 246, 0.2)",
+                          fontWeight: "bold"
+                        },
+                        hasBirthday: {
+                          backgroundColor: "rgba(236, 72, 153, 0.3)",
                           fontWeight: "bold"
                         }
                       }}
@@ -9058,18 +9089,29 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     <div className="space-y-1 max-h-32 md:max-h-40 overflow-y-auto">
                       {events
                         .filter(e => new Date(e.startDate).toDateString() === selectedDate.toDateString())
-                        .map((event: FamilyEvent) => (
-                          <div 
-                            key={event.id} 
-                            className="text-xs border-l border-primary/50 pl-1.5 py-0.5 bg-primary/5 rounded cursor-pointer hover:bg-primary/10 transition-colors"
-                            data-testid={`text-dash-event-${event.id}`}
-                          >
-                            <p className="font-semibold text-primary text-xs truncate">{event.title}</p>
-                            <p className="text-muted-foreground text-xs">
-                              ⏰ {new Date(event.startDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
-                            </p>
-                          </div>
-                        ))}
+                        .map((event: any) => {
+                          const isBirthday = event.eventType === "birthday" || event.id < 0;
+                          return (
+                            <div 
+                              key={event.id} 
+                              className={`text-xs pl-1.5 py-0.5 rounded cursor-pointer transition-colors ${
+                                isBirthday 
+                                  ? "border-l border-pink-500/50 bg-pink-500/10 hover:bg-pink-500/20" 
+                                  : "border-l border-primary/50 bg-primary/5 hover:bg-primary/10"
+                              }`}
+                              data-testid={`text-dash-event-${event.id}`}
+                            >
+                              <p className={`font-semibold text-xs truncate ${isBirthday ? "text-pink-500" : "text-primary"}`}>
+                                {isBirthday ? "🎂 " : ""}{event.title}
+                              </p>
+                              {!isBirthday && (
+                                <p className="text-muted-foreground text-xs">
+                                  ⏰ {new Date(event.startDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })}
                       {events.filter(e => new Date(e.startDate).toDateString() === selectedDate.toDateString()).length === 0 && (
                         <p className="text-xs text-muted-foreground text-center py-1">{t('dashboard.noEvents')}</p>
                       )}
