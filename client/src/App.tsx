@@ -532,6 +532,17 @@ export default function App() {
     enabled: user?.role === "parent"
   });
 
+  const { data: allFamilyMembers = [] } = useQuery({
+    queryKey: ["family-members", user?.connectionId],
+    queryFn: async () => {
+      const res = await fetch(`/api/peers/connection/${user!.connectionId}`);
+      if (!res.ok) throw new Error("Failed to fetch family members");
+      return res.json();
+    },
+    refetchInterval: 30000,
+    enabled: !!user?.connectionId
+  });
+
   const handleCreateAllowance = async () => {
     if (!allowanceChildId || !allowanceSats || !user) return;
     setIsCreatingAllowance(true);
@@ -1029,7 +1040,7 @@ export default function App() {
           <div className="max-w-3xl mx-auto">
             <LocationSharing 
               user={user}
-              familyMembers={parentChildren}
+              familyMembers={allFamilyMembers}
               onClose={() => setCurrentView("dashboard")}
             />
           </div>
@@ -1790,13 +1801,13 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                   </button>
                   
                   {showTasksSubmenu && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-3 md:ml-4 mt-1 flex flex-col gap-1">
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-4 md:ml-5 mt-2 flex flex-col gap-1.5">
                       <button
                         onClick={() => {
                           setCurrentView("tasks");
                           setSidebarOpen(false);
                         }}
-                        className={`w-full px-3 md:px-4 py-2 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
+                        className={`w-full px-4 py-2.5 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
                           currentView === "tasks"
                             ? "bg-violet-500/40 text-foreground font-medium"
                             : "text-foreground hover:bg-white/20 dark:hover:bg-black/20"
@@ -1811,7 +1822,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                           setCurrentView("recurring-tasks");
                           setSidebarOpen(false);
                         }}
-                        className={`w-full px-3 md:px-4 py-2 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
+                        className={`w-full px-4 py-2.5 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
                           currentView === "recurring-tasks"
                             ? "bg-violet-500/40 text-foreground font-medium"
                             : "text-foreground hover:bg-white/20 dark:hover:bg-black/20"
@@ -1846,10 +1857,10 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                   </button>
                   
                   {showFamilySubmenu && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-3 md:ml-4 mt-1 flex flex-col gap-1">
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-4 md:ml-5 mt-2 flex flex-col gap-1.5">
                       <button
                         onClick={() => { setCurrentView("calendar-view"); setSidebarOpen(false); }}
-                        className={`w-full px-3 md:px-4 py-2 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
+                        className={`w-full px-4 py-2.5 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
                           currentView === "calendar-view" || currentView === "calendar-create"
                             ? "bg-violet-500/40 text-foreground font-medium"
                             : "text-foreground hover:bg-white/20 dark:hover:bg-black/20"
@@ -1861,7 +1872,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                       </button>
                       <button
                         onClick={() => { setCurrentView("shopping-list"); setSidebarOpen(false); }}
-                        className={`w-full px-3 md:px-4 py-2 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
+                        className={`w-full px-4 py-2.5 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
                           currentView === "shopping-list"
                             ? "bg-violet-500/40 text-foreground font-medium"
                             : "text-foreground hover:bg-white/20 dark:hover:bg-black/20"
@@ -1873,7 +1884,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                       </button>
                       <button
                         onClick={() => { setCurrentView("family-board"); setSidebarOpen(false); }}
-                        className={`w-full px-3 md:px-4 py-2 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
+                        className={`w-full px-4 py-2.5 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
                           currentView === "family-board"
                             ? "bg-violet-500/40 text-foreground font-medium"
                             : "text-foreground hover:bg-white/20 dark:hover:bg-black/20"
@@ -1885,7 +1896,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                       </button>
                       <button
                         onClick={() => { setCurrentView("location-sharing"); setSidebarOpen(false); }}
-                        className={`w-full px-3 md:px-4 py-2 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
+                        className={`w-full px-4 py-2.5 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
                           currentView === "location-sharing"
                             ? "bg-violet-500/40 text-foreground font-medium"
                             : "text-foreground hover:bg-white/20 dark:hover:bg-black/20"
@@ -1897,7 +1908,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                       </button>
                       <button
                         onClick={() => { setCurrentView("emergency-contacts"); setSidebarOpen(false); }}
-                        className={`w-full px-3 md:px-4 py-2 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
+                        className={`w-full px-4 py-2.5 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
                           currentView === "emergency-contacts"
                             ? "bg-violet-500/40 text-foreground font-medium"
                             : "text-foreground hover:bg-white/20 dark:hover:bg-black/20"
@@ -1910,7 +1921,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                       {user.role === "parent" && (
                         <button
                           onClick={() => { setCurrentView("password-safe"); setSidebarOpen(false); }}
-                          className={`w-full px-3 md:px-4 py-2 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
+                          className={`w-full px-4 py-2.5 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
                             currentView === "password-safe"
                               ? "bg-violet-500/40 text-foreground font-medium"
                               : "text-foreground hover:bg-white/20 dark:hover:bg-black/20"
@@ -1923,7 +1934,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                       )}
                       <button
                         onClick={() => { setCurrentView("birthdays"); setSidebarOpen(false); }}
-                        className={`w-full px-3 md:px-4 py-2 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
+                        className={`w-full px-4 py-2.5 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
                           currentView === "birthdays"
                             ? "bg-violet-500/40 text-foreground font-medium"
                             : "text-foreground hover:bg-white/20 dark:hover:bg-black/20"
@@ -1977,10 +1988,10 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
             </button>
             
             {showSettingsMenu && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-3 md:ml-4 mt-1 flex flex-col gap-1 relative z-50">
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-4 md:ml-5 mt-2 flex flex-col gap-1.5 relative z-50">
                 <button
                   onClick={() => { handleSettingsClick("ansicht"); setSidebarOpen(false); }}
-                  className="w-full px-3 md:px-4 py-2 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
+                  className="w-full px-4 py-2.5 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
                   data-testid="submenu-ansicht"
                 >
                   <Eye className="h-4 w-4 shrink-0" />
@@ -1991,7 +2002,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                   <div>
                     <button
                       onClick={() => setShowWalletSubmenu(!showWalletSubmenu)}
-                      className="w-full px-3 md:px-4 py-2 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
+                      className="w-full px-4 py-2.5 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
                       data-testid="submenu-wallet"
                     >
                       <Bitcoin className="h-4 w-4 shrink-0" />
@@ -2000,10 +2011,10 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                     </button>
                     
                     {showWalletSubmenu && (
-                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-4 md:ml-6 mt-1 flex flex-col gap-1">
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-5 md:ml-6 mt-1.5 flex flex-col gap-1.5">
                         <button
                           onClick={() => { setWalletTab("lnbits"); handleSettingsClick("wallet"); setSidebarOpen(false); }}
-                          className="w-full px-3 md:px-4 py-2 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
+                          className="w-full px-4 py-2.5 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
                           data-testid="submenu-wallet-lnbits"
                         >
                           <Zap className="h-4 w-4 shrink-0" />
@@ -2011,7 +2022,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                         </button>
                         <button
                           onClick={() => { setWalletTab("nwc"); handleSettingsClick("wallet"); setSidebarOpen(false); }}
-                          className="w-full px-3 md:px-4 py-2 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
+                          className="w-full px-4 py-2.5 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
                           data-testid="submenu-wallet-nwc"
                         >
                           <LinkIcon className="h-4 w-4 shrink-0" />
@@ -2023,7 +2034,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                 ) : (
                   <button
                     onClick={() => { handleSettingsClick("wallet"); setSidebarOpen(false); }}
-                    className="w-full px-3 md:px-4 py-2 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
+                    className="w-full px-4 py-2.5 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
                     data-testid="submenu-wallet-child"
                   >
                     <Bitcoin className="h-4 w-4 shrink-0" />
@@ -2033,7 +2044,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
 
                 <button
                   onClick={() => { handleSettingsClick("peers"); setSidebarOpen(false); }}
-                  className="w-full px-3 md:px-4 py-2 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
+                  className="w-full px-4 py-2.5 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
                   data-testid="submenu-peers"
                 >
                   <Users className="h-4 w-4 shrink-0" />
@@ -2043,7 +2054,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                 {user.role === "parent" && (
                   <button
                     onClick={() => { setCurrentView("level-bonus-settings"); setSidebarOpen(false); setShowSettingsMenu(false); }}
-                    className="w-full px-3 md:px-4 py-2 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
+                    className="w-full px-4 py-2.5 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
                     data-testid="submenu-level-bonus"
                   >
                     <Trophy className="h-4 w-4 shrink-0" />
@@ -2054,7 +2065,7 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                 {user.role === "parent" && (
                   <button
                     onClick={() => { handleSettingsClick("dataManagement"); setSidebarOpen(false); }}
-                    className="w-full px-3 md:px-4 py-2 rounded-lg text-sm text-destructive hover:bg-destructive/20 transition-colors text-left flex items-center gap-3"
+                    className="w-full px-4 py-2.5 rounded-lg text-sm text-destructive hover:bg-destructive/20 transition-colors text-left flex items-center gap-3"
                     data-testid="submenu-data-management"
                   >
                     <Trash2 className="h-4 w-4 shrink-0" />
