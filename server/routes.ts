@@ -3682,6 +3682,420 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============================================
+  // FAMILY BOARD API
+  // ============================================
+  
+  app.get("/api/board/:connectionId", async (req, res) => {
+    try {
+      const posts = await storage.getFamilyBoardPosts(req.params.connectionId);
+      res.json(posts);
+    } catch (error) {
+      console.error("[Board] Error fetching posts:", error);
+      res.status(500).json({ error: "Failed to fetch board posts" });
+    }
+  });
+
+  app.post("/api/board", async (req, res) => {
+    try {
+      const { connectionId, createdBy, title, body, pinned, tags, expiresAt } = req.body;
+      
+      if (!connectionId || !createdBy || !title || !body) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const post = await storage.createFamilyBoardPost({
+        connectionId,
+        createdBy,
+        title,
+        body,
+        pinned: pinned || false,
+        tags: tags || [],
+        expiresAt: expiresAt ? new Date(expiresAt) : null
+      });
+      
+      res.json(post);
+    } catch (error) {
+      console.error("[Board] Error creating post:", error);
+      res.status(500).json({ error: "Failed to create post" });
+    }
+  });
+
+  app.patch("/api/board/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      
+      if (updates.expiresAt) {
+        updates.expiresAt = new Date(updates.expiresAt);
+      }
+      
+      const post = await storage.updateFamilyBoardPost(id, updates);
+      if (!post) {
+        return res.status(404).json({ error: "Post not found" });
+      }
+      res.json(post);
+    } catch (error) {
+      console.error("[Board] Error updating post:", error);
+      res.status(500).json({ error: "Failed to update post" });
+    }
+  });
+
+  app.delete("/api/board/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteFamilyBoardPost(id);
+      res.json({ success });
+    } catch (error) {
+      console.error("[Board] Error deleting post:", error);
+      res.status(500).json({ error: "Failed to delete post" });
+    }
+  });
+
+  // ============================================
+  // LOCATION PINGS API
+  // ============================================
+  
+  app.get("/api/locations/:connectionId", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const pings = await storage.getLocationPings(req.params.connectionId, limit);
+      res.json(pings);
+    } catch (error) {
+      console.error("[Location] Error fetching pings:", error);
+      res.status(500).json({ error: "Failed to fetch location pings" });
+    }
+  });
+
+  app.get("/api/locations/child/:childId", async (req, res) => {
+    try {
+      const childId = parseInt(req.params.childId);
+      const limit = parseInt(req.query.limit as string) || 10;
+      const pings = await storage.getChildLocationPings(childId, limit);
+      res.json(pings);
+    } catch (error) {
+      console.error("[Location] Error fetching child pings:", error);
+      res.status(500).json({ error: "Failed to fetch child location pings" });
+    }
+  });
+
+  app.post("/api/locations/arrive", async (req, res) => {
+    try {
+      const { connectionId, childId, latitude, longitude, accuracy, note, status } = req.body;
+      
+      if (!connectionId || !childId) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const ping = await storage.createLocationPing({
+        connectionId,
+        childId,
+        latitude: latitude?.toString() || null,
+        longitude: longitude?.toString() || null,
+        accuracy: accuracy || null,
+        note: note || null,
+        status: status || "arrived"
+      });
+      
+      res.json(ping);
+    } catch (error) {
+      console.error("[Location] Error creating ping:", error);
+      res.status(500).json({ error: "Failed to create location ping" });
+    }
+  });
+
+  // ============================================
+  // EMERGENCY CONTACTS API
+  // ============================================
+  
+  app.get("/api/emergency-contacts/:connectionId", async (req, res) => {
+    try {
+      const contacts = await storage.getEmergencyContacts(req.params.connectionId);
+      res.json(contacts);
+    } catch (error) {
+      console.error("[Emergency] Error fetching contacts:", error);
+      res.status(500).json({ error: "Failed to fetch emergency contacts" });
+    }
+  });
+
+  app.post("/api/emergency-contacts", async (req, res) => {
+    try {
+      const { connectionId, createdBy, label, name, phone, notes, priority } = req.body;
+      
+      if (!connectionId || !createdBy || !label || !name || !phone) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const contact = await storage.createEmergencyContact({
+        connectionId,
+        createdBy,
+        label,
+        name,
+        phone,
+        notes: notes || null,
+        priority: priority || 0
+      });
+      
+      res.json(contact);
+    } catch (error) {
+      console.error("[Emergency] Error creating contact:", error);
+      res.status(500).json({ error: "Failed to create emergency contact" });
+    }
+  });
+
+  app.patch("/api/emergency-contacts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const contact = await storage.updateEmergencyContact(id, req.body);
+      if (!contact) {
+        return res.status(404).json({ error: "Contact not found" });
+      }
+      res.json(contact);
+    } catch (error) {
+      console.error("[Emergency] Error updating contact:", error);
+      res.status(500).json({ error: "Failed to update emergency contact" });
+    }
+  });
+
+  app.delete("/api/emergency-contacts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteEmergencyContact(id);
+      res.json({ success });
+    } catch (error) {
+      console.error("[Emergency] Error deleting contact:", error);
+      res.status(500).json({ error: "Failed to delete emergency contact" });
+    }
+  });
+
+  // ============================================
+  // PASSWORD SAFE API (Parent-only, encrypted)
+  // ============================================
+  
+  app.get("/api/password-safe/:connectionId", async (req, res) => {
+    try {
+      const entries = await storage.getPasswordSafeEntries(req.params.connectionId);
+      // Don't decrypt passwords - just return metadata
+      const safeEntries = entries.map(e => ({
+        ...e,
+        passwordEnc: "***",
+        notesEnc: e.notesEnc ? "***" : null
+      }));
+      res.json(safeEntries);
+    } catch (error) {
+      console.error("[PasswordSafe] Error fetching entries:", error);
+      res.status(500).json({ error: "Failed to fetch password entries" });
+    }
+  });
+
+  app.get("/api/password-safe/reveal/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { peerId } = req.query;
+      
+      // Verify requester is a parent
+      if (!peerId) {
+        return res.status(400).json({ error: "Parent ID required" });
+      }
+      
+      const peer = await storage.getPeer(parseInt(peerId as string));
+      if (!peer || peer.role !== "parent") {
+        return res.status(403).json({ error: "Only parents can reveal passwords" });
+      }
+      
+      const entry = await storage.getPasswordSafeEntry(id);
+      if (!entry) {
+        return res.status(404).json({ error: "Entry not found" });
+      }
+      
+      // Verify same family
+      if (entry.connectionId !== peer.connectionId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      // Decrypt password for reveal
+      const decryptedPassword = decryptWalletData(entry.passwordEnc);
+      const decryptedNotes = entry.notesEnc ? decryptWalletData(entry.notesEnc) : null;
+      
+      res.json({
+        password: decryptedPassword,
+        notes: decryptedNotes
+      });
+    } catch (error) {
+      console.error("[PasswordSafe] Error revealing password:", error);
+      res.status(500).json({ error: "Failed to reveal password" });
+    }
+  });
+
+  app.post("/api/password-safe", async (req, res) => {
+    try {
+      const { connectionId, createdBy, label, username, password, url, notes, category } = req.body;
+      
+      if (!connectionId || !createdBy || !label || !password) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      // Verify creator is a parent
+      const peer = await storage.getPeer(createdBy);
+      if (!peer || peer.role !== "parent") {
+        return res.status(403).json({ error: "Only parents can create password entries" });
+      }
+
+      // Encrypt password and notes
+      const encryptedPassword = encryptWalletData(password);
+      const encryptedNotes = notes ? encryptWalletData(notes) : null;
+
+      const entry = await storage.createPasswordSafeEntry({
+        connectionId,
+        createdBy,
+        label,
+        username: username || null,
+        passwordEnc: encryptedPassword,
+        url: url || null,
+        notesEnc: encryptedNotes,
+        category: category || "general"
+      });
+      
+      res.json({ ...entry, passwordEnc: "***", notesEnc: entry.notesEnc ? "***" : null });
+    } catch (error) {
+      console.error("[PasswordSafe] Error creating entry:", error);
+      res.status(500).json({ error: "Failed to create password entry" });
+    }
+  });
+
+  app.patch("/api/password-safe/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { peerId, password, notes, ...otherUpdates } = req.body;
+      
+      // Verify requester is a parent
+      const peer = await storage.getPeer(peerId);
+      if (!peer || peer.role !== "parent") {
+        return res.status(403).json({ error: "Only parents can update password entries" });
+      }
+      
+      const updates: any = { ...otherUpdates };
+      
+      // Re-encrypt if password or notes changed
+      if (password) {
+        updates.passwordEnc = encryptWalletData(password);
+        updates.lastRotatedAt = new Date();
+      }
+      if (notes !== undefined) {
+        updates.notesEnc = notes ? encryptWalletData(notes) : null;
+      }
+      
+      const entry = await storage.updatePasswordSafeEntry(id, updates);
+      if (!entry) {
+        return res.status(404).json({ error: "Entry not found" });
+      }
+      res.json({ ...entry, passwordEnc: "***", notesEnc: entry.notesEnc ? "***" : null });
+    } catch (error) {
+      console.error("[PasswordSafe] Error updating entry:", error);
+      res.status(500).json({ error: "Failed to update password entry" });
+    }
+  });
+
+  app.delete("/api/password-safe/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { peerId } = req.query;
+      
+      // Verify requester is a parent
+      if (!peerId) {
+        return res.status(400).json({ error: "Parent ID required" });
+      }
+      
+      const peer = await storage.getPeer(parseInt(peerId as string));
+      if (!peer || peer.role !== "parent") {
+        return res.status(403).json({ error: "Only parents can delete password entries" });
+      }
+      
+      const success = await storage.deletePasswordSafeEntry(id);
+      res.json({ success });
+    } catch (error) {
+      console.error("[PasswordSafe] Error deleting entry:", error);
+      res.status(500).json({ error: "Failed to delete password entry" });
+    }
+  });
+
+  // ============================================
+  // BIRTHDAY REMINDERS API
+  // ============================================
+  
+  app.get("/api/birthdays/:connectionId", async (req, res) => {
+    try {
+      const birthdays = await storage.getBirthdayReminders(req.params.connectionId);
+      res.json(birthdays);
+    } catch (error) {
+      console.error("[Birthday] Error fetching reminders:", error);
+      res.status(500).json({ error: "Failed to fetch birthday reminders" });
+    }
+  });
+
+  app.get("/api/birthdays/upcoming/:connectionId", async (req, res) => {
+    try {
+      const daysAhead = parseInt(req.query.days as string) || 30;
+      const birthdays = await storage.getUpcomingBirthdays(req.params.connectionId, daysAhead);
+      res.json(birthdays);
+    } catch (error) {
+      console.error("[Birthday] Error fetching upcoming:", error);
+      res.status(500).json({ error: "Failed to fetch upcoming birthdays" });
+    }
+  });
+
+  app.post("/api/birthdays", async (req, res) => {
+    try {
+      const { connectionId, createdBy, personName, birthMonth, birthDay, birthYear, relation, notifyDaysBefore, notes } = req.body;
+      
+      if (!connectionId || !createdBy || !personName || !birthMonth || !birthDay) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const birthday = await storage.createBirthdayReminder({
+        connectionId,
+        createdBy,
+        personName,
+        birthMonth,
+        birthDay,
+        birthYear: birthYear || null,
+        relation: relation || null,
+        notifyDaysBefore: notifyDaysBefore || [0, 1, 7],
+        notes: notes || null
+      });
+      
+      res.json(birthday);
+    } catch (error) {
+      console.error("[Birthday] Error creating reminder:", error);
+      res.status(500).json({ error: "Failed to create birthday reminder" });
+    }
+  });
+
+  app.patch("/api/birthdays/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const birthday = await storage.updateBirthdayReminder(id, req.body);
+      if (!birthday) {
+        return res.status(404).json({ error: "Birthday not found" });
+      }
+      res.json(birthday);
+    } catch (error) {
+      console.error("[Birthday] Error updating reminder:", error);
+      res.status(500).json({ error: "Failed to update birthday reminder" });
+    }
+  });
+
+  app.delete("/api/birthdays/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteBirthdayReminder(id);
+      res.json({ success });
+    } catch (error) {
+      console.error("[Birthday] Error deleting reminder:", error);
+      res.status(500).json({ error: "Failed to delete birthday reminder" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
