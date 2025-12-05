@@ -233,7 +233,7 @@ export function Birthdays({ user, onClose }: {
                   <SelectTrigger data-testid="select-birth-day">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-60 overflow-y-auto">
                     {days.map(d => (
                       <SelectItem key={d} value={d.toString()}>{d}</SelectItem>
                     ))}
@@ -246,7 +246,7 @@ export function Birthdays({ user, onClose }: {
                   <SelectTrigger data-testid="select-birth-year">
                     <SelectValue placeholder="-" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-60 overflow-y-auto">
                     <SelectItem value="none">-</SelectItem>
                     {years.map(y => (
                       <SelectItem key={y} value={y.toString()}>{y}</SelectItem>

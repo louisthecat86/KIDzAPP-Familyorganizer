@@ -4681,12 +4681,12 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           })}
           
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }} className="col-span-full">
-            <div className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl cursor-pointer hover:bg-white/5 dark:bg-black/105 transition-colors shadow-lg p-4" onClick={() => setCurrentView("calendar-view")} data-testid="card-calendar">
-                <h3 className="text-sm font-bold mb-2 flex items-center gap-1 text-foreground">
+            <div className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl hover:bg-white/5 dark:bg-black/105 transition-colors shadow-lg p-4" data-testid="card-calendar">
+                <h3 className="text-sm font-bold mb-2 flex items-center gap-1 text-foreground cursor-pointer" onClick={() => setCurrentView("calendar-view")}>
                   <Calendar className="h-4 w-4 text-violet-600" /> {t('nav.calendar')}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  <div className="col-span-1">
+                  <div className="col-span-1" onClick={(e) => e.stopPropagation()}>
                     <style>{`
                       .rdp {
                         --rdp-cell-size: 24px;
@@ -8924,16 +8924,15 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
             <div 
-              className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl shadow-lg cursor-pointer hover:bg-white/60 transition-colors"
-              onClick={() => setCurrentView("calendar")}
+              className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl shadow-lg hover:bg-white/60 transition-colors"
               data-testid="card-child-calendar"
             >
               <div className="p-2 md:p-4">
-                <h3 className="text-sm font-bold mb-2 flex items-center gap-1 text-foreground">
+                <h3 className="text-sm font-bold mb-2 flex items-center gap-1 text-foreground cursor-pointer" onClick={() => setCurrentView("calendar")}>
                   <Calendar className="h-4 w-4 text-violet-600" /> {t('nav.calendar')}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  <div className="col-span-1">
+                  <div className="col-span-1" onClick={(e) => e.stopPropagation()}>
                     <style>{`
                       .rdp {
                         --rdp-cell-size: 24px;
