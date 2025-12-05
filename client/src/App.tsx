@@ -67,6 +67,11 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { PhotoUpload } from "@/components/PhotoUpload";
 import { ProofViewer } from "@/components/ProofViewer";
+import { FamilyBoard } from "@/components/FamilyBoard";
+import { LocationSharing } from "@/components/LocationSharing";
+import { EmergencyContacts } from "@/components/EmergencyContacts";
+import { PasswordSafe } from "@/components/PasswordSafe";
+import { Birthdays } from "@/components/Birthdays";
 import kidzappLogo from "@/assets/kidzapp-logo.png";
 
 function NotificationBadge({ count }: { count: number }) {
@@ -991,6 +996,93 @@ export default function App() {
           </div>
         </motion.div>
       )}
+      {/* Family Board View */}
+      {currentView === "family-board" && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className="w-full px-4 py-8"
+        >
+          <div className="max-w-3xl mx-auto">
+            <FamilyBoard 
+              user={user}
+              familyMembers={parentChildren}
+              onClose={() => setCurrentView("dashboard")}
+            />
+          </div>
+        </motion.div>
+      )}
+      {/* Location Sharing View */}
+      {currentView === "location-sharing" && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className="w-full px-4 py-8"
+        >
+          <div className="max-w-3xl mx-auto">
+            <LocationSharing 
+              user={user}
+              familyMembers={parentChildren}
+              onClose={() => setCurrentView("dashboard")}
+            />
+          </div>
+        </motion.div>
+      )}
+      {/* Emergency Contacts View */}
+      {currentView === "emergency-contacts" && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className="w-full px-4 py-8"
+        >
+          <div className="max-w-3xl mx-auto">
+            <EmergencyContacts 
+              user={user}
+              onClose={() => setCurrentView("dashboard")}
+            />
+          </div>
+        </motion.div>
+      )}
+      {/* Password Safe View */}
+      {currentView === "password-safe" && user.role === "parent" && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className="w-full px-4 py-8"
+        >
+          <div className="max-w-3xl mx-auto">
+            <PasswordSafe 
+              user={user}
+              onClose={() => setCurrentView("dashboard")}
+            />
+          </div>
+        </motion.div>
+      )}
+      {/* Birthdays View */}
+      {currentView === "birthdays" && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className="w-full px-4 py-8"
+        >
+          <div className="max-w-3xl mx-auto">
+            <Birthdays 
+              user={user}
+              onClose={() => setCurrentView("dashboard")}
+            />
+          </div>
+        </motion.div>
+      )}
       {/* Allowances Management View */}
       {currentView === "allowances" && user.role === "parent" && (
         <motion.div
@@ -1605,6 +1697,11 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
     { id: "calendar", label: t('nav.calendar'), icon: Calendar, badge: 0 },
     { id: "chat", label: t('sidebar.familyChat'), icon: MessageSquare, badge: chatNotificationCount },
     { id: "shopping-list", label: t('nav.shoppingList'), icon: Home, badge: 0 },
+    { id: "family-board", label: t('familyBoard.title'), icon: Home, badge: 0 },
+    { id: "location-sharing", label: t('locationSharing.title'), icon: MapPin, badge: 0 },
+    { id: "emergency-contacts", label: t('emergencyContacts.title'), icon: Bell, badge: 0 },
+    ...(user.role === "parent" ? [{ id: "password-safe", label: t('passwordSafe.title'), icon: Home, badge: 0 }] : []),
+    { id: "birthdays", label: t('birthdays.title'), icon: Calendar, badge: 0 },
     { id: "notifications", label: t('sidebar.activities'), icon: Bell, badge: 0 },
     { id: "leaderboard", label: t('sidebar.leaderboard'), icon: Trophy, badge: 0 },
     ...(user.role === "child" ? [{ id: "bitcoin-education", label: t('sidebar.bitcoinLearn'), icon: BookOpen, badge: 0 }] : []),
