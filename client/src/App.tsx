@@ -302,7 +302,7 @@ async function deleteEvent(id: number): Promise<void> {
 export default function App() {
   const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
-  const [newTask, setNewTask] = useState({ title: "", description: "", sats: 50, isRequired: false, bypassRatio: false });
+  const [newTask, setNewTask] = useState({ title: "", description: "", sats: 50, isRequired: false, bypassRatio: false, assignedFor: null as number | null });
   const [newEvent, setNewEvent] = useState({ title: "", description: "", location: "", startDate: "", endDate: "" });
   const [currentView, setCurrentView] = useState<string>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -434,7 +434,7 @@ export default function App() {
     onSuccess: (task) => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       toast({ title: t('tasks.created'), description: t('tasks.waitingForApproval') });
-      setNewTask({ title: "", description: "", sats: 50, isRequired: false, bypassRatio: false });
+      setNewTask({ title: "", description: "", sats: 50, isRequired: false, bypassRatio: false, assignedFor: null });
       setCurrentView("dashboard");
     },
     onError: (error) => {
@@ -603,6 +603,7 @@ export default function App() {
       sats: satValue,
       isRequired: newTask.isRequired,
       bypassRatio: bypass,
+      assignedFor: newTask.assignedFor,
       status: "open",
     });
   };
@@ -5646,6 +5647,35 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       <Zap className="h-4 w-4" />
                       {t('tasks.bypassRatio')}
                     </Label>
+                  </div>
+                )}
+
+                {/* Kind-Auswahl für personalisierte Aufgabe */}
+                {parentChildren.length > 0 && (
+                  <div className="space-y-2">
+                    <Label htmlFor="assigned-for" className="flex items-center gap-2">
+                      <UserIcon className="h-4 w-4 text-cyan-400" />
+                      {t('tasks.assignToChild')}
+                    </Label>
+                    <Select
+                      value={newTask.assignedFor?.toString() || "all"}
+                      onValueChange={(value) => setNewTask({ ...newTask, assignedFor: value === "all" ? null : parseInt(value) })}
+                    >
+                      <SelectTrigger className="bg-secondary border-border" data-testid="select-assigned-for">
+                        <SelectValue placeholder={t('tasks.allChildren')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all" data-testid="select-option-all-children">
+                          {t('tasks.allChildren')}
+                        </SelectItem>
+                        {parentChildren.map((child: any) => (
+                          <SelectItem key={child.id} value={child.id.toString()} data-testid={`select-option-child-${child.id}`}>
+                            {child.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">{t('tasks.assignToChildHint')}</p>
                   </div>
                 )}
 
