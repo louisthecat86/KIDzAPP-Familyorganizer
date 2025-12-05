@@ -140,65 +140,63 @@ export function LocationSharing({ user, familyMembers, onClose }: {
         <div className="w-24" />
       </div>
 
-      {!isParent && (
-        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Check className="h-5 w-5 text-green-600" />
-              {t("locationSharing.arrivedButton")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label>{t("locationSharing.status.arrived")}</Label>
-              <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger data-testid="select-status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="arrived">{t("locationSharing.arrived")}</SelectItem>
-                  <SelectItem value="left">{t("locationSharing.leftHome")}</SelectItem>
-                  <SelectItem value="school">{t("locationSharing.atSchool")}</SelectItem>
-                  <SelectItem value="friend">{t("locationSharing.atFriend")}</SelectItem>
-                  <SelectItem value="other">{t("locationSharing.onTheWay")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>{t("locationSharing.noteLabel")}</Label>
-              <Input
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder={t("locationSharing.notePlaceholder")}
-                data-testid="input-location-note"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <input 
-                type="checkbox" 
-                id="use-gps" 
-                checked={useGps} 
-                onChange={(e) => setUseGps(e.target.checked)}
-                className="rounded"
-                data-testid="checkbox-use-gps"
-              />
-              <Label htmlFor="use-gps" className="flex items-center gap-1 cursor-pointer">
-                <Navigation className="h-4 w-4" />
-                {t("locationSharing.useGPS")}
-              </Label>
-            </div>
-            <Button 
-              onClick={handleSendLocation} 
-              disabled={isSending}
-              className="w-full gap-2 bg-green-600 hover:bg-green-700"
-              data-testid="button-send-location"
-            >
-              <MapPin className="h-4 w-4" />
-              {t("locationSharing.sendLocation")}
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Check className="h-5 w-5 text-green-600" />
+            {t("locationSharing.arrivedButton")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label>{t("locationSharing.status.arrived")}</Label>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger data-testid="select-status">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="arrived">{t("locationSharing.arrived")}</SelectItem>
+                <SelectItem value="left">{t("locationSharing.leftHome")}</SelectItem>
+                <SelectItem value="school">{t("locationSharing.atSchool")}</SelectItem>
+                <SelectItem value="friend">{t("locationSharing.atFriend")}</SelectItem>
+                <SelectItem value="other">{t("locationSharing.onTheWay")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>{t("locationSharing.noteLabel")}</Label>
+            <Input
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder={t("locationSharing.notePlaceholder")}
+              data-testid="input-location-note"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <input 
+              type="checkbox" 
+              id="use-gps" 
+              checked={useGps} 
+              onChange={(e) => setUseGps(e.target.checked)}
+              className="rounded"
+              data-testid="checkbox-use-gps"
+            />
+            <Label htmlFor="use-gps" className="flex items-center gap-1 cursor-pointer">
+              <Navigation className="h-4 w-4" />
+              {t("locationSharing.useGPS")}
+            </Label>
+          </div>
+          <Button 
+            onClick={handleSendLocation} 
+            disabled={isSending}
+            className="w-full gap-2 bg-green-600 hover:bg-green-700"
+            data-testid="button-send-location"
+          >
+            <MapPin className="h-4 w-4" />
+            {t("locationSharing.sendLocation")}
+          </Button>
+        </CardContent>
+      </Card>
 
       {isParent && (
         <div className="space-y-3">
@@ -239,14 +237,6 @@ export function LocationSharing({ user, familyMembers, onClose }: {
             </div>
           )}
         </div>
-      )}
-
-      {!isParent && (
-        <Card className="bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
-          <CardContent className="py-4 text-center text-sm text-muted-foreground">
-            {t("locationSharing.parentOnly")}
-          </CardContent>
-        </Card>
       )}
     </div>
   );
