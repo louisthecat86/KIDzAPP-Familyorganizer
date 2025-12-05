@@ -1402,6 +1402,8 @@
     "locationSent": "Standort gesendet!",
     "locationDeleted": "Standort gelöscht!",
     "openMap": "Auf Karte anzeigen",
+    "gpsError": "GPS nicht verfügbar",
+    "gpsErrorDesc": "Bitte GPS-Berechtigung erteilen. Standort wird ohne Koordinaten gesendet.",
     "parentOnly": "Nur Eltern können Standorte einsehen",
     "childrenOnly": "Nur Kinder können Standort-Updates senden"
   },

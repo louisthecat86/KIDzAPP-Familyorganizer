@@ -113,21 +113,30 @@ export function LocationSharing({ user, familyMembers, onClose }: {
     setIsSending(true);
     
     if (useGps && "geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          sendLocation.mutate({
-            note: note.trim(),
-            status,
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            accuracy: position.coords.accuracy
+      try {
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, { 
+            enableHighAccuracy: true, 
+            timeout: 15000,
+            maximumAge: 0
           });
-        },
-        () => {
-          sendLocation.mutate({ note: note.trim(), status });
-        },
-        { enableHighAccuracy: true, timeout: 10000 }
-      );
+        });
+        
+        sendLocation.mutate({
+          note: note.trim(),
+          status,
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy
+        });
+      } catch (error) {
+        toast({ 
+          title: t("locationSharing.gpsError") || "GPS nicht verfügbar", 
+          description: t("locationSharing.gpsErrorDesc") || "Standort wird ohne GPS gesendet",
+          variant: "destructive" 
+        });
+        sendLocation.mutate({ note: note.trim(), status });
+      }
     } else {
       sendLocation.mutate({ note: note.trim(), status });
     }
