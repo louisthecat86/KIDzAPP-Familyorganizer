@@ -404,6 +404,7 @@ export const locationPings = pgTable("location_pings", {
   longitude: text("longitude"),
   accuracy: integer("accuracy"),
   note: text("note"),
+  mapUrl: text("map_url"),
   status: text("status").notNull().default("arrived"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

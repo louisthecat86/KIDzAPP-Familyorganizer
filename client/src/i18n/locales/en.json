@@ -1404,8 +1404,9 @@
     "locationSent": "Location sent!",
     "locationDeleted": "Location deleted!",
     "openMap": "Show on map",
-    "gpsError": "GPS not available",
-    "gpsErrorDesc": "Please grant GPS permission. Location will be sent without coordinates.",
+    "addressLabel": "Where are you?",
+    "addressPlaceholder": "e.g. School, Grandma's house, Train station...",
+    "addressHint": "Enter a place to create a map link",
     "parentOnly": "Only parents can view locations",
     "childrenOnly": "Only children can send location updates"
   },

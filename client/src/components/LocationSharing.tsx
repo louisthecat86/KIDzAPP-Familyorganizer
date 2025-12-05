@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { de, enUS } from "date-fns/locale";
-import { ChevronLeft, MapPin, Navigation, Check, Trash2, ExternalLink } from "lucide-react";
+import { ChevronLeft, MapPin, Check, Trash2, ExternalLink, Map } from "lucide-react";
 
 type LocationPing = {
   id: number;
@@ -19,6 +19,7 @@ type LocationPing = {
   longitude: string | null;
   accuracy: number | null;
   note: string | null;
+  mapUrl: string | null;
   status: string;
   createdAt: Date;
 };
@@ -48,7 +49,7 @@ export function LocationSharing({ user, familyMembers, onClose }: {
   
   const [note, setNote] = useState("");
   const [status, setStatus] = useState("arrived");
-  const [useGps, setUseGps] = useState(false);
+  const [address, setAddress] = useState("");
   const [isSending, setIsSending] = useState(false);
 
   const isParent = user.role === "parent";
@@ -65,7 +66,7 @@ export function LocationSharing({ user, familyMembers, onClose }: {
   });
 
   const sendLocation = useMutation({
-    mutationFn: async (data: { note: string; status: string; latitude?: number; longitude?: number; accuracy?: number }) => {
+    mutationFn: async (data: { note: string; status: string; mapUrl?: string }) => {
       const res = await fetch("/api/locations/arrive", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -82,6 +83,7 @@ export function LocationSharing({ user, familyMembers, onClose }: {
       queryClient.invalidateQueries({ queryKey: ["/api/locations"] });
       toast({ title: t("locationSharing.locationSent") });
       setNote("");
+      setAddress("");
       setIsSending(false);
     },
     onError: () => {
@@ -105,41 +107,19 @@ export function LocationSharing({ user, familyMembers, onClose }: {
     return user.role === "parent" || ping.childId === user.id;
   };
 
-  const getMapUrl = (lat: string, lng: string) => {
-    return `https://www.google.com/maps?q=${lat},${lng}`;
+  const generateMapUrl = (addr: string) => {
+    if (!addr.trim()) return undefined;
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr.trim())}`;
   };
 
   const handleSendLocation = async () => {
     setIsSending(true);
-    
-    if (useGps && "geolocation" in navigator) {
-      try {
-        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, { 
-            enableHighAccuracy: true, 
-            timeout: 15000,
-            maximumAge: 0
-          });
-        });
-        
-        sendLocation.mutate({
-          note: note.trim(),
-          status,
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          accuracy: position.coords.accuracy
-        });
-      } catch (error) {
-        toast({ 
-          title: t("locationSharing.gpsError") || "GPS nicht verfügbar", 
-          description: t("locationSharing.gpsErrorDesc") || "Standort wird ohne GPS gesendet",
-          variant: "destructive" 
-        });
-        sendLocation.mutate({ note: note.trim(), status });
-      }
-    } else {
-      sendLocation.mutate({ note: note.trim(), status });
-    }
+    const mapUrl = generateMapUrl(address);
+    sendLocation.mutate({ 
+      note: note.trim(), 
+      status,
+      mapUrl
+    });
   };
 
   const getMemberName = (memberId: number) => {
@@ -192,6 +172,19 @@ export function LocationSharing({ user, familyMembers, onClose }: {
             </Select>
           </div>
           <div>
+            <Label className="flex items-center gap-1">
+              <Map className="h-4 w-4" />
+              {t("locationSharing.addressLabel")}
+            </Label>
+            <Input
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder={t("locationSharing.addressPlaceholder")}
+              data-testid="input-location-address"
+            />
+            <p className="text-xs text-muted-foreground mt-1">{t("locationSharing.addressHint")}</p>
+          </div>
+          <div>
             <Label>{t("locationSharing.noteLabel")}</Label>
             <Input
               value={note}
@@ -199,20 +192,6 @@ export function LocationSharing({ user, familyMembers, onClose }: {
               placeholder={t("locationSharing.notePlaceholder")}
               data-testid="input-location-note"
             />
-          </div>
-          <div className="flex items-center gap-2">
-            <input 
-              type="checkbox" 
-              id="use-gps" 
-              checked={useGps} 
-              onChange={(e) => setUseGps(e.target.checked)}
-              className="rounded"
-              data-testid="checkbox-use-gps"
-            />
-            <Label htmlFor="use-gps" className="flex items-center gap-1 cursor-pointer">
-              <Navigation className="h-4 w-4" />
-              {t("locationSharing.useGPS")}
-            </Label>
           </div>
           <Button 
             onClick={handleSendLocation} 
@@ -258,12 +237,12 @@ export function LocationSharing({ user, familyMembers, onClose }: {
                       </div>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                      {ping.latitude && ping.longitude && (
+                      {ping.mapUrl && (
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-blue-600 hover:text-blue-700"
-                          onClick={() => window.open(getMapUrl(ping.latitude!, ping.longitude!), '_blank')}
+                          onClick={() => window.open(ping.mapUrl!, '_blank')}
                           data-testid={`button-map-${ping.id}`}
                         >
                           <ExternalLink className="h-4 w-4" />
