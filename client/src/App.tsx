@@ -1981,6 +1981,10 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
               <span className="text-violet-600 flex-shrink-0">•</span>
               <span>{t('landing.step4')}</span>
             </div>
+            <div className="flex gap-2">
+              <span className="text-amber-500 flex-shrink-0">🎓</span>
+              <span>{t('landing.step5')}</span>
+            </div>
           </div>
         </div>
 
