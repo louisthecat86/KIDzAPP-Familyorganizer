@@ -128,6 +128,8 @@ type Task = {
   sats: number;
   status: "open" | "assigned" | "submitted" | "approved";
   assignedTo?: number;
+  assignedFor?: number | null;
+  isRequired?: boolean;
   proof?: string;
   escrowLocked?: boolean;
   paylink?: string;
