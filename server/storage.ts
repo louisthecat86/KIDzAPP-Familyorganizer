@@ -1247,6 +1247,18 @@ export class DatabaseStorage implements IStorage {
       .limit(limit);
   }
 
+  async deleteLocationPing(id: number): Promise<boolean> {
+    const result = await db.delete(locationPings).where(eq(locationPings.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async getLocationPing(id: number): Promise<LocationPing | undefined> {
+    const result = await db.select().from(locationPings)
+      .where(eq(locationPings.id, id))
+      .limit(1);
+    return result[0];
+  }
+
   // Emergency Contacts operations
   async getEmergencyContacts(connectionId: string): Promise<EmergencyContact[]> {
     return await db.select().from(emergencyContacts)

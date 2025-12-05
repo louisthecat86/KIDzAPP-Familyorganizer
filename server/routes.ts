@@ -3862,6 +3862,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/locations/:id", async (req, res) => {
+    try {
+      const { peerId } = req.query;
+      const pingId = parseInt(req.params.id);
+      
+      if (!peerId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+
+      const peer = await storage.getPeer(parseInt(peerId as string));
+      if (!peer) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const ping = await storage.getLocationPing(pingId);
+      if (!ping || ping.connectionId !== peer.connectionId) {
+        return res.status(404).json({ error: "Location ping not found" });
+      }
+
+      if (peer.role !== "parent" && ping.childId !== peer.id) {
+        return res.status(403).json({ error: "Can only delete your own location updates" });
+      }
+
+      await storage.deleteLocationPing(pingId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("[Location] Error deleting ping:", error);
+      res.status(500).json({ error: "Failed to delete location ping" });
+    }
+  });
+
   // ============================================
   // EMERGENCY CONTACTS API (All family can read, parent-only write)
   // ============================================

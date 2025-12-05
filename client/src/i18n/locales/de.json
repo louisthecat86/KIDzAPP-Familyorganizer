@@ -1400,6 +1400,8 @@
       "other": "Unterwegs"
     },
     "locationSent": "Standort gesendet!",
+    "locationDeleted": "Standort gelöscht!",
+    "openMap": "Auf Karte anzeigen",
     "parentOnly": "Nur Eltern können Standorte einsehen",
     "childrenOnly": "Nur Kinder können Standort-Updates senden"
   },

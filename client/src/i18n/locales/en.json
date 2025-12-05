@@ -1402,6 +1402,8 @@
       "other": "On the way"
     },
     "locationSent": "Location sent!",
+    "locationDeleted": "Location deleted!",
+    "openMap": "Show on map",
     "parentOnly": "Only parents can view locations",
     "childrenOnly": "Only children can send location updates"
   },

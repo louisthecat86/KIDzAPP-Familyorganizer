@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { de, enUS } from "date-fns/locale";
-import { ChevronLeft, MapPin, Navigation, Check } from "lucide-react";
+import { ChevronLeft, MapPin, Navigation, Check, Trash2, ExternalLink } from "lucide-react";
 
 type LocationPing = {
   id: number;
@@ -88,6 +88,26 @@ export function LocationSharing({ user, familyMembers, onClose }: {
       setIsSending(false);
     }
   });
+
+  const deleteLocation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/locations/${id}?peerId=${user.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete location");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/locations"] });
+      toast({ title: t("locationSharing.locationDeleted") });
+    }
+  });
+
+  const canDeletePing = (ping: LocationPing) => {
+    return user.role === "parent" || ping.childId === user.id;
+  };
+
+  const getMapUrl = (lat: string, lng: string) => {
+    return `https://www.google.com/maps?q=${lat},${lng}`;
+  };
 
   const handleSendLocation = async () => {
     setIsSending(true);
@@ -212,21 +232,46 @@ export function LocationSharing({ user, familyMembers, onClose }: {
             {pings.map((ping) => (
               <Card key={ping.id} className="hover:bg-muted/50 transition-colors" data-testid={`card-ping-${ping.id}`}>
                 <CardContent className="py-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
                         <MapPin className="h-5 w-5 text-blue-600" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <div className="font-medium">{getMemberName(ping.childId)}</div>
-                        <div className="text-sm text-muted-foreground flex items-center gap-2">
+                        <div className="text-sm text-muted-foreground flex flex-wrap items-center gap-1">
                           <span>{getStatusLabel(ping.status)}</span>
                           {ping.note && <span>• {ping.note}</span>}
                         </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {formatDistanceToNow(new Date(ping.createdAt), { addSuffix: true, locale })}
+                        </div>
                       </div>
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      {formatDistanceToNow(new Date(ping.createdAt), { addSuffix: true, locale })}
+                    <div className="flex items-center gap-1 shrink-0">
+                      {ping.latitude && ping.longitude && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-blue-600 hover:text-blue-700"
+                          onClick={() => window.open(getMapUrl(ping.latitude!, ping.longitude!), '_blank')}
+                          data-testid={`button-map-${ping.id}`}
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {canDeletePing(ping) && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          onClick={() => deleteLocation.mutate(ping.id)}
+                          disabled={deleteLocation.isPending}
+                          data-testid={`button-delete-ping-${ping.id}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardContent>
