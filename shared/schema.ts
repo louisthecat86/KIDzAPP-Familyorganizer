@@ -45,7 +45,8 @@ export const tasks = pgTable("tasks", {
   description: text("description").notNull(),
   sats: integer("sats").notNull(),
   status: text("status").notNull(), // 'open', 'assigned', 'submitted', 'approved'
-  assignedTo: integer("assigned_to"), // Peer ID
+  assignedTo: integer("assigned_to"), // Peer ID - set when child ACCEPTS the task
+  assignedFor: integer("assigned_for"), // Peer ID - set by parent to pre-assign task to specific child (only this child can see/accept)
   proof: text("proof"), // File reference or URL
   paymentHash: text("payment_hash"), // Payment hash from lightning payment
   isRequired: boolean("is_required").default(false).notNull(), // Pflicht-Aufgabe (nicht bezahlt) vs bezahlte Aufgabe
