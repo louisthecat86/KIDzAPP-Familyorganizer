@@ -1502,6 +1502,7 @@
     "tomorrow": "Tomorrow",
     "birthdayAdded": "Birthday added",
     "birthdayDeleted": "Birthday deleted",
+    "recurring": "Annual recurring",
     "months": {
       "1": "January",
       "2": "February",

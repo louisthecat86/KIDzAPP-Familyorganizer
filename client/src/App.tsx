@@ -4216,7 +4216,8 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
   const [rsvpData, setRsvpData] = useState<Record<number, any[]>>({});
 
   const fetchRsvps = () => {
-    events.forEach(async (event: FamilyEvent) => {
+    // Only fetch RSVPs for non-birthday events (positive IDs)
+    events.filter((e: any) => e.id > 0 && e.eventType !== "birthday").forEach(async (event: FamilyEvent) => {
       try {
         const res = await fetch(`/api/events/${event.id}/rsvps`);
         if (res.ok) {
@@ -4235,6 +4236,9 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
     return () => clearInterval(interval);
   }, [events]);
 
+  // Check if event is a birthday (negative ID or eventType="birthday")
+  const isBirthdayEvent = (event: any) => event.id < 0 || event.eventType === "birthday";
+
   return (
     <div className="grid gap-4">
       {events.length === 0 ? (
@@ -4242,20 +4246,28 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
           <p className="text-muted-foreground">{t('dashboard.noEventsPlanned')}</p>
         </Card>
       ) : (
-        events.map((event: FamilyEvent) => {
+        events.map((event: any) => {
+          const isBirthday = isBirthdayEvent(event);
           const rsvps = rsvpData[event.id] || [];
           const accepted = rsvps.filter(r => r.response === "accepted");
           const declined = rsvps.filter(r => r.response === "declined");
 
           return (
-            <Card key={event.id} className="border-border bg-gradient-to-br from-gray-900 to-black hover:from-gray-800 hover:to-gray-950 transition-colors">
+            <Card 
+              key={event.id} 
+              className={`border-border transition-colors ${
+                isBirthday 
+                  ? "bg-gradient-to-br from-pink-950/30 to-rose-950/30 border-pink-500/30" 
+                  : "bg-gradient-to-br from-gray-900 to-black hover:from-gray-800 hover:to-gray-950"
+              }`}
+            >
               <CardContent className="p-5">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <h3 className="font-bold text-lg" data-testid={`text-event-title-${event.id}`}>{event.title}</h3>
                     <p className="text-xs text-muted-foreground mt-1">
-                      📅 {new Date(event.startDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                      {event.endDate && ` - ${new Date(event.endDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}`}
+                      📅 {new Date(event.startDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+                      {!isBirthday && event.endDate && ` - ${new Date(event.endDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}`}
                     </p>
                     {event.description && <p className="text-muted-foreground text-sm mt-2">{event.description}</p>}
                     {event.location && (
@@ -4263,47 +4275,59 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
                         <MapPin className="h-4 w-4" /> {event.location}
                       </p>
                     )}
-                    <div className="mt-4 p-4 bg-secondary/70 rounded-lg border border-border">
-                      <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                        📋 {t('calendar.rsvps')} ({rsvps.length})
-                      </h4>
-                      {rsvps.length === 0 ? (
-                        <p className="text-xs text-muted-foreground italic">{t('calendar.noRsvps')}</p>
-                      ) : (
-                        <div className="space-y-2">
-                          {accepted.length > 0 && (
-                            <div className="bg-green-500/10 border border-green-500/30 rounded p-2">
-                              <p className="text-xs text-green-400 font-medium" data-testid={`text-rsvp-accepted-${event.id}`}>
-                                ✓ {t('common.accepted')} ({accepted.length}):
-                              </p>
-                              <p className="text-xs text-green-300 ml-4">
-                                {accepted.map(r => r.childName).join(", ")}
-                              </p>
-                            </div>
-                          )}
-                          {declined.length > 0 && (
-                            <div className="bg-red-500/10 border border-red-500/30 rounded p-2">
-                              <p className="text-xs text-red-400 font-medium" data-testid={`text-rsvp-declined-${event.id}`}>
-                                ✗ {t('common.declined')} ({declined.length}):
-                              </p>
-                              <p className="text-xs text-red-300 ml-4">
-                                {declined.map(r => r.childName).join(", ")}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    {/* Only show RSVP section for non-birthday events */}
+                    {!isBirthday && (
+                      <div className="mt-4 p-4 bg-secondary/70 rounded-lg border border-border">
+                        <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                          📋 {t('calendar.rsvps')} ({rsvps.length})
+                        </h4>
+                        {rsvps.length === 0 ? (
+                          <p className="text-xs text-muted-foreground italic">{t('calendar.noRsvps')}</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {accepted.length > 0 && (
+                              <div className="bg-green-500/10 border border-green-500/30 rounded p-2">
+                                <p className="text-xs text-green-400 font-medium" data-testid={`text-rsvp-accepted-${event.id}`}>
+                                  ✓ {t('common.accepted')} ({accepted.length}):
+                                </p>
+                                <p className="text-xs text-green-300 ml-4">
+                                  {accepted.map(r => r.childName).join(", ")}
+                                </p>
+                              </div>
+                            )}
+                            {declined.length > 0 && (
+                              <div className="bg-red-500/10 border border-red-500/30 rounded p-2">
+                                <p className="text-xs text-red-400 font-medium" data-testid={`text-rsvp-declined-${event.id}`}>
+                                  ✗ {t('common.declined')} ({declined.length}):
+                                </p>
+                                <p className="text-xs text-red-300 ml-4">
+                                  {declined.map(r => r.childName).join(", ")}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {/* Show birthday badge */}
+                    {isBirthday && (
+                      <div className="mt-3 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-pink-500/20 text-pink-400 text-xs">
+                        🎂 {t('birthdays.recurring')}
+                      </div>
+                    )}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onDeleteEvent(event.id)}
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                    data-testid={`button-delete-event-${event.id}`}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {/* Only show delete button for non-birthday events */}
+                  {!isBirthday && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onDeleteEvent(event.id)}
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      data-testid={`button-delete-event-${event.id}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -6012,10 +6036,14 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   if (currentView === "calendar-view") {
     const [eventRsvps, setEventRsvps] = useState<Record<number, any[]>>({});
     
+    // Check if event is a birthday (negative ID or eventType="birthday")
+    const isBirthdayEvent = (event: any) => event.id < 0 || event.eventType === "birthday";
+    
     useEffect(() => {
       const fetchAllRsvps = async () => {
         const rsvpsData: Record<number, any[]> = {};
-        for (const event of events) {
+        // Only fetch RSVPs for non-birthday events
+        for (const event of events.filter((e: any) => !isBirthdayEvent(e))) {
           try {
             const res = await fetch(`/api/events/${event.id}/rsvps`);
             if (res.ok) {
@@ -6073,13 +6101,21 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 <p className="text-foreground">{t('dashboard.noEventsPlanned')}</p>
               </div>
             ) : (
-              events.map((event: FamilyEvent) => {
+              events.map((event: any) => {
+                const isBirthday = isBirthdayEvent(event);
                 const accepted = (eventRsvps[event.id] || []).filter((r: any) => r.response === "accepted");
                 const declined = (eventRsvps[event.id] || []).filter((r: any) => r.response === "declined");
                 const myRsvp = rsvps[event.id];
                 
                 return (
-                  <div key={event.id} className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl hover:bg-white/60 transition-colors shadow-lg">
+                  <div 
+                    key={event.id} 
+                    className={`backdrop-blur-xl rounded-2xl transition-colors shadow-lg ${
+                      isBirthday 
+                        ? "bg-gradient-to-br from-pink-950/30 to-rose-950/30 border border-pink-500/30" 
+                        : "bg-white/5 dark:bg-black/30 border border-white/50 dark:border-white/20 hover:bg-white/60"
+                    }`}
+                  >
                     <div className="p-5">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
@@ -6088,11 +6124,13 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                             <Calendar className="h-4 w-4" />
                             {new Date(event.startDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
                           </p>
-                          <p className="text-xs text-foreground flex items-center gap-1">
-                            <span>⏰</span>
-                            {new Date(event.startDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
-                            {event.endDate && ` - ${new Date(event.endDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`}
-                          </p>
+                          {!isBirthday && (
+                            <p className="text-xs text-foreground flex items-center gap-1">
+                              <span>⏰</span>
+                              {new Date(event.startDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                              {event.endDate && ` - ${new Date(event.endDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`}
+                            </p>
+                          )}
                           {event.description && <p className="text-muted-foreground text-sm mt-3">{event.description}</p>}
                           {event.location && (
                             <p className="text-sm text-foreground flex items-center gap-1 mt-2">
@@ -6100,35 +6138,44 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                             </p>
                           )}
                           
-                          <div className="flex gap-2 mt-4">
-                            <Button
-                              onClick={() => handleRsvp(event.id, "accepted")}
-                              disabled={loading[event.id] || myRsvp === "accepted"}
-                              className={`flex-1 ${myRsvp === "accepted" ? "bg-green-600 hover:bg-green-700" : "bg-violet-600 hover:bg-violet-700"} text-white`}
-                              data-testid={`button-accept-event-view-${event.id}`}
-                            >
-                              {myRsvp === "accepted" ? `✓ ${t('common.accepted')}` : t('common.accept')}
-                            </Button>
-                            <Button
-                              onClick={() => handleRsvp(event.id, "declined")}
-                              disabled={loading[event.id] || myRsvp === "declined"}
-                              variant={myRsvp === "declined" ? "default" : "destructive"}
-                              className={`flex-1 ${myRsvp === "declined" ? "bg-red-600 hover:bg-red-700" : ""}`}
-                              data-testid={`button-decline-event-view-${event.id}`}
-                            >
-                              {myRsvp === "declined" ? `✗ ${t('common.declined')}` : t('common.decline')}
-                            </Button>
-                          </div>
-                          
-                          {(accepted.length > 0 || declined.length > 0) && (
-                            <div className="mt-4 space-y-2 border-t border-slate-300/30 pt-3">
-                              {accepted.length > 0 && (
-                                <p className="text-xs text-green-700 font-semibold">✓ {t('common.accepted')}: {accepted.map((r: any) => r.childName).join(", ")}</p>
-                              )}
-                              {declined.length > 0 && (
-                                <p className="text-xs text-red-700 font-semibold">✗ {t('common.declined')}: {declined.map((r: any) => r.childName).join(", ")}</p>
-                              )}
+                          {/* Show birthday badge instead of RSVP buttons for birthday events */}
+                          {isBirthday ? (
+                            <div className="mt-3 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-pink-500/20 text-pink-400 text-xs">
+                              🎂 {t('birthdays.recurring')}
                             </div>
+                          ) : (
+                            <>
+                              <div className="flex gap-2 mt-4">
+                                <Button
+                                  onClick={() => handleRsvp(event.id, "accepted")}
+                                  disabled={loading[event.id] || myRsvp === "accepted"}
+                                  className={`flex-1 ${myRsvp === "accepted" ? "bg-green-600 hover:bg-green-700" : "bg-violet-600 hover:bg-violet-700"} text-white`}
+                                  data-testid={`button-accept-event-view-${event.id}`}
+                                >
+                                  {myRsvp === "accepted" ? `✓ ${t('common.accepted')}` : t('common.accept')}
+                                </Button>
+                                <Button
+                                  onClick={() => handleRsvp(event.id, "declined")}
+                                  disabled={loading[event.id] || myRsvp === "declined"}
+                                  variant={myRsvp === "declined" ? "default" : "destructive"}
+                                  className={`flex-1 ${myRsvp === "declined" ? "bg-red-600 hover:bg-red-700" : ""}`}
+                                  data-testid={`button-decline-event-view-${event.id}`}
+                                >
+                                  {myRsvp === "declined" ? `✗ ${t('common.declined')}` : t('common.decline')}
+                                </Button>
+                              </div>
+                              
+                              {(accepted.length > 0 || declined.length > 0) && (
+                                <div className="mt-4 space-y-2 border-t border-slate-300/30 pt-3">
+                                  {accepted.length > 0 && (
+                                    <p className="text-xs text-green-700 font-semibold">✓ {t('common.accepted')}: {accepted.map((r: any) => r.childName).join(", ")}</p>
+                                  )}
+                                  {declined.length > 0 && (
+                                    <p className="text-xs text-red-700 font-semibold">✗ {t('common.declined')}: {declined.map((r: any) => r.childName).join(", ")}</p>
+                                  )}
+                                </div>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>
@@ -6933,10 +6980,14 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   if (currentView === "calendar-view") {
     const [eventRsvps, setEventRsvps] = useState<Record<number, any[]>>({});
     
+    // Check if event is a birthday (negative ID or eventType="birthday")
+    const isBirthdayEvent = (event: any) => event.id < 0 || event.eventType === "birthday";
+    
     useEffect(() => {
       const fetchAllRsvps = async () => {
         const rsvpsData: Record<number, any[]> = {};
-        for (const event of events) {
+        // Only fetch RSVPs for non-birthday events
+        for (const event of events.filter((e: any) => !isBirthdayEvent(e))) {
           try {
             const res = await fetch(`/api/events/${event.id}/rsvps`);
             if (res.ok) {
@@ -6994,13 +7045,21 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 <p className="text-foreground">{t('dashboard.noEventsPlanned')}</p>
               </div>
             ) : (
-              events.map((event: FamilyEvent) => {
+              events.map((event: any) => {
+                const isBirthday = isBirthdayEvent(event);
                 const accepted = (eventRsvps[event.id] || []).filter((r: any) => r.response === "accepted");
                 const declined = (eventRsvps[event.id] || []).filter((r: any) => r.response === "declined");
                 const myRsvp = rsvps[event.id];
                 
                 return (
-                  <div key={event.id} className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl hover:bg-white/60 transition-colors shadow-lg">
+                  <div 
+                    key={event.id} 
+                    className={`backdrop-blur-xl rounded-2xl transition-colors shadow-lg ${
+                      isBirthday 
+                        ? "bg-gradient-to-br from-pink-950/30 to-rose-950/30 border border-pink-500/30" 
+                        : "bg-white/5 dark:bg-black/30 border border-white/50 dark:border-white/20 hover:bg-white/60"
+                    }`}
+                  >
                     <div className="p-5">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
@@ -7009,11 +7068,13 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                             <Calendar className="h-4 w-4" />
                             {new Date(event.startDate).toLocaleDateString("de-DE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
                           </p>
-                          <p className="text-xs text-foreground flex items-center gap-1">
-                            <span>⏰</span>
-                            {new Date(event.startDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
-                            {event.endDate && ` - ${new Date(event.endDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`}
-                          </p>
+                          {!isBirthday && (
+                            <p className="text-xs text-foreground flex items-center gap-1">
+                              <span>⏰</span>
+                              {new Date(event.startDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                              {event.endDate && ` - ${new Date(event.endDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`}
+                            </p>
+                          )}
                           {event.description && <p className="text-muted-foreground text-sm mt-3">{event.description}</p>}
                           {event.location && (
                             <p className="text-sm text-foreground flex items-center gap-1 mt-2">
@@ -7021,35 +7082,44 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                             </p>
                           )}
                           
-                          <div className="flex gap-2 mt-4">
-                            <Button
-                              onClick={() => handleRsvp(event.id, "accepted")}
-                              disabled={loading[event.id] || myRsvp === "accepted"}
-                              className={`flex-1 ${myRsvp === "accepted" ? "bg-green-600 hover:bg-green-700" : "bg-violet-600 hover:bg-violet-700"} text-white`}
-                              data-testid={`button-accept-event-view-${event.id}`}
-                            >
-                              {myRsvp === "accepted" ? `✓ ${t('common.accepted')}` : t('common.accept')}
-                            </Button>
-                            <Button
-                              onClick={() => handleRsvp(event.id, "declined")}
-                              disabled={loading[event.id] || myRsvp === "declined"}
-                              variant={myRsvp === "declined" ? "default" : "destructive"}
-                              className={`flex-1 ${myRsvp === "declined" ? "bg-red-600 hover:bg-red-700" : ""}`}
-                              data-testid={`button-decline-event-view-${event.id}`}
-                            >
-                              {myRsvp === "declined" ? `✗ ${t('common.declined')}` : t('common.decline')}
-                            </Button>
-                          </div>
-                          
-                          {(accepted.length > 0 || declined.length > 0) && (
-                            <div className="mt-4 space-y-2 border-t border-slate-300/30 pt-3">
-                              {accepted.length > 0 && (
-                                <p className="text-xs text-green-700 font-semibold">✓ {t('common.accepted')}: {accepted.map((r: any) => r.childName).join(", ")}</p>
-                              )}
-                              {declined.length > 0 && (
-                                <p className="text-xs text-red-700 font-semibold">✗ {t('common.declined')}: {declined.map((r: any) => r.childName).join(", ")}</p>
-                              )}
+                          {/* Show birthday badge instead of RSVP buttons for birthday events */}
+                          {isBirthday ? (
+                            <div className="mt-3 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-pink-500/20 text-pink-400 text-xs">
+                              🎂 {t('birthdays.recurring')}
                             </div>
+                          ) : (
+                            <>
+                              <div className="flex gap-2 mt-4">
+                                <Button
+                                  onClick={() => handleRsvp(event.id, "accepted")}
+                                  disabled={loading[event.id] || myRsvp === "accepted"}
+                                  className={`flex-1 ${myRsvp === "accepted" ? "bg-green-600 hover:bg-green-700" : "bg-violet-600 hover:bg-violet-700"} text-white`}
+                                  data-testid={`button-accept-event-view-${event.id}`}
+                                >
+                                  {myRsvp === "accepted" ? `✓ ${t('common.accepted')}` : t('common.accept')}
+                                </Button>
+                                <Button
+                                  onClick={() => handleRsvp(event.id, "declined")}
+                                  disabled={loading[event.id] || myRsvp === "declined"}
+                                  variant={myRsvp === "declined" ? "default" : "destructive"}
+                                  className={`flex-1 ${myRsvp === "declined" ? "bg-red-600 hover:bg-red-700" : ""}`}
+                                  data-testid={`button-decline-event-view-${event.id}`}
+                                >
+                                  {myRsvp === "declined" ? `✗ ${t('common.declined')}` : t('common.decline')}
+                                </Button>
+                              </div>
+                              
+                              {(accepted.length > 0 || declined.length > 0) && (
+                                <div className="mt-4 space-y-2 border-t border-slate-300/30 pt-3">
+                                  {accepted.length > 0 && (
+                                    <p className="text-xs text-green-700 font-semibold">✓ {t('common.accepted')}: {accepted.map((r: any) => r.childName).join(", ")}</p>
+                                  )}
+                                  {declined.length > 0 && (
+                                    <p className="text-xs text-red-700 font-semibold">✗ {t('common.declined')}: {declined.map((r: any) => r.childName).join(", ")}</p>
+                                  )}
+                                </div>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>

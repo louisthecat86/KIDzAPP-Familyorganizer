@@ -81,13 +81,20 @@ export function Birthdays({ user, onClose }: {
           ...data
         })
       });
-      if (!res.ok) throw new Error("Failed to create birthday");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to create birthday");
+      }
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/birthdays"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/events"] });
       toast({ title: t("birthdays.birthdayAdded") });
       resetForm();
+    },
+    onError: (error: Error) => {
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
     }
   });
 
@@ -99,7 +106,11 @@ export function Birthdays({ user, onClose }: {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/birthdays"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/events"] });
       toast({ title: t("birthdays.birthdayDeleted") });
+    },
+    onError: (error: Error) => {
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
     }
   });
 
@@ -119,7 +130,7 @@ export function Birthdays({ user, onClose }: {
       personName: personName.trim(),
       birthMonth: parseInt(birthMonth),
       birthDay: parseInt(birthDay),
-      birthYear: birthYear ? parseInt(birthYear) : null,
+      birthYear: birthYear && birthYear !== "none" ? parseInt(birthYear) : null,
       relation: relation.trim(),
       notes: notes.trim()
     });
@@ -236,7 +247,7 @@ export function Birthdays({ user, onClose }: {
                     <SelectValue placeholder="-" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">-</SelectItem>
+                    <SelectItem value="none">-</SelectItem>
                     {years.map(y => (
                       <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
                     ))}

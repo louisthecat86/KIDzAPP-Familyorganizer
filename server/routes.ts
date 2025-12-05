@@ -1608,13 +1608,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Family Events
+  // Family Events (includes birthdays as recurring annual events)
   app.get("/api/events/:connectionId", async (req, res) => {
     try {
       const { connectionId } = req.params;
       const events = await storage.getFamilyEvents(connectionId);
-      res.json(events);
+      
+      // Fetch birthdays and convert them to virtual calendar events
+      const birthdays = await storage.getBirthdayReminders(connectionId);
+      const today = new Date();
+      const currentYear = today.getFullYear();
+      
+      // Generate birthday events for current year and next year
+      const birthdayEvents = birthdays.flatMap((birthday) => {
+        const eventsForBirthday = [];
+        
+        // Current year birthday
+        const thisYearDate = new Date(currentYear, birthday.birthMonth - 1, birthday.birthDay);
+        eventsForBirthday.push({
+          id: -birthday.id, // Negative ID to distinguish from real events
+          connectionId: birthday.connectionId,
+          title: `🎂 ${birthday.personName}`,
+          description: birthday.relation ? `${birthday.relation}${birthday.birthYear ? ` - ${currentYear - birthday.birthYear} Jahre` : ""}` : (birthday.birthYear ? `${currentYear - birthday.birthYear} Jahre` : ""),
+          startDate: thisYearDate,
+          endDate: null,
+          location: null,
+          color: "pink",
+          eventType: "birthday",
+          createdBy: birthday.createdBy,
+          createdAt: birthday.createdAt,
+          updatedAt: birthday.updatedAt,
+          birthdayId: birthday.id, // Reference to original birthday
+        });
+        
+        // Next year birthday
+        const nextYearDate = new Date(currentYear + 1, birthday.birthMonth - 1, birthday.birthDay);
+        eventsForBirthday.push({
+          id: -(birthday.id + 100000), // Different negative ID for next year
+          connectionId: birthday.connectionId,
+          title: `🎂 ${birthday.personName}`,
+          description: birthday.relation ? `${birthday.relation}${birthday.birthYear ? ` - ${currentYear + 1 - birthday.birthYear} Jahre` : ""}` : (birthday.birthYear ? `${currentYear + 1 - birthday.birthYear} Jahre` : ""),
+          startDate: nextYearDate,
+          endDate: null,
+          location: null,
+          color: "pink",
+          eventType: "birthday",
+          createdBy: birthday.createdBy,
+          createdAt: birthday.createdAt,
+          updatedAt: birthday.updatedAt,
+          birthdayId: birthday.id,
+        });
+        
+        return eventsForBirthday;
+      });
+      
+      // Combine regular events with birthday events
+      const allEvents = [...events, ...birthdayEvents];
+      res.json(allEvents);
     } catch (error) {
+      console.error("Error fetching events:", error);
       res.status(500).json({ error: "Failed to fetch events" });
     }
   });
