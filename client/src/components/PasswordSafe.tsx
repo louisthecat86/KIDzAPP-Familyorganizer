@@ -161,13 +161,12 @@ export function PasswordSafe({ user, onClose }: {
   if (!isParent) {
     return (
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <Button variant="outline" onClick={onClose} className="gap-2" data-testid="button-back-passwords">
+        <div className="flex flex-col gap-3">
+          <Button variant="outline" onClick={onClose} className="gap-2 self-start" data-testid="button-back-passwords">
             <ChevronLeft className="h-4 w-4" />
             {t("common.back")}
           </Button>
-          <h1 className="text-2xl font-bold">{t("passwordSafe.title")}</h1>
-          <div className="w-24" />
+          <h1 className="text-2xl font-bold text-center">{t("passwordSafe.title")}</h1>
         </div>
         <Card className="py-12 text-center">
           <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
@@ -179,19 +178,21 @@ export function PasswordSafe({ user, onClose }: {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Button variant="outline" onClick={onClose} className="gap-2" data-testid="button-back-passwords">
-          <ChevronLeft className="h-4 w-4" />
-          {t("common.back")}
-        </Button>
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <Button variant="outline" onClick={onClose} className="gap-2" data-testid="button-back-passwords">
+            <ChevronLeft className="h-4 w-4" />
+            {t("common.back")}
+          </Button>
+          <Button onClick={() => setShowForm(!showForm)} className="gap-2" data-testid="button-new-password">
+            <Plus className="h-4 w-4" />
+            {t("passwordSafe.newEntry")}
+          </Button>
+        </div>
         <div className="text-center">
           <h1 className="text-2xl font-bold">{t("passwordSafe.title")}</h1>
           <p className="text-sm text-muted-foreground">{t("passwordSafe.subtitle")}</p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)} className="gap-2" data-testid="button-new-password">
-          <Plus className="h-4 w-4" />
-          {t("passwordSafe.newEntry")}
-        </Button>
       </div>
 
       {showForm && (

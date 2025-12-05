@@ -131,13 +131,12 @@ export function LocationSharing({ user, familyMembers, onClose }: {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Button variant="outline" onClick={onClose} className="gap-2" data-testid="button-back-location">
+      <div className="flex flex-col gap-3">
+        <Button variant="outline" onClick={onClose} className="gap-2 self-start" data-testid="button-back-location">
           <ChevronLeft className="h-4 w-4" />
           {t("common.back")}
         </Button>
-        <h1 className="text-2xl font-bold">{t("locationSharing.title")}</h1>
-        <div className="w-24" />
+        <h1 className="text-2xl font-bold text-center">{t("locationSharing.title")}</h1>
       </div>
 
       <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">

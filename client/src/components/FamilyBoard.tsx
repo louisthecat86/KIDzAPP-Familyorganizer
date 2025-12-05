@@ -126,16 +126,18 @@ export function FamilyBoard({ user, familyMembers, onClose }: {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Button variant="outline" onClick={onClose} className="gap-2" data-testid="button-back-board">
-          <ChevronLeft className="h-4 w-4" />
-          {t("common.back")}
-        </Button>
-        <h1 className="text-2xl font-bold">{t("familyBoard.title")}</h1>
-        <Button onClick={() => setShowForm(!showForm)} className="gap-2" data-testid="button-new-post">
-          <Plus className="h-4 w-4" />
-          {t("familyBoard.newPost")}
-        </Button>
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <Button variant="outline" onClick={onClose} className="gap-2" data-testid="button-back-board">
+            <ChevronLeft className="h-4 w-4" />
+            {t("common.back")}
+          </Button>
+          <Button onClick={() => setShowForm(!showForm)} className="gap-2" data-testid="button-new-post">
+            <Plus className="h-4 w-4" />
+            {t("familyBoard.newPost")}
+          </Button>
+        </div>
+        <h1 className="text-2xl font-bold text-center">{t("familyBoard.title")}</h1>
       </div>
 
       {showForm && (
