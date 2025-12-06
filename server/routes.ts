@@ -3921,18 +3921,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { peerId } = req.params;
       const { confirmationCode } = req.body;
+      const targetPeerId = parseInt(peerId);
       
-      const peer = await storage.getPeer(parseInt(peerId));
-      if (!peer || peer.role !== 'parent') {
-        return res.status(403).json({ error: "Only parents can delete accounts" });
+      const peer = await storage.getPeer(targetPeerId);
+      if (!peer) {
+        return res.status(404).json({ error: "Account not found" });
+      }
+      
+      // Check permissions: user can delete own account OR parent can delete child in same family
+      const sessionPeerId = req.session.peerId;
+      const sessionPeer = sessionPeerId ? await storage.getPeer(sessionPeerId) : null;
+      
+      const canDelete = 
+        targetPeerId === sessionPeerId || // Deleting own account
+        (sessionPeer?.role === 'parent' && sessionPeer?.connectionId === peer.connectionId); // Parent deleting child in same family
+      
+      if (!canDelete) {
+        return res.status(403).json({ error: "Not authorized to delete this account" });
       }
       
       if (confirmationCode !== 'DELETE-ACCOUNT-FOREVER') {
         return res.status(400).json({ error: "Invalid confirmation code" });
       }
       
-      const result = await storage.deleteAccount(parseInt(peerId), peer.connectionId);
-      console.log(`[Account] DELETED account ${peerId}:`, result);
+      const result = await storage.deleteAccount(targetPeerId, peer.connectionId);
+      console.log(`[Account] DELETED account ${targetPeerId}:`, result);
+      
+      // Destroy session if user deleted their own account
+      if (targetPeerId === sessionPeerId) {
+        req.session.destroy((err) => {
+          if (err) console.error("[Account] Session destroy error:", err);
+        });
+      }
       
       res.json({ 
         success: result.success, 
