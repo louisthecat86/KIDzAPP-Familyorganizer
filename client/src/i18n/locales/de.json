@@ -514,6 +514,7 @@
     "sats": "Sats",
     "error": "Fehler",
     "pendingPayments": "Ausstehende Zahlungen",
+    "pending": "fehlgeschlagen",
     "to": "an"
   },
   "family": {

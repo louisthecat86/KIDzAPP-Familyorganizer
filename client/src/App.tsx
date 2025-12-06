@@ -4487,6 +4487,18 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [rsvps, setRsvps] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState<Record<number, boolean>>({});
+  const [showFailedPaymentsModal, setShowFailedPaymentsModal] = useState(false);
+
+  const { data: failedPaymentsCount = 0 } = useQuery({
+    queryKey: ["/api/failed-payments", user.connectionId],
+    queryFn: async () => {
+      const res = await fetch(`/api/failed-payments/${user.connectionId}`);
+      if (!res.ok) return 0;
+      const data = await res.json();
+      return data.length;
+    },
+    refetchInterval: 30000,
+  });
 
   const hideConnectionCode = () => {
     setShowConnectionCode(false);
@@ -4789,7 +4801,18 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               if (user.role !== "parent") return null;
               return createDraggableCard(
                 cardId,
-                <div className={`bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl ${displayBalance !== null ? "hover:bg-white/5 dark:bg-black/105" : "opacity-60"} transition-colors h-full shadow-lg p-6`}>
+                <div 
+                  className={`relative bg-white/5 dark:bg-black/30 backdrop-blur-xl border ${failedPaymentsCount > 0 ? 'border-red-500/70' : 'border-white/50 dark:border-white/20'} rounded-2xl ${displayBalance !== null ? "hover:bg-white/5 dark:bg-black/105 cursor-pointer" : "opacity-60"} transition-colors h-full shadow-lg p-6`}
+                  onClick={() => failedPaymentsCount > 0 && setShowFailedPaymentsModal(true)}
+                >
+                  {failedPaymentsCount > 0 && (
+                    <div 
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-pulse shadow-lg"
+                      data-testid="badge-failed-payments"
+                    >
+                      {failedPaymentsCount}
+                    </div>
+                  )}
                   <div className="space-y-4">
                     <div className="text-center">
                       <div className="text-3xl font-bold text-cyan-600 flex items-center justify-center gap-1">
@@ -4802,6 +4825,11 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         )}
                       </div>
                       <p className="text-sm text-foreground mt-2">{walletLabel}</p>
+                      {failedPaymentsCount > 0 && (
+                        <p className="text-xs text-red-400 mt-1 animate-pulse">
+                          ⚠️ {failedPaymentsCount} {t('failedPayments.pending')}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>,
@@ -5010,6 +5038,18 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 </div>
               )}
             </div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showFailedPaymentsModal} onOpenChange={setShowFailedPaymentsModal}>
+          <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-red-400 flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5" />
+                {t('failedPayments.pendingPayments')}
+              </DialogTitle>
+            </DialogHeader>
+            <FailedPaymentsPanel connectionId={user.connectionId} peerId={user.id} />
           </DialogContent>
         </Dialog>
       </div>
