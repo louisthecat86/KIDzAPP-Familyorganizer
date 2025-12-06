@@ -1370,7 +1370,16 @@
     "error": "An error occurred",
     "accountDeleted": "Account was deleted",
     "accountReset": "Account was reset",
-    "allDataDeleted": "All data was deleted"
+    "allDataDeleted": "All data was deleted",
+    "deleteChildAccount": "Delete Child Account",
+    "deleteChildWarning": "Do you really want to PERMANENTLY delete {{name}}'s account? This action cannot be undone!",
+    "willBeDeleted": "The following data will be deleted",
+    "allTasks": "All tasks and proofs",
+    "allTransactions": "All transactions",
+    "allMessages": "All chat messages",
+    "allProgress": "Learning progress and challenges",
+    "allAllowances": "Allowance settings",
+    "deleteAccountForever": "Delete Account FOREVER"
   },
   "familyBoard": {
     "title": "Family Board",

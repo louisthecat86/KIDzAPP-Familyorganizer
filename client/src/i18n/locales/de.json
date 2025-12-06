@@ -1368,7 +1368,16 @@
     "error": "Ein Fehler ist aufgetreten",
     "accountDeleted": "Konto wurde gelöscht",
     "accountReset": "Konto wurde zurückgesetzt",
-    "allDataDeleted": "Alle Daten wurden gelöscht"
+    "allDataDeleted": "Alle Daten wurden gelöscht",
+    "deleteChildAccount": "Kind-Konto löschen",
+    "deleteChildWarning": "Möchtest du das Konto von {{name}} wirklich ENDGÜLTIG löschen? Diese Aktion kann nicht rückgängig gemacht werden!",
+    "willBeDeleted": "Folgende Daten werden gelöscht",
+    "allTasks": "Alle Aufgaben und Beweise",
+    "allTransactions": "Alle Transaktionen",
+    "allMessages": "Alle Chat-Nachrichten",
+    "allProgress": "Lernfortschritt und Challenges",
+    "allAllowances": "Taschengeld-Einstellungen",
+    "deleteAccountForever": "Konto ENDGÜLTIG löschen"
   },
   "familyBoard": {
     "title": "Familien-Pinnwand",
