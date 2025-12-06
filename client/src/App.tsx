@@ -396,15 +396,34 @@ export default function App() {
   };
 
   useEffect(() => {
-    // Load user
+    // Load user and validate session
     const stored = localStorage.getItem("sats-user");
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        setUser(parsed);
-        setMode("app");
-        const savedLayout = localStorage.getItem(`layoutView_${parsed.id}`);
-        if (savedLayout) setLayoutView(savedLayout);
+        
+        // Validate session with server
+        apiFetch("/api/auth/me")
+          .then(res => {
+            if (res.ok) {
+              // Session is valid
+              setUser(parsed);
+              setMode("app");
+              const savedLayout = localStorage.getItem(`layoutView_${parsed.id}`);
+              if (savedLayout) setLayoutView(savedLayout);
+            } else {
+              // Session expired - clear local storage and show login
+              console.log("[Auth] Session expired, clearing local storage");
+              localStorage.removeItem("sats-user");
+              setUser(null);
+              setMode("role-select");
+            }
+          })
+          .catch(() => {
+            // Network error - try to use cached user
+            setUser(parsed);
+            setMode("app");
+          });
       } catch (e) {
         console.error("Failed to parse stored user", e);
       }
