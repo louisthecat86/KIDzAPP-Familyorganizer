@@ -73,6 +73,8 @@
     "seedPhrase": "Seed-Phrase",
     "seedPhraseTitle": "Deine Wiederherstellungs-Phrase",
     "seedPhraseWarning": "Schreibe diese 12 Wörter auf Papier und bewahre sie sicher auf. Dies ist die EINZIGE Möglichkeit, dein Konto wiederherzustellen.",
+    "recoveryKitWarning": "Schreibe die Familien-ID und die 12 Wörter auf Papier auf. Beides wird zur Wiederherstellung benötigt!",
+    "recoveryKitConfirm": "Ich habe beides aufgeschrieben",
     "seedPhraseConfirm": "Ich habe die Wörter aufgeschrieben",
     "seedPhraseNeverShow": "Diese Wörter werden nie wieder angezeigt!",
     "seedPhraseRecovery": "Mit Seed-Phrase wiederherstellen",

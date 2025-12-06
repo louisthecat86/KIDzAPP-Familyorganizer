@@ -73,6 +73,8 @@
     "seedPhrase": "Seed Phrase",
     "seedPhraseTitle": "Your Recovery Phrase",
     "seedPhraseWarning": "Write down these 12 words on paper and store them safely. This is the ONLY way to recover your account.",
+    "recoveryKitWarning": "Write down the Family ID and the 12 words on paper. Both are needed for recovery!",
+    "recoveryKitConfirm": "I have written down both",
     "seedPhraseConfirm": "I have written down the words",
     "seedPhraseNeverShow": "These words will never be shown again!",
     "seedPhraseRecovery": "Recover with Seed Phrase",

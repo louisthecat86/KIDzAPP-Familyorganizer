@@ -2474,17 +2474,25 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             </div>
             
             <p className="text-sm text-muted-foreground text-center">
-              {t('auth.seedPhraseWarning')}
+              {t('auth.recoveryKitWarning')}
             </p>
             
-            <div className="bg-muted/50 rounded-lg p-4 font-mono text-center">
-              <div className="grid grid-cols-3 gap-2">
-                {seedPhrase.split(' ').map((word, index) => (
-                  <div key={index} className="bg-background rounded px-2 py-1 text-sm">
-                    <span className="text-muted-foreground mr-1">{index + 1}.</span>
-                    {word}
-                  </div>
-                ))}
+            <div className="space-y-4">
+              <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3">
+                <p className="text-xs text-orange-600 dark:text-orange-400 font-medium mb-1">{t('auth.familyId')}</p>
+                <p className="font-mono text-lg text-center font-bold">{pendingUser.connectionId}</p>
+              </div>
+              
+              <div className="bg-muted/50 rounded-lg p-4 font-mono text-center">
+                <p className="text-xs text-muted-foreground mb-2">{t('auth.seedPhrase')}</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {seedPhrase.split(' ').map((word, index) => (
+                    <div key={index} className="bg-background rounded px-2 py-1 text-sm">
+                      <span className="text-muted-foreground mr-1">{index + 1}.</span>
+                      {word}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
             
@@ -2496,7 +2504,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 data-testid="checkbox-seed-confirm"
               />
               <label htmlFor="seedConfirm" className="text-sm cursor-pointer">
-                {t('auth.seedPhraseConfirm')}
+                {t('auth.recoveryKitConfirm')}
               </label>
             </div>
             
