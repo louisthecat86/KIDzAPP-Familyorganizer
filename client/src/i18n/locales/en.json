@@ -1557,8 +1557,16 @@
       "title": "Login & Access",
       "password": "Login with name + personal password",
       "passwordStrength": "Passwords: 8-12 characters with uppercase and numbers",
-      "recovery": "Security question for password recovery",
       "roles": "Role-based permissions (Parent/Child)"
+    },
+    "recovery": {
+      "title": "Account Recovery",
+      "seedPhrase": "12-word Seed Phrase (BIP39 standard)",
+      "seedPhraseDesc": "A unique 12-word phrase is generated during registration",
+      "familyId": "Additionally, the Family ID is required for recovery",
+      "writeDown": "Both must be written down securely - shown only once!",
+      "hashed": "The seed phrase is stored encrypted (bcrypt)",
+      "children": "Children: Parents can reset the PIN"
     },
     "encryption": {
       "title": "Encryption",

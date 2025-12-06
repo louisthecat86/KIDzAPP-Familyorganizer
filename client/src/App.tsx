@@ -10762,8 +10762,23 @@ function SecurityView({ onClose }: { onClose: () => void }) {
           <CardContent className="space-y-2 text-sm">
             <p>• {t('security.auth.password')}</p>
             <p>• {t('security.auth.passwordStrength')}</p>
-            <p>• {t('security.auth.recovery')}</p>
             <p>• {t('security.auth.roles')}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-2 border-orange-500/30 bg-orange-500/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <span>🌱</span> {t('security.recovery.title')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <p className="font-semibold text-orange-400">• {t('security.recovery.seedPhrase')}</p>
+            <p>• {t('security.recovery.seedPhraseDesc')}</p>
+            <p>• {t('security.recovery.familyId')}</p>
+            <p className="text-red-400">• {t('security.recovery.writeDown')}</p>
+            <p>• {t('security.recovery.hashed')}</p>
+            <p className="text-muted-foreground">• {t('security.recovery.children')}</p>
           </CardContent>
         </Card>
 

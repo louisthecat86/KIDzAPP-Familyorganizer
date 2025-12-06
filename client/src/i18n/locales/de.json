@@ -1555,8 +1555,16 @@
       "title": "Anmeldung & Zugriff",
       "password": "Login mit Name + persönlichem Passwort",
       "passwordStrength": "Passwörter: 8-12 Zeichen mit Großbuchstaben und Zahlen",
-      "recovery": "Sicherheitsfrage für Passwort-Wiederherstellung",
       "roles": "Rollenbasierte Berechtigungen (Eltern/Kind)"
+    },
+    "recovery": {
+      "title": "Konto-Wiederherstellung",
+      "seedPhrase": "12-Wort Seed-Phrase (BIP39-Standard)",
+      "seedPhraseDesc": "Bei der Registrierung wird eine einzigartige 12-Wort-Phrase generiert",
+      "familyId": "Zusätzlich wird die Familien-ID für die Wiederherstellung benötigt",
+      "writeDown": "Beides muss sicher aufgeschrieben werden - wird nur einmal angezeigt!",
+      "hashed": "Die Seed-Phrase wird verschlüsselt gespeichert (bcrypt)",
+      "children": "Kinder: Eltern können die PIN zurücksetzen"
     },
     "encryption": {
       "title": "Verschlüsselung",
