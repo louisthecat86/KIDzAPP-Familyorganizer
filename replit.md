@@ -71,18 +71,32 @@ The application uses PostgreSQL with Drizzle ORM. Schema is defined in `/shared/
 
 ### Authentication & Security
 
+**Session-based Authentication (December 2024):**
+- express-session with PostgreSQL store (connect-pg-simple)
+- Secure cookie settings: httpOnly, sameSite: lax, secure in production
+- Session regeneration on login (prevents session fixation attacks)
+- Trust proxy configuration for TLS termination
+- Global API authentication middleware with PUBLIC_ROUTES whitelist
+- /api/auth/me endpoint for session status check
+
 **PIN-based Authentication:**
-- No traditional username/password system
 - Users identified by name + PIN combination
+- Passwords hashed with bcrypt (12 rounds)
+- Automatic migration of legacy plaintext passwords on startup
 - PINs are unique per name (enforced at database level)
 - Security question (favorite color) for PIN recovery
 - Role-based access control (parent vs. child permissions)
+
+**Required Environment Variables (Production):**
+- `SESSION_SECRET` - Required for secure session cookies
+- `WALLET_ENCRYPTION_KEY` - Required for AES-256-GCM encryption of sensitive wallet data
+- `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` - Required for Web Push notifications (optional feature)
 
 **Family Isolation:**
 - All data scoped to `connectionId` (family ID)
 - Parents auto-generate connection IDs on registration
 - Children join families by entering parent's connection ID
-- No cross-family data access
+- No cross-family data access enforced at API level
 
 ### Bitcoin/Lightning Integration
 
