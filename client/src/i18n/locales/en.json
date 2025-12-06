@@ -847,6 +847,7 @@
     "orCopy": "or copy address"
   },
   "common": {
+    "continue": "Continue",
     "save": "Save",
     "saving": "Saving...",
     "cancel": "Cancel",
