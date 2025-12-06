@@ -4490,9 +4490,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   const [showFailedPaymentsModal, setShowFailedPaymentsModal] = useState(false);
 
   const { data: failedPaymentsCount = 0 } = useQuery({
-    queryKey: ["/api/failed-payments", user.connectionId, user.id],
+    queryKey: ["/api/failed-payments/pending", user.connectionId, user.id],
     queryFn: async () => {
-      const res = await fetch(`/api/failed-payments/${user.connectionId}?peerId=${user.id}`);
+      const res = await fetch(`/api/failed-payments/${user.connectionId}/pending?peerId=${user.id}`);
       if (!res.ok) return 0;
       const data = await res.json();
       return data.length;
