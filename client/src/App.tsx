@@ -4545,7 +4545,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       onDragStart={() => handleDragStart(cardId)}
       onDragOver={handleDragOver}
       onDrop={() => handleDrop(cardId)}
-      className={`cursor-move transition-opacity ${draggedCard === cardId ? "opacity-50" : ""}`}
+      className={`cursor-move transition-opacity overflow-visible ${draggedCard === cardId ? "opacity-50" : ""}`}
     >
       {content}
     </motion.div>
@@ -4753,7 +4753,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           </div>
         </motion.div>
         
-        <div className={`grid ${layoutView === "one-column" ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
+        <div className={`grid ${layoutView === "one-column" ? "grid-cols-1" : "grid-cols-2"} gap-4 overflow-visible`}>
           {cardOrder.map((cardId, index) => {
             if (cardId === "tasks-open") {
               return createDraggableCard(
