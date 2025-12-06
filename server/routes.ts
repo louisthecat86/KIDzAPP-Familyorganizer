@@ -124,6 +124,39 @@ function sanitizePeersForClient(peers: any[]): any[] {
   return peers.map(sanitizePeerForClient);
 }
 
+// Authentication middleware - ensures user is logged in
+function requireAuth(req: any, res: any, next: any) {
+  if (!req.session.peerId) {
+    return res.status(401).json({ error: "Not authenticated. Please log in." });
+  }
+  next();
+}
+
+// Parent-only middleware - ensures user is a parent
+function requireParent(req: any, res: any, next: any) {
+  if (!req.session.peerId) {
+    return res.status(401).json({ error: "Not authenticated. Please log in." });
+  }
+  if (req.session.role !== 'parent') {
+    return res.status(403).json({ error: "This action requires parent permissions." });
+  }
+  next();
+}
+
+// Family access middleware - ensures user belongs to the requested family
+function requireFamilyAccess(connectionIdParam: string = 'connectionId') {
+  return (req: any, res: any, next: any) => {
+    if (!req.session.peerId) {
+      return res.status(401).json({ error: "Not authenticated. Please log in." });
+    }
+    const requestedConnectionId = req.params[connectionIdParam] || req.body.connectionId || req.query.connectionId;
+    if (requestedConnectionId && requestedConnectionId !== req.session.connectionId) {
+      return res.status(403).json({ error: "Access denied. You can only access your own family's data." });
+    }
+    next();
+  };
+}
+
 // Helper to get Berlin time
 function getBerlinTime(date: Date = new Date()): Date {
   const formatter = new Intl.DateTimeFormat('de-DE', {
@@ -149,9 +182,38 @@ function getBerlinTime(date: Date = new Date()): Date {
   );
 }
 
+// Public routes that don't require authentication
+const PUBLIC_ROUTES = [
+  '/api/peers/register',
+  '/api/peers/login',
+  '/api/peers/reset-password',
+  '/api/peers/reset-by-security-question',
+  '/api/auth/me',
+  '/api/push/vapid-public-key',
+  '/api/btc-price',
+  '/api/btc-history',
+  '/api/wallet/test',
+];
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Migrate legacy plaintext passwords to bcrypt on startup
   await migratePasswordsToHash();
+  
+  // Global authentication middleware - protect all /api routes except public ones
+  app.use('/api', (req, res, next) => {
+    // Allow public routes
+    const isPublicRoute = PUBLIC_ROUTES.some(route => req.path === route || req.path.startsWith(route + '/'));
+    if (isPublicRoute) {
+      return next();
+    }
+    
+    // Require authentication for all other API routes
+    if (!req.session.peerId) {
+      return res.status(401).json({ error: "Not authenticated. Please log in." });
+    }
+    
+    next();
+  });
   
   // DEBUG: Test if recurring scheduler is working
   console.log("[Startup] Registering recurring tasks scheduler...");
@@ -362,10 +424,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Falsches Passwort" });
       }
       
-      res.json(sanitizePeerForClient(peer));
+      // Regenerate session to prevent session fixation attacks
+      req.session.regenerate((err) => {
+        if (err) {
+          console.error("Session regeneration failed:", err);
+          return res.status(500).json({ error: "Login failed" });
+        }
+        
+        // Create session with user data
+        req.session.peerId = peer.id;
+        req.session.role = peer.role as 'parent' | 'child';
+        req.session.connectionId = peer.connectionId;
+        req.session.name = peer.name;
+        
+        // Save session before sending response
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error("Session save failed:", saveErr);
+            return res.status(500).json({ error: "Login failed" });
+          }
+          res.json(sanitizePeerForClient(peer));
+        });
+      });
     } catch (error) {
       res.status(500).json({ error: "Login failed" });
     }
+  });
+  
+  // Logout - destroy session
+  app.post("/api/peers/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Logout error:", err);
+        return res.status(500).json({ error: "Logout failed" });
+      }
+      res.clearCookie('kidzapp.sid');
+      res.json({ success: true, message: "Logged out successfully" });
+    });
+  });
+  
+  // Get current session user
+  app.get("/api/auth/me", (req, res) => {
+    if (!req.session.peerId) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    res.json({
+      peerId: req.session.peerId,
+      role: req.session.role,
+      connectionId: req.session.connectionId,
+      name: req.session.name,
+    });
   });
 
   // Change parent's own PIN

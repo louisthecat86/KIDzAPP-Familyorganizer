@@ -198,9 +198,17 @@ function getMessageColor(senderName: string): string {
   return chatColors[index];
 }
 
+// --- Authenticated Fetch Helper ---
+async function apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  return fetch(url, {
+    ...options,
+    credentials: "include",
+  });
+}
+
 // --- API Functions ---
 async function registerUser(name: string, role: UserRole, pin: string, familyName?: string, joinParentConnectionId?: string, favoriteColor?: string): Promise<User> {
-  const res = await fetch("/api/peers/register", {
+  const res = await apiFetch("/api/peers/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, role, pin, familyName, joinParentConnectionId, favoriteColor }),
@@ -213,7 +221,7 @@ async function registerUser(name: string, role: UserRole, pin: string, familyNam
 }
 
 async function loginUser(name: string, role: UserRole, pin: string): Promise<User> {
-  const res = await fetch("/api/peers/login", {
+  const res = await apiFetch("/api/peers/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, role, pin }),
@@ -226,7 +234,7 @@ async function loginUser(name: string, role: UserRole, pin: string): Promise<Use
 }
 
 async function linkChildToParent(childId: number, parentConnectionId: string): Promise<User> {
-  const res = await fetch("/api/peers/link", {
+  const res = await apiFetch("/api/peers/link", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ childId, parentConnectionId }),
@@ -240,7 +248,7 @@ async function linkChildToParent(childId: number, parentConnectionId: string): P
 
 
 async function withdrawSats(peerId: number, sats: number, paymentRequest: string): Promise<any> {
-  const res = await fetch("/api/withdraw", {
+  const res = await apiFetch("/api/withdraw", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ peerId, sats, paymentRequest }),
@@ -253,13 +261,13 @@ async function withdrawSats(peerId: number, sats: number, paymentRequest: string
 }
 
 async function fetchTasks(connectionId: string): Promise<Task[]> {
-  const res = await fetch(`/api/tasks/${connectionId}`);
+  const res = await apiFetch(`/api/tasks/${connectionId}`);
   if (!res.ok) throw new Error("Failed to fetch tasks");
   return res.json();
 }
 
 async function createTask(task: Partial<Task>): Promise<Task> {
-  const res = await fetch("/api/tasks", {
+  const res = await apiFetch("/api/tasks", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(task),
@@ -269,7 +277,7 @@ async function createTask(task: Partial<Task>): Promise<Task> {
 }
 
 async function updateTask(id: number, updates: Partial<Task>): Promise<Task> {
-  const res = await fetch(`/api/tasks/${id}`, {
+  const res = await apiFetch(`/api/tasks/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(updates),
@@ -279,20 +287,20 @@ async function updateTask(id: number, updates: Partial<Task>): Promise<Task> {
 }
 
 async function deleteTask(id: number): Promise<void> {
-  const res = await fetch(`/api/tasks/${id}`, {
+  const res = await apiFetch(`/api/tasks/${id}`, {
     method: "DELETE",
   });
   if (!res.ok) throw new Error("Failed to delete task");
 }
 
 async function fetchFamilyEvents(connectionId: string): Promise<FamilyEvent[]> {
-  const res = await fetch(`/api/events/${connectionId}`);
+  const res = await apiFetch(`/api/events/${connectionId}`);
   if (!res.ok) throw new Error("Failed to fetch events");
   return res.json();
 }
 
 async function createEvent(event: Partial<FamilyEvent>): Promise<FamilyEvent> {
-  const res = await fetch("/api/events", {
+  const res = await apiFetch("/api/events", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(event),
@@ -302,7 +310,7 @@ async function createEvent(event: Partial<FamilyEvent>): Promise<FamilyEvent> {
 }
 
 async function deleteEvent(id: number): Promise<void> {
-  const res = await fetch(`/api/events/${id}`, {
+  const res = await apiFetch(`/api/events/${id}`, {
     method: "DELETE",
   });
   if (!res.ok) throw new Error("Failed to delete event");
@@ -335,7 +343,7 @@ export default function App() {
   const addItem = async () => {
     if (!newItem.trim()) return;
     try {
-      const res = await fetch("/api/shopping-list", {
+      const res = await apiFetch("/api/shopping-list", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -358,7 +366,7 @@ export default function App() {
 
   const toggleComplete = async (id: number, completed: boolean) => {
     try {
-      const res = await fetch(`/api/shopping-list/${id}`, {
+      const res = await apiFetch(`/api/shopping-list/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ completed: !completed })
@@ -377,7 +385,7 @@ export default function App() {
       return;
     }
     try {
-      const res = await fetch(`/api/shopping-list/${id}`, { method: "DELETE" });
+      const res = await apiFetch(`/api/shopping-list/${id}`, { method: "DELETE" });
       if (res.ok) {
         queryClient.invalidateQueries({ queryKey: ["shopping-list"] });
         toast({ title: "✓", description: t('shoppingList.itemDeleted') });
@@ -431,7 +439,7 @@ export default function App() {
   const { data: shoppingListItems = [] } = useQuery({
     queryKey: ["shopping-list", user?.connectionId],
     queryFn: async () => {
-      const res = await fetch(`/api/shopping-list/${user!.connectionId}`);
+      const res = await apiFetch(`/api/shopping-list/${user!.connectionId}`);
       if (!res.ok) throw new Error("Failed to fetch shopping list");
       return res.json();
     },
@@ -513,7 +521,7 @@ export default function App() {
   const { data: allowances = [] } = useQuery({
     queryKey: ["allowances", user?.connectionId],
     queryFn: async () => {
-      const res = await fetch(`/api/allowances/${user!.connectionId}`);
+      const res = await apiFetch(`/api/allowances/${user!.connectionId}`);
       if (!res.ok) throw new Error("Failed to fetch allowances");
       return res.json();
     },
@@ -524,7 +532,7 @@ export default function App() {
   const { data: parentChildren = [] } = useQuery({
     queryKey: ["parent-children", user?.id],
     queryFn: async () => {
-      const res = await fetch(`/api/parent/${user!.id}/children`);
+      const res = await apiFetch(`/api/parent/${user!.id}/children`);
       if (!res.ok) throw new Error("Failed to fetch children");
       return res.json();
     },
@@ -535,7 +543,7 @@ export default function App() {
   const { data: allFamilyMembers = [] } = useQuery({
     queryKey: ["family-members", user?.connectionId],
     queryFn: async () => {
-      const res = await fetch(`/api/peers/connection/${user!.connectionId}`);
+      const res = await apiFetch(`/api/peers/connection/${user!.connectionId}`);
       if (!res.ok) throw new Error("Failed to fetch family members");
       return res.json();
     },
@@ -547,7 +555,7 @@ export default function App() {
     if (!allowanceChildId || !allowanceSats || !user) return;
     setIsCreatingAllowance(true);
     try {
-      const res = await fetch("/api/allowances", {
+      const res = await apiFetch("/api/allowances", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -573,7 +581,7 @@ export default function App() {
 
   const handleDeleteAllowance = async (allowanceId: number) => {
     try {
-      const res = await fetch(`/api/allowances/${allowanceId}`, { method: "DELETE" });
+      const res = await apiFetch(`/api/allowances/${allowanceId}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete allowance");
       toast({ title: t('common.success'), description: t('family.allowanceDeleted') });
       queryClient.invalidateQueries({ queryKey: ["allowances"] });
@@ -635,7 +643,7 @@ export default function App() {
     // Manuell API aufrufen statt Mutation, um 423-Fehler zu prüfen
     const performAccept = async () => {
       try {
-        const res = await fetch(`/api/tasks/${taskId}`, {
+        const res = await apiFetch(`/api/tasks/${taskId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: "assigned", assignedTo: user.id }),
@@ -732,7 +740,7 @@ export default function App() {
       // Check and pay level bonus
       if (currentLevel > 0) {
         try {
-          const bonusRes = await fetch("/api/level-bonus/check-and-pay", {
+          const bonusRes = await apiFetch("/api/level-bonus/check-and-pay", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -1419,7 +1427,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
   const { data: childrenWithAllowances = [], refetch: refetchAllowances } = useQuery({
     queryKey: ["children-with-allowances", user.id, user.connectionId],
     queryFn: async () => {
-      const res = await fetch(`/api/parent/${user.id}/children-with-allowances/${user.connectionId}`);
+      const res = await apiFetch(`/api/parent/${user.id}/children-with-allowances/${user.connectionId}`);
       if (!res.ok) throw new Error("Failed to fetch children");
       return res.json();
     },
@@ -1436,7 +1444,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
   const { data: allChildren = [] } = useQuery({
     queryKey: ["all-children", user.id],
     queryFn: async () => {
-      const res = await fetch(`/api/parent/${user.id}/children`);
+      const res = await apiFetch(`/api/parent/${user.id}/children`);
       if (!res.ok) throw new Error("Failed to fetch children");
       return res.json();
     },
@@ -1446,7 +1454,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
   const handlePayout = async (allowanceId: number, childId: number, sats: number) => {
     setIsProcessingPayout(true);
     try {
-      const res = await fetch(`/api/parent/${user.id}/payout-allowance`, {
+      const res = await apiFetch(`/api/parent/${user.id}/payout-allowance`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ allowanceId, childId, sats, paymentMethod }),
@@ -1466,7 +1474,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
     if (!confirm(t('allowance.confirmDelete'))) return;
     
     try {
-      const res = await fetch(`/api/allowances/${allowanceId}`, {
+      const res = await apiFetch(`/api/allowances/${allowanceId}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete allowance");
@@ -1490,7 +1498,7 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
         throw new Error(t('allowance.noLightningAddress'));
       }
 
-      const res = await fetch(`/api/parent/${user.id}/payout-instant`, {
+      const res = await apiFetch(`/api/parent/${user.id}/payout-instant`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
@@ -2286,7 +2294,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
     }
     setIsForgotLoading(true);
     try {
-      const res = await fetch("/api/peers/reset-password", {
+      const res = await apiFetch("/api/peers/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
@@ -2790,7 +2798,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
     const { data: connectedPeers = [] } = useQuery({
       queryKey: ["peers", user.connectionId],
       queryFn: async () => {
-        const res = await fetch(`/api/peers/connection/${user.connectionId}`);
+        const res = await apiFetch(`/api/peers/connection/${user.connectionId}`);
         if (!res.ok) throw new Error("Failed to fetch peers");
         return res.json();
       },
@@ -2804,7 +2812,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
       if (!window.confirm(t('family.confirmRemoveChild', { name: childName }))) return;
       
       try {
-        const res = await fetch("/api/peers/unlink", {
+        const res = await apiFetch("/api/peers/unlink", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ childId })
@@ -2825,7 +2833,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
       }
 
       try {
-        const res = await fetch(`/api/peers/${childId}/reset-pin`, {
+        const res = await apiFetch(`/api/peers/${childId}/reset-pin`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ parentId: user.id, newPin: resetPinValue }),
@@ -3057,7 +3065,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
                     }
                     setIsSavingPin(true);
                     try {
-                      const res = await fetch(`/api/peers/${user.id}/change-pin`, {
+                      const res = await apiFetch(`/api/peers/${user.id}/change-pin`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ oldPin: oldParentPin, newPin: newParentPin }),
@@ -3103,7 +3111,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
     const { data: connectedPeers = [] } = useQuery({
       queryKey: ["peers", user.connectionId],
       queryFn: async () => {
-        const res = await fetch(`/api/peers/connection/${user.connectionId}`);
+        const res = await apiFetch(`/api/peers/connection/${user.connectionId}`);
         if (!res.ok) throw new Error("Failed to fetch peers");
         return res.json();
       },
@@ -3118,7 +3126,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
       if (!window.confirm(t('family.confirmLeaveFamily'))) return;
       
       try {
-        const res = await fetch("/api/peers/unlink", {
+        const res = await apiFetch("/api/peers/unlink", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ childId: user.id })
@@ -3175,7 +3183,7 @@ function FailedPaymentsPanel({ connectionId, peerId }: { connectionId: string; p
   const { data: failedPayments = [], isLoading } = useQuery({
     queryKey: ["/api/failed-payments/list", connectionId, peerId],
     queryFn: async () => {
-      const res = await fetch(`/api/failed-payments/${connectionId}/pending?peerId=${peerId}`);
+      const res = await apiFetch(`/api/failed-payments/${connectionId}/pending?peerId=${peerId}`);
       if (!res.ok) return [];
       const data = await res.json();
       return Array.isArray(data) ? data : [];
@@ -3186,7 +3194,7 @@ function FailedPaymentsPanel({ connectionId, peerId }: { connectionId: string; p
   const handleRetry = async (paymentId: number) => {
     setRetrying(paymentId);
     try {
-      const res = await fetch(`/api/failed-payments/${paymentId}/retry`, {
+      const res = await apiFetch(`/api/failed-payments/${paymentId}/retry`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ peerId })
@@ -3208,7 +3216,7 @@ function FailedPaymentsPanel({ connectionId, peerId }: { connectionId: string; p
 
   const handleCancel = async (paymentId: number) => {
     try {
-      const res = await fetch(`/api/failed-payments/${paymentId}/cancel`, {
+      const res = await apiFetch(`/api/failed-payments/${paymentId}/cancel`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ peerId })
@@ -3356,7 +3364,7 @@ function PushNotificationSettings({ peerId, connectionId }: { peerId: number; co
         const subscription = await registration.pushManager.getSubscription();
         if (subscription) {
           await subscription.unsubscribe();
-          const unsubResponse = await fetch('/api/push/unsubscribe', {
+          const unsubResponse = await apiFetch('/api/push/unsubscribe', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ peerId, endpoint: subscription.endpoint })
@@ -3378,7 +3386,7 @@ function PushNotificationSettings({ peerId, connectionId }: { peerId: number; co
         await navigator.serviceWorker.register('/sw.js', { scope: '/' });
         const registration = await navigator.serviceWorker.ready;
         
-        const vapidResponse = await fetch('/api/push/vapid-public-key');
+        const vapidResponse = await apiFetch('/api/push/vapid-public-key');
         if (!vapidResponse.ok) {
           throw new Error('Failed to fetch VAPID key');
         }
@@ -3400,7 +3408,7 @@ function PushNotificationSettings({ peerId, connectionId }: { peerId: number; co
           applicationServerKey: urlBase64ToUint8Array(publicKey)
         });
 
-        const subResponse = await fetch('/api/push/subscribe', {
+        const subResponse = await apiFetch('/api/push/subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -3504,7 +3512,7 @@ function DataManagementContent({ user, setUser, onClose }: any) {
   useEffect(() => {
     const checkLastParent = async () => {
       try {
-        const res = await fetch(`/api/account/${user.id}/is-last-parent`);
+        const res = await apiFetch(`/api/account/${user.id}/is-last-parent`);
         if (res.ok) {
           const data = await res.json();
           setLastParentInfo(data);
@@ -3521,7 +3529,7 @@ function DataManagementContent({ user, setUser, onClose }: any) {
   const handleCleanup = async (type: "chat" | "photos" | "events" | "shopping") => {
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/cleanup/${type}/${user.connectionId}`, {
+      const res = await apiFetch(`/api/cleanup/${type}/${user.connectionId}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ peerId: user.id }),
@@ -3550,7 +3558,7 @@ function DataManagementContent({ user, setUser, onClose }: any) {
     
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/cleanup/all/${user.connectionId}`, {
+      const res = await apiFetch(`/api/cleanup/all/${user.connectionId}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ peerId: user.id, confirmationCode: "DELETE-ALL" }),
@@ -3576,7 +3584,7 @@ function DataManagementContent({ user, setUser, onClose }: any) {
     
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/account/reset`, {
+      const res = await apiFetch(`/api/account/reset`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ peerId: user.id, confirmationCode: "RESET-ACCOUNT" }),
@@ -3602,7 +3610,7 @@ function DataManagementContent({ user, setUser, onClose }: any) {
     
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/account/${user.id}`, {
+      const res = await apiFetch(`/api/account/${user.id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ confirmationCode: "DELETE-ACCOUNT-FOREVER" }),
@@ -3868,7 +3876,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
     if (!editLnbitsUrl || !editLnbitsAdminKey) return;
     setIsSaving(true);
     try {
-      const res = await fetch("/api/wallet/test", {
+      const res = await apiFetch("/api/wallet/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ lnbitsUrl: editLnbitsUrl, lnbitsAdminKey: editLnbitsAdminKey }),
@@ -3897,7 +3905,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
     if (!editLnbitsUrl || !editLnbitsAdminKey) return;
     setIsSaving(true);
     try {
-      const res = await fetch("/api/wallet/setup-lnbits", {
+      const res = await apiFetch("/api/wallet/setup-lnbits", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ peerId: user.id, lnbitsUrl: editLnbitsUrl, lnbitsAdminKey: editLnbitsAdminKey }),
@@ -3932,7 +3940,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
   const deleteLNbits = async () => {
     setIsSaving(true);
     try {
-      const res = await fetch("/api/wallet/lnbits", {
+      const res = await apiFetch("/api/wallet/lnbits", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ peerId: user.id }),
@@ -3964,7 +3972,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
     }
     setIsSaving(true);
     try {
-      const res = await fetch("/api/wallet/setup-nwc", {
+      const res = await apiFetch("/api/wallet/setup-nwc", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ peerId: user.id, nwcConnectionString: editNwcConnectionString }),
@@ -3986,7 +3994,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
   const deleteNwc = async () => {
     setIsSaving(true);
     try {
-      await fetch("/api/wallet/nwc", {
+      await apiFetch("/api/wallet/nwc", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ peerId: user.id }),
@@ -4049,7 +4057,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                       if (!editFamilyName.trim()) return;
                       setIsSaving(true);
                       try {
-                        const res = await fetch(`/api/peers/${user.id}/family-name`, {
+                        const res = await apiFetch(`/api/peers/${user.id}/family-name`, {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
                           body: JSON.stringify({ familyName: editFamilyName.trim() }),
@@ -4176,7 +4184,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                       if (!editLnbitsUrl) return;
                       setIsSaving(true);
                       try {
-                        const res = await fetch("/api/wallet/setup-child-address", {
+                        const res = await apiFetch("/api/wallet/setup-child-address", {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
                           body: JSON.stringify({ peerId: user.id, lightningAddress: editLnbitsUrl }),
@@ -4363,7 +4371,7 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
     // Only fetch RSVPs for non-birthday events (positive IDs)
     events.filter((e: any) => e.id > 0 && e.eventType !== "birthday").forEach(async (event: FamilyEvent) => {
       try {
-        const res = await fetch(`/api/events/${event.id}/rsvps`);
+        const res = await apiFetch(`/api/events/${event.id}/rsvps`);
         if (res.ok) {
           const rsvps = await res.json();
           setRsvpData(prev => ({ ...prev, [event.id]: rsvps }));
@@ -4506,7 +4514,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   const { data: failedPaymentsCount = 0 } = useQuery({
     queryKey: ["/api/failed-payments/count", user.connectionId, user.id],
     queryFn: async () => {
-      const res = await fetch(`/api/failed-payments/${user.connectionId}/pending?peerId=${user.id}`);
+      const res = await apiFetch(`/api/failed-payments/${user.connectionId}/pending?peerId=${user.id}`);
       if (!res.ok) return 0;
       const data = await res.json();
       return Array.isArray(data) ? data.length : 0;
@@ -4566,7 +4574,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   const setupLNbits = async () => {
     if (!lnbitsUrl || !lnbitsAdminKey) return;
     try {
-      const res = await fetch("/api/wallet/setup-lnbits", {
+      const res = await apiFetch("/api/wallet/setup-lnbits", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ peerId: user.id, lnbitsUrl, lnbitsAdminKey }),
@@ -4585,7 +4593,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   const setupNwc = async () => {
     if (!nwcConnectionString) return;
     try {
-      const res = await fetch("/api/wallet/setup-nwc", {
+      const res = await apiFetch("/api/wallet/setup-nwc", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ peerId: user.id, nwcConnectionString }),
@@ -4602,7 +4610,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
 
   const deleteNwc = async () => {
     try {
-      const res = await fetch("/api/wallet/nwc", {
+      const res = await apiFetch("/api/wallet/nwc", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ peerId: user.id }),
@@ -4617,7 +4625,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
 
   const setActiveWallet = async (walletType: string) => {
     try {
-      const res = await fetch("/api/wallet/set-active", {
+      const res = await apiFetch("/api/wallet/set-active", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ peerId: user.id, walletType }),
@@ -4634,7 +4642,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   const setupLightningAddress = async () => {
     if (!lightningAddress) return;
     try {
-      const res = await fetch("/api/wallet/setup-child-address", {
+      const res = await apiFetch("/api/wallet/setup-child-address", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ peerId: user.id, lightningAddress }),
@@ -4651,7 +4659,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   const { data: walletBalance = null } = useQuery({
     queryKey: ["wallet-balance", user.id],
     queryFn: async () => {
-      const res = await fetch(`/api/parent/${user.id}/wallet-balance`);
+      const res = await apiFetch(`/api/parent/${user.id}/wallet-balance`);
       if (!res.ok) throw new Error("Failed to fetch wallet balance");
       return res.json();
     },
@@ -4673,7 +4681,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     const { data: satsSpent = 0 } = useQuery({
       queryKey: ["sats-spent", user.id, user.connectionId],
       queryFn: async () => {
-        const res = await fetch(`/api/parent/${user.id}/sats-spent/${user.connectionId}`);
+        const res = await apiFetch(`/api/parent/${user.id}/sats-spent/${user.connectionId}`);
         if (!res.ok) throw new Error("Failed to fetch sats spent");
         const data = await res.json();
         return data.satsSpent;
@@ -4683,7 +4691,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
 
     const handleShowSpendingStats = async () => {
       try {
-        const res = await fetch(`/api/parent/${user.id}/spending-by-child/${user.connectionId}`);
+        const res = await apiFetch(`/api/parent/${user.id}/spending-by-child/${user.connectionId}`);
         if (!res.ok) throw new Error("Failed to fetch spending stats");
         const data = await res.json();
         setSpendingStats(data);
@@ -5074,7 +5082,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     useEffect(() => {
       const fetchMessages = async () => {
         try {
-          const res = await fetch(`/api/chat/${user.connectionId}`);
+          const res = await apiFetch(`/api/chat/${user.connectionId}`);
           if (res.ok) {
             const data = await res.json();
             setMessages(data);
@@ -5093,7 +5101,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       if (!newMessage.trim() || isLoadingMessage) return;
       setIsLoadingMessage(true);
       try {
-        await fetch("/api/chat", {
+        await apiFetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -5103,7 +5111,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           }),
         });
         setNewMessage("");
-        const res = await fetch(`/api/chat/${user.connectionId}`);
+        const res = await apiFetch(`/api/chat/${user.connectionId}`);
         if (res.ok) {
           const data = await res.json();
           setMessages(data);
@@ -5173,7 +5181,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     const { data: connectedPeers = [] } = useQuery({
       queryKey: ["peers", user.connectionId],
       queryFn: async () => {
-        const res = await fetch(`/api/peers/connection/${user.connectionId}`);
+        const res = await apiFetch(`/api/peers/connection/${user.connectionId}`);
         if (!res.ok) throw new Error("Failed to fetch peers");
         return res.json();
       },
@@ -5186,7 +5194,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       if (!window.confirm(t('family.confirmRemoveChild', { name: childName }))) return;
       
       try {
-        const res = await fetch("/api/peers/unlink", {
+        const res = await apiFetch("/api/peers/unlink", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ childId })
@@ -5269,7 +5277,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               const { data: childLearningProgress = null } = useQuery({
                 queryKey: ["learning-progress", child.id],
                 queryFn: async () => {
-                  const res = await fetch(`/api/learning-progress/${child.id}`);
+                  const res = await apiFetch(`/api/learning-progress/${child.id}`);
                   if (!res.ok) return null;
                   return res.json();
                 },
@@ -5379,7 +5387,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     const { data: recurringTasks = [] } = useQuery({
       queryKey: ["recurring-tasks", user.connectionId],
       queryFn: async () => {
-        const res = await fetch(`/api/recurring-tasks/${user.connectionId}`);
+        const res = await apiFetch(`/api/recurring-tasks/${user.connectionId}`);
         if (!res.ok) throw new Error("Failed to fetch");
         return res.json();
       }
@@ -5398,7 +5406,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
 
     const handleCreateRecurring = async () => {
       try {
-        const res = await fetch("/api/recurring-tasks", {
+        const res = await apiFetch("/api/recurring-tasks", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -5492,7 +5500,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     const { data: leaderboard = [] } = useQuery({
       queryKey: ["leaderboard", user.connectionId],
       queryFn: async () => {
-        const res = await fetch(`/api/leaderboard/${user.connectionId}`);
+        const res = await apiFetch(`/api/leaderboard/${user.connectionId}`);
         if (!res.ok) throw new Error("Failed to fetch leaderboard");
         return res.json();
       },
@@ -5872,7 +5880,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     const { data: connectedPeers = [] } = useQuery({
       queryKey: ["peers", user.connectionId],
       queryFn: async () => {
-        const res = await fetch(`/api/peers/connection/${user.connectionId}`);
+        const res = await apiFetch(`/api/peers/connection/${user.connectionId}`);
         if (!res.ok) throw new Error("Failed to fetch peers");
         return res.json();
       },
@@ -6200,7 +6208,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         // Only fetch RSVPs for non-birthday events
         for (const event of events.filter((e: any) => !isBirthdayEvent(e))) {
           try {
-            const res = await fetch(`/api/events/${event.id}/rsvps`);
+            const res = await apiFetch(`/api/events/${event.id}/rsvps`);
             if (res.ok) {
               rsvpsData[event.id] = await res.json();
               const myRsvp = rsvpsData[event.id].find((r: any) => r.peerId === user.id);
@@ -6220,7 +6228,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     const handleRsvp = async (eventId: number, response: string) => {
       setLoading({ ...loading, [eventId]: true });
       try {
-        await fetch(`/api/events/${eventId}/rsvps`, {
+        await apiFetch(`/api/events/${eventId}/rsvps`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ peerId: user.id, response }),
@@ -6367,7 +6375,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       }
 
       try {
-        const res = await fetch("/api/wallet/setup-parent", {
+        const res = await apiFetch("/api/wallet/setup-parent", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ peerId: user.id, lnbitsUrl: editLnbitsUrl, lnbitsAdminKey: editLnbitsAdminKey }),
@@ -6388,7 +6396,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       }
 
       try {
-        const res = await fetch("/api/wallet/setup-nwc", {
+        const res = await apiFetch("/api/wallet/setup-nwc", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ peerId: user.id, nwcConnectionString: editNwcConnectionString }),
@@ -6406,7 +6414,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
 
     const handleDeleteNwc = async () => {
       try {
-        await fetch("/api/wallet/nwc", {
+        await apiFetch("/api/wallet/nwc", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ peerId: user.id }),
@@ -6420,7 +6428,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
 
     const handleSetActiveWallet = async (walletType: "lnbits" | "nwc") => {
       try {
-        await fetch("/api/wallet/set-active", {
+        await apiFetch("/api/wallet/set-active", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ peerId: user.id, walletType }),
@@ -6641,7 +6649,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     const { data: settings } = useQuery({
       queryKey: ["level-bonus-settings", user.connectionId],
       queryFn: async () => {
-        const res = await fetch(`/api/level-bonus/settings/${user.connectionId}`);
+        const res = await apiFetch(`/api/level-bonus/settings/${user.connectionId}`);
         if (!res.ok) throw new Error("Failed to fetch settings");
         return res.json();
       }
@@ -6659,7 +6667,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     const handleSave = async () => {
       setIsSaving(true);
       try {
-        const res = await fetch("/api/level-bonus/settings", {
+        const res = await apiFetch("/api/level-bonus/settings", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -6861,7 +6869,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   useEffect(() => {
     const fetchLearningProgress = async () => {
       try {
-        const response = await fetch(`/api/learning-progress/${user.id}`);
+        const response = await apiFetch(`/api/learning-progress/${user.id}`);
         if (response.ok) {
           const data = await response.json();
           setServerProgress(data);
@@ -6894,7 +6902,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   useEffect(() => {
     const fetchBtcPrice = async () => {
       try {
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur');
+        const response = await apiFetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur');
         const data = await response.json();
         setBtcPrice(data.bitcoin.eur);
       } catch (error) {
@@ -6976,7 +6984,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     const fetchDailyChallenge = async () => {
       const today = new Date().toDateString();
       try {
-        const response = await fetch(`/api/daily-challenge/${user.id}/${today}`);
+        const response = await apiFetch(`/api/daily-challenge/${user.id}/${today}`);
         if (response.ok) {
           const data = await response.json();
           if (data.completed) {
@@ -7002,7 +7010,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   const { data: connectedPeers = [] } = useQuery({
     queryKey: ["peers", user.connectionId],
     queryFn: async () => {
-      const res = await fetch(`/api/peers/connection/${user.connectionId}`);
+      const res = await apiFetch(`/api/peers/connection/${user.connectionId}`);
       if (!res.ok) throw new Error("Failed to fetch peers");
       return res.json();
     },
@@ -7012,7 +7020,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   const { data: unlockStatus } = useQuery({
     queryKey: ["unlock-status", user.id, user.connectionId],
     queryFn: async () => {
-      const res = await fetch(`/api/tasks/unlock-status/${user.id}/${user.connectionId}`);
+      const res = await apiFetch(`/api/tasks/unlock-status/${user.id}/${user.connectionId}`);
       if (!res.ok) throw new Error("Failed to fetch unlock status");
       return res.json();
     },
@@ -7152,7 +7160,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         // Only fetch RSVPs for non-birthday events
         for (const event of events.filter((e: any) => !isBirthdayEvent(e))) {
           try {
-            const res = await fetch(`/api/events/${event.id}/rsvps`);
+            const res = await apiFetch(`/api/events/${event.id}/rsvps`);
             if (res.ok) {
               rsvpsData[event.id] = await res.json();
               const myRsvp = rsvpsData[event.id].find((r: any) => r.peerId === user.id);
@@ -7172,7 +7180,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     const handleRsvp = async (eventId: number, response: string) => {
       setLoading({ ...loading, [eventId]: true });
       try {
-        await fetch(`/api/events/${eventId}/rsvps`, {
+        await apiFetch(`/api/events/${eventId}/rsvps`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ peerId: user.id, response }),
@@ -7311,7 +7319,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     const handleRsvp = async (eventId: number, response: string) => {
       setLoading({ ...loading, [eventId]: true });
       try {
-        await fetch(`/api/events/${eventId}/rsvps`, {
+        await apiFetch(`/api/events/${eventId}/rsvps`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ peerId: user.id, response }),
@@ -7396,7 +7404,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     useEffect(() => {
       const fetchMessages = async () => {
         try {
-          const res = await fetch(`/api/chat/${user.connectionId}`);
+          const res = await apiFetch(`/api/chat/${user.connectionId}`);
           if (res.ok) {
             const data = await res.json();
             setMessages(data);
@@ -7415,7 +7423,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       if (!newMessage.trim() || isLoadingMessage) return;
       setIsLoadingMessage(true);
       try {
-        await fetch("/api/chat", {
+        await apiFetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -7425,7 +7433,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           }),
         });
         setNewMessage("");
-        const res = await fetch(`/api/chat/${user.connectionId}`);
+        const res = await apiFetch(`/api/chat/${user.connectionId}`);
         if (res.ok) {
           const data = await res.json();
           setMessages(data);
@@ -7496,7 +7504,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     const { data: leaderboard = [] } = useQuery({
       queryKey: ["leaderboard", user.connectionId],
       queryFn: async () => {
-        const res = await fetch(`/api/leaderboard/${user.connectionId}`);
+        const res = await apiFetch(`/api/leaderboard/${user.connectionId}`);
         if (!res.ok) throw new Error("Failed to fetch leaderboard");
         return res.json();
       },
@@ -7506,7 +7514,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     const { data: bonusSettings } = useQuery({
       queryKey: ["level-bonus-settings", user.connectionId],
       queryFn: async () => {
-        const res = await fetch(`/api/level-bonus/settings/${user.connectionId}`);
+        const res = await apiFetch(`/api/level-bonus/settings/${user.connectionId}`);
         if (!res.ok) return null;
         return res.json();
       }
@@ -7515,7 +7523,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     const { data: myPayouts = [] } = useQuery({
       queryKey: ["my-level-bonus-payouts", user.id],
       queryFn: async () => {
-        const res = await fetch(`/api/level-bonus/payouts/${user.id}`);
+        const res = await apiFetch(`/api/level-bonus/payouts/${user.id}`);
         if (!res.ok) return [];
         return res.json();
       },
@@ -7690,7 +7698,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     const { data: connectedPeers = [] } = useQuery({
       queryKey: ["peers", user.connectionId],
       queryFn: async () => {
-        const res = await fetch(`/api/peers/connection/${user.connectionId}`);
+        const res = await apiFetch(`/api/peers/connection/${user.connectionId}`);
         if (!res.ok) throw new Error("Failed to fetch peers");
         return res.json();
       },
@@ -7705,7 +7713,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       if (!window.confirm(t('family.confirmLeaveFamily'))) return;
       
       try {
-        const res = await fetch("/api/peers/unlink", {
+        const res = await apiFetch("/api/peers/unlink", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ childId: user.id })
@@ -7767,7 +7775,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     const { data: connectedPeers = [] } = useQuery({
       queryKey: ["peers", user.connectionId],
       queryFn: async () => {
-        const res = await fetch(`/api/peers/connection/${user.connectionId}`);
+        const res = await apiFetch(`/api/peers/connection/${user.connectionId}`);
         if (!res.ok) throw new Error("Failed to fetch peers");
         return res.json();
       },
@@ -7789,7 +7797,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       }
 
       try {
-        const res = await fetch(`/api/peers/${childId}/reset-pin`, {
+        const res = await apiFetch(`/api/peers/${childId}/reset-pin`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ parentId: user.id, newPin: resetPinValue }),
@@ -7811,7 +7819,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       }
 
       try {
-        const res = await fetch("/api/wallet/setup-parent", {
+        const res = await apiFetch("/api/wallet/setup-parent", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ peerId: user.id, lnbitsUrl: editLnbitsUrl, lnbitsAdminKey: editLnbitsAdminKey }),
@@ -8104,7 +8112,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         const completedModules = serverProgress?.completedModules || [];
         if (!completedModules.includes(moduleId)) {
           try {
-            const response = await fetch(`/api/learning-progress/${user.id}/add-xp`, {
+            const response = await apiFetch(`/api/learning-progress/${user.id}/add-xp`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ xp: xpPerModule, moduleId })
@@ -8286,7 +8294,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     <Button 
                       onClick={async () => {
                         try {
-                          const response = await fetch(`/api/learning-progress/${user.id}/claim-graduation-bonus`, {
+                          const response = await apiFetch(`/api/learning-progress/${user.id}/claim-graduation-bonus`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ bonusSats: 2100 })
@@ -8646,12 +8654,12 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                             const isCorrect = idx === dailyChallenge.correct;
                             if (isCorrect) {
                               try {
-                                await fetch(`/api/daily-challenge/complete`, { 
+                                await apiFetch(`/api/daily-challenge/complete`, { 
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({ peerId: user.id, challengeType: 'daily' })
                                 });
-                                await fetch(`/api/learning-progress/${user.id}/add-xp`, {
+                                await apiFetch(`/api/learning-progress/${user.id}/add-xp`, {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({ xp: dailyChallenge.reward })
@@ -8756,7 +8764,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     const { data: allowances = [] } = useQuery({
       queryKey: ["allowances", user.connectionId],
       queryFn: async () => {
-        const res = await fetch(`/api/allowances/${user.connectionId}`);
+        const res = await apiFetch(`/api/allowances/${user.connectionId}`);
         if (!res.ok) throw new Error("Failed to fetch allowances");
         return res.json();
       },
@@ -8777,7 +8785,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
       setIsCreatingAllowance(true);
       try {
-        const res = await fetch("/api/allowances", {
+        const res = await apiFetch("/api/allowances", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -8805,7 +8813,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       if (!window.confirm(t('family.confirmDeleteAllowance'))) return;
 
       try {
-        const res = await fetch(`/api/allowances/${allowanceId}`, { method: "DELETE" });
+        const res = await apiFetch(`/api/allowances/${allowanceId}`, { method: "DELETE" });
         if (!res.ok) throw new Error("Failed to delete allowance");
         queryClient.invalidateQueries({ queryKey: ["allowances"] });
         toast({ title: t('common.success'), description: t('errors.allowanceDeleted') });
@@ -8820,7 +8828,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     useEffect(() => {
       const fetchBreakdown = async () => {
         try {
-          const res = await fetch(`/api/peers/${user.id}/sats-breakdown`);
+          const res = await apiFetch(`/api/peers/${user.id}/sats-breakdown`);
           if (res.ok) {
             setSatsBreakdown(await res.json());
           }
@@ -9350,7 +9358,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     const handleQuickSubmit = async (taskId: number) => {
       setIsSubmitting(true);
       try {
-        const res = await fetch(`/api/tasks/${taskId}/submit`, {
+        const res = await apiFetch(`/api/tasks/${taskId}/submit`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
         });
@@ -9551,12 +9559,12 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
       setError(null);
       try {
         // Fetch historical BTC data
-        const histRes = await fetch(`/api/btc-history?days=${days}`);
+        const histRes = await apiFetch(`/api/btc-history?days=${days}`);
         if (!histRes.ok) throw new Error("Historische Daten konnten nicht geladen werden");
         const histData = await histRes.json();
         
         // Fetch current BTC price
-        const priceRes = await fetch("/api/btc-price");
+        const priceRes = await apiFetch("/api/btc-price");
         if (!priceRes.ok) throw new Error("Bitcoin-Preis konnte nicht geladen werden");
         const priceData = await priceRes.json();
         
@@ -9845,7 +9853,7 @@ function TrackerChart({ userId }: { userId: number }) {
   useEffect(() => {
     const fetchTrackerData = async () => {
       try {
-        const response = await fetch(`/api/tracker/${userId}`);
+        const response = await apiFetch(`/api/tracker/${userId}`);
         const data = await response.json();
         setTrackerData(data || []);
       } catch (error) {
@@ -9860,7 +9868,7 @@ function TrackerChart({ userId }: { userId: number }) {
   useEffect(() => {
     const fetchBtcPrice = async () => {
       try {
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur');
+        const response = await apiFetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur');
         const data = await response.json();
         setLiveBtcPrice(data.bitcoin.eur);
       } catch (error) {
@@ -10086,7 +10094,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
     const fetchData = async () => {
       try {
         console.log("[BitcoinValueWidget] fetchData called, user:", user?.id, "sats:", sats);
-        const priceRes = await fetch("/api/btc-price");
+        const priceRes = await apiFetch("/api/btc-price");
         const priceData = await priceRes.json();
         setBtcPrice(priceData);
 
@@ -10102,7 +10110,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
             const btcAmount = sats / 100_000_000;
             const valueEur = btcAmount * priceData.eur;
             
-            await fetch("/api/bitcoin-snapshots", {
+            await apiFetch("/api/bitcoin-snapshots", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -10118,7 +10126,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
 
         // Fetch daily snapshots for Bitcoin
         if (user && user.id) {
-          const snapshotsRes = await fetch(`/api/bitcoin-snapshots/${user.id}`);
+          const snapshotsRes = await apiFetch(`/api/bitcoin-snapshots/${user.id}`);
           if (snapshotsRes.ok) {
             const snapshots = await snapshotsRes.json();
             console.log("[Bitcoin Snapshots] Fetched from API:", snapshots);
@@ -10130,7 +10138,7 @@ function BitcoinValueWidget({ sats, setCurrentView, user }: { sats: number; setC
 
         // Fetch monthly snapshots for Savings Account
         if (user && user.id) {
-          const savingsRes = await fetch(`/api/savings-snapshots/${user.id}`);
+          const savingsRes = await apiFetch(`/api/savings-snapshots/${user.id}`);
           if (savingsRes.ok) {
             const snapshots = await savingsRes.json();
             console.log("[Savings Snapshots] Fetched from API:", snapshots);
@@ -10422,7 +10430,7 @@ function DonateView({ user, onClose }: { user: User; onClose: () => void }) {
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/donate/${user.id}`, {
+      const res = await apiFetch(`/api/donate/${user.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sats: parseInt(donationAmount) })

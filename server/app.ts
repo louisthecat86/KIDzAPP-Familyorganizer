@@ -1,7 +1,35 @@
 import { type Server } from "node:http";
 
 import express, { type Express, type Request, Response, NextFunction } from "express";
+import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 import { registerRoutes } from "./routes";
+import { pool } from "./db";
+
+const PgSession = connectPgSimple(session);
+
+// Extend express-session types
+declare module 'express-session' {
+  interface SessionData {
+    peerId: number;
+    role: 'parent' | 'child';
+    connectionId: string;
+    name: string;
+  }
+}
+
+function getSessionSecret(): string {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error("[Security] CRITICAL: SESSION_SECRET not set in production!");
+      throw new Error("SESSION_SECRET must be set in production");
+    }
+    console.warn("[Security] SESSION_SECRET not set - using development fallback. Set this in Secrets for production!");
+    return "kid-app-dev-session-secret-change-me!!";
+  }
+  return secret;
+}
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
@@ -16,6 +44,11 @@ export function log(message: string, source = "express") {
 
 export const app = express();
 
+// Trust proxy for secure cookies behind TLS termination (Replit, Cloudflare, etc.)
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 declare module 'http' {
   interface IncomingMessage {
     rawBody: unknown
@@ -28,6 +61,25 @@ app.use(express.json({
   }
 }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+
+// Session middleware with PostgreSQL store
+app.use(session({
+  store: new PgSession({
+    pool: pool,
+    tableName: 'session',
+    createTableIfMissing: true,
+  }),
+  secret: getSessionSecret(),
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  },
+  name: 'kidzapp.sid',
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();
