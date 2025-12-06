@@ -9,16 +9,67 @@ import { eq, and } from "drizzle-orm";
 import cron from "node-cron";
 import { encrypt, decrypt, isEncrypted } from "./crypto";
 import { getVapidPublicKey, notifyTaskCreated, notifyTaskSubmitted, notifyTaskApproved, notifyPaymentReceived, notifyLevelUp, notifyGraduation, notifyNewEvent, notifyNewChatMessage, notifyPaymentFailed } from "./push";
+import bcrypt from "bcrypt";
 
-const DEV_FALLBACK_KEY = "kid-app-dev-encryption-key-32chars!!";
+const BCRYPT_ROUNDS = 12;
+
+async function migratePasswordsToHash(): Promise<void> {
+  try {
+    console.log("[Security] Starting password migration check...");
+    const allPeers = await db.select().from(peers);
+    let migrated = 0;
+    let skipped = 0;
+    
+    for (const peer of allPeers) {
+      // Skip peers with null/empty pins (shouldn't happen, but be safe)
+      if (!peer.pin || typeof peer.pin !== 'string' || peer.pin.length === 0) {
+        console.warn(`[Security] Skipping peer ${peer.id} - missing or invalid PIN`);
+        skipped++;
+        continue;
+      }
+      
+      const isBcryptHash = peer.pin.startsWith('$2a$') || peer.pin.startsWith('$2b$') || peer.pin.startsWith('$2y$');
+      
+      if (!isBcryptHash) {
+        try {
+          const hashedPassword = await bcrypt.hash(peer.pin, BCRYPT_ROUNDS);
+          await db.update(peers).set({ pin: hashedPassword }).where(eq(peers.id, peer.id));
+          migrated++;
+        } catch (hashError) {
+          console.error(`[Security] Failed to hash password for peer ${peer.id}:`, hashError);
+          skipped++;
+        }
+      }
+    }
+    
+    if (migrated > 0) {
+      console.log(`[Security] Migrated ${migrated} legacy plaintext passwords to bcrypt`);
+    } else {
+      console.log("[Security] All passwords are already hashed");
+    }
+    
+    if (skipped > 0) {
+      console.warn(`[Security] Skipped ${skipped} peers during migration`);
+    }
+  } catch (error) {
+    console.error("[Security] Password migration failed:", error);
+    // Don't block server startup, but log the critical error
+  }
+}
+
 const DEVELOPER_DONATION_ADDRESS = "mw860602@blink.sv"; // Fixed developer donation address
 
 function getWalletEncryptionKey(): string {
-  if (process.env.WALLET_ENCRYPTION_KEY) {
-    return process.env.WALLET_ENCRYPTION_KEY;
+  const key = process.env.WALLET_ENCRYPTION_KEY;
+  if (!key) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error("[Security] CRITICAL: WALLET_ENCRYPTION_KEY not set in production! Wallet data cannot be encrypted securely.");
+      throw new Error("WALLET_ENCRYPTION_KEY must be set in production");
+    }
+    console.warn("[Security] WALLET_ENCRYPTION_KEY not set - using development fallback. Set this in Secrets for production!");
+    return "kid-app-dev-encryption-key-32chars!!";
   }
-  console.warn("[Security] WALLET_ENCRYPTION_KEY not set - using development fallback. Set this in Secrets for production!");
-  return DEV_FALLBACK_KEY;
+  return key;
 }
 
 const WALLET_ENCRYPTION_KEY = getWalletEncryptionKey();
@@ -27,8 +78,8 @@ function encryptWalletData(data: string): string {
   try {
     return encrypt(data, WALLET_ENCRYPTION_KEY);
   } catch (error) {
-    console.error("Encryption failed:", error);
-    return data;
+    console.error("[Security] Encryption failed - refusing to store unencrypted data:", error);
+    throw new Error("Encryption failed - cannot store sensitive data unencrypted");
   }
 }
 
@@ -99,6 +150,9 @@ function getBerlinTime(date: Date = new Date()): Date {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Migrate legacy plaintext passwords to bcrypt on startup
+  await migratePasswordsToHash();
+  
   // DEBUG: Test if recurring scheduler is working
   console.log("[Startup] Registering recurring tasks scheduler...");
   
@@ -202,8 +256,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Lieblingsfarbe ist falsch" });
       }
 
-      // Directly update password - no old password returned
-      await db.update(peers).set({ pin: newPassword }).where(eq(peers.id, peer[0].id));
+      // Hash and update password
+      const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+      await db.update(peers).set({ pin: hashedPassword }).where(eq(peers.id, peer[0].id));
 
       res.json({ success: true, message: "Passwort wurde zurückgesetzt" });
     } catch (error) {
@@ -248,10 +303,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         connectionId = `BTC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       }
 
+      const hashedPassword = await bcrypt.hash(pin, BCRYPT_ROUNDS);
+      
       const peer = await storage.createPeer({
         name,
         role,
-        pin,
+        pin: hashedPassword,
         connectionId: connectionId || `BTC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
         familyName: role === "parent" ? familyNameToUse : undefined,
         favoriteColor: role === "parent" ? favoriteColor : undefined,
@@ -276,10 +333,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Name, pin, and role required" });
       }
       
-      const peer = await storage.getPeerByNameAndPin(name, pin, role);
+      const peer = await storage.getPeerByNameAndRole(name, role);
       
       if (!peer) {
-        return res.status(404).json({ error: "Peer not found. Please register first." });
+        return res.status(404).json({ error: "Benutzer nicht gefunden. Bitte registriere dich zuerst." });
+      }
+      
+      // Check if stored password is a bcrypt hash (starts with $2a$, $2b$, or $2y$)
+      const isBcryptHash = peer.pin.startsWith('$2a$') || peer.pin.startsWith('$2b$') || peer.pin.startsWith('$2y$');
+      
+      let isValidPassword = false;
+      
+      if (isBcryptHash) {
+        // Modern: compare with bcrypt
+        isValidPassword = await bcrypt.compare(pin, peer.pin);
+      } else {
+        // Legacy: plaintext comparison + automatic migration
+        if (peer.pin === pin) {
+          isValidPassword = true;
+          // Migrate to bcrypt hash
+          const hashedPassword = await bcrypt.hash(pin, BCRYPT_ROUNDS);
+          await storage.updatePeerPin(peer.id, hashedPassword);
+          console.log(`[Security] Migrated legacy password to bcrypt for user ${peer.id}`);
+        }
+      }
+      
+      if (!isValidPassword) {
+        return res.status(401).json({ error: "Falsches Passwort" });
       }
       
       res.json(sanitizePeerForClient(peer));
@@ -305,13 +385,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Elternteil nicht gefunden" });
       }
 
-      if (peer.pin !== oldPin) {
-        return res.status(400).json({ error: "Alte PIN ist falsch" });
+      // Check if stored password is a bcrypt hash
+      const isBcryptHash = peer.pin.startsWith('$2a$') || peer.pin.startsWith('$2b$') || peer.pin.startsWith('$2y$');
+      
+      let isValidOldPassword = false;
+      if (isBcryptHash) {
+        isValidOldPassword = await bcrypt.compare(oldPin, peer.pin);
+      } else {
+        // Legacy plaintext comparison
+        isValidOldPassword = (peer.pin === oldPin);
+      }
+      
+      if (!isValidOldPassword) {
+        return res.status(400).json({ error: "Altes Passwort ist falsch" });
       }
 
-      // Update PIN
-      const updated = await storage.updatePeerPin(parseInt(peerId), newPin);
-      res.json({ success: true, message: "PIN erfolgreich geändert", peer: updated });
+      // Hash and update PIN
+      const hashedNewPassword = await bcrypt.hash(newPin, BCRYPT_ROUNDS);
+      const updated = await storage.updatePeerPin(parseInt(peerId), hashedNewPassword);
+      res.json({ success: true, message: "Passwort erfolgreich geändert", peer: updated });
     } catch (error) {
       console.error("PIN change error:", error);
       res.status(500).json({ error: "PIN-Änderung fehlgeschlagen" });
@@ -1498,7 +1590,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Parent and child must be in same family" });
       }
 
-      const updatedChild = await storage.updatePeerPin(parseInt(childId), newPin);
+      // Hash the new password before storing
+      const hashedNewPassword = await bcrypt.hash(newPin, BCRYPT_ROUNDS);
+      const updatedChild = await storage.updatePeerPin(parseInt(childId), hashedNewPassword);
       res.json({ success: true, child: sanitizePeerForClient(updatedChild) });
     } catch (error) {
       console.error("Reset PIN error:", error);

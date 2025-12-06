@@ -3,14 +3,27 @@ import { db } from './db';
 import { pushSubscriptions, peers } from '@shared/schema';
 import { eq, and } from 'drizzle-orm';
 
-const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || 'BMFX1iMTKuQwprEbBGMMftwPwJr5iDlLAsy8EqFZo5obpYvtHIphCuyK7vdCgPTlbkYkPXGeH5Htfj1sRNKUguE';
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || 'XsNHq6UTbQxNESRxv5qR79MCdCHZxsjJ3T1Gf-yyhWk';
+const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY;
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
 const VAPID_SUBJECT = 'mailto:support@kidzapp.de';
 
-webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+let pushEnabled = false;
 
-export function getVapidPublicKey(): string {
-  return VAPID_PUBLIC_KEY;
+if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+  pushEnabled = true;
+  console.log('[Push] VAPID keys configured - push notifications enabled');
+} else {
+  console.warn('[Push] VAPID_PUBLIC_KEY and/or VAPID_PRIVATE_KEY not set - push notifications disabled');
+  console.warn('[Push] Generate new keys with: npx web-push generate-vapid-keys');
+}
+
+export function getVapidPublicKey(): string | null {
+  return VAPID_PUBLIC_KEY || null;
+}
+
+export function isPushEnabled(): boolean {
+  return pushEnabled;
 }
 
 export interface PushPayload {
@@ -24,6 +37,10 @@ export interface PushPayload {
 }
 
 export async function sendPushToUser(peerId: number, payload: PushPayload): Promise<{ success: number; failed: number }> {
+  if (!pushEnabled) {
+    return { success: 0, failed: 0 };
+  }
+  
   const subscriptions = await db.select().from(pushSubscriptions).where(eq(pushSubscriptions.peerId, peerId));
   
   let success = 0;
@@ -64,6 +81,10 @@ export async function sendPushToUser(peerId: number, payload: PushPayload): Prom
 }
 
 export async function sendPushToFamily(connectionId: string, payload: PushPayload, excludePeerId?: number): Promise<{ success: number; failed: number }> {
+  if (!pushEnabled) {
+    return { success: 0, failed: 0 };
+  }
+  
   let query = db.select().from(pushSubscriptions).where(eq(pushSubscriptions.connectionId, connectionId));
   const subscriptions = await query;
   
