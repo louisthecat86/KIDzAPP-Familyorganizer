@@ -182,17 +182,17 @@ function getBerlinTime(date: Date = new Date()): Date {
   );
 }
 
-// Public routes that don't require authentication
+// Public routes that don't require authentication (paths relative to /api mount point)
 const PUBLIC_ROUTES = [
-  '/api/peers/register',
-  '/api/peers/login',
-  '/api/peers/reset-password',
-  '/api/peers/reset-by-security-question',
-  '/api/auth/me',
-  '/api/push/vapid-public-key',
-  '/api/btc-price',
-  '/api/btc-history',
-  '/api/wallet/test',
+  '/peers/register',
+  '/peers/login',
+  '/peers/reset-password',
+  '/peers/reset-by-security-question',
+  '/auth/me',
+  '/push/vapid-public-key',
+  '/btc-price',
+  '/btc-history',
+  '/wallet/test',
 ];
 
 export async function registerRoutes(app: Express): Promise<Server> {
