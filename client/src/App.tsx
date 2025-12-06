@@ -125,7 +125,6 @@ type User = {
   hasLnbitsConfigured?: boolean;
   lightningAddress?: string;
   donationAddress?: string;
-  favoriteColor?: string;
 };
 
 type Task = {
@@ -208,11 +207,11 @@ async function apiFetch(url: string, options: RequestInit = {}): Promise<Respons
 }
 
 // --- API Functions ---
-async function registerUser(name: string, role: UserRole, pin: string, familyName?: string, joinParentConnectionId?: string, favoriteColor?: string): Promise<User> {
+async function registerUser(name: string, role: UserRole, pin: string, familyName?: string, joinParentConnectionId?: string): Promise<User> {
   const res = await apiFetch("/api/peers/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, role, pin, familyName, joinParentConnectionId, favoriteColor }),
+    body: JSON.stringify({ name, role, pin, familyName, joinParentConnectionId }),
   });
   const data = await res.json();
   if (!res.ok) {
@@ -2289,57 +2288,12 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
   const { t } = useTranslation();
   const [name, setName] = useState("");
   const [familyName, setFamilyName] = useState("");
-  const [favoriteColor, setFavoriteColor] = useState("");
   const [joinParentId, setJoinParentId] = useState("");
   const [pin, setPin] = useState("");
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [parentMode, setParentMode] = useState<"new" | "join" | null>(null);
-  const [showForgotPin, setShowForgotPin] = useState(false);
-  const [forgotPinName, setForgotPinName] = useState("");
-  const [forgotPinColor, setForgotPinColor] = useState("");
-  const [forgotPinNewPin, setForgotPinNewPin] = useState("");
-  const [isForgotLoading, setIsForgotLoading] = useState(false);
   const { toast } = useToast();
-
-  const handleForgotPin = async () => {
-    if (!forgotPinName.trim() || !forgotPinColor.trim() || !forgotPinNewPin) {
-      toast({ title: t('common.error'), description: t('auth.fillAllFields'), variant: "destructive" });
-      return;
-    }
-    const passwordCheck = validatePassword(forgotPinNewPin);
-    if (!passwordCheck.valid) {
-      toast({ title: t('common.error'), description: t(passwordCheck.error), variant: "destructive" });
-      return;
-    }
-    setIsForgotLoading(true);
-    try {
-      const res = await apiFetch("/api/peers/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          name: forgotPinName.trim(), 
-          favoriteColor: forgotPinColor.trim(), 
-          role: "parent",
-          newPassword: forgotPinNewPin
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      
-      toast({ title: t('auth.passwordResetSuccess'), description: t('auth.loginWithNewPassword') });
-      setShowForgotPin(false);
-      setForgotPinName("");
-      setForgotPinColor("");
-      setForgotPinNewPin("");
-      setPin(forgotPinNewPin);
-      setName(forgotPinName.trim());
-    } catch (error) {
-      toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
-    } finally {
-      setIsForgotLoading(false);
-    }
-  };
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -2379,14 +2333,6 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
       return;
     }
 
-    if (!isLogin && role === "parent" && parentMode === "new" && !favoriteColor.trim()) {
-      toast({
-        title: t('common.error'),
-        description: t('auth.enterFavoriteColor'),
-        variant: "destructive"
-      });
-      return;
-    }
 
     if (!isLogin && role === "parent" && parentMode === "join" && !trimmedJoinParentId) {
       toast({
@@ -2406,8 +2352,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             role, 
             trimmedPin, 
             role === "parent" && parentMode === "new" ? trimmedFamilyName : undefined,
-            role === "parent" && parentMode === "join" ? trimmedJoinParentId : undefined,
-            role === "parent" ? favoriteColor : undefined
+            role === "parent" && parentMode === "join" ? trimmedJoinParentId : undefined
           );
       
       const user = response as User;
@@ -2564,22 +2509,6 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 data-testid="input-name"
               />
             </div>
-            {!isLogin && role === "parent" && parentMode === "new" && (
-              <div className="space-y-2">
-                <Label htmlFor="favoriteColor" className="text-foreground">{t('auth.favoriteColorLabel')}</Label>
-                <Input 
-                  id="favoriteColor"
-                  value={favoriteColor}
-                  onChange={(e) => setFavoriteColor(e.target.value)}
-                  className="bg-white/5 dark:bg-black/30 border-white/60 focus:border-violet-500 focus:bg-white/70 text-foreground placeholder:text-gray-500"
-                  disabled={isLoading}
-                  autoComplete="off"
-                  placeholder={t('auth.colorPlaceholder')}
-                  data-testid="input-favorite-color"
-                />
-                <p className="text-xs text-muted-foreground">{t('auth.colorHint')}</p>
-              </div>
-            )}
             <div className="space-y-2">
               <Label htmlFor="pin" className="text-foreground">{isLogin ? t('auth.password') : t('auth.passwordWithLength')}</Label>
               <Input 
@@ -2615,7 +2544,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               <Button 
                 type="submit"
                 className="w-full bg-violet-600 hover:bg-violet-700 text-white"
-                disabled={isLoading || name.trim().length === 0 || pin.length === 0 || (!isLogin && !validatePassword(pin).valid) || (!isLogin && role === "parent" && parentMode === "new" && (!familyName.trim() || !favoriteColor.trim()))}
+                disabled={isLoading || name.trim().length === 0 || pin.length === 0 || (!isLogin && !validatePassword(pin).valid) || (!isLogin && role === "parent" && parentMode === "new" && !familyName.trim())}
                 data-testid={isLogin ? "button-login" : "button-register"}
               >
                 {isLoading ? t('common.loading') : isLogin ? t('auth.login') : t('auth.register')}
@@ -2630,108 +2559,16 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               >
                 {isLogin ? t('auth.noAccount') : t('auth.haveAccount')}
               </Button>
-              {isLogin && role === "parent" && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full text-xs text-muted-foreground hover:text-foreground hover:bg-white/20 dark:bg-black/20"
-                  onClick={() => setShowForgotPin(true)}
-                  disabled={isLoading}
-                  data-testid="button-forgot-pin"
-                >
-                  {t('auth.forgotPassword')}
-                </Button>
+              {isLogin && (
+                <p className="text-xs text-center text-muted-foreground mt-2">
+                  {t('auth.forgotPasswordInfo')}
+                </p>
               )}
             </div>
           </form>
         </div>
       </div>
 
-      {showForgotPin && (
-        <Dialog open={showForgotPin} onOpenChange={setShowForgotPin}>
-          <DialogContent className="sm:max-w-[450px] border-border bg-gradient-to-br from-gray-900 to-black shadow-2xl">
-            <DialogHeader className="border-b border-border pb-4">
-              <DialogTitle className="text-2xl font-bold flex items-center gap-3">
-                <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">
-                  <span className="text-base">🔑</span>
-                </div>
-                {t('auth.resetPassword')}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-5 pt-4">
-              <div className="space-y-2">
-                <Label htmlFor="forgot-name" className="text-sm font-semibold">{t('auth.name')}</Label>
-                <Input 
-                  id="forgot-name"
-                  value={forgotPinName}
-                  onChange={(e) => setForgotPinName(e.target.value)}
-                  className="bg-secondary/50 border-border focus:border-primary"
-                  disabled={isForgotLoading}
-                  placeholder={t('auth.enterYourName')}
-                  data-testid="input-forgot-pin-name"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="forgot-color" className="text-sm font-semibold">{t('auth.favoriteColor')}</Label>
-                <Input 
-                  id="forgot-color"
-                  placeholder={t('auth.colorPlaceholder')}
-                  value={forgotPinColor}
-                  onChange={(e) => setForgotPinColor(e.target.value)}
-                  className="bg-secondary/50 border-border focus:border-primary"
-                  disabled={isForgotLoading}
-                  data-testid="input-forgot-pin-color"
-                />
-                <p className="text-xs text-muted-foreground">{t('auth.colorRegistrationHint')}</p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="forgot-new-pin" className="text-sm font-semibold">{t('auth.newPassword')}</Label>
-                <Input 
-                  id="forgot-new-pin"
-                  type="password"
-                  placeholder={t('auth.passwordLengthHint')}
-                  value={forgotPinNewPin}
-                  onChange={(e) => setForgotPinNewPin(e.target.value.slice(0, 12))}
-                  className="bg-secondary/50 border-border focus:border-primary"
-                  disabled={isForgotLoading}
-                  maxLength={12}
-                  data-testid="input-forgot-pin-new"
-                />
-                <div className="text-xs text-muted-foreground space-y-1">
-                  <p className={forgotPinNewPin.length >= 8 && forgotPinNewPin.length <= 12 ? "text-green-500" : ""}>
-                    {forgotPinNewPin.length >= 8 && forgotPinNewPin.length <= 12 ? "✓" : "○"} {forgotPinNewPin.length}/8-12 {t('auth.characters')}
-                  </p>
-                  <p className={/[A-Z]/.test(forgotPinNewPin) ? "text-green-500" : ""}>
-                    {/[A-Z]/.test(forgotPinNewPin) ? "✓" : "○"} {t('auth.requireUppercase')}
-                  </p>
-                  <p className={/[0-9]/.test(forgotPinNewPin) ? "text-green-500" : ""}>
-                    {/[0-9]/.test(forgotPinNewPin) ? "✓" : "○"} {t('auth.requireNumber')}
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-3 pt-6 border-t border-border">
-                <Button 
-                  onClick={handleForgotPin}
-                  disabled={isForgotLoading || !forgotPinName.trim() || !forgotPinColor.trim() || !validatePassword(forgotPinNewPin).valid}
-                  className="flex-1 bg-primary hover:bg-primary/90 font-semibold"
-                  data-testid="button-confirm-forgot-pin"
-                >
-                  {isForgotLoading ? t('common.loading') : t('auth.resetPasswordButton')}
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => setShowForgotPin(false)}
-                  disabled={isForgotLoading}
-                  className="flex-1 border-border hover:bg-secondary/50"
-                  data-testid="button-cancel-forgot-pin"
-                >
-                  {t('common.cancel')}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
     </div>
   );
 }

@@ -18,19 +18,18 @@ export const peers = pgTable("peers", {
   walletType: text("wallet_type"), // 'lnbits' or 'nwc' - which wallet to use for payments
   lightningAddress: text("lightning_address"), // Lightning address for child (receives sats directly)
   donationAddress: text("donation_address"), // Lightning address for parent donations
-  favoriteColor: text("favorite_color"), // Favorite color for PIN recovery
+  favoriteColor: text("favorite_color"), // Deprecated - kept for DB backward compatibility
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => ({
   uniqueNamePin: sql`unique (name, pin)`,
 }));
 
-export const insertPeerSchema = createInsertSchema(peers).omit({
+export const insertPeerSchema = createInsertSchema(peers, {
+  favoriteColor: z.string().nullable().optional(),
+}).omit({
   id: true,
   createdAt: true,
   balance: true,
-}).extend({
-  securityQuestion: z.string().optional(),
-  securityAnswer: z.string().optional(),
 });
 
 export type InsertPeer = z.infer<typeof insertPeerSchema>;

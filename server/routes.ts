@@ -286,53 +286,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Password reset with security question verification - no password exposed
-  app.post("/api/peers/reset-password", async (req, res) => {
-    try {
-      const { name, favoriteColor, role, newPassword } = req.body;
-      
-      if (!name || !favoriteColor || !role || !newPassword) {
-        return res.status(400).json({ error: "Name, favoriteColor, role und newPassword erforderlich" });
-      }
-
-      // Validate password requirements
-      if (newPassword.length < 8 || newPassword.length > 12) {
-        return res.status(400).json({ error: "Passwort muss 8-12 Zeichen haben" });
-      }
-      if (!/[A-Z]/.test(newPassword)) {
-        return res.status(400).json({ error: "Passwort muss mindestens einen Großbuchstaben enthalten" });
-      }
-      if (!/[0-9]/.test(newPassword)) {
-        return res.status(400).json({ error: "Passwort muss mindestens eine Zahl enthalten" });
-      }
-
-      const peer = await db.select().from(peers)
-        .where(and(eq(peers.name, name), eq(peers.role, role)))
-        .limit(1);
-      
-      if (!peer || peer.length === 0) {
-        return res.status(404).json({ error: "Name nicht gefunden" });
-      }
-
-      if (peer[0].favoriteColor?.toLowerCase() !== favoriteColor.toLowerCase()) {
-        return res.status(400).json({ error: "Lieblingsfarbe ist falsch" });
-      }
-
-      // Hash and update password
-      const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
-      await db.update(peers).set({ pin: hashedPassword }).where(eq(peers.id, peer[0].id));
-
-      res.json({ success: true, message: "Passwort wurde zurückgesetzt" });
-    } catch (error) {
-      console.error("Password reset error:", error);
-      res.status(500).json({ error: "Passwort-Reset fehlgeschlagen" });
-    }
-  });
+  // REMOVED: Insecure password reset with security question
+  // The old system allowed password reset by guessing the favorite color,
+  // which is a security vulnerability. Instead:
+  // - Parents can reset child PINs via /api/peers/:childId/reset-pin
+  // - Parents who forget their PIN need to create a new account
 
   // Peer Registration
   app.post("/api/peers/register", async (req, res) => {
     try {
-      const { name, role, pin, familyName, joinParentConnectionId, favoriteColor } = req.body;
+      const { name, role, pin, familyName, joinParentConnectionId } = req.body;
       
       if (!name || !role || !pin) {
         return res.status(400).json({ error: "Name, role, and password required" });
@@ -373,7 +336,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pin: hashedPassword,
         connectionId: connectionId || `BTC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
         familyName: role === "parent" ? familyNameToUse : undefined,
-        favoriteColor: role === "parent" ? favoriteColor : undefined,
       } as any);
 
       res.json(sanitizePeerForClient(peer));
