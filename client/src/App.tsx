@@ -3162,13 +3162,14 @@ function FailedPaymentsPanel({ connectionId, peerId }: { connectionId: string; p
   const queryClient = useQueryClient();
 
   const { data: failedPayments = [], isLoading } = useQuery({
-    queryKey: ["/api/failed-payments/pending", connectionId, peerId],
+    queryKey: ["/api/failed-payments/list", connectionId, peerId],
     queryFn: async () => {
       const res = await fetch(`/api/failed-payments/${connectionId}/pending?peerId=${peerId}`);
       if (!res.ok) return [];
-      return res.json();
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
     },
-    refetchInterval: 30000
+    refetchInterval: 5000
   });
 
   const handleRetry = async (paymentId: number) => {
@@ -3182,7 +3183,8 @@ function FailedPaymentsPanel({ connectionId, peerId }: { connectionId: string; p
       const data = await res.json();
       if (res.ok) {
         toast({ title: t('failedPayments.retrySuccess') });
-        queryClient.invalidateQueries({ queryKey: ["/api/failed-payments/pending", connectionId, peerId] });
+        queryClient.invalidateQueries({ queryKey: ["/api/failed-payments/list", connectionId, peerId] });
+        queryClient.invalidateQueries({ queryKey: ["/api/failed-payments/count", connectionId, peerId] });
       } else {
         toast({ title: t('failedPayments.retryFailed'), description: data.error, variant: "destructive" });
       }
@@ -3202,7 +3204,8 @@ function FailedPaymentsPanel({ connectionId, peerId }: { connectionId: string; p
       });
       if (res.ok) {
         toast({ title: t('failedPayments.cancelled') });
-        queryClient.invalidateQueries({ queryKey: ["/api/failed-payments/pending", connectionId, peerId] });
+        queryClient.invalidateQueries({ queryKey: ["/api/failed-payments/list", connectionId, peerId] });
+        queryClient.invalidateQueries({ queryKey: ["/api/failed-payments/count", connectionId, peerId] });
       }
     } catch (error) {
       toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
@@ -4490,14 +4493,14 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   const [showFailedPaymentsModal, setShowFailedPaymentsModal] = useState(false);
 
   const { data: failedPaymentsCount = 0 } = useQuery({
-    queryKey: ["/api/failed-payments/pending", user.connectionId, user.id],
+    queryKey: ["/api/failed-payments/count", user.connectionId, user.id],
     queryFn: async () => {
       const res = await fetch(`/api/failed-payments/${user.connectionId}/pending?peerId=${user.id}`);
       if (!res.ok) return 0;
       const data = await res.json();
-      return data.length;
+      return Array.isArray(data) ? data.length : 0;
     },
-    refetchInterval: 30000,
+    refetchInterval: 5000,
   });
 
   const hideConnectionCode = () => {
