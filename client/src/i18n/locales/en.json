@@ -23,11 +23,11 @@
     "parentalResponsibility": "Parental Responsibility",
     "parentalResponsibilityDesc": "Parents are fully responsible for their children and all transactions in this app.",
     "noGuarantee": "No Value Guarantee",
-    "noGuaranteeDesc": "We provide no guarantee for the value of Bitcoin. Parents should supervise their children accordingly.",
+    "noGuaranteeDesc": "There is no guarantee for the value of Bitcoin. Parents should supervise their children accordingly.",
     "familyUse": "Family Use Only",
     "familyUseDesc": "This app is intended exclusively for private family use and not for commercial purposes.",
     "dataPrivacy": "Data Privacy",
-    "dataPrivacyDesc": "Data is stored securely. No sharing with third parties. See our privacy policy for more information.",
+    "dataPrivacyDesc": "Data is stored securely. No sharing with third parties.",
     "childrenInfo": "👶 Info for Kids",
     "childrenInfoDesc": "Kids CANNOT make transactions - you can only RECEIVE Sats. Parents control all Bitcoin payments and wallet management. You don't owe your parents anything!"
   },
@@ -1533,8 +1533,8 @@
   },
   "security": {
     "title": "Security & Privacy",
-    "subtitle": "How we protect your family data",
-    "summary": "KIDzAPP protects your family data with state-of-the-art encryption, strict family separation, and role-based access controls. Sensitive data like passwords and wallet credentials are encrypted and only accessible to parents.",
+    "subtitle": "How your family data is protected",
+    "summary": "KIDzAPP protects family data with state-of-the-art encryption, strict family separation, and role-based access controls. Sensitive data like passwords and wallet credentials are encrypted and only accessible to parents.",
     "auth": {
       "title": "Login & Access",
       "password": "Login with name + personal password",
@@ -1561,14 +1561,14 @@
       "nwc": "Encrypted WebSocket connection for NWC",
       "keys": "Private keys are encrypted locally",
       "approval": "Payments require parent approval",
-      "noAccess": "We have no access to your wallet balance"
+      "noAccess": "The app has no access to wallet balances"
     },
     "notDone": {
-      "title": "What we DON'T do",
+      "title": "What the app does NOT do",
       "noSharing": "No sharing of data with third parties",
       "noAds": "No advertising or tracking",
       "noBalance": "No storage of wallet balances",
-      "noKeys": "No access to your private keys"
+      "noKeys": "No access to private keys"
     },
     "dataTable": {
       "title": "Stored Data",

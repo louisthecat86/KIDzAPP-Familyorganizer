@@ -23,11 +23,11 @@
     "parentalResponsibility": "Elterliche Haftung",
     "parentalResponsibilityDesc": "Eltern tragen die volle Verantwortung für ihre Kinder und deren Transaktionen in dieser App.",
     "noGuarantee": "Keine Wertgarantie",
-    "noGuaranteeDesc": "Wir geben keine Garantie für den Wert von Bitcoin. Eltern sollten ihre Kinder entsprechend beaufsichtigen.",
+    "noGuaranteeDesc": "Es gibt keine Garantie für den Wert von Bitcoin. Eltern sollten ihre Kinder entsprechend beaufsichtigen.",
     "familyUse": "Nur für Familien",
     "familyUseDesc": "Diese App ist ausschließlich für den privaten Familiengebrauch gedacht und nicht für kommerzielle Zwecke.",
     "dataPrivacy": "Datenschutz",
-    "dataPrivacyDesc": "Daten werden sicher gespeichert. Keine Weitergabe an Dritte. Weitere Informationen in unserer Datenschutzerklärung.",
+    "dataPrivacyDesc": "Daten werden sicher gespeichert. Keine Weitergabe an Dritte.",
     "childrenInfo": "👶 Info für Kinder",
     "childrenInfoDesc": "Kinder können KEINE Transaktionen machen - sie können nur Sats empfangen. Eltern kontrollieren alle Bitcoin-Zahlungen und Wallet-Verwaltung. Du schuldest deinen Eltern nichts!"
   },
@@ -1531,8 +1531,8 @@
   },
   "security": {
     "title": "Sicherheit & Datenschutz",
-    "subtitle": "So schützen wir eure Familiendaten",
-    "summary": "KIDzAPP schützt eure Familiendaten durch modernste Verschlüsselung, strikte Familientrennung und rollenbasierte Zugriffsrechte. Sensible Daten wie Passwörter und Wallet-Zugänge werden verschlüsselt gespeichert und sind nur für euch als Eltern zugänglich.",
+    "subtitle": "So werden eure Familiendaten geschützt",
+    "summary": "KIDzAPP schützt Familiendaten durch modernste Verschlüsselung, strikte Familientrennung und rollenbasierte Zugriffsrechte. Sensible Daten wie Passwörter und Wallet-Zugänge werden verschlüsselt gespeichert und sind nur für Eltern zugänglich.",
     "auth": {
       "title": "Anmeldung & Zugriff",
       "password": "Login mit Name + persönlichem Passwort",
@@ -1559,14 +1559,14 @@
       "nwc": "Verschlüsselte WebSocket-Verbindung für NWC",
       "keys": "Private Schlüssel werden lokal verschlüsselt",
       "approval": "Zahlungen erfordern Eltern-Genehmigung",
-      "noAccess": "Wir haben keinen Zugriff auf euer Wallet-Guthaben"
+      "noAccess": "Die App hat keinen Zugriff auf das Wallet-Guthaben"
     },
     "notDone": {
-      "title": "Was wir NICHT tun",
+      "title": "Was die App NICHT macht",
       "noSharing": "Keine Weitergabe von Daten an Dritte",
       "noAds": "Keine Werbung oder Tracking",
       "noBalance": "Keine Speicherung von Wallet-Guthaben",
-      "noKeys": "Kein Zugriff auf eure privaten Schlüssel"
+      "noKeys": "Kein Zugriff auf private Schlüssel"
     },
     "dataTable": {
       "title": "Gespeicherte Daten",
