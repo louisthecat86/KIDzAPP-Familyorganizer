@@ -6,10 +6,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { de, enUS } from "date-fns/locale";
-import { ChevronLeft, MapPin, Check, Trash2, ExternalLink, Navigation, Loader2 } from "lucide-react";
+import { ChevronLeft, MapPin, Check, Trash2, ExternalLink, Navigation, Loader2, Map, X } from "lucide-react";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+const customIcon = new L.Icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
 
 type LocationPing = {
   id: number;
@@ -52,6 +66,8 @@ export function LocationSharing({ user, familyMembers, onClose }: {
   const [isSending, setIsSending] = useState(false);
   const [gpsStatus, setGpsStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [currentPosition, setCurrentPosition] = useState<{lat: number, lng: number} | null>(null);
+  const [mapModalOpen, setMapModalOpen] = useState(false);
+  const [selectedPing, setSelectedPing] = useState<LocationPing | null>(null);
 
   const isParent = user.role === "parent";
   const isSecureContext = typeof window !== 'undefined' && window.isSecureContext;
@@ -69,7 +85,7 @@ export function LocationSharing({ user, familyMembers, onClose }: {
   });
 
   const sendLocation = useMutation({
-    mutationFn: async (data: { note: string; status: string; mapUrl?: string }) => {
+    mutationFn: async (data: { note: string; status: string; mapUrl?: string; latitude?: string; longitude?: string }) => {
       const res = await fetch("/api/locations/arrive", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -145,15 +161,21 @@ export function LocationSharing({ user, familyMembers, onClose }: {
   const handleSendLocation = async () => {
     setIsSending(true);
     let mapUrl: string | undefined;
+    let latitude: string | undefined;
+    let longitude: string | undefined;
     
     if (currentPosition) {
       mapUrl = `https://www.google.com/maps?q=${currentPosition.lat},${currentPosition.lng}`;
+      latitude = currentPosition.lat.toString();
+      longitude = currentPosition.lng.toString();
     }
     
     sendLocation.mutate({ 
       note: note.trim(), 
       status,
-      mapUrl
+      mapUrl,
+      latitude,
+      longitude
     });
     setCurrentPosition(null);
     setGpsStatus("idle");
@@ -173,6 +195,19 @@ export function LocationSharing({ user, familyMembers, onClose }: {
       other: t("locationSharing.status.other")
     };
     return statusMap[s] || s;
+  };
+
+  const openMapForPing = (ping: LocationPing) => {
+    if (ping.latitude && ping.longitude) {
+      setSelectedPing(ping);
+      setMapModalOpen(true);
+    } else if (ping.mapUrl) {
+      window.open(ping.mapUrl, '_blank');
+    }
+  };
+
+  const hasCoordinates = (ping: LocationPing) => {
+    return ping.latitude && ping.longitude;
   };
 
   return (
@@ -293,15 +328,15 @@ export function LocationSharing({ user, familyMembers, onClose }: {
                       </div>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                      {ping.mapUrl && (
+                      {(hasCoordinates(ping) || ping.mapUrl) && (
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-blue-600 hover:text-blue-700"
-                          onClick={() => window.open(ping.mapUrl!, '_blank')}
+                          onClick={() => openMapForPing(ping)}
                           data-testid={`button-map-${ping.id}`}
                         >
-                          <ExternalLink className="h-4 w-4" />
+                          {hasCoordinates(ping) ? <Map className="h-4 w-4" /> : <ExternalLink className="h-4 w-4" />}
                         </Button>
                       )}
                       {canDeletePing(ping) && (
@@ -324,6 +359,76 @@ export function LocationSharing({ user, familyMembers, onClose }: {
           </div>
         )}
       </div>
+
+      <Dialog open={mapModalOpen} onOpenChange={setMapModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] p-0 overflow-hidden">
+          <DialogHeader className="p-4 pb-2">
+            <DialogTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-blue-600" />
+              {selectedPing && getMemberName(selectedPing.childId)} - {selectedPing && getStatusLabel(selectedPing.status)}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedPing && selectedPing.latitude && selectedPing.longitude && (
+            <div className="h-[400px] w-full">
+              <MapContainer
+                center={[parseFloat(selectedPing.latitude), parseFloat(selectedPing.longitude)]}
+                zoom={15}
+                style={{ height: "100%", width: "100%" }}
+                scrollWheelZoom={true}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <Marker 
+                  position={[parseFloat(selectedPing.latitude), parseFloat(selectedPing.longitude)]}
+                  icon={customIcon}
+                >
+                  <Popup>
+                    <div className="text-center">
+                      <strong>{getMemberName(selectedPing.childId)}</strong>
+                      <br />
+                      {getStatusLabel(selectedPing.status)}
+                      {selectedPing.note && <><br />{selectedPing.note}</>}
+                      <br />
+                      <span className="text-xs text-gray-500">
+                        {formatDistanceToNow(new Date(selectedPing.createdAt), { addSuffix: true, locale })}
+                      </span>
+                    </div>
+                  </Popup>
+                </Marker>
+              </MapContainer>
+            </div>
+          )}
+          
+          <div className="p-4 pt-2 flex justify-between items-center border-t">
+            <div className="text-sm text-muted-foreground">
+              {selectedPing?.note && <span>📝 {selectedPing.note}</span>}
+            </div>
+            <div className="flex gap-2">
+              {selectedPing?.mapUrl && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open(selectedPing.mapUrl!, '_blank')}
+                  className="gap-1"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Google Maps
+                </Button>
+              )}
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => setMapModalOpen(false)}
+              >
+                {t("common.close")}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

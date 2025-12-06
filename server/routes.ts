@@ -4012,7 +4012,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/locations/arrive", async (req, res) => {
     try {
-      const { connectionId, childId, latitude, longitude, accuracy, note, status } = req.body;
+      const { connectionId, childId, latitude, longitude, accuracy, note, status, mapUrl } = req.body;
       
       if (!connectionId || !childId) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -4030,6 +4030,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         longitude: longitude?.toString() || null,
         accuracy: accuracy || null,
         note: note || null,
+        mapUrl: mapUrl || null,
         status: status || "arrived"
       });
       
