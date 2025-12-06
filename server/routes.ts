@@ -4474,8 +4474,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       try {
         // Decrypt wallet credentials
-        const decryptedNwc = hasNwc ? decryptData(peer.nwcConnectionString!) : null;
-        const decryptedLnbitsKey = hasLnbits ? decryptData(peer.lnbitsAdminKey!) : null;
+        const decryptedNwc = hasNwc ? decryptWalletData(peer.nwcConnectionString!) : null;
+        const decryptedLnbitsKey = hasLnbits ? decryptWalletData(peer.lnbitsAdminKey!) : null;
 
         if (activeWallet === "nwc" && hasNwc && decryptedNwc) {
           const { NWCClient } = await import("./nwc");

@@ -499,6 +499,23 @@
     "shareCodeWithChildren": "Teile diesen Code mit deinen Kindern zum Verbinden",
     "connectionCodeTip": "Dieser Code wird für die Verbindung mit deinen Kindern benötigt. Teile ihn sicher mit ihnen."
   },
+  "failedPayments": {
+    "title": "Fehlgeschlagene Zahlungen",
+    "noFailedPayments": "Keine fehlgeschlagenen Zahlungen",
+    "retry": "Erneut versuchen",
+    "cancel": "Stornieren",
+    "retrying": "Versuche...",
+    "retrySuccess": "Zahlung erfolgreich wiederholt!",
+    "retryFailed": "Zahlung erneut fehlgeschlagen",
+    "cancelled": "Zahlung storniert",
+    "taskPayment": "Aufgabenzahlung",
+    "allowancePayment": "Taschengeld",
+    "instantPayment": "Sofortzahlung",
+    "sats": "Sats",
+    "error": "Fehler",
+    "pendingPayments": "Ausstehende Zahlungen",
+    "to": "an"
+  },
   "family": {
     "title": "Familie",
     "members": "Familienmitglieder",

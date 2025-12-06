@@ -500,6 +500,23 @@
     "shareCodeWithChildren": "Share this code with your children to connect",
     "connectionCodeTip": "This code is needed to connect with your children. Share it securely with them."
   },
+  "failedPayments": {
+    "title": "Failed Payments",
+    "noFailedPayments": "No failed payments",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "retrying": "Retrying...",
+    "retrySuccess": "Payment retried successfully!",
+    "retryFailed": "Payment failed again",
+    "cancelled": "Payment cancelled",
+    "taskPayment": "Task Payment",
+    "allowancePayment": "Allowance",
+    "instantPayment": "Instant Payment",
+    "sats": "Sats",
+    "error": "Error",
+    "pendingPayments": "Pending Payments",
+    "to": "to"
+  },
   "family": {
     "title": "Family",
     "members": "Family Members",

@@ -3155,6 +3155,134 @@ function PeersContent({ user, setUser, queryClient }: any) {
   }
 }
 
+function FailedPaymentsPanel({ connectionId, peerId }: { connectionId: string; peerId: number }) {
+  const { t } = useTranslation();
+  const { toast } = useToast();
+  const [retrying, setRetrying] = useState<number | null>(null);
+  const queryClient = useQueryClient();
+
+  const { data: failedPayments = [], isLoading } = useQuery({
+    queryKey: ["/api/failed-payments/pending", connectionId, peerId],
+    queryFn: async () => {
+      const res = await fetch(`/api/failed-payments/${connectionId}/pending?peerId=${peerId}`);
+      if (!res.ok) return [];
+      return res.json();
+    },
+    refetchInterval: 30000
+  });
+
+  const handleRetry = async (paymentId: number) => {
+    setRetrying(paymentId);
+    try {
+      const res = await fetch(`/api/failed-payments/${paymentId}/retry`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ peerId })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast({ title: t('failedPayments.retrySuccess') });
+        queryClient.invalidateQueries({ queryKey: ["/api/failed-payments/pending", connectionId, peerId] });
+      } else {
+        toast({ title: t('failedPayments.retryFailed'), description: data.error, variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setRetrying(null);
+    }
+  };
+
+  const handleCancel = async (paymentId: number) => {
+    try {
+      const res = await fetch(`/api/failed-payments/${paymentId}/cancel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ peerId })
+      });
+      if (res.ok) {
+        toast({ title: t('failedPayments.cancelled') });
+        queryClient.invalidateQueries({ queryKey: ["/api/failed-payments/pending", connectionId, peerId] });
+      }
+    } catch (error) {
+      toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
+    }
+  };
+
+  const getPaymentTypeLabel = (type: string) => {
+    switch (type) {
+      case "task": return t('failedPayments.taskPayment');
+      case "allowance": return t('failedPayments.allowancePayment');
+      case "instant": return t('failedPayments.instantPayment');
+      default: return type;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="border border-red-500/30 bg-red-500/10 rounded-lg p-4 animate-pulse">
+        <div className="h-4 bg-red-500/20 rounded w-1/3 mb-2"></div>
+        <div className="h-8 bg-red-500/20 rounded"></div>
+      </div>
+    );
+  }
+
+  if (failedPayments.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="border border-red-500/30 bg-red-500/10 rounded-lg p-4 space-y-3">
+      <div className="flex items-center gap-2">
+        <AlertTriangle className="h-5 w-5 text-red-400" />
+        <h3 className="font-semibold text-red-400">{t('failedPayments.pendingPayments')} ({failedPayments.length})</h3>
+      </div>
+      <div className="space-y-2">
+        {failedPayments.map((payment: any) => (
+          <div key={payment.id} className="bg-card/50 border border-border rounded-lg p-3 space-y-2">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <p className="font-medium text-sm">
+                  {getPaymentTypeLabel(payment.paymentType)} {t('failedPayments.to')} {payment.toName}
+                </p>
+                <p className="text-lg font-bold text-primary">⚡ {payment.sats.toLocaleString()} {t('failedPayments.sats')}</p>
+                {payment.toLightningAddress && (
+                  <p className="text-xs text-muted-foreground font-mono truncate max-w-[200px]">
+                    {payment.toLightningAddress}
+                  </p>
+                )}
+              </div>
+            </div>
+            <p className="text-xs text-red-400 bg-red-500/10 rounded p-2">
+              {t('failedPayments.error')}: {payment.errorMessage}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                onClick={() => handleRetry(payment.id)}
+                disabled={retrying === payment.id}
+                className="flex-1"
+                data-testid={`button-retry-payment-${payment.id}`}
+              >
+                {retrying === payment.id ? t('failedPayments.retrying') : t('failedPayments.retry')}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleCancel(payment.id)}
+                disabled={retrying === payment.id}
+                data-testid={`button-cancel-payment-${payment.id}`}
+              >
+                {t('failedPayments.cancel')}
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function PushNotificationSettings({ peerId, connectionId }: { peerId: number; connectionId: string }) {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -4058,6 +4186,8 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                 </div>
               ) : (
                 <>
+                  <FailedPaymentsPanel connectionId={user.connectionId} peerId={user.id} />
+                  
                   {walletTab === "lnbits" && (
                   <div className="space-y-4 mt-4 border-2 border-primary/40 bg-primary/5 rounded-lg p-4">
                     {user.hasLnbitsConfigured ? (
