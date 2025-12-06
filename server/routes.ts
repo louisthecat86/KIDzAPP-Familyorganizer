@@ -4330,6 +4330,164 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Failed Payments endpoints (for parents to view and retry failed payments)
+  app.get("/api/failed-payments/:connectionId", async (req, res) => {
+    try {
+      const { connectionId } = req.params;
+      const { peerId } = req.query;
+      
+      if (!peerId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+      
+      const peer = await storage.getPeer(parseInt(peerId as string));
+      if (!peer || peer.role !== "parent" || peer.connectionId !== connectionId) {
+        return res.status(403).json({ error: "Only parents can view failed payments" });
+      }
+      
+      const payments = await storage.getFailedPayments(connectionId);
+      res.json(payments);
+    } catch (error) {
+      console.error("[Failed Payments] Error fetching:", error);
+      res.status(500).json({ error: "Failed to fetch failed payments" });
+    }
+  });
+
+  app.get("/api/failed-payments/:connectionId/pending", async (req, res) => {
+    try {
+      const { connectionId } = req.params;
+      const { peerId } = req.query;
+      
+      if (!peerId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+      
+      const peer = await storage.getPeer(parseInt(peerId as string));
+      if (!peer || peer.role !== "parent" || peer.connectionId !== connectionId) {
+        return res.status(403).json({ error: "Only parents can view failed payments" });
+      }
+      
+      const payments = await storage.getPendingFailedPayments(connectionId);
+      res.json(payments);
+    } catch (error) {
+      console.error("[Failed Payments] Error fetching pending:", error);
+      res.status(500).json({ error: "Failed to fetch pending payments" });
+    }
+  });
+
+  app.post("/api/failed-payments/:id/retry", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { peerId } = req.body;
+      
+      if (!peerId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+      
+      const peer = await storage.getPeer(peerId);
+      if (!peer || peer.role !== "parent") {
+        return res.status(403).json({ error: "Only parents can retry payments" });
+      }
+
+      const failedPayment = await storage.updateFailedPayment(id, {});
+      if (!failedPayment) {
+        return res.status(404).json({ error: "Failed payment not found" });
+      }
+
+      // Get child info
+      const child = await storage.getPeer(failedPayment.toPeerId);
+      if (!child || !child.lightningAddress) {
+        return res.status(400).json({ error: "Child has no Lightning address configured" });
+      }
+
+      // Attempt payment
+      const hasNwc = !!peer.nwcConnectionString;
+      const hasLnbits = !!peer.lnbitsUrl && !!peer.lnbitsAdminKey;
+      const activeWallet = peer.walletType || (hasNwc ? "nwc" : hasLnbits ? "lnbits" : null);
+
+      if (!hasNwc && !hasLnbits) {
+        return res.status(400).json({ error: "No wallet configured" });
+      }
+
+      let paymentHash = "";
+      const memo = `Wiederholte Zahlung: ${failedPayment.sats} Sats an ${child.name}`;
+
+      try {
+        // Decrypt wallet credentials
+        const decryptedNwc = hasNwc ? decryptData(peer.nwcConnectionString!) : null;
+        const decryptedLnbitsKey = hasLnbits ? decryptData(peer.lnbitsAdminKey!) : null;
+
+        if (activeWallet === "nwc" && hasNwc && decryptedNwc) {
+          const { NWCClient } = await import("./nwc");
+          const nwc = new NWCClient(decryptedNwc);
+          paymentHash = await nwc.payToLightningAddress(child.lightningAddress, failedPayment.sats, memo);
+          nwc.close();
+        } else if (hasLnbits && decryptedLnbitsKey) {
+          const lnbits = new LNBitsClient(peer.lnbitsUrl!, decryptedLnbitsKey);
+          paymentHash = await lnbits.payToLightningAddress(failedPayment.sats, child.lightningAddress, memo);
+        }
+
+        if (paymentHash) {
+          // Mark as resolved
+          await storage.markPaymentResolved(id);
+          
+          // Update child balance
+          await storage.updateBalance(child.id, child.balance + failedPayment.sats);
+
+          // Create transaction record
+          await storage.createTransaction({
+            fromPeerId: peer.id,
+            toPeerId: child.id,
+            sats: failedPayment.sats,
+            type: "retry_payment",
+            paymentHash,
+            status: "completed"
+          });
+
+          console.log(`[Failed Payments] Retry successful for payment ${id}: ${paymentHash}`);
+          res.json({ success: true, paymentHash });
+        } else {
+          // Mark as retried but still pending
+          await storage.markPaymentRetried(id);
+          res.status(400).json({ error: "Payment failed again", retried: true });
+        }
+      } catch (payError) {
+        console.error("[Failed Payments] Retry error:", payError);
+        await storage.markPaymentRetried(id);
+        await storage.updateFailedPayment(id, { 
+          errorMessage: (payError as Error).message,
+          status: "pending"
+        });
+        res.status(400).json({ error: "Payment retry failed: " + (payError as Error).message });
+      }
+    } catch (error) {
+      console.error("[Failed Payments] Error retrying:", error);
+      res.status(500).json({ error: "Failed to retry payment" });
+    }
+  });
+
+  app.post("/api/failed-payments/:id/cancel", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { peerId } = req.body;
+      
+      if (!peerId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+      
+      const peer = await storage.getPeer(peerId);
+      if (!peer || peer.role !== "parent") {
+        return res.status(403).json({ error: "Only parents can cancel payments" });
+      }
+      
+      const payment = await storage.updateFailedPayment(id, { status: "cancelled" });
+      res.json({ success: true, payment });
+    } catch (error) {
+      console.error("[Failed Payments] Error cancelling:", error);
+      res.status(500).json({ error: "Failed to cancel payment" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
