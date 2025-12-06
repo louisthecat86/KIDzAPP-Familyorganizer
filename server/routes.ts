@@ -1381,6 +1381,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
               status: "internal",
               paymentHash: null,
             });
+            
+            // Record failed payment for parent to retry later
+            await storage.createFailedPayment({
+              connectionId: task.connectionId,
+              fromPeerId: task.createdBy,
+              toPeerId: child.id,
+              toName: child.name,
+              toLightningAddress: child.lightningAddress || null,
+              sats: task.sats,
+              paymentType: "task",
+              taskId: task.id,
+              errorMessage: (error as Error).message,
+              status: "pending"
+            });
+            console.log(`[Failed Payment] Recorded failed task payment for ${child.name}: ${task.sats} sats`);
           }
         } else {
           // No lightning address - record internal transaction for statistics
@@ -2089,6 +2104,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true, paymentHash });
     } catch (error) {
       console.error("Instant payout error:", error);
+      
+      // Record failed instant payment for parent to retry later
+      try {
+        const parentId = parseInt(req.params.id);
+        const { childId, sats, message } = req.body;
+        const parent = await storage.getPeer(parentId);
+        const child = await storage.getPeer(childId);
+        if (parent && child) {
+          await storage.createFailedPayment({
+            connectionId: parent.connectionId,
+            fromPeerId: parentId,
+            toPeerId: childId,
+            toName: child.name,
+            toLightningAddress: child.lightningAddress || null,
+            sats,
+            paymentType: "instant",
+            taskId: null,
+            errorMessage: (error as Error).message,
+            status: "pending"
+          });
+          console.log(`[Failed Payment] Recorded failed instant payment for ${child.name}: ${sats} sats`);
+        }
+      } catch (recordError) {
+        console.error("[Failed Payment] Error recording failed payment:", recordError);
+      }
+      
       res.status(500).json({ error: String(error) });
     }
   });
@@ -2247,6 +2288,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`[Allowance Scheduler] Paid ${allowance.sats} sats to ${child.name} (${paymentHash})`);
     } catch (error) {
       console.error(`[Allowance Scheduler] Error processing allowance ${allowance.id}:`, error);
+      
+      // Record failed allowance payment for parent to retry later
+      const parent = await storage.getPeer(allowance.parentId);
+      const child = await storage.getPeer(allowance.childId);
+      if (parent && child) {
+        await storage.createFailedPayment({
+          connectionId: parent.connectionId,
+          fromPeerId: allowance.parentId,
+          toPeerId: allowance.childId,
+          toName: child.name,
+          toLightningAddress: child.lightningAddress || null,
+          sats: allowance.sats,
+          paymentType: "allowance",
+          taskId: null,
+          errorMessage: (error as Error).message,
+          status: "pending"
+        });
+        console.log(`[Failed Payment] Recorded failed allowance payment for ${child.name}: ${allowance.sats} sats`);
+      }
     }
   }
 
