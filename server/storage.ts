@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks, type LearningProgress, type InsertLearningProgress, learningProgress, type DailyChallenge, dailyChallenges, type ShoppingList, type InsertShoppingList, shoppingList, type FamilyBoardPost, type InsertFamilyBoardPost, familyBoardPosts, type LocationPing, type InsertLocationPing, locationPings, type EmergencyContact, type InsertEmergencyContact, emergencyContacts, type PasswordSafeEntry, type InsertPasswordSafeEntry, passwordSafeEntries, type BirthdayReminder, type InsertBirthdayReminder, birthdayReminders, type FailedPayment, type InsertFailedPayment, failedPayments } from "@shared/schema";
+import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks, type LearningProgress, type InsertLearningProgress, learningProgress, type DailyChallenge, dailyChallenges, type ShoppingList, type InsertShoppingList, shoppingList, type FamilyBoardPost, type InsertFamilyBoardPost, familyBoardPosts, type LocationPing, type InsertLocationPing, locationPings, type EmergencyContact, type InsertEmergencyContact, emergencyContacts, type PasswordSafeEntry, type InsertPasswordSafeEntry, passwordSafeEntries, type BirthdayReminder, type InsertBirthdayReminder, birthdayReminders, type FailedPayment, type InsertFailedPayment, failedPayments, type PushSubscription, pushSubscriptions } from "@shared/schema";
 import { eq, and, desc, lt, isNull, or, inArray } from "drizzle-orm";
 
 export interface IStorage {
@@ -119,12 +119,12 @@ export interface IStorage {
   cleanupShoppingList(connectionId: string): Promise<number>;
   cleanupAllFamilyData(connectionId: string): Promise<{ chat: number; photos: number; events: number; shopping: number; tasks: number }>;
   resetAccountData(peerId: number): Promise<boolean>;
-  deleteAccount(peerId: number, connectionId: string): Promise<{ success: boolean; wasLastParent: boolean; childrenDisconnected: number }>;
+  deleteAccount(peerId: number, connectionId: string): Promise<{ success: boolean; wasLastParent: boolean; childrenDeleted: number; deletedChildIds: number[] }>;
   
   // Connection management helpers
   getOtherParentsWithConnectionId(connectionId: string, excludePeerId: number): Promise<Peer[]>;
   getChildrenWithConnectionId(connectionId: string): Promise<Peer[]>;
-  disconnectChildrenFromFamily(connectionId: string): Promise<number>;
+  deleteChildrenFromFamily(connectionId: string): Promise<{ count: number; deletedChildIds: number[] }>;
 
   // Family Board operations
   getFamilyBoardPosts(connectionId: string): Promise<FamilyBoardPost[]>;
@@ -1152,23 +1152,7 @@ export class DatabaseStorage implements IStorage {
       ));
   }
 
-  async disconnectChildrenFromFamily(connectionId: string): Promise<number> {
-    const result = await db.update(peers)
-      .set({ connectionId: null })
-      .where(and(
-        eq(peers.connectionId, connectionId),
-        eq(peers.role, 'child')
-      ));
-    return result.rowCount ?? 0;
-  }
-
-  async deleteAccount(peerId: number, connectionId: string): Promise<{ success: boolean; wasLastParent: boolean; childrenDisconnected: number }> {
-    const peer = await this.getPeer(peerId);
-    if (!peer) return { success: false, wasLastParent: false, childrenDisconnected: 0 };
-
-    let wasLastParent = false;
-    let childrenDisconnected = 0;
-
+  async deletePeerData(peerId: number): Promise<void> {
     await db.delete(chatMessages).where(eq(chatMessages.fromPeerId, peerId));
     await db.delete(eventRsvps).where(eq(eventRsvps.peerId, peerId));
     await db.delete(dailyChallenges).where(eq(dailyChallenges.peerId, peerId));
@@ -1178,34 +1162,71 @@ export class DatabaseStorage implements IStorage {
     await db.delete(dailyBitcoinSnapshots).where(eq(dailyBitcoinSnapshots.peerId, peerId));
     await db.delete(monthlySavingsSnapshots).where(eq(monthlySavingsSnapshots.peerId, peerId));
     await db.delete(shoppingList).where(eq(shoppingList.createdBy, peerId));
-    
+    await db.delete(locationPings).where(eq(locationPings.childId, peerId));
+    await db.delete(pushSubscriptions).where(eq(pushSubscriptions.peerId, peerId));
     await db.update(tasks)
       .set({ assignedTo: null, status: 'open', proof: null })
       .where(eq(tasks.assignedTo, peerId));
+  }
+
+  async deleteChildrenFromFamily(connectionId: string): Promise<{ count: number; deletedChildIds: number[] }> {
+    const children = await this.getChildrenWithConnectionId(connectionId);
+    const deletedChildIds: number[] = [];
+    
+    for (const child of children) {
+      await this.deletePeerData(child.id);
+      await db.delete(peers).where(eq(peers.id, child.id));
+      deletedChildIds.push(child.id);
+    }
+    
+    return { count: children.length, deletedChildIds };
+  }
+
+  async deleteAccount(peerId: number, connectionId: string): Promise<{ success: boolean; wasLastParent: boolean; childrenDeleted: number; deletedChildIds: number[] }> {
+    const peer = await this.getPeer(peerId);
+    if (!peer) return { success: false, wasLastParent: false, childrenDeleted: 0, deletedChildIds: [] };
+
+    let wasLastParent = false;
+    let childrenDeleted = 0;
+    let deletedChildIds: number[] = [];
+
+    await this.deletePeerData(peerId);
     
     if (peer.role === 'parent') {
-      // Check if there are other parents in this family
       const otherParents = await db.select().from(peers)
         .where(and(
           eq(peers.connectionId, connectionId),
           eq(peers.role, 'parent')
         ));
       
-      // Filter out the current peer being deleted
       const remainingParents = otherParents.filter(p => p.id !== peerId);
       
       if (remainingParents.length === 0) {
-        // This is the LAST parent - disconnect all children
         wasLastParent = true;
-        childrenDisconnected = await this.disconnectChildrenFromFamily(connectionId);
+        const result = await this.deleteChildrenFromFamily(connectionId);
+        childrenDeleted = result.count;
+        deletedChildIds = result.deletedChildIds;
         
-        // Also clean up family-wide settings since no parents remain
         await db.delete(recurringTasks).where(eq(recurringTasks.connectionId, connectionId));
         await db.delete(levelBonusSettings).where(eq(levelBonusSettings.connectionId, connectionId));
+        await db.delete(familyBoardPosts).where(eq(familyBoardPosts.connectionId, connectionId));
+        await db.delete(birthdayReminders).where(eq(birthdayReminders.connectionId, connectionId));
+        await db.delete(passwordSafeEntries).where(eq(passwordSafeEntries.connectionId, connectionId));
+        await db.delete(emergencyContacts).where(eq(emergencyContacts.connectionId, connectionId));
+        await db.delete(locationPings).where(eq(locationPings.connectionId, connectionId));
+        
+        const eventIds = await db.select({ id: familyEvents.id })
+          .from(familyEvents)
+          .where(eq(familyEvents.connectionId, connectionId));
+        if (eventIds.length > 0) {
+          const ids = eventIds.map(e => e.id);
+          await db.delete(eventRsvps).where(inArray(eventRsvps.eventId, ids));
+        }
+        await db.delete(familyEvents).where(eq(familyEvents.connectionId, connectionId));
+        await db.delete(tasks).where(eq(tasks.connectionId, connectionId));
+        await db.delete(chatMessages).where(eq(chatMessages.connectionId, connectionId));
       }
-      // If other parents remain, the connectionId stays with them - no action needed
       
-      // Delete events created by this parent
       const eventIds = await db.select({ id: familyEvents.id })
         .from(familyEvents)
         .where(eq(familyEvents.createdBy, peerId));
@@ -1219,7 +1240,7 @@ export class DatabaseStorage implements IStorage {
     
     await db.delete(peers).where(eq(peers.id, peerId));
     
-    return { success: true, wasLastParent, childrenDisconnected };
+    return { success: true, wasLastParent, childrenDeleted, deletedChildIds };
   }
 
   // Family Board operations

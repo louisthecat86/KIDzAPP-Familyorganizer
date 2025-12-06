@@ -3958,7 +3958,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: result.success, 
         message: "Account permanently deleted",
         wasLastParent: result.wasLastParent,
-        childrenDisconnected: result.childrenDisconnected
+        childrenDeleted: result.childrenDeleted,
+        deletedChildIds: result.deletedChildIds
       });
     } catch (error) {
       console.error("[Account] Delete error:", error);
