@@ -8,7 +8,7 @@ import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 import cron from "node-cron";
 import { encrypt, decrypt, isEncrypted } from "./crypto";
-import { getVapidPublicKey, notifyTaskCreated, notifyTaskSubmitted, notifyTaskApproved, notifyPaymentReceived, notifyLevelUp, notifyGraduation, notifyNewEvent, notifyNewChatMessage } from "./push";
+import { getVapidPublicKey, notifyTaskCreated, notifyTaskSubmitted, notifyTaskApproved, notifyPaymentReceived, notifyLevelUp, notifyGraduation, notifyNewEvent, notifyNewChatMessage, notifyPaymentFailed } from "./push";
 
 const DEV_FALLBACK_KEY = "kid-app-dev-encryption-key-32chars!!";
 const DEVELOPER_DONATION_ADDRESS = "mw860602@blink.sv"; // Fixed developer donation address
@@ -1396,6 +1396,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
               status: "pending"
             });
             console.log(`[Failed Payment] Recorded failed task payment for ${child.name}: ${task.sats} sats`);
+            
+            // Send push notification to parents about failed payment
+            try {
+              await notifyPaymentFailed(task.connectionId, child.name, task.sats, "task", (error as Error).message);
+            } catch (pushError) {
+              console.warn("[Push] Failed to notify payment failed:", pushError);
+            }
           }
         } else {
           // No lightning address - record internal transaction for statistics
@@ -2125,6 +2132,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             status: "pending"
           });
           console.log(`[Failed Payment] Recorded failed instant payment for ${child.name}: ${sats} sats`);
+          
+          // Send push notification to parents about failed payment
+          try {
+            await notifyPaymentFailed(parent.connectionId, child.name, sats, "instant", (error as Error).message);
+          } catch (pushError) {
+            console.warn("[Push] Failed to notify payment failed:", pushError);
+          }
         }
       } catch (recordError) {
         console.error("[Failed Payment] Error recording failed payment:", recordError);
@@ -2306,6 +2320,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           status: "pending"
         });
         console.log(`[Failed Payment] Recorded failed allowance payment for ${child.name}: ${allowance.sats} sats`);
+        
+        // Send push notification to parents about failed payment
+        try {
+          await notifyPaymentFailed(parent.connectionId, child.name, allowance.sats, "allowance", (error as Error).message);
+        } catch (pushError) {
+          console.warn("[Push] Failed to notify payment failed:", pushError);
+        }
       }
     }
   }

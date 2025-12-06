@@ -195,3 +195,13 @@ export async function notifyNewChatMessage(connectionId: string, senderName: str
     data: { type: 'chat-message', url: '/' }
   }, senderId);
 }
+
+export async function notifyPaymentFailed(connectionId: string, childName: string, sats: number, paymentType: string, errorMessage: string): Promise<void> {
+  const typeLabel = paymentType === 'task' ? 'Aufgabenzahlung' : paymentType === 'allowance' ? 'Taschengeld' : 'Sofortzahlung';
+  await sendPushToParents(connectionId, {
+    title: '⚠️ Zahlung fehlgeschlagen!',
+    body: `${typeLabel} an ${childName} (${sats} Sats) konnte nicht durchgeführt werden`,
+    tag: 'payment-failed',
+    data: { type: 'payment-failed', url: '/', error: errorMessage }
+  });
+}
