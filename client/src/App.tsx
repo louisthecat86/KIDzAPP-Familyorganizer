@@ -3628,20 +3628,26 @@ function DataManagementContent({ user, setUser, onClose }: any) {
     }
     
     setIsDeleting(true);
+    console.log("[DeleteAccount] Starting deletion for user:", user.id, user.name);
     try {
       const res = await apiFetch(`/api/account/${user.id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ confirmationCode: "DELETE-ACCOUNT-FOREVER" }),
       });
+      console.log("[DeleteAccount] Response status:", res.status);
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      console.log("[DeleteAccount] Response data:", data);
+      if (!res.ok) throw new Error(data.error || "Delete failed");
       
       toast({ title: t('dataManagement.accountDeleted') });
+      console.log("[DeleteAccount] Account deleted successfully, logging out");
       localStorage.removeItem("sats-user");
       setUser(null);
       onClose();
+      window.location.href = "/";
     } catch (error) {
+      console.error("[DeleteAccount] Error:", error);
       toast({ title: t('dataManagement.error'), description: (error as Error).message, variant: "destructive" });
     } finally {
       setIsDeleting(false);
