@@ -132,6 +132,8 @@ export async function sendPushToParents(connectionId: string, payload: PushPaylo
     and(eq(peers.connectionId, connectionId), eq(peers.role, 'parent'))
   );
   
+  console.log(`[Push] Sending "${payload.title}" to ${parents.length} parent(s) in family ${connectionId}`);
+  
   let totalSuccess = 0;
   let totalFailed = 0;
 
@@ -141,6 +143,7 @@ export async function sendPushToParents(connectionId: string, payload: PushPaylo
     totalFailed += result.failed;
   }
 
+  console.log(`[Push] Result for "${payload.title}": ${totalSuccess} sent, ${totalFailed} failed`);
   return { success: totalSuccess, failed: totalFailed };
 }
 
