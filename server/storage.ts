@@ -19,6 +19,8 @@ export interface IStorage {
   clearPeerNwcWallet(peerId: number): Promise<Peer>;
   updateBalance(peerId: number, sats: number): Promise<Peer>;
   updatePeerPin(peerId: number, newPin: string): Promise<Peer>;
+  updatePeerSeedPhraseHash(peerId: number, seedPhraseHash: string): Promise<Peer>;
+  getParentByNameForRecovery(name: string): Promise<Peer | undefined>;
   updatePeerFamilyName(peerId: number, familyName: string): Promise<Peer>;
   updateChildLightningAddress(peerId: number, lightningAddress: string): Promise<Peer>;
   updateDonationAddress(peerId: number, donationAddress: string): Promise<Peer>;
@@ -322,6 +324,21 @@ export class DatabaseStorage implements IStorage {
       .set({ pin: newPin })
       .where(eq(peers.id, peerId))
       .returning();
+    return result[0];
+  }
+
+  async updatePeerSeedPhraseHash(peerId: number, seedPhraseHash: string): Promise<Peer> {
+    const result = await db.update(peers)
+      .set({ seedPhraseHash })
+      .where(eq(peers.id, peerId))
+      .returning();
+    return result[0];
+  }
+
+  async getParentByNameForRecovery(name: string): Promise<Peer | undefined> {
+    const result = await db.select().from(peers)
+      .where(and(eq(peers.name, name), eq(peers.role, "parent")))
+      .limit(1);
     return result[0];
   }
 

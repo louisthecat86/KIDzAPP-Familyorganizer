@@ -10,6 +10,7 @@ import cron from "node-cron";
 import { encrypt, decrypt, isEncrypted } from "./crypto";
 import { getVapidPublicKey, notifyTaskCreated, notifyTaskSubmitted, notifyTaskApproved, notifyPaymentReceived, notifyLevelUp, notifyGraduation, notifyNewEvent, notifyNewChatMessage, notifyPaymentFailed } from "./push";
 import bcrypt from "bcrypt";
+import { generateSeedPhrase, hashSeedPhrase, verifySeedPhrase, validateSeedPhrase } from "./seed";
 
 const BCRYPT_ROUNDS = 12;
 
@@ -186,8 +187,7 @@ function getBerlinTime(date: Date = new Date()): Date {
 const PUBLIC_ROUTES = [
   '/peers/register',
   '/peers/login',
-  '/peers/reset-password',
-  '/peers/reset-by-security-question',
+  '/peers/recover-with-seed',
   '/auth/me',
   '/push/vapid-public-key',
   '/btc-price',
@@ -286,11 +286,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // REMOVED: Insecure password reset with security question
-  // The old system allowed password reset by guessing the favorite color,
-  // which is a security vulnerability. Instead:
-  // - Parents can reset child PINs via /api/peers/:childId/reset-pin
-  // - Parents who forget their PIN need to create a new account
+  // Seed phrase based account recovery for parents
+  app.post("/api/peers/recover-with-seed", async (req, res) => {
+    try {
+      const { name, seedPhrase, newPassword } = req.body;
+      
+      if (!name || !seedPhrase || !newPassword) {
+        return res.status(400).json({ error: "Name, seed phrase, and new password required" });
+      }
+      
+      if (!validateSeedPhrase(seedPhrase)) {
+        return res.status(400).json({ error: "Invalid seed phrase format" });
+      }
+      
+      const passwordValidation = validatePassword(newPassword);
+      if (!passwordValidation.valid) {
+        return res.status(400).json({ error: passwordValidation.error });
+      }
+      
+      const peer = await storage.getParentByNameForRecovery(name.trim());
+      
+      if (!peer) {
+        return res.status(404).json({ error: "Account not found" });
+      }
+      
+      if (!peer.seedPhraseHash) {
+        return res.status(400).json({ error: "No recovery seed configured for this account" });
+      }
+      
+      const isValid = await verifySeedPhrase(seedPhrase, peer.seedPhraseHash);
+      
+      if (!isValid) {
+        return res.status(401).json({ error: "Invalid seed phrase" });
+      }
+      
+      const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+      await storage.updatePeerPin(peer.id, hashedPassword);
+      
+      res.json({ success: true, message: "Password reset successfully" });
+    } catch (error) {
+      console.error("Seed recovery error:", error);
+      res.status(500).json({ error: "Recovery failed" });
+    }
+  });
 
   // Peer Registration
   app.post("/api/peers/register", async (req, res) => {
@@ -330,15 +368,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const hashedPassword = await bcrypt.hash(pin, BCRYPT_ROUNDS);
       
+      let seedPhrase: string | undefined;
+      let seedPhraseHash: string | undefined;
+      
+      if (role === "parent") {
+        seedPhrase = generateSeedPhrase();
+        seedPhraseHash = await hashSeedPhrase(seedPhrase);
+      }
+      
       const peer = await storage.createPeer({
         name,
         role,
         pin: hashedPassword,
         connectionId: connectionId || `BTC-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
         familyName: role === "parent" ? familyNameToUse : undefined,
+        seedPhraseHash: seedPhraseHash,
       } as any);
 
-      res.json(sanitizePeerForClient(peer));
+      const response = sanitizePeerForClient(peer);
+      if (seedPhrase) {
+        (response as any).seedPhrase = seedPhrase;
+      }
+      res.json(response);
     } catch (error) {
       if ((error as any).message?.includes("unique constraint")) {
         return res.status(400).json({ error: "Name und PIN Kombination existiert bereits" });

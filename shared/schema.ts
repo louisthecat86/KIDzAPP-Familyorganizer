@@ -19,6 +19,7 @@ export const peers = pgTable("peers", {
   lightningAddress: text("lightning_address"), // Lightning address for child (receives sats directly)
   donationAddress: text("donation_address"), // Lightning address for parent donations
   favoriteColor: text("favorite_color"), // Deprecated - kept for DB backward compatibility
+  seedPhraseHash: text("seed_phrase_hash"), // Hashed BIP39 seed phrase for account recovery (parents only)
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => ({
   uniqueNamePin: sql`unique (name, pin)`,
@@ -26,6 +27,7 @@ export const peers = pgTable("peers", {
 
 export const insertPeerSchema = createInsertSchema(peers, {
   favoriteColor: z.string().nullable().optional(),
+  seedPhraseHash: z.string().nullable().optional(),
 }).omit({
   id: true,
   createdAt: true,
