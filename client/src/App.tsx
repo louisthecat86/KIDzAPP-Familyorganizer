@@ -5610,7 +5610,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <TabsTrigger value="verbindung">{t('wallet.connection')}</TabsTrigger>
             <TabsTrigger value="lnbits">LNbits</TabsTrigger>
             <TabsTrigger value="nwc">NWC</TabsTrigger>
-            <TabsTrigger value="donation">{t('wallet.donationLink')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="verbindung">
@@ -5685,59 +5684,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       {user.walletType === "lnbits" ? t('common.active') : t('common.setAsActive')}
                     </Button>
                   )}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="donation">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Unterstütze die Entwicklung</CardTitle>
-                  <CardDescription>Spende an die Entwickler von KIDzAPP</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    KIDzAPP ist kostenlos und wird von Entwicklern betreut. Deine Spende hilft uns, die App weiter zu verbessern.
-                  </p>
-                  <div className="grid grid-cols-3 gap-3">
-                    {[10, 50, 100].map((amount) => (
-                      <Button
-                        key={amount}
-                        onClick={async () => {
-                          if (!user.hasNwcConfigured && !user.hasLnbitsConfigured) {
-                            useToast().toast({ title: t('common.error'), description: "Bitte konfiguriere NWC oder LNbits in den Wallet-Einstellungen", variant: "destructive" });
-                            return;
-                          }
-                          try {
-                            const res = await fetch("/api/donate", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ peerId: user.id, donationSats: amount })
-                            });
-                            const data = await res.json();
-                            if (res.ok) {
-                              useToast().toast({ title: t('common.success'), description: `${amount} sats gespendet! ✓` });
-                            } else {
-                              useToast().toast({ title: t('common.error'), description: data.error, variant: "destructive" });
-                            }
-                          } catch (error) {
-                            useToast().toast({ title: t('common.error'), description: "Spende fehlgeschlagen", variant: "destructive" });
-                          }
-                        }}
-                        variant="outline"
-                        className="w-full"
-                        data-testid={`button-donate-${amount}`}
-                      >
-                        {amount} Sats
-                      </Button>
-                    ))}
-                  </div>
-                  <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg text-xs">
-                    <p className="font-semibold mb-1">💡 Hinweis:</p>
-                    <p className="text-muted-foreground">Spenden werden von deiner konfigurierten Wallet verarbeitet.</p>
-                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -6488,7 +6434,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <TabsList className="bg-secondary p-1 border border-border mb-6">
             <TabsTrigger value="lnbits">LNbits</TabsTrigger>
             <TabsTrigger value="nwc">NWC</TabsTrigger>
-            <TabsTrigger value="donation">{t('wallet.donationLink')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="lnbits">
