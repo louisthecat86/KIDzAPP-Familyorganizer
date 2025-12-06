@@ -74,6 +74,7 @@
     "forgotPassword": "Forgot password?",
     "forgotPasswordInfo": "Forgot password? Use your 12-word seed phrase to recover.",
     "forgotPin": "Forgot PIN?",
+    "forgotPinChild": "Forgot PIN? Ask your parents - they can reset it for you.",
     "seedPhrase": "Seed Phrase",
     "seedPhraseTitle": "Your Recovery Phrase",
     "seedPhraseWarning": "Write down these 12 words on paper and store them safely. This is the ONLY way to recover your account.",

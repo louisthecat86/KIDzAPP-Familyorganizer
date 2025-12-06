@@ -74,6 +74,7 @@
     "forgotPassword": "Passwort vergessen?",
     "forgotPasswordInfo": "Passwort vergessen? Nutze deine 12-Wort Seed-Phrase zur Wiederherstellung.",
     "forgotPin": "PIN vergessen?",
+    "forgotPinChild": "PIN vergessen? Frag deine Eltern - sie können sie zurücksetzen.",
     "seedPhrase": "Seed-Phrase",
     "seedPhraseTitle": "Deine Wiederherstellungs-Phrase",
     "seedPhraseWarning": "Schreibe diese 12 Wörter auf Papier und bewahre sie sicher auf. Dies ist die EINZIGE Möglichkeit, dein Konto wiederherzustellen.",

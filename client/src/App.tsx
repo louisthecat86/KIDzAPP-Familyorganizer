@@ -2854,7 +2854,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               )}
               {isLogin && role === "child" && (
                 <p className="text-xs text-center text-muted-foreground mt-2">
-                  {t('auth.forgotPasswordInfo')}
+                  {t('auth.forgotPinChild')}
                 </p>
               )}
             </div>
