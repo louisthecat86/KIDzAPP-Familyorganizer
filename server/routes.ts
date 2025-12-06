@@ -1309,6 +1309,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
                       }
                     } catch (bonusPayError) {
                       console.warn("[Level Bonus] Lightning payment failed:", bonusPayError);
+                      
+                      // Record failed level bonus payment
+                      await storage.createFailedPayment({
+                        connectionId: task.connectionId,
+                        fromPeerId: parent.id,
+                        toPeerId: child.id,
+                        toName: child.name,
+                        toLightningAddress: child.lightningAddress || null,
+                        sats: bonusSettings.bonusSats,
+                        paymentType: "task",
+                        taskId: null,
+                        errorMessage: `Level ${currentLevel} Bonus: ${(bonusPayError as Error).message}`,
+                        status: "pending"
+                      });
+                      console.log(`[Failed Payment] Recorded failed level bonus for ${child.name}: ${bonusSettings.bonusSats} sats`);
+                      
+                      // Notify parents about failed level bonus payment
+                      try {
+                        await notifyPaymentFailed(task.connectionId, child.name, bonusSettings.bonusSats, "task", (bonusPayError as Error).message);
+                      } catch (pushError) {
+                        console.warn("[Push] Failed to notify level bonus payment failed:", pushError);
+                      }
                     }
                   }
                 }
@@ -2881,6 +2903,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         } catch (payError) {
           console.error("[Level Bonus Lightning Payment FAILED]:", payError);
+          
+          // Record failed level bonus payment
+          await storage.createFailedPayment({
+            connectionId,
+            fromPeerId: parent[0].id,
+            toPeerId: childId,
+            toName: child.name,
+            toLightningAddress: child.lightningAddress || null,
+            sats: settings.bonusSats,
+            paymentType: "task",
+            taskId: null,
+            errorMessage: `Level ${currentLevel} Bonus: ${(payError as Error).message}`,
+            status: "pending"
+          });
+          console.log(`[Failed Payment] Recorded failed level bonus for ${child.name}: ${settings.bonusSats} sats`);
+          
+          // Notify parents about failed level bonus payment
+          try {
+            await notifyPaymentFailed(connectionId, child.name, settings.bonusSats, "task", (payError as Error).message);
+          } catch (pushError) {
+            console.warn("[Push] Failed to notify level bonus payment failed:", pushError);
+          }
+          
           // Fall back to internal balance
         }
       } else {
