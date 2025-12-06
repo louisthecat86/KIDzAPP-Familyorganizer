@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks, type LearningProgress, type InsertLearningProgress, learningProgress, type DailyChallenge, dailyChallenges, type ShoppingList, type InsertShoppingList, shoppingList, type FamilyBoardPost, type InsertFamilyBoardPost, familyBoardPosts, type LocationPing, type InsertLocationPing, locationPings, type EmergencyContact, type InsertEmergencyContact, emergencyContacts, type PasswordSafeEntry, type InsertPasswordSafeEntry, passwordSafeEntries, type BirthdayReminder, type InsertBirthdayReminder, birthdayReminders } from "@shared/schema";
+import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks, type LearningProgress, type InsertLearningProgress, learningProgress, type DailyChallenge, dailyChallenges, type ShoppingList, type InsertShoppingList, shoppingList, type FamilyBoardPost, type InsertFamilyBoardPost, familyBoardPosts, type LocationPing, type InsertLocationPing, locationPings, type EmergencyContact, type InsertEmergencyContact, emergencyContacts, type PasswordSafeEntry, type InsertPasswordSafeEntry, passwordSafeEntries, type BirthdayReminder, type InsertBirthdayReminder, birthdayReminders, type FailedPayment, type InsertFailedPayment, failedPayments } from "@shared/schema";
 import { eq, and, desc, lt, isNull, or, inArray } from "drizzle-orm";
 
 export interface IStorage {
@@ -155,6 +155,15 @@ export interface IStorage {
   createBirthdayReminder(reminder: InsertBirthdayReminder): Promise<BirthdayReminder>;
   updateBirthdayReminder(id: number, updates: Partial<BirthdayReminder>): Promise<BirthdayReminder | undefined>;
   deleteBirthdayReminder(id: number): Promise<boolean>;
+
+  // Failed Payments operations
+  getFailedPayments(connectionId: string): Promise<FailedPayment[]>;
+  getPendingFailedPayments(connectionId: string): Promise<FailedPayment[]>;
+  createFailedPayment(payment: InsertFailedPayment): Promise<FailedPayment>;
+  updateFailedPayment(id: number, updates: Partial<FailedPayment>): Promise<FailedPayment | undefined>;
+  markPaymentResolved(id: number): Promise<FailedPayment | undefined>;
+  markPaymentRetried(id: number): Promise<FailedPayment | undefined>;
+  deleteFailedPayment(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1362,6 +1371,63 @@ export class DatabaseStorage implements IStorage {
 
   async deleteBirthdayReminder(id: number): Promise<boolean> {
     const result = await db.delete(birthdayReminders).where(eq(birthdayReminders.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Failed Payments operations
+  async getFailedPayments(connectionId: string): Promise<FailedPayment[]> {
+    return await db.select().from(failedPayments)
+      .where(eq(failedPayments.connectionId, connectionId))
+      .orderBy(desc(failedPayments.createdAt));
+  }
+
+  async getPendingFailedPayments(connectionId: string): Promise<FailedPayment[]> {
+    return await db.select().from(failedPayments)
+      .where(and(
+        eq(failedPayments.connectionId, connectionId),
+        eq(failedPayments.status, "pending")
+      ))
+      .orderBy(desc(failedPayments.createdAt));
+  }
+
+  async createFailedPayment(payment: InsertFailedPayment): Promise<FailedPayment> {
+    const result = await db.insert(failedPayments).values(payment).returning();
+    return result[0];
+  }
+
+  async updateFailedPayment(id: number, updates: Partial<FailedPayment>): Promise<FailedPayment | undefined> {
+    const result = await db.update(failedPayments)
+      .set(updates)
+      .where(eq(failedPayments.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async markPaymentResolved(id: number): Promise<FailedPayment | undefined> {
+    const result = await db.update(failedPayments)
+      .set({ status: "resolved", resolvedAt: new Date() })
+      .where(eq(failedPayments.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async markPaymentRetried(id: number): Promise<FailedPayment | undefined> {
+    const current = await db.select().from(failedPayments).where(eq(failedPayments.id, id)).limit(1);
+    if (!current[0]) return undefined;
+    
+    const result = await db.update(failedPayments)
+      .set({ 
+        status: "retried", 
+        retryCount: (current[0].retryCount || 0) + 1,
+        lastRetryAt: new Date() 
+      })
+      .where(eq(failedPayments.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteFailedPayment(id: number): Promise<boolean> {
+    const result = await db.delete(failedPayments).where(eq(failedPayments.id, id));
     return (result.rowCount ?? 0) > 0;
   }
 

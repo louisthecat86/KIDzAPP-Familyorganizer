@@ -490,3 +490,33 @@ export const insertBirthdayReminderSchema = createInsertSchema(birthdayReminders
 
 export type InsertBirthdayReminder = z.infer<typeof insertBirthdayReminderSchema>;
 export type BirthdayReminder = typeof birthdayReminders.$inferSelect;
+
+// Failed Payments Table (Fehlgeschlagene Zahlungen - für Eltern sichtbar)
+export const failedPayments = pgTable("failed_payments", {
+  id: serial("id").primaryKey(),
+  connectionId: text("connection_id").notNull(),
+  fromPeerId: integer("from_peer_id").notNull(),
+  toPeerId: integer("to_peer_id").notNull(),
+  toName: text("to_name").notNull(),
+  toLightningAddress: text("to_lightning_address"),
+  sats: integer("sats").notNull(),
+  paymentType: text("payment_type").notNull(), // 'task', 'allowance', 'instant', 'bonus'
+  taskId: integer("task_id"),
+  errorMessage: text("error_message"),
+  status: text("status").default("pending").notNull(), // 'pending', 'retried', 'resolved', 'cancelled'
+  retryCount: integer("retry_count").default(0).notNull(),
+  lastRetryAt: timestamp("last_retry_at"),
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertFailedPaymentSchema = createInsertSchema(failedPayments).omit({
+  id: true,
+  createdAt: true,
+  retryCount: true,
+  lastRetryAt: true,
+  resolvedAt: true,
+});
+
+export type InsertFailedPayment = z.infer<typeof insertFailedPaymentSchema>;
+export type FailedPayment = typeof failedPayments.$inferSelect;
