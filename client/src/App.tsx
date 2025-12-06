@@ -2811,6 +2811,10 @@ function PeersContent({ user, setUser, queryClient }: any) {
   const [oldParentPin, setOldParentPin] = useState("");
   const [newParentPin, setNewParentPin] = useState("");
   const [isSavingPin, setIsSavingPin] = useState(false);
+  const [deleteChildId, setDeleteChildId] = useState<number | null>(null);
+  const [deleteChildName, setDeleteChildName] = useState<string>("");
+  const [deleteConfirmCode, setDeleteConfirmCode] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
   
   if (user.role === "parent") {
     // Parent view - show connected children
@@ -2876,6 +2880,34 @@ function PeersContent({ user, setUser, queryClient }: any) {
       }
     };
 
+    const handleDeleteChild = async () => {
+      if (deleteConfirmCode !== "DELETE-ACCOUNT-FOREVER" || !deleteChildId) {
+        toast({ title: t('common.error'), description: t('dataManagement.error'), variant: "destructive" });
+        return;
+      }
+      
+      setIsDeleting(true);
+      try {
+        const res = await apiFetch(`/api/account/${deleteChildId}`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ confirmationCode: "DELETE-ACCOUNT-FOREVER" }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Delete failed");
+        
+        toast({ title: t('dataManagement.accountDeleted'), description: deleteChildName });
+        setDeleteChildId(null);
+        setDeleteChildName("");
+        setDeleteConfirmCode("");
+        queryClient.invalidateQueries({ queryKey: ["peers", user.connectionId] });
+      } catch (error) {
+        toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
+      } finally {
+        setIsDeleting(false);
+      }
+    };
+
     return (
       <div className="space-y-6">
         {/* Eltern Hierarchie */}
@@ -2936,11 +2968,14 @@ function PeersContent({ user, setUser, queryClient }: any) {
                         <Button 
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleUnlinkChild(child.id, child.name)}
+                          onClick={() => {
+                            setDeleteChildId(child.id);
+                            setDeleteChildName(child.name);
+                          }}
                           className="text-destructive hover:text-destructive h-7 w-7"
-                          data-testid={`button-unlink-child-${child.id}`}
+                          data-testid={`button-delete-child-${child.id}`}
                         >
-                          <X className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
@@ -3123,6 +3158,65 @@ function PeersContent({ user, setUser, queryClient }: any) {
             </div>
           )}
         </div>
+
+        {/* Delete Child Account Dialog */}
+        <AlertDialog open={deleteChildId !== null} onOpenChange={(open) => {
+          if (!open) {
+            setDeleteChildId(null);
+            setDeleteChildName("");
+            setDeleteConfirmCode("");
+          }
+        }}>
+          <AlertDialogContent className="max-w-sm">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-destructive flex items-center gap-2">
+                <Trash2 className="h-5 w-5" />
+                {t('dataManagement.deleteChildAccount')}
+              </AlertDialogTitle>
+              <AlertDialogDescription className="space-y-3">
+                <p className="text-sm">{t('dataManagement.deleteChildWarning', { name: deleteChildName })}</p>
+                <div className="text-xs text-muted-foreground space-y-1 bg-destructive/10 p-2 rounded">
+                  <p className="font-semibold">{t('dataManagement.willBeDeleted')}:</p>
+                  <ul className="list-disc list-inside space-y-0.5">
+                    <li>{t('dataManagement.allTasks')}</li>
+                    <li>{t('dataManagement.allTransactions')}</li>
+                    <li>{t('dataManagement.allMessages')}</li>
+                    <li>{t('dataManagement.allProgress')}</li>
+                    <li>{t('dataManagement.allAllowances')}</li>
+                  </ul>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t('dataManagement.typeToConfirm')}:</Label>
+                  <code className="block text-xs bg-secondary p-1 rounded text-center font-mono">DELETE-ACCOUNT-FOREVER</code>
+                  <Input
+                    value={deleteConfirmCode}
+                    onChange={(e) => setDeleteConfirmCode(e.target.value)}
+                    placeholder="DELETE-ACCOUNT-FOREVER"
+                    className="font-mono text-sm"
+                    data-testid="input-delete-child-confirm"
+                  />
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="flex-col gap-2">
+              <AlertDialogCancel 
+                disabled={isDeleting}
+                data-testid="button-cancel-delete-child"
+              >
+                {t('common.cancel')}
+              </AlertDialogCancel>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteChild}
+                disabled={deleteConfirmCode !== "DELETE-ACCOUNT-FOREVER" || isDeleting}
+                className="w-full"
+                data-testid="button-confirm-delete-child"
+              >
+                {isDeleting ? t('common.loading') : t('dataManagement.deleteAccountForever')}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     );
   } else {
