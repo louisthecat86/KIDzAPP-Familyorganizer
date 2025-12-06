@@ -1530,5 +1530,66 @@
       "11": "November",
       "12": "December"
     }
+  },
+  "security": {
+    "title": "Security & Privacy",
+    "subtitle": "How we protect your family data",
+    "summary": "KIDzAPP protects your family data with state-of-the-art encryption, strict family separation, and role-based access controls. Sensitive data like passwords and wallet credentials are encrypted and only accessible to parents.",
+    "auth": {
+      "title": "Login & Access",
+      "password": "Login with name + personal password",
+      "passwordStrength": "Passwords: 8-12 characters with uppercase and numbers",
+      "recovery": "Security question for password recovery",
+      "roles": "Role-based permissions (Parent/Child)"
+    },
+    "encryption": {
+      "title": "Encryption",
+      "standard": "AES-256-GCM encryption (military-grade)",
+      "what": "Encrypted data includes:",
+      "passwords": "All Password Safe entries",
+      "walletKeys": "LNBits admin keys and NWC connections",
+      "notes": "Sensitive notes"
+    },
+    "family": {
+      "title": "Family Isolation",
+      "isolation": "Each family has a unique family code",
+      "noAccess": "No access to other families' data possible",
+      "verify": "Every request verifies family membership"
+    },
+    "bitcoin": {
+      "title": "Bitcoin Security",
+      "nwc": "Encrypted WebSocket connection for NWC",
+      "keys": "Private keys are encrypted locally",
+      "approval": "Payments require parent approval",
+      "noAccess": "We have no access to your wallet balance"
+    },
+    "notDone": {
+      "title": "What we DON'T do",
+      "noSharing": "No sharing of data with third parties",
+      "noAds": "No advertising or tracking",
+      "noBalance": "No storage of wallet balances",
+      "noKeys": "No access to your private keys"
+    },
+    "dataTable": {
+      "title": "Stored Data",
+      "type": "Data Type",
+      "protection": "Protection",
+      "usernames": "Usernames",
+      "usernamesProtection": "Family-isolated",
+      "passwords": "Passwords",
+      "passwordsProtection": "8-12 chars, only usable with name",
+      "passwordSafe": "Password Safe",
+      "passwordSafeProtection": "AES-256-GCM encrypted",
+      "walletKeys": "Wallet Keys",
+      "walletKeysProtection": "Encrypted, never visible",
+      "transactions": "Transactions",
+      "transactionsProtection": "Immutable history",
+      "chat": "Chat messages",
+      "chatProtection": "Family-isolated",
+      "photos": "Task photos",
+      "photosProtection": "Family-isolated",
+      "location": "GPS locations",
+      "locationProtection": "Family-isolated"
+    }
   }
 }

@@ -2090,6 +2090,17 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
           </div>
         )}
 
+        <div className="p-2 md:p-4">
+          <button
+            onClick={() => { setCurrentView("security"); setSidebarOpen(false); }}
+            className="w-full px-3 md:px-4 py-1.5 md:py-2 rounded-xl flex items-center gap-2 transition-colors text-foreground hover:bg-white/20 dark:bg-black/20 text-sm md:text-base"
+            data-testid="menu-item-security"
+          >
+            <span className="text-base md:text-lg">🔐</span>
+            <span>{t('security.title')}</span>
+          </button>
+        </div>
+
         <div className="p-2 md:p-4 border-t border-white/20">
           <Button
             variant="outline"
@@ -5555,6 +5566,10 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
 
   if (currentView === "donate") {
     return <DonateView user={user} onClose={() => setCurrentView("dashboard")} />;
+  }
+
+  if (currentView === "security") {
+    return <SecurityView onClose={() => setCurrentView("dashboard")} />;
   }
 
   if (currentView === "nostr") {
@@ -10459,6 +10474,157 @@ function DonateView({ user, onClose }: { user: User; onClose: () => void }) {
           </Button>
           <div className="p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg text-xs text-muted-foreground">
             <p>🧡 Jede Spende hilft, diese App für Familien besser zu machen!</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function SecurityView({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation();
+  
+  return (
+    <div className="space-y-6 max-w-3xl pb-8">
+      <div className="flex items-center gap-3 mb-6">
+        <Button variant="ghost" size="sm" onClick={onClose} className="text-muted-foreground" data-testid="button-security-back">
+          ← {t('common.back')}
+        </Button>
+      </div>
+      
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold mb-2">🔐 {t('security.title')}</h1>
+        <p className="text-muted-foreground">{t('security.subtitle')}</p>
+      </div>
+      
+      <Card className="border-2 border-green-500/40 bg-green-500/5">
+        <CardContent className="p-4">
+          <p className="text-sm">{t('security.summary')}</p>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <span>🔑</span> {t('security.auth.title')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <p>• {t('security.auth.password')}</p>
+            <p>• {t('security.auth.passwordStrength')}</p>
+            <p>• {t('security.auth.recovery')}</p>
+            <p>• {t('security.auth.roles')}</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <span>🛡️</span> {t('security.encryption.title')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <p className="font-semibold text-green-400">{t('security.encryption.standard')}</p>
+            <p className="text-muted-foreground">{t('security.encryption.what')}</p>
+            <p>• {t('security.encryption.passwords')}</p>
+            <p>• {t('security.encryption.walletKeys')}</p>
+            <p>• {t('security.encryption.notes')}</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <span>👨‍👩‍👧‍👦</span> {t('security.family.title')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <p>• {t('security.family.isolation')}</p>
+            <p>• {t('security.family.noAccess')}</p>
+            <p>• {t('security.family.verify')}</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <span>⚡</span> {t('security.bitcoin.title')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <p>• {t('security.bitcoin.nwc')}</p>
+            <p>• {t('security.bitcoin.keys')}</p>
+            <p>• {t('security.bitcoin.approval')}</p>
+            <p className="text-green-400 font-semibold">• {t('security.bitcoin.noAccess')}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="border-2 border-red-500/30 bg-red-500/5">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <span>🚫</span> {t('security.notDone.title')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-2 md:grid-cols-2 text-sm">
+          <p>❌ {t('security.notDone.noSharing')}</p>
+          <p>❌ {t('security.notDone.noAds')}</p>
+          <p>❌ {t('security.notDone.noBalance')}</p>
+          <p>❌ {t('security.notDone.noKeys')}</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <span>📊</span> {t('security.dataTable.title')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-2 font-semibold">{t('security.dataTable.type')}</th>
+                  <th className="text-left py-2 font-semibold">{t('security.dataTable.protection')}</th>
+                </tr>
+              </thead>
+              <tbody className="text-muted-foreground">
+                <tr className="border-b border-border/50">
+                  <td className="py-2">{t('security.dataTable.usernames')}</td>
+                  <td className="py-2">{t('security.dataTable.usernamesProtection')}</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-2">{t('security.dataTable.passwords')}</td>
+                  <td className="py-2">{t('security.dataTable.passwordsProtection')}</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-2">{t('security.dataTable.passwordSafe')}</td>
+                  <td className="py-2 text-green-400">{t('security.dataTable.passwordSafeProtection')}</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-2">{t('security.dataTable.walletKeys')}</td>
+                  <td className="py-2 text-green-400">{t('security.dataTable.walletKeysProtection')}</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-2">{t('security.dataTable.transactions')}</td>
+                  <td className="py-2">{t('security.dataTable.transactionsProtection')}</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-2">{t('security.dataTable.chat')}</td>
+                  <td className="py-2">{t('security.dataTable.chatProtection')}</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-2">{t('security.dataTable.photos')}</td>
+                  <td className="py-2">{t('security.dataTable.photosProtection')}</td>
+                </tr>
+                <tr>
+                  <td className="py-2">{t('security.dataTable.location')}</td>
+                  <td className="py-2">{t('security.dataTable.locationProtection')}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </CardContent>
       </Card>

@@ -1528,5 +1528,66 @@
       "11": "November",
       "12": "Dezember"
     }
+  },
+  "security": {
+    "title": "Sicherheit & Datenschutz",
+    "subtitle": "So schützen wir eure Familiendaten",
+    "summary": "KIDzAPP schützt eure Familiendaten durch modernste Verschlüsselung, strikte Familientrennung und rollenbasierte Zugriffsrechte. Sensible Daten wie Passwörter und Wallet-Zugänge werden verschlüsselt gespeichert und sind nur für euch als Eltern zugänglich.",
+    "auth": {
+      "title": "Anmeldung & Zugriff",
+      "password": "Login mit Name + persönlichem Passwort",
+      "passwordStrength": "Passwörter: 8-12 Zeichen mit Großbuchstaben und Zahlen",
+      "recovery": "Sicherheitsfrage für Passwort-Wiederherstellung",
+      "roles": "Rollenbasierte Berechtigungen (Eltern/Kind)"
+    },
+    "encryption": {
+      "title": "Verschlüsselung",
+      "standard": "AES-256-GCM Verschlüsselung (Militärstandard)",
+      "what": "Verschlüsselt werden:",
+      "passwords": "Alle Passwort-Safe Einträge",
+      "walletKeys": "LNBits Admin-Keys und NWC-Verbindungen",
+      "notes": "Sensible Notizen"
+    },
+    "family": {
+      "title": "Familien-Isolation",
+      "isolation": "Jede Familie hat einen eindeutigen Familien-Code",
+      "noAccess": "Kein Zugriff auf Daten anderer Familien möglich",
+      "verify": "Jede Anfrage prüft die Familienzugehörigkeit"
+    },
+    "bitcoin": {
+      "title": "Bitcoin-Sicherheit",
+      "nwc": "Verschlüsselte WebSocket-Verbindung für NWC",
+      "keys": "Private Schlüssel werden lokal verschlüsselt",
+      "approval": "Zahlungen erfordern Eltern-Genehmigung",
+      "noAccess": "Wir haben keinen Zugriff auf euer Wallet-Guthaben"
+    },
+    "notDone": {
+      "title": "Was wir NICHT tun",
+      "noSharing": "Keine Weitergabe von Daten an Dritte",
+      "noAds": "Keine Werbung oder Tracking",
+      "noBalance": "Keine Speicherung von Wallet-Guthaben",
+      "noKeys": "Kein Zugriff auf eure privaten Schlüssel"
+    },
+    "dataTable": {
+      "title": "Gespeicherte Daten",
+      "type": "Datentyp",
+      "protection": "Schutz",
+      "usernames": "Benutzernamen",
+      "usernamesProtection": "Familien-isoliert",
+      "passwords": "Passwörter",
+      "passwordsProtection": "8-12 Zeichen, nur mit Name nutzbar",
+      "passwordSafe": "Passwort-Safe",
+      "passwordSafeProtection": "AES-256-GCM verschlüsselt",
+      "walletKeys": "Wallet-Keys",
+      "walletKeysProtection": "Verschlüsselt, nie sichtbar",
+      "transactions": "Transaktionen",
+      "transactionsProtection": "Unveränderliche Historie",
+      "chat": "Chat-Nachrichten",
+      "chatProtection": "Familien-isoliert",
+      "photos": "Aufgaben-Fotos",
+      "photosProtection": "Familien-isoliert",
+      "location": "GPS-Standorte",
+      "locationProtection": "Familien-isoliert"
+    }
   }
 }
