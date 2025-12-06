@@ -9,6 +9,8 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel } from "@/components/ui/alert-dialog";
@@ -2293,7 +2295,27 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [parentMode, setParentMode] = useState<"new" | "join" | null>(null);
+  const [showSeedPhrase, setShowSeedPhrase] = useState(false);
+  const [seedPhrase, setSeedPhrase] = useState("");
+  const [seedConfirmed, setSeedConfirmed] = useState(false);
+  const [pendingUser, setPendingUser] = useState<User | null>(null);
+  const [showRecovery, setShowRecovery] = useState(false);
+  const [recoveryName, setRecoveryName] = useState("");
+  const [recoveryFamilyId, setRecoveryFamilyId] = useState("");
+  const [recoverySeed, setRecoverySeed] = useState("");
+  const [recoveryPassword, setRecoveryPassword] = useState("");
+  const [isRecovering, setIsRecovering] = useState(false);
   const { toast } = useToast();
+  
+  useEffect(() => {
+    return () => {
+      setSeedPhrase("");
+      setPendingUser(null);
+      setSeedConfirmed(false);
+      setRecoverySeed("");
+      setRecoveryPassword("");
+    };
+  }, []);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -2356,12 +2378,23 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
           );
       
       const user = response as User;
+      const responseSeed = (response as any).seedPhrase;
       
-      toast({
-        title: isLogin ? t('auth.welcomeBack') : t('auth.accountCreated'),
-        description: isLogin ? t('auth.loggedIn') : t('auth.accountCreatedDesc')
-      });
-      onComplete(user);
+      if (!isLogin && role === "parent" && responseSeed) {
+        setSeedPhrase(responseSeed);
+        setPendingUser(user);
+        setShowSeedPhrase(true);
+        toast({
+          title: t('auth.accountCreated'),
+          description: t('auth.accountCreatedDesc')
+        });
+      } else {
+        toast({
+          title: isLogin ? t('auth.welcomeBack') : t('auth.accountCreated'),
+          description: isLogin ? t('auth.loggedIn') : t('auth.accountCreatedDesc')
+        });
+        onComplete(user);
+      }
     } catch (error) {
       console.error("Error:", error);
       toast({
@@ -2373,7 +2406,214 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
       setIsLoading(false);
     }
   };
+  
+  const handleRecovery = async () => {
+    if (!recoveryName.trim() || !recoveryFamilyId.trim() || !recoverySeed.trim() || !recoveryPassword.trim()) {
+      toast({ title: t('common.error'), description: t('auth.fillAllFields'), variant: "destructive" });
+      return;
+    }
+    
+    const passwordCheck = validatePassword(recoveryPassword);
+    if (!passwordCheck.valid) {
+      toast({ title: t('common.error'), description: t(passwordCheck.error), variant: "destructive" });
+      return;
+    }
+    
+    setIsRecovering(true);
+    try {
+      const res = await apiFetch("/api/peers/recover-with-seed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: recoveryName.trim(),
+          familyId: recoveryFamilyId.trim(),
+          seedPhrase: recoverySeed.trim(),
+          newPassword: recoveryPassword.trim()
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      
+      const savedName = recoveryName.trim();
+      const savedPassword = recoveryPassword.trim();
+      
+      toast({ title: t('auth.seedPhraseRecoverySuccess'), description: t('auth.loginWithNewPassword') });
+      setShowRecovery(false);
+      setRecoveryName("");
+      setRecoveryFamilyId("");
+      setRecoverySeed("");
+      setRecoveryPassword("");
+      setName(savedName);
+      setPin(savedPassword);
+    } catch (error) {
+      toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
+    } finally {
+      setIsRecovering(false);
+    }
+  };
 
+  // Seed Phrase Anzeige nach erfolgreicher Registrierung
+  if (showSeedPhrase && pendingUser) {
+    return (
+      <div 
+        className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat theme-bg"
+        style={{ backgroundImage: 'url(/background.png)' }}
+      >
+        <Card className="w-full max-w-lg shadow-xl">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center">
+              <Key className="w-8 h-8 text-orange-500" />
+            </div>
+            <CardTitle className="text-2xl">{t('auth.seedPhraseTitle')}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+              <p className="text-red-600 dark:text-red-400 font-medium text-center">
+                {t('auth.seedPhraseNeverShow')}
+              </p>
+            </div>
+            
+            <p className="text-sm text-muted-foreground text-center">
+              {t('auth.seedPhraseWarning')}
+            </p>
+            
+            <div className="bg-muted/50 rounded-lg p-4 font-mono text-center">
+              <div className="grid grid-cols-3 gap-2">
+                {seedPhrase.split(' ').map((word, index) => (
+                  <div key={index} className="bg-background rounded px-2 py-1 text-sm">
+                    <span className="text-muted-foreground mr-1">{index + 1}.</span>
+                    {word}
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="seedConfirm" 
+                checked={seedConfirmed}
+                onCheckedChange={(checked) => setSeedConfirmed(checked === true)}
+                data-testid="checkbox-seed-confirm"
+              />
+              <label htmlFor="seedConfirm" className="text-sm cursor-pointer">
+                {t('auth.seedPhraseConfirm')}
+              </label>
+            </div>
+            
+            <Button 
+              onClick={() => {
+                const userToComplete = pendingUser;
+                setSeedPhrase("");
+                setPendingUser(null);
+                setSeedConfirmed(false);
+                setShowSeedPhrase(false);
+                if (userToComplete) {
+                  onComplete(userToComplete);
+                }
+              }}
+              disabled={!seedConfirmed}
+              className="w-full"
+              data-testid="button-seed-continue"
+            >
+              {t('common.continue')}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Recovery Dialog
+  if (showRecovery) {
+    return (
+      <div 
+        className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat theme-bg"
+        style={{ backgroundImage: 'url(/background.png)' }}
+      >
+        <Card className="w-full max-w-lg shadow-xl">
+          <CardHeader>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => {
+                setShowRecovery(false);
+                setRecoveryName("");
+                setRecoveryFamilyId("");
+                setRecoverySeed("");
+                setRecoveryPassword("");
+              }} 
+              className="w-fit mb-2 -ml-2"
+              data-testid="button-back-from-recovery"
+            >
+              ← {t('common.back')}
+            </Button>
+            <CardTitle className="text-xl">{t('auth.recoverAccount')}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="recoveryName">{t('auth.name')}</Label>
+              <Input 
+                id="recoveryName"
+                value={recoveryName}
+                onChange={(e) => setRecoveryName(e.target.value)}
+                placeholder={t('auth.namePlaceholder')}
+                disabled={isRecovering}
+                data-testid="input-recovery-name"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="recoveryFamilyId">{t('auth.familyId')}</Label>
+              <Input 
+                id="recoveryFamilyId"
+                value={recoveryFamilyId}
+                onChange={(e) => setRecoveryFamilyId(e.target.value)}
+                placeholder="BTC-XXXXXX"
+                disabled={isRecovering}
+                data-testid="input-recovery-family-id"
+              />
+              <p className="text-xs text-muted-foreground">{t('auth.familyIdHint')}</p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="recoverySeed">{t('auth.seedPhrase')}</Label>
+              <Textarea 
+                id="recoverySeed"
+                value={recoverySeed}
+                onChange={(e) => setRecoverySeed(e.target.value)}
+                placeholder={t('auth.seedPhraseEnter')}
+                disabled={isRecovering}
+                rows={3}
+                data-testid="input-recovery-seed"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="recoveryPassword">{t('auth.newPassword')}</Label>
+              <Input 
+                id="recoveryPassword"
+                type="password"
+                value={recoveryPassword}
+                onChange={(e) => setRecoveryPassword(e.target.value)}
+                placeholder={t('auth.passwordPlaceholder')}
+                disabled={isRecovering}
+                data-testid="input-recovery-password"
+              />
+            </div>
+            
+            <Button 
+              onClick={handleRecovery}
+              disabled={isRecovering || !recoveryName || !recoveryFamilyId || !recoverySeed || !recoveryPassword}
+              className="w-full"
+              data-testid="button-recover"
+            >
+              {isRecovering ? t('common.loading') : t('auth.recoverAccount')}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Wenn Parent registriert sich und muss Modus wählen
   if (!isLogin && role === "parent" && parentMode === null) {
@@ -2559,7 +2799,19 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               >
                 {isLogin ? t('auth.noAccount') : t('auth.haveAccount')}
               </Button>
-              {isLogin && (
+              {isLogin && role === "parent" && (
+                <Button 
+                  type="button"
+                  variant="link" 
+                  size="sm"
+                  onClick={() => setShowRecovery(true)}
+                  className="w-full text-xs text-muted-foreground hover:text-foreground mt-2"
+                  data-testid="button-forgot-password"
+                >
+                  {t('auth.forgotPassword')} {t('auth.seedPhraseRecovery')}
+                </Button>
+              )}
+              {isLogin && role === "child" && (
                 <p className="text-xs text-center text-muted-foreground mt-2">
                   {t('auth.forgotPasswordInfo')}
                 </p>

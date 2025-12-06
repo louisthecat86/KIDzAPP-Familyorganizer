@@ -5,7 +5,7 @@ import { insertPeerSchema, insertTaskSchema, insertFamilyEventSchema, insertEven
 import { z } from "zod";
 import { LNBitsClient } from "./lnbits";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import cron from "node-cron";
 import { encrypt, decrypt, isEncrypted } from "./crypto";
 import { getVapidPublicKey, notifyTaskCreated, notifyTaskSubmitted, notifyTaskApproved, notifyPaymentReceived, notifyLevelUp, notifyGraduation, notifyNewEvent, notifyNewChatMessage, notifyPaymentFailed } from "./push";
@@ -287,12 +287,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Seed phrase based account recovery for parents
+  // Requires both name AND familyId to prevent account takeover with duplicate names
   app.post("/api/peers/recover-with-seed", async (req, res) => {
     try {
-      const { name, seedPhrase, newPassword } = req.body;
+      const { name, familyId, seedPhrase, newPassword } = req.body;
       
-      if (!name || !seedPhrase || !newPassword) {
-        return res.status(400).json({ error: "Name, seed phrase, and new password required" });
+      if (!name || !familyId || !seedPhrase || !newPassword) {
+        return res.status(400).json({ error: "Name, family ID, seed phrase, and new password required" });
       }
       
       if (!validateSeedPhrase(seedPhrase)) {
@@ -304,24 +305,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: passwordValidation.error });
       }
       
-      const peer = await storage.getParentByNameForRecovery(name.trim());
+      // Use connectionId (familyId) + name for unique identification
+      const peer = await db.select().from(peers)
+        .where(and(
+          eq(peers.name, name.trim()),
+          eq(peers.connectionId, familyId.trim()),
+          eq(peers.role, "parent")
+        ))
+        .limit(1);
       
-      if (!peer) {
+      if (!peer || peer.length === 0) {
         return res.status(404).json({ error: "Account not found" });
       }
       
-      if (!peer.seedPhraseHash) {
+      const targetPeer = peer[0];
+      
+      if (!targetPeer.seedPhraseHash) {
         return res.status(400).json({ error: "No recovery seed configured for this account" });
       }
       
-      const isValid = await verifySeedPhrase(seedPhrase, peer.seedPhraseHash);
+      const isValid = await verifySeedPhrase(seedPhrase, targetPeer.seedPhraseHash);
       
       if (!isValid) {
         return res.status(401).json({ error: "Invalid seed phrase" });
       }
       
       const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
-      await storage.updatePeerPin(peer.id, hashedPassword);
+      await storage.updatePeerPin(targetPeer.id, hashedPassword);
+      
+      // Invalidate all existing sessions for this user
+      await db.execute(
+        sql`DELETE FROM session WHERE sess::jsonb->>'peerId' = ${String(targetPeer.id)}`
+      );
       
       res.json({ success: true, message: "Password reset successfully" });
     } catch (error) {
