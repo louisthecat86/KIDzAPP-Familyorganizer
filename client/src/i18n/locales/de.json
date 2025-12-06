@@ -1022,11 +1022,6 @@
     "level9": "Level 9 – Familienheld",
     "level10": "Level 10 – Großmeister der Blitze"
   },
-  "chat": {
-    "title": "Familienchat",
-    "noMessages": "Noch keine Nachrichten",
-    "placeholder": "Nachricht eingeben..."
-  },
   "peers": {
     "myFamily": "Meine Familie",
     "connectedWith": "Verbunden mit",

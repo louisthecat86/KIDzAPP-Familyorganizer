@@ -1024,11 +1024,6 @@
     "level9": "Level 9 – Family Hero",
     "level10": "Level 10 – Grandmaster of Lightning"
   },
-  "chat": {
-    "title": "Family Chat",
-    "noMessages": "No messages yet",
-    "placeholder": "Enter message..."
-  },
   "peers": {
     "myFamily": "My Family",
     "connectedWith": "Connected with",
