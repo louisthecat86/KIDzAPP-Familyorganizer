@@ -1119,7 +1119,7 @@ export class DatabaseStorage implements IStorage {
     const peer = await this.getPeer(peerId);
     if (!peer) return false;
 
-    await db.delete(chatMessages).where(eq(chatMessages.senderId, peerId));
+    await db.delete(chatMessages).where(eq(chatMessages.fromPeerId, peerId));
     
     await db.delete(eventRsvps).where(eq(eventRsvps.peerId, peerId));
     
@@ -1169,7 +1169,7 @@ export class DatabaseStorage implements IStorage {
     let wasLastParent = false;
     let childrenDisconnected = 0;
 
-    await db.delete(chatMessages).where(eq(chatMessages.senderId, peerId));
+    await db.delete(chatMessages).where(eq(chatMessages.fromPeerId, peerId));
     await db.delete(eventRsvps).where(eq(eventRsvps.peerId, peerId));
     await db.delete(dailyChallenges).where(eq(dailyChallenges.peerId, peerId));
     await db.delete(allowances).where(eq(allowances.childId, peerId));
@@ -1177,7 +1177,7 @@ export class DatabaseStorage implements IStorage {
     await db.delete(learningProgress).where(eq(learningProgress.peerId, peerId));
     await db.delete(dailyBitcoinSnapshots).where(eq(dailyBitcoinSnapshots.peerId, peerId));
     await db.delete(monthlySavingsSnapshots).where(eq(monthlySavingsSnapshots.peerId, peerId));
-    await db.delete(shoppingList).where(eq(shoppingList.addedBy, peerId));
+    await db.delete(shoppingList).where(eq(shoppingList.createdBy, peerId));
     
     await db.update(tasks)
       .set({ assignedTo: null, status: 'open', proof: null })
