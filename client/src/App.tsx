@@ -2292,6 +2292,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
   const [familyName, setFamilyName] = useState("");
   const [joinParentId, setJoinParentId] = useState("");
   const [pin, setPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState("");
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [parentMode, setParentMode] = useState<"new" | "join" | null>(null);
@@ -2340,6 +2341,15 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
         toast({
           title: t('common.error'),
           description: t(passwordCheck.error),
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (trimmedPin !== confirmPin.trim()) {
+        toast({
+          title: t('common.error'),
+          description: t('auth.passwordsDoNotMatch'),
           variant: "destructive"
         });
         return;
@@ -2785,6 +2795,29 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
                 </div>
               )}
             </div>
+            
+            {!isLogin && (
+              <div className="space-y-2">
+                <Label htmlFor="confirmPin" className="text-foreground">{t('auth.confirmPassword')}</Label>
+                <Input 
+                  id="confirmPin"
+                  type="password"
+                  placeholder={t('auth.confirmPasswordPlaceholder')}
+                  value={confirmPin}
+                  onChange={(e) => setConfirmPin(e.target.value.slice(0, 12))}
+                  className="bg-white/5 dark:bg-black/30 border-white/60 focus:border-violet-500 focus:bg-white/70 text-foreground placeholder:text-gray-400"
+                  disabled={isLoading}
+                  maxLength={12}
+                  autoComplete="off"
+                  data-testid="input-confirm-pin"
+                />
+                {confirmPin.length > 0 && (
+                  <p className={`text-xs ${pin === confirmPin ? "text-green-600" : "text-red-500"}`}>
+                    {pin === confirmPin ? "✓" : "✗"} {t('auth.passwordsMatch')}
+                  </p>
+                )}
+              </div>
+            )}
 
             <div className="border-t border-white/20 my-4"></div>
 
@@ -2792,7 +2825,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               <Button 
                 type="submit"
                 className="w-full bg-violet-600 hover:bg-violet-700 text-white"
-                disabled={isLoading || name.trim().length === 0 || pin.length === 0 || (!isLogin && !validatePassword(pin).valid) || (!isLogin && role === "parent" && parentMode === "new" && !familyName.trim())}
+                disabled={isLoading || name.trim().length === 0 || pin.length === 0 || (!isLogin && !validatePassword(pin).valid) || (!isLogin && pin !== confirmPin) || (!isLogin && role === "parent" && parentMode === "new" && !familyName.trim())}
                 data-testid={isLogin ? "button-login" : "button-register"}
               >
                 {isLoading ? t('common.loading') : isLogin ? t('auth.login') : t('auth.register')}
