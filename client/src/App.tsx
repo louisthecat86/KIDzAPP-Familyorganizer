@@ -6470,6 +6470,18 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                             </>
                           )}
                         </div>
+                        {/* Delete button for non-birthday events (parent only) */}
+                        {!isBirthday && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onDeleteEvent(event.id)}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            data-testid={`button-delete-event-parent-${event.id}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>
