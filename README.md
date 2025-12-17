@@ -149,10 +149,19 @@ The app will be available at `http://localhost:5000`
 
 #### 4. Run Database Migrations
 
+The database schema needs to be initialized on first run:
+
 ```bash
-# Execute migrations inside the container
-docker compose exec app npm run db:push
+# Wait for containers to be healthy, then run migrations
+docker compose exec app npx drizzle-kit push
+
+# Alternative: Run migrations before starting (recommended)
+docker compose up postgres -d
+docker compose run --rm app npx drizzle-kit push
+docker compose up -d
 ```
+
+**Note:** If you see database connection errors, wait a few seconds for PostgreSQL to be ready and try again.
 
 ---
 
@@ -239,6 +248,14 @@ psql -l | grep kidzapp
 
 - Generate new VAPID keys: `npx web-push generate-vapid-keys`
 - Ensure both `VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` are set
+- Push notifications are optional - the app works without them
+
+### Docker Container Won't Start
+
+- Check logs: `docker compose logs app`
+- Ensure PostgreSQL is healthy: `docker compose ps`
+- Run migrations manually: `docker compose exec app npx drizzle-kit push`
+- Verify environment variables are set correctly
 
 ### Health Check
 
