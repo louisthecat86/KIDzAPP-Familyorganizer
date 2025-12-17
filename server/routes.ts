@@ -193,6 +193,7 @@ const PUBLIC_ROUTES = [
   '/btc-price',
   '/btc-history',
   '/wallet/test',
+  '/health',
 ];
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -213,6 +214,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     next();
+  });
+  
+  // Health check endpoint for load balancers and container orchestration
+  app.get("/api/health", async (_req, res) => {
+    try {
+      // Test database connection
+      await db.execute(sql`SELECT 1`);
+      res.json({ 
+        status: "healthy", 
+        timestamp: new Date().toISOString(),
+        version: "1.0.0"
+      });
+    } catch (error) {
+      res.status(503).json({ 
+        status: "unhealthy", 
+        error: "Database connection failed",
+        timestamp: new Date().toISOString()
+      });
+    }
   });
   
   // DEBUG: Test if recurring scheduler is working

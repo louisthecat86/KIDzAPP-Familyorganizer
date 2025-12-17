@@ -1,155 +1,325 @@
-# 💰 Bitcoin Tracker
+# KIDzAPP - Family Organizer with Bitcoin Rewards
 
-Ein Python-Projekt zur Verfolgung von verdienten Satoshis und deren Euro-Wert mit Live-Bitcoin-Preisen und automatischer Chart-Generierung.
+A family organization app that gamifies household chores using Bitcoin/Lightning Network payments. Parents create tasks with satoshi rewards, children complete tasks and earn real Bitcoin!
 
-## 🎯 Funktionalität
+## Features
 
-Das Projekt speichert Einträge mit folgenden Datenpunkten:
-- **Timestamp**: Zeitpunkt der Eintragung
-- **Verdiente Satoshi**: Neue Satoshis in diesem Eintrag
-- **BTC EUR Preis**: Aktueller Bitcoin-Preis (live von CoinGecko API)
-- **Gesamt Satoshi**: Kumulierte Summe aller Satoshis
-- **Euro-Wert**: Gesamtsumme × BTC-Preis ÷ 100.000.000
+- **Task Management** - Create tasks with Bitcoin rewards, assign to children, approve completions
+- **Lightning Payments** - Instant Bitcoin payments via LNBits or Nostr Wallet Connect
+- **Family Calendar** - Shared events with RSVP functionality
+- **Family Chat** - Real-time messaging for the whole family
+- **Allowances** - Automated weekly Bitcoin allowances
+- **Bitcoin Education** - 60+ daily challenges to learn about Bitcoin
+- **Shopping List** - Shared family shopping list
+- **Location Sharing** - GPS tracking with interactive maps
+- **Emergency Contacts** - Quick access to important numbers
+- **Password Safe** - Parent-only encrypted password storage
+- **Birthday Reminders** - Never forget a family birthday
+- **Web Push Notifications** - Stay updated on task approvals and payments
+- **Multi-Language** - German and English support
 
-## 📊 Features
-
-✅ SQLite-Datenbank mit automatischer Struktur
-✅ Live-Bitcoin-Preis von CoinGecko API (kein API-Key erforderlich)
-✅ Dual-Axis Chart mit Matplotlib:
-   - Linke Achse: Euro-Wert der Satoshis
-   - Rechte Achse: BTC-Preis (EUR)
-✅ Dunkles Theme für Charts
-✅ Automatische Datenbank-Initialisierung
-
-## 🚀 Installation
-
-### 1. Abhängigkeiten installieren
+## Quick Start (Development)
 
 ```bash
-pip install requests matplotlib pandas
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
 ```
 
-### 2. Datenbank initialisieren (optional)
-
-```bash
-python db_setup.py
-```
-
-Die Datenbank wird automatisch erstellt, wenn Sie das erste Mal einen Eintrag hinzufügen.
-
-## 📝 Verwendung
-
-### Eintrag hinzufügen
-
-```bash
-python add_entry.py 1500
-```
-
-Dies addiert **1500 Satoshis** und:
-- Fetcht den aktuellen BTC-Preis von CoinGecko
-- Berechnet die neue Gesamtsumme
-- Speichert den Eintrag in der Datenbank
-- Zeigt eine Zusammenfassung an
-
-**Beispiel-Output:**
-```
-✓ Current BTC price: €91.430,00
-✓ Entry added successfully!
-  Verdiente Satoshi: 1500
-  BTC Preis (EUR): €91.430,00
-  Gesamt Satoshi: 5150
-  Euro-Wert: €4.71
-```
-
-### Chart generieren
-
-```bash
-python generate_chart.py
-```
-
-Dies erzeugt eine **entwicklung.png** mit:
-- Zeitbasierte X-Achse (Datum)
-- Euro-Wert Kurve (gelb/amber, linke Y-Achse)
-- BTC-Preis Kurve (blau, rechte Y-Achse)
-- Automatische Skalierung basierend auf Datenpunkten
-
-## 📁 Dateistruktur
-
-```
-bitcoin-tracker/
-├── db_setup.py           # Datenbankinitialisierung
-├── add_entry.py          # Script zum Hinzufügen von Einträgen
-├── generate_chart.py     # Chart-Generierung
-├── README.md             # Diese Datei
-├── bitcoin_tracker.db    # SQLite-Datenbank (wird automatisch erstellt)
-└── entwicklung.png       # Generiertes Chart (wird beim ersten Mal erstellt)
-```
-
-## 💡 Workflow-Beispiel
-
-```bash
-# 1. Eintrag hinzufügen
-python add_entry.py 500
-
-# 2. Weiterer Eintrag
-python add_entry.py 1000
-
-# 3. Chart generieren
-python generate_chart.py
-
-# 4. Chart anschauen: entwicklung.png
-```
-
-## 🔍 Datenbank-Schema
-
-Die `bitcoin_tracker.db` enthält eine `entries` Tabelle:
-
-| Feld | Typ | Beschreibung |
-|------|-----|-------------|
-| id | INTEGER (PK) | Eindeutige ID |
-| timestamp | DATETIME | Zeitstempel des Eintrags |
-| verdiente_satoshi | INTEGER | Neue Satoshis in diesem Eintrag |
-| btc_eur_preis | REAL | BTC-Kurs zum Zeitpunkt der Eintragung |
-| gesamt_satoshi_bis_dahin | INTEGER | Kumulierte Gesamtsumme |
-| euro_wert | REAL | Euro-Wert der Gesamtsumme |
-
-## 🌐 API-Integration
-
-Das Projekt verwendet die **CoinGecko API** (kostenlos, kein API-Key erforderlich):
-- Endpoint: `https://api.coingecko.com/api/v3/simple/price`
-- Gibt den aktuellen Bitcoin-Preis in EUR zurück
-
-## 🎨 Chart-Design
-
-Das generierte Chart hat ein modernes dunkles Theme:
-- Hintergrund: Slate (#0f172a)
-- Euro-Wert: Amber-Gelb (#fbbf24)
-- BTC-Preis: Blau (#60a5fa)
-- Gitter: Subtil mit Alpha-Transparenz
-
-## ⚠️ Anforderungen
-
-- Python 3.7+
-- requests (für API-Calls)
-- matplotlib (für Chart)
-- pandas (optional, für erweiterte Datenanalysis)
-
-## 🐛 Fehlerbehebung
-
-**Fehler: "No data in database"**
-- Zuerst Einträge hinzufügen: `python add_entry.py 1000`
-
-**Fehler: "Cannot fetch BTC price"**
-- CoinGecko API ist möglicherweise überlastet
-- Versuchen Sie es später erneut
-
-**Fehler: "No module named requests"**
-- Installieren Sie die Abhängigkeiten: `pip install requests`
-
-## 📄 Lizenz
-
-Frei verwendbar für persönliche Projekte.
+The app will be available at `http://localhost:5000`
 
 ---
 
-**Viel Erfolg beim Tracking deiner Satoshis! 🚀**
+## Self-Hosting Guide
+
+### Prerequisites
+
+- **Node.js 20+** (LTS recommended)
+- **PostgreSQL 14+** (or Neon serverless)
+- **npm** or **pnpm**
+
+### Option 1: Manual Installation
+
+#### 1. Clone the Repository
+
+```bash
+git clone https://github.com/yourusername/kidzapp.git
+cd kidzapp
+```
+
+#### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+#### 3. Configure Environment
+
+```bash
+# Copy the example environment file
+cp .env.example .env
+
+# Edit with your values
+nano .env
+```
+
+**Required Environment Variables:**
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@localhost:5432/kidzapp` |
+| `SESSION_SECRET` | Random 32+ character string | `openssl rand -hex 32` |
+| `WALLET_ENCRYPTION_KEY` | Exactly 32 characters for AES-256 | `openssl rand -hex 16` |
+
+**Optional Environment Variables:**
+
+| Variable | Description |
+|----------|-------------|
+| `VAPID_PUBLIC_KEY` | Web Push public key |
+| `VAPID_PRIVATE_KEY` | Web Push private key |
+| `PORT` | Server port (default: 5000) |
+
+Generate VAPID keys for push notifications:
+```bash
+npx web-push generate-vapid-keys
+```
+
+#### 4. Set Up Database
+
+```bash
+# Create database (if not using Neon)
+createdb kidzapp
+
+# Run migrations
+npm run db:push
+```
+
+#### 5. Build for Production
+
+```bash
+npm run build
+```
+
+#### 6. Start the Application
+
+```bash
+# Production mode
+NODE_ENV=production node dist/index.js
+
+# Or use the npm script
+npm start
+```
+
+### Option 2: Docker Installation (Recommended)
+
+#### 1. Clone the Repository
+
+```bash
+git clone https://github.com/yourusername/kidzapp.git
+cd kidzapp
+```
+
+#### 2. Configure Environment
+
+```bash
+# Create .env file with your secrets
+cat > .env << EOF
+DB_PASSWORD=your-secure-database-password
+SESSION_SECRET=$(openssl rand -hex 32)
+WALLET_ENCRYPTION_KEY=$(openssl rand -hex 16)
+EOF
+```
+
+#### 3. Start with Docker Compose
+
+```bash
+# Build and start all services
+docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# Stop services
+docker compose down
+```
+
+The app will be available at `http://localhost:5000`
+
+#### 4. Run Database Migrations
+
+```bash
+# Execute migrations inside the container
+docker compose exec app npm run db:push
+```
+
+---
+
+## Production Deployment
+
+### Reverse Proxy (Nginx)
+
+For production, use a reverse proxy with SSL:
+
+```nginx
+server {
+    listen 80;
+    server_name kidzapp.example.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name kidzapp.example.com;
+
+    ssl_certificate /etc/letsencrypt/live/kidzapp.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/kidzapp.example.com/privkey.pem;
+
+    location / {
+        proxy_pass http://localhost:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+### SSL with Let's Encrypt
+
+```bash
+# Install certbot
+sudo apt install certbot python3-certbot-nginx
+
+# Get certificate
+sudo certbot --nginx -d kidzapp.example.com
+```
+
+### Process Manager (PM2)
+
+For non-Docker deployments, use PM2 to keep the app running:
+
+```bash
+# Install PM2
+npm install -g pm2
+
+# Start the app
+pm2 start dist/index.js --name kidzapp
+
+# Enable startup on boot
+pm2 startup
+pm2 save
+```
+
+---
+
+## Troubleshooting
+
+### Database Connection Issues
+
+```bash
+# Test PostgreSQL connection
+psql $DATABASE_URL -c "SELECT 1"
+
+# Check if database exists
+psql -l | grep kidzapp
+```
+
+### Session Store Errors
+
+- Ensure `SESSION_SECRET` is set and at least 32 characters
+- Check PostgreSQL connection for session table
+
+### Web Push Not Working
+
+- Generate new VAPID keys: `npx web-push generate-vapid-keys`
+- Ensure both `VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` are set
+
+### Health Check
+
+The app exposes a health endpoint:
+
+```bash
+curl http://localhost:5000/api/health
+# Returns: {"status":"healthy","timestamp":"...","version":"1.0.0"}
+```
+
+---
+
+## Bitcoin/Lightning Configuration
+
+Lightning payments are configured per-family through the app settings:
+
+### LNBits (Self-Hosted)
+
+1. Set up your own LNBits instance or use a hosted one
+2. Create a wallet and get the Admin Key
+3. Enter the URL and Admin Key in Family Settings
+
+### Nostr Wallet Connect (NWC)
+
+1. Get an NWC connection string from a compatible wallet (Alby, etc.)
+2. Paste the connection string in Family Settings
+3. NWC is preferred over LNBits when both are configured
+
+---
+
+## Development
+
+### Project Structure
+
+```
+kidzapp/
+├── client/           # React frontend
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── i18n/     # Translations
+│   │   └── lib/
+│   └── public/
+├── server/           # Express backend
+│   ├── routes.ts     # API endpoints
+│   ├── storage.ts    # Database operations
+│   └── db.ts         # Database connection
+├── shared/           # Shared types
+│   └── schema.ts     # Drizzle schema
+├── Dockerfile
+├── docker-compose.yml
+└── .env.example
+```
+
+### Available Scripts
+
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run db:push      # Push schema to database
+npm run db:studio    # Open Drizzle Studio
+```
+
+---
+
+## Security
+
+- All passwords are hashed with bcrypt (12 rounds)
+- Sensitive wallet data encrypted with AES-256-GCM
+- Session-based authentication with secure cookies
+- Family data isolation (no cross-family access)
+- PIN recovery via 12-word seed phrase (parents only)
+
+---
+
+## License
+
+MIT License - See LICENSE file for details
+
+---
+
+## Support
+
+For issues and feature requests, please open a GitHub issue.
