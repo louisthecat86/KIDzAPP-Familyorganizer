@@ -9363,6 +9363,10 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 <h3 className="text-lg font-bold text-green-700 mb-3 flex items-center gap-2">🌱 {t('education.ageGroup69')}</h3>
                 <p className="text-xs text-muted-foreground mb-3">{t('education.ageGroup69Desc')}</p>
                 <div className="grid grid-cols-1 gap-2">
+                  <a href="https://coinfinity.co/bitcoin-blinks" target="_blank" rel="noopener noreferrer" className="block p-3 bg-violet-500/10 border border-violet-500/30 rounded-lg hover:bg-violet-500/20 transition-all">
+                    <h4 className="font-semibold text-violet-600 text-sm flex items-center gap-2">Coinfinity Bitcoin Blinks ⚡</h4>
+                    <p className="text-xs text-muted-foreground">{i18n.language === 'de' ? 'Bitcoin & Geld einfach erklärt in kurzen Häppchen - perfekt für Familien.' : 'Bitcoin & money explained simply in short blinks - perfect for families.'}</p>
+                  </a>
                   <a href="https://thebitcoinadviser.com/for-kids" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
                     <h4 className="font-semibold text-foreground text-sm">The Bitcoin Adviser – "For Your Kids"</h4>
                     <p className="text-xs text-muted-foreground">{t('education.resourceDesc15')}</p>
