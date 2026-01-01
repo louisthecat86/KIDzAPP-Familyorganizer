@@ -1775,12 +1775,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 if (!alreadyPaid) {
                   console.log(`[Level Bonus] Paying ${bonusSettings.bonusSats} sats bonus for Level ${currentLevel} to ${child.name}`);
                   
-                  // Update child's balance with bonus (newBalance already includes task.sats from earlier)
-                  const bonusBalance = newBalance + bonusSettings.bonusSats;
-                  await storage.updateBalance(child.id, bonusBalance);
-                  console.log(`[Level Bonus] Updated balance to ${bonusBalance} (added ${bonusSettings.bonusSats} bonus to ${newBalance})`);
+                  // For MANUAL mode: Don't update balance - it will be updated when QR payment is confirmed
+                  // For automatic modes: Update balance immediately
+                  let bonusBalance = newBalance;
+                  if (!isManualMode) {
+                    bonusBalance = newBalance + bonusSettings.bonusSats;
+                    await storage.updateBalance(child.id, bonusBalance);
+                    console.log(`[Level Bonus] Updated balance to ${bonusBalance} (added ${bonusSettings.bonusSats} bonus to ${newBalance})`);
+                  } else {
+                    console.log(`[Level Bonus] Manual mode - balance will be updated when QR payment is confirmed`);
+                  }
 
-                  // Record the payout
+                  // Record the payout (always record this for tracking)
                   await storage.createLevelBonusPayout({
                     childId: child.id,
                     connectionId: task.connectionId,
@@ -1788,20 +1794,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     sats: bonusSettings.bonusSats
                   });
 
-                  // Create Bitcoin snapshot for level bonus (task approval)
-                  try {
-                    const btcPrice = await getFreshBitcoinPrice();
-                    const valueEur = (bonusBalance / 1e8) * btcPrice.eur;
-                    await storage.createDailyBitcoinSnapshot({
-                      peerId: child.id,
-                      connectionId: child.connectionId,
-                      valueEur: Math.round(valueEur * 100),
-                      satoshiAmount: bonusBalance,
-                      btcPrice: Math.round(btcPrice.eur * 100)
-                    });
-                    console.log(`[Level Bonus Snapshot] ✓ Created for ${child.name}: ${bonusSettings.bonusSats} sats (task approval)`);
-                  } catch (snapshotError) {
-                    console.error(`[Level Bonus Snapshot] ✗ Failed:`, snapshotError);
+                  // Create Bitcoin snapshot for level bonus (only for non-manual modes)
+                  if (!isManualMode) {
+                    try {
+                      const btcPrice = await getFreshBitcoinPrice();
+                      const valueEur = (bonusBalance / 1e8) * btcPrice.eur;
+                      await storage.createDailyBitcoinSnapshot({
+                        peerId: child.id,
+                        connectionId: child.connectionId,
+                        valueEur: Math.round(valueEur * 100),
+                        satoshiAmount: bonusBalance,
+                        btcPrice: Math.round(btcPrice.eur * 100)
+                      });
+                      console.log(`[Level Bonus Snapshot] ✓ Created for ${child.name}: ${bonusSettings.bonusSats} sats (task approval)`);
+                    } catch (snapshotError) {
+                      console.error(`[Level Bonus Snapshot] ✗ Failed:`, snapshotError);
+                    }
                   }
 
                   // Send push notification for level up
@@ -1812,7 +1820,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   }
 
                   // Try to send bonus via Lightning if configured (decrypt wallet data)
-                  if (child.lightningAddress) {
+                  // SKIP automatic payment if wallet mode is "manual"
+                  if (child.lightningAddress && !isManualMode) {
                     const decryptedNwcBonus = decryptWalletData(parent.nwcConnectionString || "");
                     const decryptedLnbitsBonus = decryptWalletData(parent.lnbitsAdminKey || "");
                     const activeWallet = parent.walletType || (parent.lnbitsUrl ? "lnbits" : decryptedNwcBonus ? "nwc" : null);
