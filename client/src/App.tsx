@@ -6800,7 +6800,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     </Label>
                     {!newTask.isRequired && (
                       <span className={`text-xs font-semibold ${isBalanceInsufficient ? "text-red-400" : "text-emerald-400"}`}>
-                        ⚡ {availableBalance > 0 ? availableBalance.toLocaleString("de-DE", { maximumFractionDigits: 0 }) : "---"} Sats
+                        ⚡ {isManualMode ? t('walletMode.manualShort') : (availableBalance > 0 ? availableBalance.toLocaleString("de-DE", { maximumFractionDigits: 0 }) + " Sats" : "---")}
                       </span>
                     )}
                   </div>
