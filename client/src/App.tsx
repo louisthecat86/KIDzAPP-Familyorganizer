@@ -214,86 +214,121 @@ export function ManualPaymentQRModal({ isOpen, onClose, payment, onPaymentComple
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-gray-900 dark:via-amber-950/30 dark:to-gray-900 border-amber-200 dark:border-amber-800/50">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5 text-yellow-500" />
-            {t("walletMode.qrModal.title")}
+          <DialogTitle className="flex items-center justify-center gap-2 text-amber-700 dark:text-amber-400">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg">
+              <Zap className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-xl font-bold">{t("walletMode.qrModal.title")}</span>
           </DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center space-y-4">
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-sm text-amber-700/70 dark:text-amber-300/70 text-center">
             {t("walletMode.qrModal.scanQr")}
           </p>
           
           {qrDataUrl && !isExpired && (
-            <div className="flex flex-col items-center gap-3">
+            <div className="flex flex-col items-center gap-4">
               <a 
                 href={`lightning:${currentPayment.bolt11}`}
-                className="bg-white p-4 rounded-lg cursor-pointer hover:shadow-lg transition-shadow"
+                className="bg-white p-4 rounded-2xl cursor-pointer hover:shadow-xl transition-all duration-300 border-2 border-amber-200 dark:border-amber-700 shadow-lg hover:scale-105"
                 data-testid="qr-code-container"
               >
-                <img src={qrDataUrl} alt="Lightning Invoice QR Code" className="w-64 h-64" />
+                <img src={qrDataUrl} alt="Lightning Invoice QR Code" className="w-56 h-56 md:w-64 md:h-64" />
               </a>
               <a 
                 href={`lightning:${currentPayment.bolt11}`}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
                 data-testid="button-open-wallet"
               >
-                <Zap className="h-4 w-4" />
+                <Zap className="h-5 w-5" />
                 {t("walletMode.qrModal.openInWallet")}
               </a>
-              <p className="text-xs text-muted-foreground text-center">
+              <p className="text-xs text-amber-600/60 dark:text-amber-400/60 text-center">
                 {t("walletMode.qrModal.tapToOpen")}
               </p>
             </div>
           )}
 
           {isExpired && (
-            <div className="flex flex-col items-center gap-4 py-8" data-testid="invoice-expired">
-              <AlertTriangle className="h-12 w-12 text-yellow-500" />
-              <p className="text-lg font-semibold text-yellow-500">
+            <div className="flex flex-col items-center gap-4 py-8 px-4 bg-amber-100/50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800" data-testid="invoice-expired">
+              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+                <AlertTriangle className="h-8 w-8 text-white" />
+              </div>
+              <p className="text-lg font-semibold text-amber-700 dark:text-amber-400">
                 {t("walletMode.qrModal.invoiceExpired")}
               </p>
-              <Button onClick={handleRefresh} disabled={isRefreshing} data-testid="button-refresh-invoice">
+              <Button 
+                onClick={handleRefresh} 
+                disabled={isRefreshing} 
+                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+                data-testid="button-refresh-invoice"
+              >
                 <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
                 {isRefreshing ? t("walletMode.qrModal.refreshing") : t("walletMode.qrModal.refreshInvoice")}
               </Button>
             </div>
           )}
 
-          <div className="w-full space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">{t("walletMode.qrModal.amount")}:</span>
-              <span className="font-semibold" data-testid="text-payment-amount">{currentPayment.sats} sats</span>
+          <div className="w-full space-y-2 text-sm bg-white/50 dark:bg-gray-800/50 rounded-xl p-4 border border-amber-200/50 dark:border-amber-800/30">
+            <div className="flex justify-between items-center">
+              <span className="text-amber-700/70 dark:text-amber-300/70 flex items-center gap-2">
+                <Bitcoin className="h-4 w-4" />
+                {t("walletMode.qrModal.amount")}:
+              </span>
+              <span className="font-bold text-amber-800 dark:text-amber-300 text-lg" data-testid="text-payment-amount">{currentPayment.sats} sats</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">{t("walletMode.qrModal.recipient")}:</span>
-              <span className="font-semibold" data-testid="text-payment-recipient">{currentPayment.childName}</span>
+            <Separator className="bg-amber-200/50 dark:bg-amber-800/30" />
+            <div className="flex justify-between items-center">
+              <span className="text-amber-700/70 dark:text-amber-300/70 flex items-center gap-2">
+                <UserIcon className="h-4 w-4" />
+                {t("walletMode.qrModal.recipient")}:
+              </span>
+              <span className="font-semibold text-amber-800 dark:text-amber-300" data-testid="text-payment-recipient">{currentPayment.childName}</span>
             </div>
             {!isExpired && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t("walletMode.qrModal.expiresIn")}:</span>
-                <span className={`font-mono font-semibold ${timeLeft < 60 ? "text-red-500" : ""}`} data-testid="text-expires-countdown">
-                  {formatTime(timeLeft)}
-                </span>
-              </div>
+              <>
+                <Separator className="bg-amber-200/50 dark:bg-amber-800/30" />
+                <div className="flex justify-between items-center">
+                  <span className="text-amber-700/70 dark:text-amber-300/70 flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    {t("walletMode.qrModal.expiresIn")}:
+                  </span>
+                  <span className={`font-mono font-bold ${timeLeft < 60 ? "text-red-500 animate-pulse" : "text-amber-800 dark:text-amber-300"}`} data-testid="text-expires-countdown">
+                    {formatTime(timeLeft)}
+                  </span>
+                </div>
+              </>
             )}
             {currentPayment.memo && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Memo:</span>
-                <span className="font-semibold truncate max-w-[200px]">{currentPayment.memo}</span>
-              </div>
+              <>
+                <Separator className="bg-amber-200/50 dark:bg-amber-800/30" />
+                <div className="flex justify-between items-center">
+                  <span className="text-amber-700/70 dark:text-amber-300/70">Memo:</span>
+                  <span className="font-semibold text-amber-800 dark:text-amber-300 truncate max-w-[180px]">{currentPayment.memo}</span>
+                </div>
+              </>
             )}
           </div>
 
           {!isExpired && (
             <div className="flex gap-3 w-full pt-2">
-              <Button variant="outline" onClick={handleCancel} className="flex-1" data-testid="button-cancel-payment">
+              <Button 
+                variant="outline" 
+                onClick={handleCancel} 
+                className="flex-1 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/30" 
+                data-testid="button-cancel-payment"
+              >
                 <X className="h-4 w-4 mr-2" />
                 {t("walletMode.qrModal.cancelPayment")}
               </Button>
-              <Button onClick={handlePaid} disabled={isConfirming} className="flex-1 bg-green-600 hover:bg-green-700" data-testid="button-ive-paid">
+              <Button 
+                onClick={handlePaid} 
+                disabled={isConfirming} 
+                className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg" 
+                data-testid="button-ive-paid"
+              >
                 <CheckCircle className="h-4 w-4 mr-2" />
                 {isConfirming ? t("walletMode.qrModal.confirming") : t("walletMode.qrModal.ivePaid")}
               </Button>
