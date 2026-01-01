@@ -69,7 +69,8 @@ import {
   Key,
   ClipboardList,
   RefreshCw,
-  QrCode
+  QrCode,
+  Smartphone
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PhotoUpload } from "@/components/PhotoUpload";
@@ -6668,9 +6669,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   }
 
   if (currentView === "tasks") {
-    const isWalletConfigured = user.hasLnbitsConfigured || user.hasNwcConfigured;
+    const isWalletConfigured = user.hasLnbitsConfigured || user.hasNwcConfigured || user.walletType === "manual";
     const availableBalance = displayBalance !== null ? displayBalance / 1000 : 0;
-    const isBalanceInsufficient = displayBalance !== null && availableBalance < newTask.sats;
+    const isBalanceInsufficient = user.walletType !== "manual" && displayBalance !== null && availableBalance < newTask.sats;
     const balancePercentage = displayBalance !== null && newTask.sats > 0 ? (availableBalance / newTask.sats) * 100 : 100;
 
     if (!isWalletConfigured) {
@@ -7185,15 +7186,17 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       }
     };
 
-    const handleSetActiveWallet = async (walletType: "lnbits" | "nwc") => {
+    const handleSetActiveWallet = async (walletType: "lnbits" | "nwc" | "manual") => {
       try {
-        await apiFetch("/api/wallet/set-active", {
+        await apiFetch("/api/wallet/set-mode", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ peerId: user.id, walletType }),
+          body: JSON.stringify({ peerId: user.id, walletMode: walletType }),
         });
         setUser({ ...user, walletType });
-        toast({ title: t('wallet.walletSwitched'), description: `${walletType === "nwc" ? "NWC" : "LNbits"} ${t('wallet.walletNowActive')}` });
+        localStorage.setItem("sats-user", JSON.stringify({ ...user, walletType }));
+        const label = walletType === "nwc" ? "NWC" : walletType === "lnbits" ? "LNbits" : t('walletMode.manualLabel');
+        toast({ title: t('wallet.walletSwitched'), description: `${label} ${t('wallet.walletNowActive')}` });
       } catch (error) {
         toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
       }
@@ -7212,10 +7215,11 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <h1 className="text-3xl font-bold">{t('sidebar.walletSettings')}</h1>
         </div>
 
-        <Tabs defaultValue="lnbits" className="w-full">
+        <Tabs defaultValue={user.walletType === "manual" ? "manual" : (user.hasLnbitsConfigured ? "lnbits" : "nwc")} className="w-full">
           <TabsList className="bg-secondary p-1 border border-border mb-6">
             <TabsTrigger value="lnbits">LNbits</TabsTrigger>
             <TabsTrigger value="nwc">NWC</TabsTrigger>
+            <TabsTrigger value="manual">{t('walletMode.manualLabel')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="lnbits">
@@ -7376,6 +7380,57 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 <p className="text-sm text-muted-foreground">
                   <strong>{t('wallet.whatIsNwc')}</strong> {t('wallet.nwcFullDescription')}
                 </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="manual">
+            <Card className="border-2 border-violet-500/40 bg-violet-500/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Smartphone className="h-5 w-5 text-violet-400" />
+                  {t('walletMode.manualTitle')}
+                </CardTitle>
+                <CardDescription>{t('walletMode.manualDesc')}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {user.walletType === "manual" ? (
+                  <div className="space-y-3">
+                    <div className="p-3 rounded-lg border border-green-500/30 bg-green-500/10">
+                      <p className="text-sm font-semibold text-green-300">{t('walletMode.qrPaymentActive')}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{t('walletMode.manualExplanation')}</p>
+                    </div>
+                    <div className="p-4 rounded-lg border border-border bg-secondary/30 space-y-2">
+                      <p className="text-sm font-semibold">{t('common.howItWorks')}:</p>
+                      <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                        <li>{t('walletMode.manualStep1')}</li>
+                        <li>{t('walletMode.manualStep2')}</li>
+                        <li>{t('walletMode.manualStep3')}</li>
+                      </ol>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-lg border border-border bg-secondary/30 space-y-2">
+                      <p className="text-sm font-semibold">{t('common.howItWorks')}:</p>
+                      <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                        <li>{t('walletMode.manualStep1')}</li>
+                        <li>{t('walletMode.manualStep2')}</li>
+                        <li>{t('walletMode.manualStep3')}</li>
+                      </ol>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {t('walletMode.manualExplanation')}
+                    </p>
+                    <Button 
+                      onClick={() => handleSetActiveWallet("manual")}
+                      className="w-full bg-violet-600 hover:bg-violet-600/90"
+                      data-testid="button-activate-manual-mode"
+                    >
+                      {t('walletMode.manualLabel')} {t('common.activate')}
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
