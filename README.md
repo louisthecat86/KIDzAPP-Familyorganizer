@@ -5,7 +5,7 @@ A family organization app that gamifies household chores using Bitcoin/Lightning
 ## Features
 
 - **Task Management** - Create tasks with Bitcoin rewards, assign to children, approve completions
-- **Lightning Payments** - Instant Bitcoin payments via LNBits or Nostr Wallet Connect
+- **Lightning Payments** - Three options: Fully automatic via LNbits or NWC, or fully manual via QR codes/Lightning invoices
 - **Family Calendar** - Shared events with RSVP functionality
 - **Family Chat** - Real-time messaging for the whole family
 - **Allowances** - Automated weekly Bitcoin allowances
@@ -29,6 +29,19 @@ npm run dev
 ```
 
 The app will be available at `http://localhost:5000`
+
+### Manual Payment Mode (QR Codes)
+
+This mode allows using the app without a pre-configured Lightning wallet (LNbits/NWC). It's ideal for parents who want to manage payments manually from their own wallet.
+
+1.  **Child Setup**: Each child must enter their Lightning Address in their profile.
+2.  **Parent Setup**: Go to **Settings > Wallet**, select the **Manual** tab, and click **Activate Manual Mode**.
+3.  **Task Creation**: Parents can now create tasks without any wallet connection or balance check.
+4.  **Payment Flow**:
+    -   When a task is approved or a bonus is granted, the app generates a Lightning invoice for the child's address.
+    -   A QR code is displayed to the parent.
+    -   The parent scans the QR code with any Bitcoin/Lightning wallet (e.g., Alby, Phoenix, BlueWallet) and pays it.
+    -   Once paid, the parent clicks "Confirm Payment" in the app to update the status.
 
 ---
 
