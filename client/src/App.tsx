@@ -7740,6 +7740,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       { type: "quiz", icon: "🧠", reward: 50, questionKey: "challenges.q1", optionKeys: ["challenges.q1a", "challenges.q1b", "challenges.q1c"], correct: 0 },
       { type: "quiz", icon: "🧠", reward: 45, questionKey: "challenges.q2", optionKeys: ["challenges.q2a", "challenges.q2b", "challenges.q2c"], correct: 0 },
       { type: "quiz", icon: "⚡", reward: 48, questionKey: "challenges.q3", optionKeys: ["challenges.q3a", "challenges.q3b", "challenges.q3c"], correct: 0 },
+      { type: "quiz", icon: "🧠", reward: 55, questionKey: "challenges.blink1", optionKeys: ["challenges.blink1a", "challenges.blink1b", "challenges.blink1c"], correct: 0, source: "Coinfinity Bitcoin Blinks" },
+      { type: "quiz", icon: "⚡", reward: 50, questionKey: "challenges.blink2", optionKeys: ["challenges.blink2a", "challenges.blink2b", "challenges.blink2c"], correct: 1, source: "Coinfinity Bitcoin Blinks" },
+      { type: "quiz", icon: "💰", reward: 52, questionKey: "challenges.blink3", optionKeys: ["challenges.blink3a", "challenges.blink3b", "challenges.blink3c"], correct: 2, source: "Coinfinity Bitcoin Blinks" },
       { type: "quiz", icon: "🔒", reward: 55, questionKey: "challenges.q4", optionKeys: ["challenges.q4a", "challenges.q4b", "challenges.q4c"], correct: 0 },
       { type: "quiz", icon: "⛓️", reward: 50, questionKey: "challenges.q5", optionKeys: ["challenges.q5a", "challenges.q5b", "challenges.q5c"], correct: 0 },
       { type: "quiz", icon: "🪙", reward: 42, questionKey: "challenges.q6", optionKeys: ["challenges.q6a", "challenges.q6b", "challenges.q6c"], correct: 0 },
@@ -9483,6 +9486,15 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                       <span className="px-3 py-1 bg-amber-500 text-white text-xs font-bold rounded-full">+{dailyChallenge.reward} XP</span>
                     </div>
                     <h3 className="font-bold text-foreground text-lg">{t(dailyChallenge.questionKey)}</h3>
+                    {dailyChallenge.source && (
+                      <p className="text-xs text-muted-foreground mt-1 italic flex items-center gap-1">
+                        Quelle: {dailyChallenge.source === "Coinfinity Bitcoin Blinks" ? (
+                          <a href="https://coinfinity.co/bitcoin-blinks" target="_blank" rel="noopener noreferrer" className="text-violet-600 hover:underline inline-flex items-center gap-1">
+                            Coinfinity Bitcoin Blinks <ExternalLink className="h-3 w-3" />
+                          </a>
+                        ) : dailyChallenge.source}
+                      </p>
+                    )}
                     <div className="space-y-2">
                       {dailyChallenge.optionKeys.map((optKey: string, idx: number) => (
                         <button
