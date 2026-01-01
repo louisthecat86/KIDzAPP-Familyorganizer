@@ -926,7 +926,7 @@ export default function App() {
       bypassRatio: bypass,
       assignedFor: newTask.assignedFor,
       status: "open",
-    });
+    } as any);
   };
 
   const acceptTask = (taskId: number) => {
@@ -5723,12 +5723,12 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         formatCaption: (date) => `${t(`calendar.months.${date.getMonth()}`)} ${date.getFullYear()}`
                       }}
                       modifiers={{
-                        hasEvent: (date) => events.some(e => {
+                        hasEvent: (date) => events.some((e: any) => {
                           const eventDate = new Date(e.startDate);
                           const isBirthday = (e as any).eventType === "birthday" || e.id < 0;
                           return eventDate.toDateString() === date.toDateString() && !isBirthday;
                         }),
-                        hasBirthday: (date) => events.some(e => {
+                        hasBirthday: (date) => events.some((e: any) => {
                           const eventDate = new Date(e.startDate);
                           const isBirthday = (e as any).eventType === "birthday" || e.id < 0;
                           return eventDate.toDateString() === date.toDateString() && isBirthday;
@@ -5753,7 +5753,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                     </p>
                     <div className="space-y-1 max-h-32 md:max-h-40 overflow-y-auto">
                       {events
-                        .filter(e => new Date(e.startDate).toDateString() === selectedDate.toDateString())
+                        .filter((e: any) => new Date(e.startDate).toDateString() === selectedDate.toDateString())
                         .map((event: any) => {
                           const isBirthday = event.eventType === "birthday" || event.id < 0;
                           return (
@@ -5777,7 +5777,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                             </div>
                           );
                         })}
-                      {events.filter(e => new Date(e.startDate).toDateString() === selectedDate.toDateString()).length === 0 && (
+                      {events.filter((e: any) => new Date(e.startDate).toDateString() === selectedDate.toDateString()).length === 0 && (
                         <p className="text-xs text-muted-foreground text-center py-1">{t('dashboard.noEvents')}</p>
                       )}
                     </div>
@@ -5796,7 +5796,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               {spendingStats.length === 0 ? (
                 <p className="text-muted-foreground text-center py-6">{t('dashboard.noSpendingsRecorded')}</p>
               ) : (
-                spendingStats.map((stat) => (
+                spendingStats.map((stat: any) => (
                   <div key={stat.childId} className="p-3 rounded-lg border border-border bg-secondary/30 flex items-center justify-between">
                     <div>
                       <p className="font-semibold">{stat.childName}</p>
@@ -5808,7 +5808,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               )}
               {spendingStats.length > 0 && (
                 <div className="pt-3 border-t border-border mt-3">
-                  <p className="text-sm text-muted-foreground">Gesamt: <span className="text-primary font-bold">{spendingStats.reduce((sum, s) => sum + s.satSpent, 0).toLocaleString()} SATS</span></p>
+                  <p className="text-sm text-muted-foreground">Gesamt: <span className="text-primary font-bold">{spendingStats.reduce((sum: number, s: any) => sum + s.satSpent, 0).toLocaleString()} SATS</span></p>
                 </div>
               )}
             </div>
@@ -5885,7 +5885,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                 {messages.length === 0 ? (
                   <p className="text-white/60 text-center py-8">{t('chat.noMessages')}</p>
                 ) : (
-                  messages.map((msg, idx) => (
+                  messages.map((msg: any, idx: number) => (
                     <div key={idx} className={`flex ${msg.fromPeerId === user.id ? "justify-end" : "justify-start"}`}>
                       <div
                         className={`max-w-xs rounded-xl px-4 py-2 ${
@@ -8291,7 +8291,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 {messages.length === 0 ? (
                   <p className="text-muted-foreground text-center py-8">{t('chat.noMessages')}</p>
                 ) : (
-                  messages.map((msg, idx) => (
+                  messages.map((msg: any, idx: number) => (
                     <div key={idx} className={`flex ${msg.fromPeerId === user.id ? "justify-end" : "justify-start"}`}>
                       <div
                         className={`max-w-xs rounded-lg px-4 py-2 border ${
@@ -10095,12 +10095,12 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                         formatCaption: (date) => `${t(`calendar.months.${date.getMonth()}`)} ${date.getFullYear()}`
                       }}
                       modifiers={{
-                        hasEvent: (date) => events.some(e => {
+                        hasEvent: (date) => events.some((e: any) => {
                           const eventDate = new Date(e.startDate);
                           const isBirthday = (e as any).eventType === "birthday" || e.id < 0;
                           return eventDate.toDateString() === date.toDateString() && !isBirthday;
                         }),
-                        hasBirthday: (date) => events.some(e => {
+                        hasBirthday: (date) => events.some((e: any) => {
                           const eventDate = new Date(e.startDate);
                           const isBirthday = (e as any).eventType === "birthday" || e.id < 0;
                           return eventDate.toDateString() === date.toDateString() && isBirthday;
@@ -10125,7 +10125,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     </p>
                     <div className="space-y-1 max-h-32 md:max-h-40 overflow-y-auto">
                       {events
-                        .filter(e => new Date(e.startDate).toDateString() === selectedDate.toDateString())
+                        .filter((e: any) => new Date(e.startDate).toDateString() === selectedDate.toDateString())
                         .map((event: any) => {
                           const isBirthday = event.eventType === "birthday" || event.id < 0;
                           return (
@@ -10149,7 +10149,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                             </div>
                           );
                         })}
-                      {events.filter(e => new Date(e.startDate).toDateString() === selectedDate.toDateString()).length === 0 && (
+                      {events.filter((e: any) => new Date(e.startDate).toDateString() === selectedDate.toDateString()).length === 0 && (
                         <p className="text-xs text-muted-foreground text-center py-1">{t('dashboard.noEvents')}</p>
                       )}
                     </div>
@@ -10365,8 +10365,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         <div className="grid gap-4 md:grid-cols-2">
           {availableTasks.map((task: Task) => {
             const isPaidTask = !task.isRequired;
-            const isLocked = isPaidTask && unlockStatus && unlockStatus.freeSlots <= 0 && !task.bypassRatio;
-            const isBypassed = isPaidTask && task.bypassRatio;
+            const isLocked = isPaidTask && unlockStatus && unlockStatus.freeSlots <= 0 && !(task as any).bypassRatio;
+            const isBypassed = isPaidTask && (task as any).bypassRatio;
             
             return (
               <Card key={task.id} className={`border-border bg-card transition-colors ${isLocked ? "opacity-60" : "hover:border-primary/50"} ${isBypassed ? "ring-2 ring-green-500/50" : ""}`}>
@@ -10416,7 +10416,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
   // Savings Comparison View
   if (currentView === "savings-comparison") {
-    return <SavingsComparisonPage sats={user.balance || 0} setCurrentView={setCurrentView} user={user} />;
+    return <SavingsComparisonPage sats={user.balance || 0} setCurrentView={setCurrentView} />;
   }
 
   return null;
