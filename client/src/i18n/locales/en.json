@@ -565,7 +565,8 @@
     "confirmDeleteAllowance": "Really delete allowance?",
     "noLightningAddress": "No Lightning address saved",
     "childrenOverviewDesc": "All your children at a glance",
-    "shareConnectionCode": "Share your connection code with your children to add them"
+    "shareConnectionCode": "Share your connection code with your children to add them",
+    "instantPayout": "Instant Payment"
   },
   "settings": {
     "title": "Settings",

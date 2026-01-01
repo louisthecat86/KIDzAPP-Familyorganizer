@@ -564,7 +564,8 @@
     "confirmDeleteAllowance": "Taschengeld wirklich löschen?",
     "noLightningAddress": "Keine Lightning Adresse gespeichert",
     "childrenOverviewDesc": "Alle deine Kinder auf einen Blick",
-    "shareConnectionCode": "Teile deinen Verbindungscode mit deinen Kindern, um sie hinzuzufügen"
+    "shareConnectionCode": "Teile deinen Verbindungscode mit deinen Kindern, um sie hinzuzufügen",
+    "instantPayout": "Sofortzahlung"
   },
   "settings": {
     "title": "Einstellungen",
