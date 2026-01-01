@@ -190,6 +190,7 @@
     "levelBonusSettings": "Level Bonus Settings",
     "activateLevelBonus": "Activate Level Bonus",
     "yourEarnings": "Your Earnings",
+    "allReceivedSats": "All received Sats",
     "failedToLoadSpending": "Failed to load spending statistics",
     "paymentsAndScheduled": "Payments & Scheduled Payments",
     "connectionCodeTitle": "Connection Code for Children",

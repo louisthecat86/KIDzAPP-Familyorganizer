@@ -10607,6 +10607,29 @@ function SavingsComparisonPage({ sats, setCurrentView }: { sats: number; setCurr
   );
 }
 
+interface EarningsBreakdown {
+  type: string;
+  label: string;
+  totalSats: number;
+  count: number;
+}
+
+interface EarningsData {
+  currentBalance: number;
+  totalReceived: number;
+  breakdown: EarningsBreakdown[];
+}
+
+const earningIcons: Record<string, string> = {
+  'task_payment': '✅',
+  'manual_payment': '📱',
+  'instant_payout': '⚡',
+  'graduation_bonus': '🎓',
+  'retry_payment': '🔄',
+  'allowance': '📅',
+  'level_bonus': '🏆',
+};
+
 function TrackerChart({ userId }: { userId: number }) {
   const { t } = useTranslation();
   const [trackerData, setTrackerData] = useState<any[]>([]);
@@ -10616,6 +10639,8 @@ function TrackerChart({ userId }: { userId: number }) {
   const [showBtcPrice, setShowBtcPrice] = useState(false);
   const [liveBtcPrice, setLiveBtcPrice] = useState<number | null>(null);
   const [showInfo, setShowInfo] = useState(false);
+  const [earnings, setEarnings] = useState<EarningsData | null>(null);
+  const [showBreakdown, setShowBreakdown] = useState(false);
 
   useEffect(() => {
     const fetchTrackerData = async () => {
@@ -10630,6 +10655,21 @@ function TrackerChart({ userId }: { userId: number }) {
       }
     };
     fetchTrackerData();
+  }, [userId]);
+
+  useEffect(() => {
+    const fetchEarnings = async () => {
+      try {
+        const response = await apiFetch(`/api/child-earnings/${userId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setEarnings(data);
+        }
+      } catch (error) {
+        console.error("[Earnings] Failed to fetch:", error);
+      }
+    };
+    fetchEarnings();
   }, [userId]);
 
   useEffect(() => {
@@ -10843,6 +10883,42 @@ function TrackerChart({ userId }: { userId: number }) {
               <span className="text-xs text-foreground"><span className="text-amber-600 font-medium">Orange (gestrichelt)</span> = {t('common.chartAmber')}</span>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Earnings Breakdown */}
+      {earnings && earnings.breakdown.length > 0 && (
+        <div className="bg-white/40 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-xl overflow-hidden">
+          <button
+            onClick={() => setShowBreakdown(!showBreakdown)}
+            className="w-full flex items-center justify-between p-4 hover:bg-white/20 transition-colors"
+            data-testid="toggle-earnings-breakdown"
+          >
+            <span className="text-sm font-semibold text-foreground flex items-center gap-2">
+              💰 {t('dashboard.allReceivedSats') || 'Alle erhaltenen Sats'}
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-yellow-600">{earnings.totalReceived.toLocaleString()} sats</span>
+              <span className="text-xs text-muted-foreground">{showBreakdown ? '▼' : '▶'}</span>
+            </div>
+          </button>
+          
+          {showBreakdown && (
+            <div className="px-4 pb-4 space-y-2">
+              {earnings.breakdown.map((item) => (
+                <div key={item.type} className="flex items-center justify-between bg-slate-100/50 dark:bg-slate-800/50 rounded-lg px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <span>{earningIcons[item.type] || '💰'}</span>
+                    <span className="text-xs text-foreground">{item.label}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-yellow-600">{item.totalSats.toLocaleString()}</span>
+                    <span className="text-xs text-muted-foreground">({item.count}x)</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
