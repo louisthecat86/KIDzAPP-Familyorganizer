@@ -79,6 +79,213 @@ import { EmergencyContacts } from "@/components/EmergencyContacts";
 import { PasswordSafe } from "@/components/PasswordSafe";
 import { Birthdays } from "@/components/Birthdays";
 import kidzappLogo from "@/assets/kidzapp-logo.png";
+import QRCode from "qrcode";
+
+interface ManualPaymentQRModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  payment: {
+    id: number;
+    bolt11: string;
+    sats: number;
+    childName: string;
+    expiresAt: string;
+    memo?: string;
+  } | null;
+  onPaymentComplete: () => void;
+}
+
+export function ManualPaymentQRModal({ isOpen, onClose, payment, onPaymentComplete }: ManualPaymentQRModalProps) {
+  const { t } = useTranslation();
+  const [qrDataUrl, setQrDataUrl] = useState<string>("");
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [isExpired, setIsExpired] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [currentPayment, setCurrentPayment] = useState(payment);
+
+  useEffect(() => {
+    setCurrentPayment(payment);
+  }, [payment]);
+
+  useEffect(() => {
+    if (currentPayment?.bolt11) {
+      QRCode.toDataURL(currentPayment.bolt11, {
+        width: 280,
+        margin: 2,
+        color: { dark: "#000000", light: "#ffffff" }
+      }).then(setQrDataUrl).catch(console.error);
+    }
+  }, [currentPayment?.bolt11]);
+
+  useEffect(() => {
+    if (!currentPayment?.expiresAt || !isOpen) return;
+
+    const calculateTimeLeft = () => {
+      const expiresAt = new Date(currentPayment.expiresAt).getTime();
+      const now = Date.now();
+      const diff = Math.max(0, Math.floor((expiresAt - now) / 1000));
+      setTimeLeft(diff);
+      setIsExpired(diff === 0);
+    };
+
+    calculateTimeLeft();
+    const interval = setInterval(calculateTimeLeft, 1000);
+    return () => clearInterval(interval);
+  }, [currentPayment?.expiresAt, isOpen]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const handlePaid = async () => {
+    if (!currentPayment) return;
+    setIsConfirming(true);
+    try {
+      const res = await apiFetch(`/api/manual-payment/${currentPayment.id}/paid`, {
+        method: "POST"
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        onPaymentComplete();
+        onClose();
+      } else {
+        console.error("Payment confirmation failed:", data.error);
+        alert(data.error || t('common.error'));
+      }
+    } catch (error) {
+      console.error("Error confirming payment:", error);
+      alert(t('common.error'));
+    } finally {
+      setIsConfirming(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!currentPayment) return;
+    try {
+      const res = await apiFetch(`/api/manual-payment/${currentPayment.id}/cancel`, {
+        method: "POST"
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        console.error("Cancel failed:", data.error);
+      }
+    } catch (error) {
+      console.error("Error cancelling payment:", error);
+    }
+    onClose();
+  };
+
+  const handleRefresh = async () => {
+    if (!currentPayment) return;
+    setIsRefreshing(true);
+    try {
+      const res = await apiFetch(`/api/manual-payment/${currentPayment.id}/refresh`, {
+        method: "POST"
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.payment) {
+        setCurrentPayment({
+          id: data.payment.id,
+          bolt11: data.invoice.bolt11,
+          sats: data.payment.sats,
+          childName: currentPayment.childName,
+          expiresAt: data.invoice.expiresAt,
+          memo: data.payment.memo
+        });
+        setIsExpired(false);
+      } else {
+        console.error("Refresh failed:", data.error);
+        alert(data.error || t('common.error'));
+      }
+    } catch (error) {
+      console.error("Error refreshing invoice:", error);
+      alert(t('common.error'));
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  if (!currentPayment) return null;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Zap className="h-5 w-5 text-yellow-500" />
+            {t("walletMode.qrModal.title")}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col items-center space-y-4">
+          <p className="text-sm text-muted-foreground text-center">
+            {t("walletMode.qrModal.scanQr")}
+          </p>
+          
+          {qrDataUrl && !isExpired && (
+            <div className="bg-white p-4 rounded-lg" data-testid="qr-code-container">
+              <img src={qrDataUrl} alt="Lightning Invoice QR Code" className="w-64 h-64" />
+            </div>
+          )}
+
+          {isExpired && (
+            <div className="flex flex-col items-center gap-4 py-8" data-testid="invoice-expired">
+              <AlertTriangle className="h-12 w-12 text-yellow-500" />
+              <p className="text-lg font-semibold text-yellow-500">
+                {t("walletMode.qrModal.invoiceExpired")}
+              </p>
+              <Button onClick={handleRefresh} disabled={isRefreshing} data-testid="button-refresh-invoice">
+                <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+                {isRefreshing ? t("walletMode.qrModal.refreshing") : t("walletMode.qrModal.refreshInvoice")}
+              </Button>
+            </div>
+          )}
+
+          <div className="w-full space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{t("walletMode.qrModal.amount")}:</span>
+              <span className="font-semibold" data-testid="text-payment-amount">{currentPayment.sats} sats</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{t("walletMode.qrModal.recipient")}:</span>
+              <span className="font-semibold" data-testid="text-payment-recipient">{currentPayment.childName}</span>
+            </div>
+            {!isExpired && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{t("walletMode.qrModal.expiresIn")}:</span>
+                <span className={`font-mono font-semibold ${timeLeft < 60 ? "text-red-500" : ""}`} data-testid="text-expires-countdown">
+                  {formatTime(timeLeft)}
+                </span>
+              </div>
+            )}
+            {currentPayment.memo && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Memo:</span>
+                <span className="font-semibold truncate max-w-[200px]">{currentPayment.memo}</span>
+              </div>
+            )}
+          </div>
+
+          {!isExpired && (
+            <div className="flex gap-3 w-full pt-2">
+              <Button variant="outline" onClick={handleCancel} className="flex-1" data-testid="button-cancel-payment">
+                <X className="h-4 w-4 mr-2" />
+                {t("walletMode.qrModal.cancelPayment")}
+              </Button>
+              <Button onClick={handlePaid} disabled={isConfirming} className="flex-1 bg-green-600 hover:bg-green-700" data-testid="button-ive-paid">
+                <CheckCircle className="h-4 w-4 mr-2" />
+                {isConfirming ? t("walletMode.qrModal.confirming") : t("walletMode.qrModal.ivePaid")}
+              </Button>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function NotificationBadge({ count }: { count: number }) {
   return (
@@ -125,6 +332,8 @@ type User = {
   familyName?: string;
   balance?: number;
   hasLnbitsConfigured?: boolean;
+  hasNwcConfigured?: boolean;
+  walletType?: "nwc" | "lnbits" | "manual" | null;
   lightningAddress?: string;
   donationAddress?: string;
 };
@@ -337,6 +546,14 @@ export default function App() {
   const [approvingTaskId, setApprovingTaskId] = useState<number | null>(null);
   const [newItem, setNewItem] = useState("");
   const [newQuantity, setNewQuantity] = useState("");
+  const [manualPaymentModalData, setManualPaymentModalData] = useState<{
+    id: number;
+    bolt11: string;
+    sats: number;
+    childName: string;
+    expiresAt: string;
+    memo?: string;
+  } | null>(null);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -720,19 +937,71 @@ export default function App() {
     // Set approving state immediately to block further clicks
     setApprovingTaskId(taskId);
     
+    const task = tasks.find((t: Task) => t.id === taskId);
+    
     try {
-      updateTaskMutation.mutate({
-        id: taskId,
-        updates: { status: "approved" },
+      // Check if parent uses manual wallet mode
+      if (user?.walletType === "manual" && task) {
+        // Find child name for the modal
+        const childName = parentChildren?.find((c: any) => c.id === task.assignedTo)?.name || t('common.child');
+        
+        // Create manual payment
+        const res = await apiFetch("/api/manual-payment/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            childId: task.assignedTo,
+            sats: task.sats,
+            memo: task.title,
+            paymentType: "task",
+            taskId: task.id
+          }),
+        });
+        
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || t('wallet.paymentFailed'));
+        }
+        
+        const data = await res.json();
+        
+        // Show QR modal
+        setManualPaymentModalData({
+          id: data.payment.id,
+          bolt11: data.invoice.bolt11,
+          sats: task.sats,
+          childName,
+          expiresAt: data.invoice.expiresAt,
+          memo: task.title
+        });
+        
+        // Mark task as approved (payment pending confirmation)
+        updateTaskMutation.mutate({
+          id: taskId,
+          updates: { status: "approved" },
+        });
+        
+      } else {
+        // Use existing NWC/LNBits flow
+        updateTaskMutation.mutate({
+          id: taskId,
+          updates: { status: "approved" },
+        });
+        toast({ title: t('tasks.satsPaid'), description: t('tasks.transactionSent') });
+      }
+    } catch (error) {
+      console.error("Approve task error:", error);
+      toast({ 
+        title: t('common.error'), 
+        description: (error as Error).message,
+        variant: "destructive"
       });
-      toast({ title: t('tasks.satsPaid'), description: t('tasks.transactionSent') });
     } finally {
       // Reset after a delay to allow mutation to complete
       setTimeout(() => setApprovingTaskId(null), 2000);
     }
 
     // Check for level bonus after approving task
-    const task = tasks.find((t: Task) => t.id === taskId);
     if (task && task.assignedTo && user) {
       // Get updated completed tasks count
       const approvedTasks = tasks.filter((t: Task) => 
@@ -1259,8 +1528,21 @@ export default function App() {
           parentChildren={parentChildren}
           setCurrentView={setCurrentView}
           queryClient={queryClient}
+          setManualPaymentModalData={setManualPaymentModalData}
         />
       )}
+
+      {/* Manual Payment QR Modal */}
+      <ManualPaymentQRModal
+        isOpen={!!manualPaymentModalData}
+        onClose={() => setManualPaymentModalData(null)}
+        payment={manualPaymentModalData}
+        onPaymentComplete={() => {
+          queryClient.invalidateQueries({ queryKey: ["tasks"] });
+          queryClient.invalidateQueries({ queryKey: ["children-with-allowances"] });
+          toast({ title: t('common.success'), description: t('wallet.paymentConfirmed') });
+        }}
+      />
 
       {/* Notification Center View */}
       {currentView === "notifications" && (
@@ -1435,7 +1717,7 @@ function NotificationCenterView({ user, tasks, messages, allowances, parentChild
   );
 }
 
-function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView, queryClient }: any) {
+function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView, queryClient, setManualPaymentModalData }: any) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [isProcessingPayout, setIsProcessingPayout] = useState(false);
@@ -1515,29 +1797,70 @@ function AllowancePayoutView({ user, allowances, parentChildren, setCurrentView,
     setIsProcessingPayout(true);
     try {
       const child = allChildren.find((c: any) => c.id === adHocChildId);
-      if (!child?.lightningAddress) {
-        throw new Error(t('allowance.noLightningAddress'));
-      }
+      const satsAmount = parseInt(adHocSats);
+      
+      // Check if parent uses manual wallet mode
+      if (user?.walletType === "manual") {
+        // Create manual payment
+        const res = await apiFetch("/api/manual-payment/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            childId: adHocChildId,
+            sats: satsAmount,
+            memo: adHocMessage || t('sidebar.allowance.instant'),
+            paymentType: "instant"
+          }),
+        });
+        
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || t('wallet.paymentFailed'));
+        }
+        
+        const data = await res.json();
+        
+        // Show QR modal
+        setManualPaymentModalData({
+          id: data.payment.id,
+          bolt11: data.invoice.bolt11,
+          sats: satsAmount,
+          childName: child?.name || t('common.child'),
+          expiresAt: data.invoice.expiresAt,
+          memo: adHocMessage || t('sidebar.allowance.instant')
+        });
+        
+        // Clear form
+        setAdHocChildId(null);
+        setAdHocSats("");
+        setAdHocMessage("");
+        
+      } else {
+        // Use existing NWC/LNBits flow
+        if (!child?.lightningAddress) {
+          throw new Error(t('allowance.noLightningAddress'));
+        }
 
-      const res = await apiFetch(`/api/parent/${user.id}/payout-instant`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          childId: adHocChildId, 
-          sats: parseInt(adHocSats), 
-          message: adHocMessage || undefined,
-          paymentMethod 
-        }),
-      });
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || t('wallet.paymentFailed'));
+        const res = await apiFetch(`/api/parent/${user.id}/payout-instant`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            childId: adHocChildId, 
+            sats: satsAmount, 
+            message: adHocMessage || undefined,
+            paymentMethod 
+          }),
+        });
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || t('wallet.paymentFailed'));
+        }
+        toast({ title: t('common.success'), description: `${adHocSats} Sats ${t('allowance.paidTo')} ${child.name}!` });
+        setAdHocChildId(null);
+        setAdHocSats("");
+        setAdHocMessage("");
+        queryClient.invalidateQueries({ queryKey: ["children-with-allowances"] });
       }
-      toast({ title: t('common.success'), description: `${adHocSats} Sats ${t('allowance.paidTo')} ${child.name}!` });
-      setAdHocChildId(null);
-      setAdHocSats("");
-      setAdHocMessage("");
-      queryClient.invalidateQueries({ queryKey: ["children-with-allowances"] });
     } catch (error) {
       toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
     } finally {

@@ -1636,6 +1636,20 @@
     "manualExplanation": "In this mode, payments are handled via QR codes. When approving a task, an invoice is generated from the child's Lightning Address which you can scan with your wallet.",
     "manualStep1": "Child completes task and submits proof",
     "manualStep2": "Parents approve - QR code generated from child's Lightning Address",
-    "manualStep3": "Parents scan QR code with their Lightning wallet"
+    "manualStep3": "Parents scan QR code with their Lightning wallet",
+    "qrModal": {
+      "title": "Lightning Payment",
+      "scanQr": "Scan this QR code with your Lightning wallet",
+      "amount": "Amount",
+      "recipient": "Recipient",
+      "expiresIn": "Expires in",
+      "ivePaid": "I've Paid",
+      "cancelPayment": "Cancel Payment",
+      "invoiceExpired": "Invoice Expired",
+      "refreshInvoice": "Refresh Invoice",
+      "paymentConfirmed": "Payment Confirmed!",
+      "refreshing": "Refreshing...",
+      "confirming": "Confirming..."
+    }
   }
 }
