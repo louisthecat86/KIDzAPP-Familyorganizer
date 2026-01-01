@@ -355,7 +355,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Invalidate all existing sessions for this user
       await db.execute(
-        sql`DELETE FROM session WHERE sess::jsonb->>'peerId' = ${String(targetPeer.id)}`
+        sql`DELETE FROM session WHERE sess::jsonb->>'peerId' = ${targetPeer.id}`
       );
       
       res.json({ success: true, message: "Password reset successfully" });
