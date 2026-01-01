@@ -9591,6 +9591,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
     const [satsBreakdown, setSatsBreakdown] = useState<any>(null);
     const [showStatsModal, setShowStatsModal] = useState(false);
+    const [showSatsBreakdown, setShowSatsBreakdown] = useState(false);
 
     useEffect(() => {
       const fetchBreakdown = async () => {
@@ -9617,25 +9618,45 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           <div className="relative z-10 space-y-6">
             <div className="flex items-start justify-between gap-1">
               <div className="flex-1">
-                <p className="text-foreground font-mono text-sm uppercase tracking-widest mb-2">{t('dashboard.received')}</p>
-                <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-cyan-600" data-testid="text-earned-sats">
-                  {satsBreakdown ? satsBreakdown.totalSats.toLocaleString() : (user.balance || 0).toLocaleString()} <span className="text-2xl opacity-70 text-foreground">SATS</span>
-                </h2>
-                {satsBreakdown && (
-                  <div className="flex gap-4 mt-3 text-xs flex-wrap">
-                    <div>
-                      <span className="text-muted-foreground">{t('dashboard.earned')}:</span>
-                      <span className="font-mono text-yellow-600 ml-1">{satsBreakdown.taskSats.toLocaleString()}</span>
+                <button 
+                  onClick={() => setShowSatsBreakdown(!showSatsBreakdown)}
+                  className="w-full text-left hover:opacity-80 transition-opacity"
+                  data-testid="toggle-sats-breakdown"
+                >
+                  <p className="text-foreground font-mono text-sm uppercase tracking-widest mb-2 flex items-center gap-2">
+                    {t('dashboard.received')} 
+                    <span className="text-xs opacity-60">{showSatsBreakdown ? '▼' : '▶'}</span>
+                  </p>
+                  <h2 className="text-5xl font-mono font-bold flex items-center gap-3 text-cyan-600" data-testid="text-earned-sats">
+                    {satsBreakdown ? satsBreakdown.totalSats.toLocaleString() : (user.balance || 0).toLocaleString()} <span className="text-2xl opacity-70 text-foreground">SATS</span>
+                  </h2>
+                </button>
+                {showSatsBreakdown && satsBreakdown && (
+                  <div className="mt-4 p-4 bg-slate-100/50 dark:bg-slate-800/30 rounded-xl space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">{t('dashboard.allReceivedSats')}</p>
+                    <div className="flex items-center justify-between py-2 border-b border-border/30">
+                      <span className="text-sm flex items-center gap-2">✅ {t('dashboard.earned')}</span>
+                      <span className="font-mono text-yellow-600 font-semibold">{satsBreakdown.taskSats.toLocaleString()} sats</span>
                     </div>
                     {(satsBreakdown.bonusSats || 0) > 0 && (
-                      <div>
-                        <span className="text-muted-foreground">Bonus:</span>
-                        <span className="font-mono text-purple-600 ml-1">{satsBreakdown.bonusSats.toLocaleString()}</span>
+                      <div className="flex items-center justify-between py-2 border-b border-border/30">
+                        <span className="text-sm flex items-center gap-2">🎁 Bonus</span>
+                        <span className="font-mono text-purple-600 font-semibold">{satsBreakdown.bonusSats.toLocaleString()} sats</span>
                       </div>
                     )}
-                    <div>
-                      <span className="text-muted-foreground">{t('family.allowance')}:</span>
-                      <span className="font-mono text-green-600 ml-1">{satsBreakdown.allowanceSats.toLocaleString()}</span>
+                    <div className="flex items-center justify-between py-2 border-b border-border/30">
+                      <span className="text-sm flex items-center gap-2">💰 {t('family.allowance')}</span>
+                      <span className="font-mono text-green-600 font-semibold">{satsBreakdown.allowanceSats.toLocaleString()} sats</span>
+                    </div>
+                    {(satsBreakdown.manualSats || 0) > 0 && (
+                      <div className="flex items-center justify-between py-2 border-b border-border/30">
+                        <span className="text-sm flex items-center gap-2">⚡ {t('family.instantPayout')}</span>
+                        <span className="font-mono text-blue-600 font-semibold">{satsBreakdown.manualSats.toLocaleString()} sats</span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between py-2 pt-3 font-bold">
+                      <span className="text-sm">{t('common.total')}</span>
+                      <span className="font-mono text-cyan-600 text-lg">{satsBreakdown.totalSats.toLocaleString()} sats</span>
                     </div>
                   </div>
                 )}
