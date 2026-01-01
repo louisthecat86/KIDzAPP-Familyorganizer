@@ -1693,28 +1693,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(404).json({ error: "Child or parent not found" });
         }
 
-        // Update child's balance IMMEDIATELY (only for first approval)
-        const newBalance = (child.balance || 0) + task.sats;
-        console.log(`[Task Approval] New balance for ${child.name}: ${newBalance} sats (was ${child.balance}, +${task.sats})`);
-        await storage.updateBalance(child.id, newBalance);
+        // For MANUAL mode: Don't update balance now - it will be updated when parent confirms QR payment
+        // For automatic modes (NWC/LNBits): Update balance immediately
+        const isManualMode = parent.walletType === "manual";
+        let newBalance = child.balance || 0;
+        
+        if (!isManualMode) {
+          // Update child's balance IMMEDIATELY (only for non-manual modes)
+          newBalance = (child.balance || 0) + task.sats;
+          console.log(`[Task Approval] New balance for ${child.name}: ${newBalance} sats (was ${child.balance}, +${task.sats})`);
+          await storage.updateBalance(child.id, newBalance);
 
-        // Create a new Bitcoin snapshot when child receives sats
-        try {
-          console.log(`[Task Approval] About to create snapshot for ${child.name}...`);
-          const btcPrice = await getFreshBitcoinPrice();
-          console.log(`[getFreshBitcoinPrice] Response: ${JSON.stringify(btcPrice)}`);
-          const valueEur = (newBalance / 1e8) * btcPrice.eur;
-          console.log(`[Task Approval] Creating snapshot: ${newBalance} sats × €${btcPrice.eur} = €${valueEur.toFixed(2)}`);
-          const snapshotResult = await storage.createDailyBitcoinSnapshot({
-            peerId: child.id,
-            connectionId: child.connectionId,
-            valueEur: Math.round(valueEur * 100), // Convert to cents
-            satoshiAmount: newBalance,
-            btcPrice: Math.round(btcPrice.eur * 100) // Store BTC price in cents
-          });
-          console.log(`[Task Approval Snapshot] ✓ Created for ${child.name}: €${valueEur.toFixed(2)}, Result:`, JSON.stringify(snapshotResult));
-        } catch (snapshotError) {
-          console.error("[Task Approval Snapshot] ✗ Failed:", snapshotError);
+          // Create a new Bitcoin snapshot when child receives sats
+          try {
+            console.log(`[Task Approval] About to create snapshot for ${child.name}...`);
+            const btcPrice = await getFreshBitcoinPrice();
+            console.log(`[getFreshBitcoinPrice] Response: ${JSON.stringify(btcPrice)}`);
+            const valueEur = (newBalance / 1e8) * btcPrice.eur;
+            console.log(`[Task Approval] Creating snapshot: ${newBalance} sats × €${btcPrice.eur} = €${valueEur.toFixed(2)}`);
+            const snapshotResult = await storage.createDailyBitcoinSnapshot({
+              peerId: child.id,
+              connectionId: child.connectionId,
+              valueEur: Math.round(valueEur * 100), // Convert to cents
+              satoshiAmount: newBalance,
+              btcPrice: Math.round(btcPrice.eur * 100) // Store BTC price in cents
+            });
+            console.log(`[Task Approval Snapshot] ✓ Created for ${child.name}: €${valueEur.toFixed(2)}, Result:`, JSON.stringify(snapshotResult));
+          } catch (snapshotError) {
+            console.error("[Task Approval Snapshot] ✗ Failed:", snapshotError);
+          }
+        } else {
+          console.log(`[Task Approval] Manual mode - balance will be updated when QR payment is confirmed`);
         }
 
         let paymentHash = "";
@@ -1853,7 +1862,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         // Try to send payment if both wallet and lightning address are configured (decrypt wallet data)
-        if (child.lightningAddress) {
+        // SKIP automatic payment if wallet mode is "manual" - parent will pay via QR code
+        if (child.lightningAddress && parent.walletType !== "manual") {
           const decryptedNwcPayment = decryptWalletData(parent.nwcConnectionString || "");
           const decryptedLnbitsPayment = decryptWalletData(parent.lnbitsAdminKey || "");
           const activeWallet = parent.walletType || (parent.lnbitsUrl ? "lnbits" : decryptedNwcPayment ? "nwc" : null);
@@ -1937,6 +1947,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.warn("[Push] Failed to notify payment failed:", pushError);
             }
           }
+        } else if (parent.walletType === "manual") {
+          // Manual mode - don't record transaction here, parent will pay via QR code
+          // The transaction will be created when the manual payment is marked as paid
+          console.log(`[Task Payment] Manual mode - skipping automatic payment for ${child.name}, waiting for QR payment`);
         } else {
           // No lightning address - record internal transaction for statistics
           await storage.createTransaction({
@@ -1951,20 +1965,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`[Task Payment] Internal transaction recorded for ${child.name} (no Lightning address)`);
         }
         
-        // Create Bitcoin snapshot for task payment
-        try {
-          const btcPrice = await getFreshBitcoinPrice();
-          const valueEur = (newBalance / 1e8) * btcPrice.eur;
-          await storage.createDailyBitcoinSnapshot({
-            peerId: child.id,
-            connectionId: child.connectionId,
-            valueEur: Math.round(valueEur * 100),
-            satoshiAmount: newBalance,
-            btcPrice: Math.round(btcPrice.eur * 100)
-          });
-          console.log(`[Task Payment Snapshot] ✓ Created for ${child.name}: ${task.sats} sats, €${valueEur.toFixed(2)}`);
-        } catch (snapshotError) {
-          console.error(`[Task Payment Snapshot] ✗ Failed:`, snapshotError);
+        // Create Bitcoin snapshot for task payment (only if not manual mode - snapshot already created above)
+        if (!isManualMode) {
+          try {
+            const btcPrice = await getFreshBitcoinPrice();
+            const valueEur = (newBalance / 1e8) * btcPrice.eur;
+            await storage.createDailyBitcoinSnapshot({
+              peerId: child.id,
+              connectionId: child.connectionId,
+              valueEur: Math.round(valueEur * 100),
+              satoshiAmount: newBalance,
+              btcPrice: Math.round(btcPrice.eur * 100)
+            });
+            console.log(`[Task Payment Snapshot] ✓ Created for ${child.name}: ${task.sats} sats, €${valueEur.toFixed(2)}`);
+          } catch (snapshotError) {
+            console.error(`[Task Payment Snapshot] ✗ Failed:`, snapshotError);
+          }
         }
 
         // Send push notification for task approved
