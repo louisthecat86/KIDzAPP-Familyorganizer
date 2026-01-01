@@ -1819,55 +1819,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     console.warn("[Push] Failed to notify level up:", pushError);
                   }
 
-                  // Try to send bonus via Lightning if configured (decrypt wallet data)
-                  // SKIP automatic payment if wallet mode is "manual"
-                  if (child.lightningAddress && !isManualMode) {
-                    const decryptedNwcBonus = decryptWalletData(parent.nwcConnectionString || "");
-                    const decryptedLnbitsBonus = decryptWalletData(parent.lnbitsAdminKey || "");
-                    const activeWallet = parent.walletType || (parent.lnbitsUrl ? "lnbits" : decryptedNwcBonus ? "nwc" : null);
-                    try {
-                      if (activeWallet === "nwc" && decryptedNwcBonus) {
-                        const { NWCClient } = await import("./nwc");
-                        const nwc = new NWCClient(decryptedNwcBonus);
-                        await nwc.payToLightningAddress(
-                          child.lightningAddress,
-                          bonusSettings.bonusSats,
-                          `Level ${currentLevel} Bonus!`
-                        );
-                        nwc.close();
-                        console.log(`[Level Bonus] NWC payment sent for Level ${currentLevel} bonus`);
-                      } else if (parent.lnbitsUrl && decryptedLnbitsBonus) {
-                        const parentLnbits = new LNBitsClient(parent.lnbitsUrl, decryptedLnbitsBonus);
-                        await parentLnbits.payToLightningAddress(
-                          bonusSettings.bonusSats,
-                          child.lightningAddress,
-                          `Level ${currentLevel} Bonus!`
-                        );
-                        console.log(`[Level Bonus] LNbits payment sent for Level ${currentLevel} bonus`);
-                      }
-                    } catch (bonusPayError) {
-                      console.warn("[Level Bonus] Lightning payment failed:", bonusPayError);
-                      
-                      // Record failed level bonus payment
-                      await storage.createFailedPayment({
-                        connectionId: task.connectionId,
-                        fromPeerId: parent.id,
-                        toPeerId: child.id,
-                        toName: child.name,
-                        toLightningAddress: child.lightningAddress || null,
-                        sats: bonusSettings.bonusSats,
-                        paymentType: "task",
-                        taskId: null,
-                        errorMessage: `Level ${currentLevel} Bonus: ${(bonusPayError as Error).message}`,
-                        status: "pending"
-                      });
-                      console.log(`[Failed Payment] Recorded failed level bonus for ${child.name}: ${bonusSettings.bonusSats} sats`);
-                      
-                      // Notify parents about failed level bonus payment
+                  // Handle Level Bonus payment based on wallet mode
+                  if (child.lightningAddress) {
+                    if (isManualMode) {
+                      // MANUAL MODE: Create QR-code payment for level bonus
                       try {
-                        await notifyPaymentFailed(task.connectionId, child.name, bonusSettings.bonusSats, "task", (bonusPayError as Error).message);
-                      } catch (pushError) {
-                        console.warn("[Push] Failed to notify level bonus payment failed:", pushError);
+                        const { fetchInvoiceFromLightningAddress } = await import("./lnurl");
+                        const invoice = await fetchInvoiceFromLightningAddress(
+                          child.lightningAddress,
+                          bonusSettings.bonusSats,
+                          `Level ${currentLevel} Bonus für ${child.name}!`
+                        );
+                        
+                        await storage.createManualPayment({
+                          connectionId: task.connectionId,
+                          parentId: parent.id,
+                          childId: child.id,
+                          childName: child.name,
+                          sats: bonusSettings.bonusSats,
+                          memo: `Level ${currentLevel} Bonus!`,
+                          bolt11: invoice.bolt11,
+                          paymentHash: invoice.paymentHash,
+                          expiresAt: invoice.expiresAt,
+                          status: "pending",
+                          paymentType: "level_bonus",
+                          taskId: null,
+                        });
+                        console.log(`[Level Bonus] Manual QR payment created for Level ${currentLevel} bonus`);
+                      } catch (invoiceError) {
+                        console.warn("[Level Bonus] Failed to create manual payment:", invoiceError);
+                      }
+                    } else {
+                      // AUTOMATIC MODE: Send via NWC or LNbits
+                      const decryptedNwcBonus = decryptWalletData(parent.nwcConnectionString || "");
+                      const decryptedLnbitsBonus = decryptWalletData(parent.lnbitsAdminKey || "");
+                      const activeWallet = parent.walletType || (parent.lnbitsUrl ? "lnbits" : decryptedNwcBonus ? "nwc" : null);
+                      try {
+                        if (activeWallet === "nwc" && decryptedNwcBonus) {
+                          const { NWCClient } = await import("./nwc");
+                          const nwc = new NWCClient(decryptedNwcBonus);
+                          await nwc.payToLightningAddress(
+                            child.lightningAddress,
+                            bonusSettings.bonusSats,
+                            `Level ${currentLevel} Bonus!`
+                          );
+                          nwc.close();
+                          console.log(`[Level Bonus] NWC payment sent for Level ${currentLevel} bonus`);
+                        } else if (parent.lnbitsUrl && decryptedLnbitsBonus) {
+                          const parentLnbits = new LNBitsClient(parent.lnbitsUrl, decryptedLnbitsBonus);
+                          await parentLnbits.payToLightningAddress(
+                            bonusSettings.bonusSats,
+                            child.lightningAddress,
+                            `Level ${currentLevel} Bonus!`
+                          );
+                          console.log(`[Level Bonus] LNbits payment sent for Level ${currentLevel} bonus`);
+                        }
+                      } catch (bonusPayError) {
+                        console.warn("[Level Bonus] Lightning payment failed:", bonusPayError);
+                        
+                        // Record failed level bonus payment
+                        await storage.createFailedPayment({
+                          connectionId: task.connectionId,
+                          fromPeerId: parent.id,
+                          toPeerId: child.id,
+                          toName: child.name,
+                          toLightningAddress: child.lightningAddress || null,
+                          sats: bonusSettings.bonusSats,
+                          paymentType: "task",
+                          taskId: null,
+                          errorMessage: `Level ${currentLevel} Bonus: ${(bonusPayError as Error).message}`,
+                          status: "pending"
+                        });
+                        console.log(`[Failed Payment] Recorded failed level bonus for ${child.name}: ${bonusSettings.bonusSats} sats`);
+                        
+                        // Notify parents about failed level bonus payment
+                        try {
+                          await notifyPaymentFailed(task.connectionId, child.name, bonusSettings.bonusSats, "task", (bonusPayError as Error).message);
+                        } catch (pushError) {
+                          console.warn("[Push] Failed to notify level bonus payment failed:", pushError);
+                        }
                       }
                     }
                   }
