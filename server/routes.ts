@@ -1459,57 +1459,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const decryptedNwcTask = decryptWalletData(parent.nwcConnectionString || "");
       const hasLnbits = parent.lnbitsUrl && decryptedLnbitsKeyTask;
       const hasNwc = !!decryptedNwcTask;
+      const isManualMode = parent.walletType === "manual";
       const activeWallet = parent.walletType || (hasLnbits ? "lnbits" : hasNwc ? "nwc" : null);
 
-      if (!hasLnbits && !hasNwc) {
+      // Allow task creation in manual mode without wallet configuration
+      if (!hasLnbits && !hasNwc && !isManualMode) {
         return res.status(400).json({ 
-          error: "Keine Wallet konfiguriert. Bitte verbinde LNbits oder NWC in den Einstellungen." 
+          error: "Keine Wallet konfiguriert. Bitte verbinde LNbits, NWC oder aktiviere den manuellen Modus in den Einstellungen." 
         });
       }
 
-      // Try to validate balance with active wallet
-      try {
-        let balance = 0;
-        
-        if (activeWallet === "nwc" && hasNwc) {
-          const { NWCClient } = await import("./nwc");
-          const nwc = new NWCClient(decryptedNwcTask);
-          balance = await nwc.getBalance();
-          nwc.close();
-        } else if (hasLnbits) {
-          const lnbits = new LNBitsClient(parent.lnbitsUrl!, decryptedLnbitsKeyTask);
-          balance = await lnbits.getBalance();
+      // Skip balance validation in manual mode - parent will pay via QR code
+      if (!isManualMode) {
+        // Try to validate balance with active wallet
+        try {
+          let balance = 0;
           
-          // For LNbits, try to create escrow invoice
-          if (balance >= data.sats) {
-            try {
-              invoice = await lnbits.createPaylink(data.sats, `Task: ${data.title}`);
-              escrowLocked = true;
-            } catch (paylinksError) {
-              console.log("Paylinks failed, trying Invoice API:", paylinksError);
+          if (activeWallet === "nwc" && hasNwc) {
+            const { NWCClient } = await import("./nwc");
+            const nwc = new NWCClient(decryptedNwcTask);
+            balance = await nwc.getBalance();
+            nwc.close();
+          } else if (hasLnbits) {
+            const lnbits = new LNBitsClient(parent.lnbitsUrl!, decryptedLnbitsKeyTask);
+            balance = await lnbits.getBalance();
+            
+            // For LNbits, try to create escrow invoice
+            if (balance >= data.sats) {
               try {
-                const invoiceData = await lnbits.createInvoice(data.sats, `Task: ${data.title}`);
-                invoice = invoiceData.payment_request || invoiceData.payment_hash;
+                invoice = await lnbits.createPaylink(data.sats, `Task: ${data.title}`);
                 escrowLocked = true;
-              } catch (invoiceError) {
-                console.warn("Both Paylinks and Invoice APIs failed, creating task without escrow:", invoiceError);
-                escrowLocked = false;
+              } catch (paylinksError) {
+                console.log("Paylinks failed, trying Invoice API:", paylinksError);
+                try {
+                  const invoiceData = await lnbits.createInvoice(data.sats, `Task: ${data.title}`);
+                  invoice = invoiceData.payment_request || invoiceData.payment_hash;
+                  escrowLocked = true;
+                } catch (invoiceError) {
+                  console.warn("Both Paylinks and Invoice APIs failed, creating task without escrow:", invoiceError);
+                  escrowLocked = false;
+                }
               }
             }
           }
+          
+          if (balance < data.sats) {
+            return res.status(400).json({ 
+              error: `Unzureichende Balance. Benötigt: ${data.sats} Sats, verfügbar: ${balance} Sats` 
+            });
+          }
+        } catch (error) {
+          if ((error as any).message?.includes("Unzureichende") || (error as any).message?.includes("nicht konfiguriert")) {
+            throw error;
+          }
+          console.warn("Wallet balance check failed:", error);
+          // Don't fail - let task creation proceed
         }
-        
-        if (balance < data.sats) {
-          return res.status(400).json({ 
-            error: `Unzureichende Balance. Benötigt: ${data.sats} Sats, verfügbar: ${balance} Sats` 
-          });
-        }
-      } catch (error) {
-        if ((error as any).message?.includes("Unzureichende") || (error as any).message?.includes("nicht konfiguriert")) {
-          throw error;
-        }
-        console.warn("Wallet balance check failed:", error);
-        // Don't fail - let task creation proceed
+      } else {
+        console.log(`[Task Creation] Manual mode - skipping balance validation for task: ${data.title}`);
       }
 
       // Create task
