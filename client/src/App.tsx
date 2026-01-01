@@ -227,8 +227,25 @@ export function ManualPaymentQRModal({ isOpen, onClose, payment, onPaymentComple
           </p>
           
           {qrDataUrl && !isExpired && (
-            <div className="bg-white p-4 rounded-lg" data-testid="qr-code-container">
-              <img src={qrDataUrl} alt="Lightning Invoice QR Code" className="w-64 h-64" />
+            <div className="flex flex-col items-center gap-3">
+              <a 
+                href={`lightning:${currentPayment.bolt11}`}
+                className="bg-white p-4 rounded-lg cursor-pointer hover:shadow-lg transition-shadow"
+                data-testid="qr-code-container"
+              >
+                <img src={qrDataUrl} alt="Lightning Invoice QR Code" className="w-64 h-64" />
+              </a>
+              <a 
+                href={`lightning:${currentPayment.bolt11}`}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium transition-colors"
+                data-testid="button-open-wallet"
+              >
+                <Zap className="h-4 w-4" />
+                {t("walletMode.qrModal.openInWallet")}
+              </a>
+              <p className="text-xs text-muted-foreground text-center">
+                {t("walletMode.qrModal.tapToOpen")}
+              </p>
             </div>
           )}
 

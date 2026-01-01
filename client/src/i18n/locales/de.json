@@ -1649,7 +1649,9 @@
       "refreshInvoice": "Rechnung erneuern",
       "paymentConfirmed": "Zahlung bestätigt!",
       "refreshing": "Aktualisiere...",
-      "confirming": "Bestätige..."
+      "confirming": "Bestätige...",
+      "openInWallet": "In Wallet öffnen",
+      "tapToOpen": "Tippe auf den QR-Code oder Button um deine Wallet zu öffnen"
     }
   }
 }

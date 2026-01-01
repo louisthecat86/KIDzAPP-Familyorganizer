@@ -1651,7 +1651,9 @@
       "refreshInvoice": "Refresh Invoice",
       "paymentConfirmed": "Payment Confirmed!",
       "refreshing": "Refreshing...",
-      "confirming": "Confirming..."
+      "confirming": "Confirming...",
+      "openInWallet": "Open in Wallet",
+      "tapToOpen": "Tap the QR code or button to open your wallet"
     }
   }
 }
