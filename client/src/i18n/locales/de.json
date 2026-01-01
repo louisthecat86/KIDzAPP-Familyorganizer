@@ -1627,6 +1627,8 @@
     "nwcLabel": "NWC",
     "lnbitsLabel": "LNbits",
     "manualLabel": "Manuell",
+    "manualShort": "QR",
+    "notConfigured": "Nicht konfiguriert",
     "nwcDesc": "Nostr Wallet Connect - Direkte Verbindung zu deiner Lightning Wallet",
     "lnbitsDesc": "LNbits - Verbindung zu deinem LNbits Server",
     "manualDesc": "Manuelle QR-Code Zahlungen - Eltern scannen Rechnungen von der Lightning-Adresse des Kindes",

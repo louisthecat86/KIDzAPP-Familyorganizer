@@ -68,7 +68,8 @@ import {
   AlertTriangle,
   Key,
   ClipboardList,
-  RefreshCw
+  RefreshCw,
+  QrCode
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PhotoUpload } from "@/components/PhotoUpload";
@@ -2359,6 +2360,17 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                     >
                       <Bitcoin className="h-4 w-4 shrink-0" />
                       <span className="flex-1">{t('sidebar.walletSettings')}</span>
+                      <span className={`text-xs px-1.5 py-0.5 rounded ${
+                        user.walletType === "nwc" ? "bg-purple-500/30 text-purple-300" :
+                        user.walletType === "lnbits" ? "bg-amber-500/30 text-amber-300" :
+                        user.walletType === "manual" ? "bg-blue-500/30 text-blue-300" :
+                        "bg-gray-500/30 text-gray-300"
+                      }`}>
+                        {user.walletType === "nwc" ? "NWC" : 
+                         user.walletType === "lnbits" ? "LNbits" : 
+                         user.walletType === "manual" ? t('walletMode.manualShort') : 
+                         t('walletMode.notConfigured')}
+                      </span>
                       <ChevronDown className={`h-4 w-4 transition-transform ${showWalletSubmenu ? "rotate-180" : ""}`} />
                     </button>
                     
@@ -2366,19 +2378,36 @@ function Sidebar({ user, setUser, currentView, setCurrentView, sidebarOpen, setS
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="ml-5 md:ml-6 mt-1.5 flex flex-col gap-1.5">
                         <button
                           onClick={() => { setWalletTab("lnbits"); handleSettingsClick("wallet"); setSidebarOpen(false); }}
-                          className="w-full px-4 py-2.5 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
+                          className={`w-full px-4 py-2.5 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
+                            user.walletType === "lnbits" ? "bg-amber-500/30 text-amber-200" : "text-foreground hover:bg-white/20 dark:hover:bg-black/20"
+                          }`}
                           data-testid="submenu-wallet-lnbits"
                         >
                           <Zap className="h-4 w-4 shrink-0" />
                           <span>{t('sidebar.lnbitsConnection')}</span>
+                          {user.walletType === "lnbits" && <CheckCircle className="h-3 w-3 ml-auto text-green-400" />}
                         </button>
                         <button
                           onClick={() => { setWalletTab("nwc"); handleSettingsClick("wallet"); setSidebarOpen(false); }}
-                          className="w-full px-4 py-2.5 rounded-lg text-sm text-foreground hover:bg-white/20 dark:hover:bg-black/20 transition-colors text-left flex items-center gap-3"
+                          className={`w-full px-4 py-2.5 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
+                            user.walletType === "nwc" ? "bg-purple-500/30 text-purple-200" : "text-foreground hover:bg-white/20 dark:hover:bg-black/20"
+                          }`}
                           data-testid="submenu-wallet-nwc"
                         >
                           <LinkIcon className="h-4 w-4 shrink-0" />
                           <span>{t('sidebar.nwcConnection')}</span>
+                          {user.walletType === "nwc" && <CheckCircle className="h-3 w-3 ml-auto text-green-400" />}
+                        </button>
+                        <button
+                          onClick={() => { handleSettingsClick("wallet"); setSidebarOpen(false); }}
+                          className={`w-full px-4 py-2.5 rounded-lg text-sm transition-colors text-left flex items-center gap-3 ${
+                            user.walletType === "manual" ? "bg-blue-500/30 text-blue-200" : "text-foreground hover:bg-white/20 dark:hover:bg-black/20"
+                          }`}
+                          data-testid="submenu-wallet-manual"
+                        >
+                          <QrCode className="h-4 w-4 shrink-0" />
+                          <span>{t('walletMode.manualLabel')}</span>
+                          {user.walletType === "manual" && <CheckCircle className="h-3 w-3 ml-auto text-green-400" />}
                         </button>
                       </motion.div>
                     )}
