@@ -12,6 +12,32 @@ interface TrackerEntry {
   euroValue: number;
 }
 
+interface EarningBreakdown {
+  type: string;
+  label: string;
+  totalSats: number;
+  count: number;
+}
+
+interface EarningsData {
+  currentBalance: number;
+  totalReceived: number;
+  breakdown: EarningBreakdown[];
+}
+
+const getEarningIcon = (type: string): string => {
+  const icons: Record<string, string> = {
+    'task_payment': '✅',
+    'manual_payment': '📱',
+    'instant_payout': '⚡',
+    'graduation_bonus': '🎓',
+    'retry_payment': '🔄',
+    'allowance': '📅',
+    'level_bonus': '🏆',
+  };
+  return icons[type] || '💰';
+};
+
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length > 0) {
     const data = payload[0].payload;
@@ -30,6 +56,7 @@ export function ChildTracker({ childId, currentBalance }: { childId: number; cur
   const [loading, setLoading] = useState(true);
   const [liveBalance, setLiveBalance] = useState<number | null>(null);
   const [liveEuroValue, setLiveEuroValue] = useState<number | null>(null);
+  const [earnings, setEarnings] = useState<EarningsData | null>(null);
 
   useEffect(() => {
     const fetchTrackerData = async () => {
@@ -52,36 +79,43 @@ export function ChildTracker({ childId, currentBalance }: { childId: number; cur
     fetchTrackerData();
   }, [childId]);
 
-  // Fetch live balance if not provided as prop
+  // Fetch earnings breakdown
   useEffect(() => {
-    const fetchLiveData = async () => {
+    const fetchEarnings = async () => {
       try {
-        // Get current child data for real-time balance
-        const peerRes = await fetch(`/api/peers/${childId}`, { credentials: 'include' });
-        if (peerRes.ok) {
-          const peer = await peerRes.json();
-          setLiveBalance(peer.balance || 0);
-          
-          // Get current BTC price for Euro calculation
-          const priceRes = await fetch('/api/bitcoin-price');
-          if (priceRes.ok) {
-            const priceData = await priceRes.json();
-            const btcPrice = priceData.eur || 0;
-            const euroValue = ((peer.balance || 0) / 100000000) * btcPrice;
-            setLiveEuroValue(euroValue);
-          }
+        const res = await fetch(`/api/child-earnings/${childId}`, { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setEarnings(data);
+          setLiveBalance(data.currentBalance);
         }
       } catch (error) {
-        console.error("Failed to fetch live balance:", error);
+        console.error("Failed to fetch earnings:", error);
       }
     };
+    
+    fetchEarnings();
+  }, [childId]);
 
-    if (currentBalance !== undefined) {
-      setLiveBalance(currentBalance);
-    } else {
-      fetchLiveData();
-    }
-  }, [childId, currentBalance]);
+  // Fetch live Euro value based on current BTC price
+  useEffect(() => {
+    const fetchLiveEuroValue = async () => {
+      if (liveBalance === null) return;
+      try {
+        const priceRes = await fetch('/api/bitcoin-price');
+        if (priceRes.ok) {
+          const priceData = await priceRes.json();
+          const btcPrice = priceData.eur || 0;
+          const euroValue = (liveBalance / 100000000) * btcPrice;
+          setLiveEuroValue(euroValue);
+        }
+      } catch (error) {
+        console.error("Failed to fetch BTC price:", error);
+      }
+    };
+    
+    fetchLiveEuroValue();
+  }, [liveBalance]);
 
   if (loading) {
     return <div className="text-muted-foreground">Wird geladen...</div>;
@@ -162,10 +196,34 @@ export function ChildTracker({ childId, currentBalance }: { childId: number; cur
             </ResponsiveContainer>
           </div>
 
+          {/* Earnings Breakdown */}
+          {earnings && earnings.breakdown.length > 0 && (
+            <div className="pt-3 border-t border-border/50">
+              <p className="text-sm font-semibold text-yellow-300 mb-2">💰 Alle erhaltenen Satoshi:</p>
+              <div className="space-y-2">
+                {earnings.breakdown.map((item) => (
+                  <div key={item.type} className="flex justify-between items-center bg-slate-900/50 p-2 rounded">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">{getEarningIcon(item.type)}</span>
+                      <span className="text-xs text-muted-foreground">{item.label}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-sm font-bold text-yellow-300">{item.totalSats.toLocaleString()} sats</span>
+                      <span className="text-xs text-muted-foreground ml-2">({item.count}x)</span>
+                    </div>
+                  </div>
+                ))}
+                <div className="flex justify-between items-center bg-yellow-500/20 border border-yellow-500/30 p-2 rounded mt-2">
+                  <span className="text-sm font-semibold">Gesamt erhalten:</span>
+                  <span className="text-lg font-bold text-yellow-300">{earnings.totalReceived.toLocaleString()} sats</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Summary */}
           <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t border-border/50">
-            <p>✓ {trackerData.length} genehmigte Aufgaben</p>
-            <p>⚡ Verdient: {trackerData.reduce((sum, e) => sum + (e.earnedSats || 0), 0).toLocaleString()} Satoshi</p>
+            <p>✓ {trackerData.length} Snapshots</p>
             <p className="text-blue-300 font-semibold">💙 BTC Preis aktuell: €{latestEntry.btcPrice ? latestEntry.btcPrice.toLocaleString('de-DE', {maximumFractionDigits: 0}) : 'N/A'}</p>
             
             {/* All data points with btcPrice */}

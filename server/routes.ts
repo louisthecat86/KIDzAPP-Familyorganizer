@@ -2683,6 +2683,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get child earnings summary (all received sats by type)
+  app.get("/api/child-earnings/:childId", async (req, res) => {
+    try {
+      const childId = parseInt(req.params.childId);
+      const child = await storage.getPeer(childId);
+      
+      if (!child || child.role !== "child") {
+        return res.status(404).json({ error: "Child not found" });
+      }
+
+      const earningsSummary = await storage.getChildEarningsSummary(childId);
+      
+      // Calculate total from all sources
+      const totalReceived = earningsSummary.reduce((sum, e) => sum + e.totalSats, 0);
+      
+      // Map type names to user-friendly labels
+      const typeLabels: Record<string, string> = {
+        'task_payment': 'Aufgaben',
+        'manual_payment': 'Manuelle Zahlungen',
+        'instant_payout': 'Sofortzahlungen',
+        'graduation_bonus': 'Abschluss-Bonus',
+        'retry_payment': 'Nachzahlungen',
+        'allowance': 'Taschengeld',
+        'level_bonus': 'Level-Bonus',
+      };
+      
+      res.json({
+        currentBalance: child.balance || 0,
+        totalReceived,
+        breakdown: earningsSummary.map(e => ({
+          type: e.type,
+          label: typeLabels[e.type] || e.type,
+          totalSats: e.totalSats,
+          count: e.count,
+        })),
+      });
+    } catch (error) {
+      console.error("[Child Earnings Error]:", error);
+      res.status(500).json({ error: "Failed to fetch earnings" });
+    }
+  });
+
   // Get tracker data for a child (from daily Bitcoin snapshots for accurate historical data)
   app.get("/api/tracker/:childId", async (req, res) => {
     try {

@@ -1,6 +1,6 @@
 import { db } from "./db";
 import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks, type LearningProgress, type InsertLearningProgress, learningProgress, type DailyChallenge, dailyChallenges, type ShoppingList, type InsertShoppingList, shoppingList, type FamilyBoardPost, type InsertFamilyBoardPost, familyBoardPosts, type LocationPing, type InsertLocationPing, locationPings, type EmergencyContact, type InsertEmergencyContact, emergencyContacts, type PasswordSafeEntry, type InsertPasswordSafeEntry, passwordSafeEntries, type BirthdayReminder, type InsertBirthdayReminder, birthdayReminders, type FailedPayment, type InsertFailedPayment, failedPayments, type ManualPayment, type InsertManualPayment, manualPayments, type PushSubscription, pushSubscriptions } from "@shared/schema";
-import { eq, and, desc, lt, isNull, or, inArray } from "drizzle-orm";
+import { eq, and, desc, lt, isNull, or, inArray, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Peer operations
@@ -38,6 +38,7 @@ export interface IStorage {
   // Transaction operations
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   getTransactions(peerId: number): Promise<Transaction[]>;
+  getChildEarningsSummary(childId: number): Promise<{ type: string; totalSats: number; count: number }[]>;
   
   // Family Events operations
   getFamilyEvents(connectionId: string): Promise<FamilyEvent[]>;
@@ -479,6 +480,20 @@ export class DatabaseStorage implements IStorage {
   async getTransactions(peerId: number): Promise<Transaction[]> {
     return await db.select().from(transactions)
       .where(eq(transactions.toPeerId, peerId));
+  }
+
+  async getChildEarningsSummary(childId: number): Promise<{ type: string; totalSats: number; count: number }[]> {
+    const result = await db.select({
+      type: transactions.type,
+      totalSats: sql<number>`COALESCE(SUM(${transactions.sats}), 0)::int`,
+      count: sql<number>`COUNT(*)::int`,
+    }).from(transactions)
+      .where(and(
+        eq(transactions.toPeerId, childId),
+        sql`${transactions.status} IN ('completed', 'internal')`
+      ))
+      .groupBy(transactions.type);
+    return result;
   }
   
   // Family Events operations
