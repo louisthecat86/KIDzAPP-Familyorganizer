@@ -855,6 +855,7 @@
     "orCopy": "or copy address"
   },
   "common": {
+    "total": "Total",
     "continue": "Continue",
     "save": "Save",
     "saving": "Saving...",

@@ -1362,15 +1362,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const instantPayoutSats = otherPayoutTransactions.reduce((sum: number, t) => sum + t.sats, 0);
       const allowancePayoutSats = allowanceTransactions.reduce((sum: number, t) => sum + t.sats, 0);
-      const allowanceSats = instantPayoutSats + allowancePayoutSats;
       
-      console.log(`[Sats Breakdown] ${child.name}: total=${child.balance}, tasks=${taskSats}, bonus=${bonusSats} (level=${levelBonusSats}+grad=${graduationBonusSats}), allowance=${allowanceSats}`);
+      // Get manual payments
+      const manualPayments = await db.select()
+        .from(transactions)
+        .where(and(eq(transactions.toPeerId, childId), eq(transactions.type, "manual_payment")));
+      const manualSats = manualPayments.reduce((sum: number, t) => sum + t.sats, 0);
+      
+      // Total received = sum of all incoming transactions (not just balance which can decrease)
+      const totalReceived = taskSats + bonusSats + instantPayoutSats + allowancePayoutSats + manualSats;
+      
+      console.log(`[Sats Breakdown] ${child.name}: totalReceived=${totalReceived}, tasks=${taskSats}, bonus=${bonusSats}, instant=${instantPayoutSats}, allowance=${allowancePayoutSats}, manual=${manualSats}`);
       
       res.json({
-        totalSats: child.balance || 0,
+        totalSats: totalReceived,
         taskSats: taskSats,
         bonusSats: bonusSats,
-        allowanceSats: allowanceSats
+        allowanceSats: allowancePayoutSats,
+        manualSats: manualSats + instantPayoutSats
       });
     } catch (error) {
       console.error("[Sats Breakdown Error]:", error);
