@@ -1631,6 +1631,7 @@
     "lnbitsLabel": "LNbits",
     "manualLabel": "Manuell",
     "manualShort": "QR",
+    "qrPaymentActive": "QR-Code Zahlungen aktiv",
     "notConfigured": "Nicht konfiguriert",
     "nwcDesc": "Nostr Wallet Connect - Direkte Verbindung zu deiner Lightning Wallet",
     "lnbitsDesc": "LNbits - Verbindung zu deinem LNbits Server",

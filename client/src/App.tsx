@@ -5403,8 +5403,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   });
 
   const activeWalletType = user.walletType || (user.hasNwcConfigured ? "nwc" : user.hasLnbitsConfigured ? "lnbits" : null);
-  const displayBalance = activeWalletType === "nwc" ? walletBalance?.nwcBalance : walletBalance?.lnbitsBalance;
-  const walletLabel = activeWalletType === "nwc" ? "NWC Wallet" : "LNbits Wallet";
+  const displayBalance = activeWalletType === "manual" ? null : (activeWalletType === "nwc" ? walletBalance?.nwcBalance : walletBalance?.lnbitsBalance);
+  const walletLabel = activeWalletType === "manual" ? t('walletMode.manualLabel') : (activeWalletType === "nwc" ? "NWC Wallet" : "LNbits Wallet");
+  const isManualMode = activeWalletType === "manual";
 
   if (currentView === "dashboard") {
     const openTasks = tasks.filter((t: Task) => t.status === "open" || t.status === "assigned");
@@ -5560,7 +5561,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               return createDraggableCard(
                 cardId,
                 <div 
-                  className={`relative bg-white/5 dark:bg-black/30 backdrop-blur-xl border ${failedPaymentsCount > 0 ? 'border-red-500/70' : 'border-white/50 dark:border-white/20'} rounded-2xl ${displayBalance !== null ? "hover:bg-white/5 dark:bg-black/105 cursor-pointer" : "opacity-60"} transition-colors h-full shadow-lg p-6`}
+                  className={`relative bg-white/5 dark:bg-black/30 backdrop-blur-xl border ${failedPaymentsCount > 0 ? 'border-red-500/70' : isManualMode ? 'border-blue-500/50' : 'border-white/50 dark:border-white/20'} rounded-2xl ${displayBalance !== null || isManualMode ? "hover:bg-white/5 dark:bg-black/105 cursor-pointer" : "opacity-60"} transition-colors h-full shadow-lg p-6`}
                   onClick={() => failedPaymentsCount > 0 && setShowFailedPaymentsModal(true)}
                 >
                   {failedPaymentsCount > 0 && (
@@ -5573,16 +5574,26 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   )}
                   <div className="space-y-4">
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-cyan-600 flex items-center justify-center gap-1">
-                        {displayBalance !== null && displayBalance !== undefined ? (
-                          <>
-                            {(displayBalance / 1000).toLocaleString("de-DE", { maximumFractionDigits: 0 })} Sats
-                          </>
-                        ) : (
-                          "---"
-                        )}
-                      </div>
-                      <p className="text-sm text-foreground mt-2">{walletLabel}</p>
+                      {isManualMode ? (
+                        <>
+                          <div className="text-3xl mb-2">📱</div>
+                          <p className="text-sm font-semibold text-blue-400">{t('walletMode.manualLabel')}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{t('walletMode.qrPaymentActive')}</p>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-3xl font-bold text-cyan-600 flex items-center justify-center gap-1">
+                            {displayBalance !== null && displayBalance !== undefined ? (
+                              <>
+                                {(displayBalance / 1000).toLocaleString("de-DE", { maximumFractionDigits: 0 })} Sats
+                              </>
+                            ) : (
+                              "---"
+                            )}
+                          </div>
+                          <p className="text-sm text-foreground mt-2">{walletLabel}</p>
+                        </>
+                      )}
                       {failedPaymentsCount > 0 && (
                         <p className="text-xs text-red-400 mt-1 animate-pulse">
                           ⚠️ {failedPaymentsCount} {t('failedPayments.pending')}
