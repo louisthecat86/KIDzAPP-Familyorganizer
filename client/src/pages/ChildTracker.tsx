@@ -25,9 +25,11 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-export function ChildTracker({ childId }: { childId: number }) {
+export function ChildTracker({ childId, currentBalance }: { childId: number; currentBalance?: number }) {
   const [trackerData, setTrackerData] = useState<TrackerEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [liveBalance, setLiveBalance] = useState<number | null>(null);
+  const [liveEuroValue, setLiveEuroValue] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchTrackerData = async () => {
@@ -49,6 +51,37 @@ export function ChildTracker({ childId }: { childId: number }) {
 
     fetchTrackerData();
   }, [childId]);
+
+  // Fetch live balance if not provided as prop
+  useEffect(() => {
+    const fetchLiveData = async () => {
+      try {
+        // Get current child data for real-time balance
+        const peerRes = await fetch(`/api/peers/${childId}`, { credentials: 'include' });
+        if (peerRes.ok) {
+          const peer = await peerRes.json();
+          setLiveBalance(peer.balance || 0);
+          
+          // Get current BTC price for Euro calculation
+          const priceRes = await fetch('/api/bitcoin-price');
+          if (priceRes.ok) {
+            const priceData = await priceRes.json();
+            const btcPrice = priceData.eur || 0;
+            const euroValue = ((peer.balance || 0) / 100000000) * btcPrice;
+            setLiveEuroValue(euroValue);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch live balance:", error);
+      }
+    };
+
+    if (currentBalance !== undefined) {
+      setLiveBalance(currentBalance);
+    } else {
+      fetchLiveData();
+    }
+  }, [childId, currentBalance]);
 
   if (loading) {
     return <div className="text-muted-foreground">Wird geladen...</div>;
@@ -77,15 +110,22 @@ export function ChildTracker({ childId }: { childId: number }) {
         </CardHeader>
         <CardContent className="space-y-4">
 
-          {/* Stats */}
+          {/* Stats - Use live balance for current values */}
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-3">
               <p className="text-xs text-muted-foreground">Gesamt Satoshi</p>
-              <p className="text-xl font-bold text-yellow-300">{latestEntry.totalSats.toLocaleString()}</p>
+              <p className="text-xl font-bold text-yellow-300">
+                {(liveBalance !== null ? liveBalance : latestEntry.totalSats).toLocaleString()}
+              </p>
+              {liveBalance !== null && liveBalance !== latestEntry.totalSats && (
+                <p className="text-xs text-green-400">+{(liveBalance - latestEntry.totalSats).toLocaleString()} seit letztem Snapshot</p>
+              )}
             </div>
             <div className="bg-green-500/10 border border-green-500/30 rounded p-3">
               <p className="text-xs text-muted-foreground">Euro-Wert</p>
-              <p className="text-xl font-bold text-green-300">€{latestEntry.euroValue.toFixed(2)}</p>
+              <p className="text-xl font-bold text-green-300">
+                €{(liveEuroValue !== null ? liveEuroValue : latestEntry.euroValue).toFixed(2)}
+              </p>
             </div>
           </div>
 
