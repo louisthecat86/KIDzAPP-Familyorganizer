@@ -8297,17 +8297,24 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
               </p>
             </div>
             <Button 
-              onClick={() => {
+              onClick={async () => {
                 const addr = (document.getElementById("child-lightning-address") as HTMLInputElement)?.value;
                 if (addr) {
-                  fetch("/api/wallet/setup-child-address", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ peerId: user.id, lightningAddress: addr }),
-                  }).then(r => r.json()).then(data => {
+                  try {
+                    const res = await apiFetch("/api/wallet/setup-child-address", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ peerId: user.id, lightningAddress: addr }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) {
+                      throw new Error(data.error || "Failed to save");
+                    }
                     setUser(data);
                     toast({ title: t('connection.lightningAddressSaved'), description: t('connection.receiveSatsDirect') });
-                  }).catch(err => toast({ title: t('common.error'), description: err.message, variant: "destructive" }));
+                  } catch (err: any) {
+                    toast({ title: t('common.error'), description: err.message, variant: "destructive" });
+                  }
                 }
               }}
               className="bg-primary hover:bg-primary/90"
