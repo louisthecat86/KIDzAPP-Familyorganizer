@@ -940,6 +940,248 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ==========================================
+  // Manual QR-Code Payment Endpoints
+  // ==========================================
+
+  // Create a manual payment (generates invoice from child's Lightning Address)
+  app.post("/api/manual-payment/create", async (req, res) => {
+    try {
+      const { childId, sats, memo, paymentType, taskId } = req.body;
+      const parentId = req.session.peerId;
+      
+      if (!parentId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      if (!childId || !sats) {
+        return res.status(400).json({ error: "childId and sats required" });
+      }
+      
+      const parent = await storage.getPeer(parentId);
+      const child = await storage.getPeer(childId);
+      
+      if (!parent || parent.role !== "parent") {
+        return res.status(403).json({ error: "Only parents can create manual payments" });
+      }
+      
+      if (!child) {
+        return res.status(404).json({ error: "Child not found" });
+      }
+      
+      if (!child.lightningAddress) {
+        return res.status(400).json({ error: "Child has no Lightning Address configured" });
+      }
+      
+      // Import LNURL utility and fetch invoice
+      const { fetchInvoiceFromLightningAddress, LnurlPayError } = await import("./lnurl");
+      
+      try {
+        const invoice = await fetchInvoiceFromLightningAddress(
+          child.lightningAddress,
+          sats,
+          memo || `Zahlung an ${child.name}`
+        );
+        
+        // Store the manual payment
+        const manualPayment = await storage.createManualPayment({
+          connectionId: parent.connectionId,
+          parentId: parent.id,
+          childId: child.id,
+          childName: child.name,
+          sats,
+          memo: memo || `Zahlung an ${child.name}`,
+          bolt11: invoice.bolt11,
+          paymentHash: invoice.paymentHash,
+          expiresAt: invoice.expiresAt,
+          status: "pending",
+          paymentType: paymentType || "instant",
+          taskId: taskId || null,
+        });
+        
+        res.json({
+          success: true,
+          payment: manualPayment,
+          invoice: {
+            bolt11: invoice.bolt11,
+            expiresAt: invoice.expiresAt,
+            amountSats: sats,
+          }
+        });
+      } catch (error) {
+        if (error instanceof LnurlPayError) {
+          return res.status(400).json({ error: error.message, code: error.code });
+        }
+        throw error;
+      }
+    } catch (error) {
+      console.error("Manual payment creation error:", error);
+      res.status(500).json({ error: "Failed to create manual payment" });
+    }
+  });
+
+  // Get pending manual payments for a family
+  app.get("/api/manual-payment/pending", async (req, res) => {
+    try {
+      const peerId = req.session.peerId;
+      if (!peerId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      const peer = await storage.getPeer(peerId);
+      if (!peer) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      const pendingPayments = await storage.getPendingManualPayments(peer.connectionId);
+      res.json(pendingPayments);
+    } catch (error) {
+      console.error("Get pending manual payments error:", error);
+      res.status(500).json({ error: "Failed to get pending payments" });
+    }
+  });
+
+  // Mark a manual payment as paid
+  app.post("/api/manual-payment/:id/paid", async (req, res) => {
+    try {
+      const paymentId = parseInt(req.params.id);
+      const peerId = req.session.peerId;
+      
+      if (!peerId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      const peer = await storage.getPeer(peerId);
+      if (!peer || peer.role !== "parent") {
+        return res.status(403).json({ error: "Only parents can mark payments as paid" });
+      }
+      
+      const payment = await storage.getManualPayment(paymentId);
+      if (!payment) {
+        return res.status(404).json({ error: "Payment not found" });
+      }
+      
+      if (payment.connectionId !== peer.connectionId) {
+        return res.status(403).json({ error: "Payment does not belong to your family" });
+      }
+      
+      const updatedPayment = await storage.markManualPaymentPaid(paymentId);
+      
+      // Update child's balance
+      if (updatedPayment) {
+        await storage.updateBalance(updatedPayment.childId, updatedPayment.sats);
+        
+        // Create transaction record
+        await storage.createTransaction({
+          fromPeerId: peer.id,
+          toPeerId: updatedPayment.childId,
+          sats: updatedPayment.sats,
+          taskId: updatedPayment.taskId,
+          type: "manual_payment",
+          paymentHash: updatedPayment.paymentHash,
+          status: "completed",
+        });
+      }
+      
+      res.json({ success: true, payment: updatedPayment });
+    } catch (error) {
+      console.error("Mark payment paid error:", error);
+      res.status(500).json({ error: "Failed to mark payment as paid" });
+    }
+  });
+
+  // Cancel a manual payment
+  app.post("/api/manual-payment/:id/cancel", async (req, res) => {
+    try {
+      const paymentId = parseInt(req.params.id);
+      const peerId = req.session.peerId;
+      
+      if (!peerId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      const peer = await storage.getPeer(peerId);
+      if (!peer || peer.role !== "parent") {
+        return res.status(403).json({ error: "Only parents can cancel payments" });
+      }
+      
+      const payment = await storage.getManualPayment(paymentId);
+      if (!payment || payment.connectionId !== peer.connectionId) {
+        return res.status(404).json({ error: "Payment not found" });
+      }
+      
+      const updatedPayment = await storage.cancelManualPayment(paymentId);
+      res.json({ success: true, payment: updatedPayment });
+    } catch (error) {
+      console.error("Cancel payment error:", error);
+      res.status(500).json({ error: "Failed to cancel payment" });
+    }
+  });
+
+  // Refresh invoice for an expired payment
+  app.post("/api/manual-payment/:id/refresh", async (req, res) => {
+    try {
+      const paymentId = parseInt(req.params.id);
+      const peerId = req.session.peerId;
+      
+      if (!peerId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      const peer = await storage.getPeer(peerId);
+      if (!peer || peer.role !== "parent") {
+        return res.status(403).json({ error: "Only parents can refresh payments" });
+      }
+      
+      const payment = await storage.getManualPayment(paymentId);
+      if (!payment || payment.connectionId !== peer.connectionId) {
+        return res.status(404).json({ error: "Payment not found" });
+      }
+      
+      const child = await storage.getPeer(payment.childId);
+      if (!child || !child.lightningAddress) {
+        return res.status(400).json({ error: "Child has no Lightning Address" });
+      }
+      
+      // Generate new invoice
+      const { fetchInvoiceFromLightningAddress } = await import("./lnurl");
+      const invoice = await fetchInvoiceFromLightningAddress(
+        child.lightningAddress,
+        payment.sats,
+        payment.memo || `Zahlung an ${child.name}`
+      );
+      
+      // Create new payment record (old one stays expired)
+      const newPayment = await storage.createManualPayment({
+        connectionId: payment.connectionId,
+        parentId: payment.parentId,
+        childId: payment.childId,
+        childName: payment.childName,
+        sats: payment.sats,
+        memo: payment.memo,
+        bolt11: invoice.bolt11,
+        paymentHash: invoice.paymentHash,
+        expiresAt: invoice.expiresAt,
+        status: "pending",
+        paymentType: payment.paymentType,
+        taskId: payment.taskId,
+      });
+      
+      res.json({
+        success: true,
+        payment: newPayment,
+        invoice: {
+          bolt11: invoice.bolt11,
+          expiresAt: invoice.expiresAt,
+          amountSats: payment.sats,
+        }
+      });
+    } catch (error) {
+      console.error("Refresh invoice error:", error);
+      res.status(500).json({ error: "Failed to refresh invoice" });
+    }
+  });
+
   // Link child to parent by connection ID
   app.post("/api/peers/link", async (req, res) => {
     try {

@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks, type LearningProgress, type InsertLearningProgress, learningProgress, type DailyChallenge, dailyChallenges, type ShoppingList, type InsertShoppingList, shoppingList, type FamilyBoardPost, type InsertFamilyBoardPost, familyBoardPosts, type LocationPing, type InsertLocationPing, locationPings, type EmergencyContact, type InsertEmergencyContact, emergencyContacts, type PasswordSafeEntry, type InsertPasswordSafeEntry, passwordSafeEntries, type BirthdayReminder, type InsertBirthdayReminder, birthdayReminders, type FailedPayment, type InsertFailedPayment, failedPayments, type PushSubscription, pushSubscriptions } from "@shared/schema";
+import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks, type LearningProgress, type InsertLearningProgress, learningProgress, type DailyChallenge, dailyChallenges, type ShoppingList, type InsertShoppingList, shoppingList, type FamilyBoardPost, type InsertFamilyBoardPost, familyBoardPosts, type LocationPing, type InsertLocationPing, locationPings, type EmergencyContact, type InsertEmergencyContact, emergencyContacts, type PasswordSafeEntry, type InsertPasswordSafeEntry, passwordSafeEntries, type BirthdayReminder, type InsertBirthdayReminder, birthdayReminders, type FailedPayment, type InsertFailedPayment, failedPayments, type ManualPayment, type InsertManualPayment, manualPayments, type PushSubscription, pushSubscriptions } from "@shared/schema";
 import { eq, and, desc, lt, isNull, or, inArray } from "drizzle-orm";
 
 export interface IStorage {
@@ -167,6 +167,15 @@ export interface IStorage {
   markPaymentResolved(id: number): Promise<FailedPayment | undefined>;
   markPaymentRetried(id: number): Promise<FailedPayment | undefined>;
   deleteFailedPayment(id: number): Promise<boolean>;
+
+  // Manual Payments operations (QR-Code based)
+  getManualPayments(connectionId: string): Promise<ManualPayment[]>;
+  getPendingManualPayments(connectionId: string): Promise<ManualPayment[]>;
+  createManualPayment(payment: InsertManualPayment): Promise<ManualPayment>;
+  markManualPaymentPaid(id: number): Promise<ManualPayment | undefined>;
+  markManualPaymentExpired(id: number): Promise<ManualPayment | undefined>;
+  cancelManualPayment(id: number): Promise<ManualPayment | undefined>;
+  getManualPayment(id: number): Promise<ManualPayment | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1478,6 +1487,58 @@ export class DatabaseStorage implements IStorage {
   async deleteFailedPayment(id: number): Promise<boolean> {
     const result = await db.delete(failedPayments).where(eq(failedPayments.id, id));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  // Manual Payments operations (QR-Code based)
+  async getManualPayments(connectionId: string): Promise<ManualPayment[]> {
+    return await db.select().from(manualPayments)
+      .where(eq(manualPayments.connectionId, connectionId))
+      .orderBy(desc(manualPayments.createdAt));
+  }
+
+  async getPendingManualPayments(connectionId: string): Promise<ManualPayment[]> {
+    return await db.select().from(manualPayments)
+      .where(and(
+        eq(manualPayments.connectionId, connectionId),
+        eq(manualPayments.status, "pending")
+      ))
+      .orderBy(desc(manualPayments.createdAt));
+  }
+
+  async createManualPayment(payment: InsertManualPayment): Promise<ManualPayment> {
+    const result = await db.insert(manualPayments).values(payment).returning();
+    return result[0];
+  }
+
+  async markManualPaymentPaid(id: number): Promise<ManualPayment | undefined> {
+    const result = await db.update(manualPayments)
+      .set({ status: "paid", paidAt: new Date() })
+      .where(eq(manualPayments.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async markManualPaymentExpired(id: number): Promise<ManualPayment | undefined> {
+    const result = await db.update(manualPayments)
+      .set({ status: "expired" })
+      .where(eq(manualPayments.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async cancelManualPayment(id: number): Promise<ManualPayment | undefined> {
+    const result = await db.update(manualPayments)
+      .set({ status: "cancelled" })
+      .where(eq(manualPayments.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async getManualPayment(id: number): Promise<ManualPayment | undefined> {
+    const result = await db.select().from(manualPayments)
+      .where(eq(manualPayments.id, id))
+      .limit(1);
+    return result[0];
   }
 
 }

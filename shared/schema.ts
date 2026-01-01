@@ -521,3 +521,31 @@ export const insertFailedPaymentSchema = createInsertSchema(failedPayments).omit
 
 export type InsertFailedPayment = z.infer<typeof insertFailedPaymentSchema>;
 export type FailedPayment = typeof failedPayments.$inferSelect;
+
+// Manual Payments Table (QR-Code based payments for parents without wallet integration)
+export const manualPayments = pgTable("manual_payments", {
+  id: serial("id").primaryKey(),
+  connectionId: text("connection_id").notNull(),
+  parentId: integer("parent_id").notNull(),
+  childId: integer("child_id").notNull(),
+  childName: text("child_name").notNull(),
+  sats: integer("sats").notNull(),
+  memo: text("memo"),
+  bolt11: text("bolt11").notNull(),
+  paymentHash: text("payment_hash"),
+  expiresAt: timestamp("expires_at").notNull(),
+  status: text("status").default("pending").notNull(), // 'pending', 'paid', 'expired', 'cancelled'
+  paymentType: text("payment_type").notNull(), // 'task', 'allowance', 'instant', 'bonus'
+  taskId: integer("task_id"),
+  paidAt: timestamp("paid_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertManualPaymentSchema = createInsertSchema(manualPayments).omit({
+  id: true,
+  createdAt: true,
+  paidAt: true,
+});
+
+export type InsertManualPayment = z.infer<typeof insertManualPaymentSchema>;
+export type ManualPayment = typeof manualPayments.$inferSelect;
