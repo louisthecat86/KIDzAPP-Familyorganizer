@@ -1620,5 +1620,20 @@
       "location": "GPS-Standorte",
       "locationProtection": "Familien-isoliert"
     }
+  },
+  "walletMode": {
+    "title": "Wallet-Modus",
+    "updated": "Wallet-Modus aktualisiert",
+    "nwcLabel": "NWC",
+    "lnbitsLabel": "LNbits",
+    "manualLabel": "Manuell",
+    "nwcDesc": "Nostr Wallet Connect - Direkte Verbindung zu deiner Lightning Wallet",
+    "lnbitsDesc": "LNbits - Verbindung zu deinem LNbits Server",
+    "manualDesc": "Manuelle QR-Code Zahlungen - Eltern scannen Rechnungen von der Lightning-Adresse des Kindes",
+    "manualTitle": "Manueller QR-Code Modus",
+    "manualExplanation": "In diesem Modus werden Zahlungen über QR-Codes abgewickelt. Bei der Aufgabenbestätigung wird eine Rechnung von der Lightning-Adresse des Kindes generiert, die du mit deiner Wallet scannen kannst.",
+    "manualStep1": "Kind erledigt Aufgabe und reicht Beweis ein",
+    "manualStep2": "Eltern genehmigen - QR-Code wird von der Lightning-Adresse des Kindes generiert",
+    "manualStep3": "Eltern scannen den QR-Code mit ihrer Lightning Wallet"
   }
 }

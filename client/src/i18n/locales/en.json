@@ -1622,5 +1622,20 @@
       "location": "GPS locations",
       "locationProtection": "Family-isolated"
     }
+  },
+  "walletMode": {
+    "title": "Wallet Mode",
+    "updated": "Wallet mode updated",
+    "nwcLabel": "NWC",
+    "lnbitsLabel": "LNbits",
+    "manualLabel": "Manual",
+    "nwcDesc": "Nostr Wallet Connect - Direct connection to your Lightning wallet",
+    "lnbitsDesc": "LNbits - Connect to your LNbits server",
+    "manualDesc": "Manual QR-code payments - Parents scan invoices generated from the child's Lightning Address",
+    "manualTitle": "Manual QR-Code Mode",
+    "manualExplanation": "In this mode, payments are handled via QR codes. When approving a task, an invoice is generated from the child's Lightning Address which you can scan with your wallet.",
+    "manualStep1": "Child completes task and submits proof",
+    "manualStep2": "Parents approve - QR code generated from child's Lightning Address",
+    "manualStep3": "Parents scan QR code with their Lightning wallet"
   }
 }

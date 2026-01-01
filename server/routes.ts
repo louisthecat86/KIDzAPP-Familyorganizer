@@ -768,6 +768,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Set wallet mode (nwc, lnbits, or manual for QR-code payments)
+  app.post("/api/wallet/set-mode", async (req, res) => {
+    try {
+      const { peerId, walletMode } = req.body;
+      
+      if (!peerId || !walletMode) {
+        return res.status(400).json({ error: "peerId and walletMode required" });
+      }
+
+      if (!["lnbits", "nwc", "manual"].includes(walletMode)) {
+        return res.status(400).json({ error: "walletMode must be 'lnbits', 'nwc', or 'manual'" });
+      }
+
+      const peer = await storage.updatePeerWalletType(peerId, walletMode);
+      res.json(sanitizePeerForClient(peer));
+    } catch (error) {
+      console.error("Set wallet mode error:", error);
+      res.status(500).json({ error: "Error setting wallet mode" });
+    }
+  });
+
   // Set donation address for parent (to receive donations)
   app.post("/api/donation/set-address", async (req, res) => {
     try {

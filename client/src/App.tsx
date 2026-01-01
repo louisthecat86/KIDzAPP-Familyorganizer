@@ -4110,7 +4110,30 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
   const [editFamilyName, setEditFamilyName] = useState(user.familyName || "");
   const [showAdminKey, setShowAdminKey] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [walletMode, setWalletMode] = useState<"nwc" | "lnbits" | "manual">(user.walletType || "nwc");
   const { toast: useToastFn } = useToast();
+
+  const handleWalletModeChange = async (newMode: "nwc" | "lnbits" | "manual") => {
+    setWalletMode(newMode);
+    setIsSaving(true);
+    try {
+      const res = await apiFetch("/api/wallet/set-mode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ peerId: user.id, walletMode: newMode }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setUser({ ...user, walletType: newMode });
+      localStorage.setItem("sats-user", JSON.stringify({ ...user, walletType: newMode }));
+      useToastFn({ title: t('walletMode.updated'), description: t(`walletMode.${newMode}Label`), duration: 2000 });
+    } catch (error) {
+      useToastFn({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
+      setWalletMode(user.walletType || "nwc");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // Sync state with user changes - credentials are never stored in user object
   useEffect(() => {
@@ -4119,6 +4142,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
     setEditNwcConnectionString("");
     setEditFamilyName(user.familyName || "");
     setShowAdminKey(false);
+    setWalletMode(user.walletType || "nwc");
   }, [user]);
 
 
@@ -4460,7 +4484,65 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                 <>
                   <FailedPaymentsPanel connectionId={user.connectionId} peerId={user.id} />
                   
-                  {walletTab === "lnbits" && (
+                  <div className="space-y-3 pb-4 border-b border-border">
+                    <Label className="text-sm font-semibold">{t('walletMode.title')}</Label>
+                    <div className="grid grid-cols-3 gap-2">
+                      <Button
+                        variant={walletMode === "nwc" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handleWalletModeChange("nwc")}
+                        disabled={isSaving}
+                        className="flex flex-col gap-1 h-auto py-3"
+                        data-testid="button-wallet-mode-nwc"
+                      >
+                        <Zap className="h-4 w-4" />
+                        <span className="text-xs">{t('walletMode.nwcLabel')}</span>
+                      </Button>
+                      <Button
+                        variant={walletMode === "lnbits" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handleWalletModeChange("lnbits")}
+                        disabled={isSaving}
+                        className="flex flex-col gap-1 h-auto py-3"
+                        data-testid="button-wallet-mode-lnbits"
+                      >
+                        <Bitcoin className="h-4 w-4" />
+                        <span className="text-xs">{t('walletMode.lnbitsLabel')}</span>
+                      </Button>
+                      <Button
+                        variant={walletMode === "manual" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handleWalletModeChange("manual")}
+                        disabled={isSaving}
+                        className="flex flex-col gap-1 h-auto py-3"
+                        data-testid="button-wallet-mode-manual"
+                      >
+                        <ClipboardList className="h-4 w-4" />
+                        <span className="text-xs">{t('walletMode.manualLabel')}</span>
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {walletMode === "nwc" && t('walletMode.nwcDesc')}
+                      {walletMode === "lnbits" && t('walletMode.lnbitsDesc')}
+                      {walletMode === "manual" && t('walletMode.manualDesc')}
+                    </p>
+                  </div>
+                  
+                  {walletMode === "manual" && (
+                    <div className="space-y-4 mt-4 border-2 border-amber-500/40 bg-amber-500/5 rounded-lg p-4">
+                      <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-500/10">
+                        <p className="text-sm font-semibold text-amber-300">📱 {t('walletMode.manualTitle')}</p>
+                        <p className="text-sm text-muted-foreground mt-2">{t('walletMode.manualExplanation')}</p>
+                      </div>
+                      <div className="text-xs text-muted-foreground space-y-2">
+                        <p>✅ {t('walletMode.manualStep1')}</p>
+                        <p>✅ {t('walletMode.manualStep2')}</p>
+                        <p>✅ {t('walletMode.manualStep3')}</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {walletMode === "lnbits" && (
                   <div className="space-y-4 mt-4 border-2 border-primary/40 bg-primary/5 rounded-lg p-4">
                     {user.hasLnbitsConfigured ? (
                       <div className="space-y-3">
@@ -4537,7 +4619,7 @@ function SettingsModal({ user, setUser, activeTab, walletTab, setWalletTab, onCl
                   </div>
                   )}
                   
-                  {walletTab === "nwc" && (
+                  {walletMode === "nwc" && (
                   <div className="space-y-4 mt-4 border-2 border-cyan-500/40 bg-cyan-500/5 rounded-lg p-4">
                     {user.hasNwcConfigured ? (
                       <div className="space-y-3">
