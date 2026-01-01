@@ -7743,6 +7743,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       { type: "quiz", icon: "🧠", reward: 55, questionKey: "challenges.blink1", optionKeys: ["challenges.blink1a", "challenges.blink1b", "challenges.blink1c"], correct: 0, source: "Coinfinity Bitcoin Blinks" },
       { type: "quiz", icon: "⚡", reward: 50, questionKey: "challenges.blink2", optionKeys: ["challenges.blink2a", "challenges.blink2b", "challenges.blink2c"], correct: 1, source: "Coinfinity Bitcoin Blinks" },
       { type: "quiz", icon: "💰", reward: 52, questionKey: "challenges.blink3", optionKeys: ["challenges.blink3a", "challenges.blink3b", "challenges.blink3c"], correct: 2, source: "Coinfinity Bitcoin Blinks" },
+      { type: "quiz", icon: "✂️", reward: 50, questionKey: "challenges.blink4", optionKeys: ["challenges.blink4a", "challenges.blink4b", "challenges.blink4c"], correct: 0, source: "Coinfinity Bitcoin Blinks" },
+      { type: "quiz", icon: "🏦", reward: 50, questionKey: "challenges.blink5", optionKeys: ["challenges.blink5a", "challenges.blink5b", "challenges.blink5c"], correct: 1, source: "Coinfinity Bitcoin Blinks" },
+      { type: "quiz", icon: "👤", reward: 50, questionKey: "challenges.blink6", optionKeys: ["challenges.blink6a", "challenges.blink6b", "challenges.blink6c"], correct: 2, source: "Coinfinity Bitcoin Blinks" },
       { type: "quiz", icon: "🔒", reward: 55, questionKey: "challenges.q4", optionKeys: ["challenges.q4a", "challenges.q4b", "challenges.q4c"], correct: 0 },
       { type: "quiz", icon: "⛓️", reward: 50, questionKey: "challenges.q5", optionKeys: ["challenges.q5a", "challenges.q5b", "challenges.q5c"], correct: 0 },
       { type: "quiz", icon: "🪙", reward: 42, questionKey: "challenges.q6", optionKeys: ["challenges.q6a", "challenges.q6b", "challenges.q6c"], correct: 0 },
@@ -9578,7 +9581,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                 { term: "Fee", def: "Gebühr um eine Bitcoin-Transaktion ins Netzwerk zu senden" },
                 { term: "Lightning Address", def: "Einfache Adresse im Lightning Format (z.B. name@wallet.com)" },
                 { term: "DeFi", def: "Dezentralisierte Finanzierung - Finanzdienstleistungen ohne Bank" },
-                { term: "Altcoin", def: "Alle Kryptowährungen außer Bitcoin (Ethereum, Cardano, etc)" }
+                { term: "Altcoin", def: "Alle Kryptowährungen außer Bitcoin (Ethereum, Cardano, etc)" },
+                { term: "Bitcoin Blinks", def: "Kurze, verständliche Erklärungen zu Bitcoin & Geld von Coinfinity (perfekt zum Lernen)" }
               ]
                 .filter(g => g.term.toLowerCase().includes(glossarSearch.toLowerCase()) || g.def.toLowerCase().includes(glossarSearch.toLowerCase()))
                 .map((glossar, idx) => (
