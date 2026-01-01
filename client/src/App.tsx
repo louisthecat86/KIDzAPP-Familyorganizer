@@ -2609,6 +2609,10 @@ function RoleSelectionPage({ onSelect }: { onSelect: (role: UserRole) => void })
               <span className="text-amber-500 flex-shrink-0">🎓</span>
               <span>{t('landing.step5')}</span>
             </div>
+            <div className="flex gap-2 mt-3 pt-3 border-t border-white/20">
+              <span className="text-primary flex-shrink-0">⚡</span>
+              <span>{t('landing.paymentModes')}</span>
+            </div>
           </div>
         </div>
 

@@ -11,6 +11,7 @@
     "step3": "Parents approve & pay out instantly",
     "step4": "Family calendar, chat & shared shopping list",
     "step5": "Bitcoin education section with extra rewards for kids",
+    "paymentModes": "3 payment methods: Automatic (LNbits/NWC) or manual via QR code",
     "parentDesc": "Manage tasks & wallet",
     "childDesc": "Complete tasks & earn Sats",
     "newFamily": "Create New Family",
