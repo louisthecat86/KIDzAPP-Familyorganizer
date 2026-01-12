@@ -10880,11 +10880,28 @@ function TrackerChart({ userId }: { userId: number }) {
         
         if (snapshotsRes.ok) {
           const rawSnapshots = await snapshotsRes.json();
-          const normalized = rawSnapshots.map((s: any) => ({
-            ...s,
-            date: new Date(s.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }),
-            valueEurNormalized: s.valueEur / 100
-          }));
+          
+          // Deduplicate by date (keep last entry per day) and ensure monotonic sats growth
+          const byDate = new Map<string, any>();
+          rawSnapshots.forEach((s: any) => {
+            const dateKey = new Date(s.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+            byDate.set(dateKey, s);
+          });
+          
+          // Convert to array and ensure monotonic growth (highest seen sats)
+          let maxSats = 0;
+          let maxEur = 0;
+          const normalized = Array.from(byDate.entries()).map(([dateKey, s]) => {
+            maxSats = Math.max(maxSats, s.satoshiAmount || 0);
+            maxEur = Math.max(maxEur, (s.valueEur || 0) / 100);
+            return {
+              ...s,
+              date: dateKey,
+              satoshiAmount: maxSats,
+              valueEurNormalized: maxEur
+            };
+          });
+          
           setSnapshots(normalized);
         }
       } catch (error) {
