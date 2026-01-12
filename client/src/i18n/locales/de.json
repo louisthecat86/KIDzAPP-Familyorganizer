@@ -683,6 +683,11 @@
     "quizPassed": "🎉 Quiz bestanden!",
     "quizPassedDesc": "+{{xp}} XP! Level {{level}}! {{score}}/{{total}} richtig!",
     "quizPassedDescSimple": "{{score}}/{{total}} richtig! Weiter so!",
+    "cooldown": {
+      "title": "Lernpause",
+      "description": "Nimm dir Zeit, das Gelernte zu vertiefen. Lies nochmal die Inhalte oder probiere den Konverter aus!",
+      "remaining": "verbleibend"
+    },
     "quizAlreadyPassed": "Quiz bereits bestanden!",
     "quizAlreadyPassedDesc": "{{score}}/{{total}} richtig!",
     "quizTryAgain": "Probier nochmal!",

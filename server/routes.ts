@@ -4142,7 +4142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Complete module without XP (simplified quiz system)
+  // Complete module without XP (simplified quiz system with cooldown)
   app.post("/api/learning-progress/:peerId/complete-module", async (req, res) => {
     try {
       const peerId = parseInt(req.params.peerId);
@@ -4154,8 +4154,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       await storage.completeModule(peerId, moduleId);
       
+      // Update lastActivityDate to track cooldown
+      await storage.updateLearningProgress(peerId, {
+        lastActivityDate: new Date()
+      });
+      
       const updatedProgress = await storage.getLearningProgress(peerId);
-      res.json(updatedProgress);
+      
+      // Calculate next module available time (30 minutes from now)
+      const cooldownMinutes = 30;
+      const nextModuleAvailableAt = new Date(Date.now() + cooldownMinutes * 60 * 1000);
+      
+      res.json({
+        ...updatedProgress,
+        nextModuleAvailableAt: nextModuleAvailableAt.toISOString(),
+        cooldownMinutes
+      });
     } catch (error) {
       console.error("Error completing module:", error);
       res.status(500).json({ error: "Failed to complete module" });

@@ -7774,6 +7774,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
   const [quizSubmitted, setQuizSubmitted] = useState<Record<string, boolean>>({});
   const [expandedQuizzes, setExpandedQuizzes] = useState<Record<string, boolean>>({});
+  const [nextModuleAvailableAt, setNextModuleAvailableAt] = useState<Date | null>(null);
+  const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
   const [expandedLevels, setExpandedLevels] = useState<Record<string, boolean>>({ beginner: true, intermediate: false, advanced: false });
   const [selectedChallenge, setSelectedChallenge] = useState<any>(null);
   const [expandedChallengeQuestion, setExpandedChallengeQuestion] = useState<number | null>(null);
@@ -7802,6 +7804,16 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           const data = await response.json();
           setServerProgress(data);
           
+          // Calculate remaining cooldown from lastActivityDate
+          if (data.lastActivityDate) {
+            const lastActivity = new Date(data.lastActivityDate);
+            const cooldownMs = 30 * 60 * 1000; // 30 minutes
+            const availableAt = new Date(lastActivity.getTime() + cooldownMs);
+            if (availableAt > new Date()) {
+              setNextModuleAvailableAt(availableAt);
+            }
+          }
+          
           if (data.graduatedAt) {
             const wasNewlyGraduated = !graduationStatus?.graduated;
             setGraduationStatus({ 
@@ -7825,6 +7837,28 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
     };
     fetchLearningProgress();
   }, [user.id]);
+  
+  // Cooldown timer effect
+  useEffect(() => {
+    if (!nextModuleAvailableAt) {
+      setCooldownRemaining(0);
+      return;
+    }
+    
+    const updateCooldown = () => {
+      const now = new Date();
+      const remaining = Math.max(0, nextModuleAvailableAt.getTime() - now.getTime());
+      setCooldownRemaining(Math.ceil(remaining / 1000));
+      
+      if (remaining <= 0) {
+        setNextModuleAvailableAt(null);
+      }
+    };
+    
+    updateCooldown();
+    const interval = setInterval(updateCooldown, 1000);
+    return () => clearInterval(interval);
+  }, [nextModuleAvailableAt]);
   
   // Fetch BTC price for converter
   useEffect(() => {
@@ -8976,6 +9010,12 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
             if (response.ok) {
               const updatedProgress = await response.json();
               setServerProgress(updatedProgress);
+              
+              // Set cooldown timer
+              if (updatedProgress.nextModuleAvailableAt) {
+                setNextModuleAvailableAt(new Date(updatedProgress.nextModuleAvailableAt));
+              }
+              
               console.log("✅ Progress synced from server:", updatedProgress);
               toast({ title: t('education.quizPassed'), description: t('education.quizPassedDescSimple', { score, total: module.quiz.length }) });
               setExpandedQuizzes({ ...expandedQuizzes, [moduleId]: false });
@@ -9070,6 +9110,22 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
         {educationTab === "modules" && (
           <div className="space-y-8">
+            {/* Learning Cooldown Banner */}
+            {cooldownRemaining > 0 && (
+              <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">⏳</span>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-amber-700">{t('education.cooldown.title')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('education.cooldown.description')}</p>
+                    <p className="text-lg font-bold text-amber-600 mt-1">
+                      {Math.floor(cooldownRemaining / 60)}:{String(cooldownRemaining % 60).padStart(2, '0')} {t('education.cooldown.remaining')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {/* Graduation Celebration */}
             {graduationStatus?.graduated && (
               <div className="relative overflow-hidden rounded-2xl border-4 border-amber-400 bg-gradient-to-br from-amber-500/20 via-yellow-400/20 to-orange-500/20 p-6 shadow-2xl">
@@ -9231,7 +9287,13 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                               <CardContent className="pb-3"><div className="space-y-2 mb-4">{module.content.map((text, idx) => (<p key={idx} className="text-sm text-muted-foreground">• {text}</p>))}</div></CardContent>
                               <CardFooter className="gap-2">
                                 {!isPassed ? (
-                                  <Button onClick={() => setShowQuiz(module.id)} className="flex-1 bg-blue-600 hover:bg-blue-700" size="sm" data-testid={`button-quiz-${module.id}`}>{t('education.startQuizButton')} →</Button>
+                                  cooldownRemaining > 0 ? (
+                                    <Button disabled className="flex-1 bg-gray-400 cursor-not-allowed" size="sm">
+                                      ⏳ {Math.floor(cooldownRemaining / 60)}:{String(cooldownRemaining % 60).padStart(2, '0')}
+                                    </Button>
+                                  ) : (
+                                    <Button onClick={() => setShowQuiz(module.id)} className="flex-1 bg-blue-600 hover:bg-blue-700" size="sm" data-testid={`button-quiz-${module.id}`}>{t('education.startQuizButton')} →</Button>
+                                  )
                                 ) : (
                                   <Button onClick={() => {setShowQuiz(module.id); setExpandedQuizzes({...expandedQuizzes, [module.id]: true});}} variant="outline" className="flex-1" size="sm">{t('education.repeatQuiz')}</Button>
                                 )}
