@@ -1,0 +1,52 @@
+Um die Fehler zu beheben und die "Daily Challenges" wie geplant zu entfernen, musst du Anpassungen in drei Bereichen deines GitHub-Repositorys vornehmen.
+
+Hier ist dein Fahrplan:
+
+1. Die Datenbank-Fehler beheben (resolved_at)
+Der Fehler column "resolved_at" does not exist bedeutet, dass dein Code neuer ist als deine Datenbankstruktur.
+
+Datei: shared/schema.ts (oder wo deine Tabellen definiert sind).
+
+Aktion: Überprüfe, ob die Tabelle failed_payments eine Spalte resolvedAt hat.
+
+Wenn sie fehlt, füge sie hinzu: resolvedAt: timestamp("resolved_at").
+
+Danach: Erstelle lokal eine neue Migration und pushe sie:
+
+Bash
+
+npx drizzle-kit generate
+Stelle sicher, dass die neue Datei im Ordner drizzle/ (oder deinem Migrations-Ordner) auf GitHub landet. Render sollte diese beim Deployment automatisch ausführen (sofern dein Start-Befehl npx drizzle-kit migrate && node dist/index.js oder ähnlich lautet).
+
+2. Daily Challenges entfernen (Backend)
+Damit die 500er-Fehler aufhören, musst du die Logik im Server löschen.
+
+Datei: server/routes.ts (oder server/index.ts).
+
+Aktion: * Lösche die Route app.get("/api/daily-challenge/:peerId/:date", ... ).
+
+Lösche die Route app.post("/api/daily-challenge/complete", ... ).
+
+Datei: server/storage.ts (oder server/db.ts).
+
+Lösche Funktionen wie getDailyChallenge oder completeDailyChallenge.
+
+Datei: shared/schema.ts.
+
+Lösche die Definition der dailyChallenges-Tabelle.
+
+3. Frontend-Aufrufe bereinigen
+Dein Frontend versucht in den Logs immer noch, die Challenges abzurufen, was zu Fehlern führt.
+
+Suche im Code: Suche nach allen Stellen, die /api/daily-challenge aufrufen (wahrscheinlich in einer api.ts oder direkt in React-Komponenten).
+
+Aktion: * Entferne die API-Funktionen (z.B. fetchDailyChallenge).
+
+Lösche oder kommentiere die UI-Komponente aus, die die "Tägliche Aufgabe" anzeigt.
+
+💡 Profi-Tipp für den Build-Blocker
+Da dein Build-Schritt #18 (chown -R) in den Logs 10 Minuten gedauert hat, solltest du dein Dockerfile anpassen:
+
+Suche: Die Zeile RUN addgroup ... && chown -R kidzapp:nodejs /app.
+
+Optimierung: Versuche, den chown-Befehl vor dem Kopieren der großen dist-Ordner auszuführen oder nur auf spezifische Unterordner anzuwenden. Ein chown auf tausende Dateien in einem Docker-Layer ist extrem ineffizient.

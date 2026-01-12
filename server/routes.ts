@@ -4193,33 +4193,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/learning-progress/:peerId/complete-daily", async (req, res) => {
-    try {
-      const peerId = parseInt(req.params.peerId);
-      const { xp } = req.body;
-      
-      await storage.updateStreak(peerId);
-      
-      const currentProgress = await storage.getLearningProgress(peerId);
-      if (currentProgress) {
-        await storage.updateLearningProgress(peerId, {
-          dailyChallengesCompleted: currentProgress.dailyChallengesCompleted + 1,
-          totalSatsEarned: currentProgress.totalSatsEarned + (xp || 0)
-        });
-      }
-      
-      if (xp && xp > 0) {
-        await storage.addXpAndCheckLevel(peerId, xp);
-      }
-      
-      const updatedProgress = await storage.getLearningProgress(peerId);
-      res.json(updatedProgress);
-    } catch (error) {
-      console.error("Error completing daily challenge:", error);
-      res.status(500).json({ error: "Failed to complete daily challenge" });
-    }
-  });
-
   app.get("/api/learning-progress/:peerId/graduation-status", async (req, res) => {
     try {
       const peerId = parseInt(req.params.peerId);
@@ -4603,38 +4576,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete item" });
-    }
-  });
-
-  // Daily Challenge endpoints
-  app.get("/api/daily-challenge/:peerId/:date", async (req, res) => {
-    try {
-      const { peerId, date } = req.params;
-      const challenge = await storage.getTodayChallenge(parseInt(peerId), date);
-      res.json(challenge || { challengeDate: date, completed: false });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch challenge" });
-    }
-  });
-
-  app.post("/api/daily-challenge/complete", async (req, res) => {
-    try {
-      const { peerId, challengeType } = req.body;
-      
-      const todayDate = getBerlinTime().toISOString().split('T')[0];
-      const existingChallenge = await storage.getTodayChallenge(parseInt(peerId), todayDate);
-      
-      if (existingChallenge?.completed) {
-        return res.status(400).json({ error: "Challenge already completed today", alreadyCompleted: true });
-      }
-      
-      const challenge = await storage.completeTodayChallenge(parseInt(peerId), todayDate, challengeType);
-      const currentProgress = await storage.getLearningProgress(parseInt(peerId));
-      const newCount = (currentProgress?.dailyChallengesCompleted || 0) + 1;
-      const progress = await storage.updateLearningProgress(parseInt(peerId), { dailyChallengesCompleted: newCount });
-      res.json({ challenge, progress });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to complete challenge" });
     }
   });
 
@@ -5764,8 +5705,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         category,
         description: description || null,
         language: language || "de",
-        connectionId: connectionId || peer.connectionId, // Family-specific by default
-        createdBy: peerId
+        connectionId: connectionId || peer.connectionId // Family-specific by default
       });
       
       res.json(resource);

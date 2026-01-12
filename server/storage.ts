@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks, type LearningProgress, type InsertLearningProgress, learningProgress, type DailyChallenge, dailyChallenges, type ShoppingList, type InsertShoppingList, shoppingList, type FamilyBoardPost, type InsertFamilyBoardPost, familyBoardPosts, type LocationPing, type InsertLocationPing, locationPings, type EmergencyContact, type InsertEmergencyContact, emergencyContacts, type PasswordSafeEntry, type InsertPasswordSafeEntry, passwordSafeEntries, type BirthdayReminder, type InsertBirthdayReminder, birthdayReminders, type FailedPayment, type InsertFailedPayment, failedPayments, type ManualPayment, type InsertManualPayment, manualPayments, type PushSubscription, pushSubscriptions, type EducationResource, type InsertEducationResource, educationResources } from "@shared/schema";
+import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks, type LearningProgress, type InsertLearningProgress, learningProgress, type ShoppingList, type InsertShoppingList, shoppingList, type FamilyBoardPost, type InsertFamilyBoardPost, familyBoardPosts, type LocationPing, type InsertLocationPing, locationPings, type EmergencyContact, type InsertEmergencyContact, emergencyContacts, type PasswordSafeEntry, type InsertPasswordSafeEntry, passwordSafeEntries, type BirthdayReminder, type InsertBirthdayReminder, birthdayReminders, type FailedPayment, type InsertFailedPayment, failedPayments, type ManualPayment, type InsertManualPayment, manualPayments, type PushSubscription, pushSubscriptions, type EducationResource, type InsertEducationResource, educationResources } from "@shared/schema";
 import { eq, and, desc, lt, isNull, or, inArray, sql } from "drizzle-orm";
 
 export interface IStorage {
@@ -99,10 +99,6 @@ export interface IStorage {
   unlockAchievement(peerId: number, achievementId: string): Promise<LearningProgress>;
   completeModule(peerId: number, moduleId: string): Promise<LearningProgress>;
   updateStreak(peerId: number): Promise<LearningProgress>;
-
-  // Daily Challenge operations
-  getTodayChallenge(peerId: number, challengeDate: string): Promise<any | undefined>;
-  completeTodayChallenge(peerId: number, challengeDate: string, challengeType: string): Promise<any>;
 
   // Graduation operations
   checkAndProcessGraduation(peerId: number, graduationBonusSats?: number): Promise<{ graduated: boolean; newProgress: LearningProgress | undefined; bonusPaid: boolean }>;
@@ -980,29 +976,6 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  // Daily Challenge operations
-  async getTodayChallenge(peerId: number, challengeDate: string): Promise<any | undefined> {
-    const result = await db.select().from(dailyChallenges)
-      .where(and(eq(dailyChallenges.peerId, peerId), eq(dailyChallenges.challengeDate, challengeDate)))
-      .limit(1);
-    return result[0];
-  }
-
-  async completeTodayChallenge(peerId: number, challengeDate: string, challengeType: string): Promise<any> {
-    const existing = await this.getTodayChallenge(peerId, challengeDate);
-    if (existing) {
-      const result = await db.update(dailyChallenges)
-        .set({ completed: true })
-        .where(eq(dailyChallenges.id, existing.id))
-        .returning();
-      return result[0];
-    }
-    const result = await db.insert(dailyChallenges)
-      .values({ peerId, challengeDate, challengeType, completed: true })
-      .returning();
-    return result[0];
-  }
-
   async checkAndProcessGraduation(peerId: number, graduationBonusSats: number = 2100): Promise<{ graduated: boolean; newProgress: LearningProgress | undefined; bonusPaid: boolean }> {
     const progress = await this.getLearningProgress(peerId);
     if (!progress) {
@@ -1179,8 +1152,6 @@ export class DatabaseStorage implements IStorage {
     
     await db.delete(eventRsvps).where(eq(eventRsvps.peerId, peerId));
     
-    await db.delete(dailyChallenges).where(eq(dailyChallenges.peerId, peerId));
-    
     if (peer.role === 'child') {
       await db.update(tasks)
         .set({ assignedTo: null, status: 'open', proof: null })
@@ -1211,7 +1182,6 @@ export class DatabaseStorage implements IStorage {
   async deletePeerData(peerId: number): Promise<void> {
     await db.delete(chatMessages).where(eq(chatMessages.fromPeerId, peerId));
     await db.delete(eventRsvps).where(eq(eventRsvps.peerId, peerId));
-    await db.delete(dailyChallenges).where(eq(dailyChallenges.peerId, peerId));
     await db.delete(allowances).where(eq(allowances.childId, peerId));
     await db.delete(levelBonusPayouts).where(eq(levelBonusPayouts.childId, peerId));
     await db.delete(learningProgress).where(eq(learningProgress.peerId, peerId));
@@ -1606,7 +1576,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateEducationResource(id: number, updates: Partial<EducationResource>): Promise<EducationResource | undefined> {
     const result = await db.update(educationResources)
-      .set({ ...updates, updatedAt: new Date() })
+      .set(updates)
       .where(eq(educationResources.id, id))
       .returning();
     return result[0];
