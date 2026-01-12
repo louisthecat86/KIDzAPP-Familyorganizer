@@ -3173,9 +3173,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const peerId = parseInt(req.params.peerId);
       const snapshots = await storage.getDailyBitcoinSnapshots(peerId);
       res.json(snapshots.map(s => ({
-        date: new Date(s.createdAt).toLocaleDateString("de-DE", { month: "short", day: "numeric" }),
-        timestamp: s.createdAt,
-        value: s.valueEur / 100 // Convert from cents to euros
+        date: s.createdAt,
+        satoshiAmount: s.satoshiAmount,
+        valueEur: s.valueEur
       })));
     } catch (error) {
       console.error("[Bitcoin Snapshots Error]:", error);
