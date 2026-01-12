@@ -10859,6 +10859,8 @@ function TrackerChart({ userId }: { userId: number }) {
   const [satsBreakdown, setSatsBreakdown] = useState<any>(null);
   const [snapshots, setSnapshots] = useState<any[]>([]);
   const [showBreakdown, setShowBreakdown] = useState(false);
+  const [showBtcLine, setShowBtcLine] = useState(false);
+  const [showFiatLine, setShowFiatLine] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -10986,14 +10988,20 @@ function TrackerChart({ userId }: { userId: number }) {
               <div className="w-3 h-3 rounded bg-emerald-400"></div>
               <span className="text-slate-300">{t('tracker.legendSats') || 'Sats'}</span>
             </div>
-            <div className="flex items-center gap-2 text-xs">
+            <button 
+              onClick={() => setShowBtcLine(!showBtcLine)}
+              className={`flex items-center gap-2 text-xs px-2 py-1 rounded transition-all ${showBtcLine ? 'bg-violet-500/30 border border-violet-500/50' : 'opacity-50 hover:opacity-100'}`}
+            >
               <div className="w-3 h-1 bg-violet-400 rounded"></div>
               <span className="text-slate-300">{t('tracker.legendBtcValue') || 'Bitcoin €'}</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs">
+            </button>
+            <button 
+              onClick={() => setShowFiatLine(!showFiatLine)}
+              className={`flex items-center gap-2 text-xs px-2 py-1 rounded transition-all ${showFiatLine ? 'bg-amber-500/30 border border-amber-500/50' : 'opacity-50 hover:opacity-100'}`}
+            >
               <div className="w-3 h-1 bg-amber-400/60 rounded" style={{ borderStyle: 'dashed' }}></div>
               <span className="text-slate-300">{t('tracker.legendFiat') || 'Fiat €'}</span>
-            </div>
+            </button>
           </div>
           
           <div className="h-36">
@@ -11061,40 +11069,31 @@ function TrackerChart({ userId }: { userId: number }) {
                   strokeWidth={2}
                   fill="url(#satsGrad)" 
                 />
-                <Line 
-                  yAxisId="euro"
-                  type="monotone" 
-                  dataKey="fiatBaseline" 
-                  stroke="#fbbf24" 
-                  strokeWidth={2}
-                  strokeDasharray="4 4"
-                  strokeOpacity={0.6}
-                  dot={false}
-                />
-                <Line 
-                  yAxisId="euro"
-                  type="monotone" 
-                  dataKey="valueEurNormalized" 
-                  stroke="#a78bfa" 
-                  strokeWidth={3}
-                  dot={{ fill: '#a78bfa', r: 3 }}
-                />
+                {showFiatLine && (
+                  <Line 
+                    yAxisId="euro"
+                    type="monotone" 
+                    dataKey="fiatBaseline" 
+                    stroke="#fbbf24" 
+                    strokeWidth={2}
+                    strokeDasharray="4 4"
+                    strokeOpacity={0.6}
+                    dot={false}
+                  />
+                )}
+                {showBtcLine && (
+                  <Line 
+                    yAxisId="euro"
+                    type="monotone" 
+                    dataKey="valueEurNormalized" 
+                    stroke="#a78bfa" 
+                    strokeWidth={3}
+                    dot={{ fill: '#a78bfa', r: 3 }}
+                  />
+                )}
               </AreaChart>
             </ResponsiveContainer>
           </div>
-          
-          {satsGrowth > 0 && (
-            <div className="bg-emerald-900/50 border border-emerald-700/50 rounded-lg p-3 text-center">
-              <p className="text-sm text-emerald-300">
-                📈 <strong>+{satsGrowth.toLocaleString()} sats</strong> {t('tracker.sinceBeginnig') || 'seit du angefangen hast!'}
-              </p>
-              {eurGrowth > 0 && (
-                <p className="text-xs text-emerald-400/90 mt-1">
-                  {t('tracker.worthMore') || 'Deine Ersparnisse sind jetzt'} <strong>€{eurGrowth.toFixed(2)}</strong> {t('tracker.moreWorth') || 'mehr wert!'}
-                </p>
-              )}
-            </div>
-          )}
         </div>
       )}
 
