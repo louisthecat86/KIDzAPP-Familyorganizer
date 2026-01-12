@@ -1686,7 +1686,11 @@
       "refreshing": "Aktualisiere...",
       "confirming": "Bestätige...",
       "openInWallet": "In Wallet öffnen",
-      "tapToOpen": "Tippe auf den QR-Code oder Button um deine Wallet zu öffnen"
+      "tapToOpen": "Tippe auf den QR-Code oder Button um deine Wallet zu öffnen",
+      "enterPreimage": "Preimage eingeben zur Verifizierung",
+      "preimageHint": "Nach dem Bezahlen zeigt deine Wallet ein 'Preimage' oder 'Payment Secret'. Kopiere es hier, um die Zahlung zu bestätigen.",
+      "verifyPayment": "Zahlung verifizieren",
+      "invalidPreimage": "Ungültiges Preimage-Format. Gib den 64-Zeichen Hex-String aus deiner Wallet ein."
     }
   }
 }

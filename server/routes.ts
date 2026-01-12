@@ -1062,10 +1062,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Mark a manual payment as paid
+  // Mark a manual payment as paid (requires preimage verification)
   app.post("/api/manual-payment/:id/paid", async (req, res) => {
     try {
       const paymentId = parseInt(req.params.id);
+      const { preimage } = req.body;
       const peerId = req.session.peerId;
       
       if (!peerId) {
@@ -1086,11 +1087,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Payment does not belong to your family" });
       }
       
+      // SECURITY: Require preimage verification
+      // The payment preimage, when hashed with SHA256, should equal the payment_hash
+      // This proves the payment was actually made
+      if (!preimage) {
+        return res.status(400).json({ 
+          error: "Preimage required to verify payment",
+          hint: "After paying the invoice, your wallet shows a 'preimage' or 'payment secret'. Enter it here to confirm."
+        });
+      }
+      
+      const crypto = await import("crypto");
+      const preimageBuffer = Buffer.from(preimage, "hex");
+      
+      if (preimageBuffer.length !== 32) {
+        return res.status(400).json({ 
+          error: "Invalid preimage format. Must be a 64-character hex string.",
+          hint: "The preimage is shown in your wallet after paying the invoice."
+        });
+      }
+      
+      const computedHash = crypto.createHash("sha256").update(preimageBuffer).digest("hex");
+      console.log(`[Payment Verification] Preimage: ${preimage.substring(0, 16)}..., Computed hash: ${computedHash}`);
+      
+      // Decode BOLT11 invoice to extract actual payment_hash and verify
+      let invoicePaymentHash: string | null = null;
+      try {
+        const { decode } = await import("light-bolt11-decoder");
+        const decoded = decode(payment.bolt11);
+        const paymentHashSection = decoded.sections.find((s: any) => s.name === "payment_hash") as { value?: string } | undefined;
+        if (paymentHashSection?.value) {
+          invoicePaymentHash = paymentHashSection.value;
+          console.log(`[Payment Verification] Invoice payment_hash: ${invoicePaymentHash}`);
+        }
+      } catch (decodeError) {
+        console.error("[Payment Verification] Failed to decode bolt11:", decodeError);
+        return res.status(500).json({
+          error: "Invoice verification failed",
+          hint: "Could not decode the invoice. Please refresh and try again."
+        });
+      }
+      
+      // payment_hash is required for verification - cannot accept payment without it
+      if (!invoicePaymentHash) {
+        console.error("[Payment Verification] No payment_hash found in invoice");
+        return res.status(500).json({
+          error: "Invoice verification failed",
+          hint: "Invoice is missing payment hash. Please refresh and try again."
+        });
+      }
+      
+      // Verify the preimage matches the payment_hash
+      if (computedHash.toLowerCase() !== invoicePaymentHash.toLowerCase()) {
+        console.warn(`[Payment Verification] ✗ Hash mismatch! Expected: ${invoicePaymentHash}, Got: ${computedHash}`);
+        return res.status(400).json({
+          error: "Preimage verification failed",
+          hint: "The preimage does not match this invoice. Please use the correct preimage from your wallet."
+        });
+      }
+      console.log(`[Payment Verification] ✓ Hash verified - preimage matches payment_hash`);
+      
       const updatedPayment = await storage.markManualPaymentPaid(paymentId);
       
-      // Update child's balance
+      if (!updatedPayment) {
+        return res.status(500).json({ error: "Failed to update payment status" });
+      }
+      
+      console.log(`[Payment Verification] ✓ Payment ${paymentId} verified with preimage, amount: ${updatedPayment.sats} sats`);
+      
+      // Update child's balance (add to existing balance)
       if (updatedPayment) {
-        await storage.updateBalance(updatedPayment.childId, updatedPayment.sats);
+        const child = await storage.getPeer(updatedPayment.childId);
+        const newBalance = (child?.balance || 0) + updatedPayment.sats;
+        await storage.updateBalance(updatedPayment.childId, newBalance);
         
         // Create transaction record
         await storage.createTransaction({
@@ -1102,6 +1171,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           paymentHash: updatedPayment.paymentHash,
           status: "completed",
         });
+        
+        // Send notification to child about payment received
+        try {
+          await notifyPaymentReceived(
+            updatedPayment.childId,
+            updatedPayment.sats,
+            updatedPayment.memo || "Zahlung"
+          );
+        } catch (pushError) {
+          console.warn("[Push] Failed to notify payment received:", pushError);
+        }
       }
       
       res.json({ success: true, payment: updatedPayment });

@@ -105,6 +105,9 @@ export function ManualPaymentQRModal({ isOpen, onClose, payment, onPaymentComple
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [currentPayment, setCurrentPayment] = useState(payment);
+  const [preimage, setPreimage] = useState<string>("");
+  const [showPreimageInput, setShowPreimageInput] = useState(false);
+  const [preimageError, setPreimageError] = useState<string>("");
 
   useEffect(() => {
     setCurrentPayment(payment);
@@ -144,22 +147,41 @@ export function ManualPaymentQRModal({ isOpen, onClose, payment, onPaymentComple
 
   const handlePaid = async () => {
     if (!currentPayment) return;
+    
+    // First click shows preimage input, second click confirms with preimage
+    if (!showPreimageInput) {
+      setShowPreimageInput(true);
+      return;
+    }
+    
+    // Validate preimage format (64 hex characters = 32 bytes)
+    const cleanPreimage = preimage.trim().toLowerCase();
+    if (!/^[0-9a-f]{64}$/.test(cleanPreimage)) {
+      setPreimageError(t("walletMode.qrModal.invalidPreimage") || "Invalid preimage format. Enter the 64-character hex string from your wallet.");
+      return;
+    }
+    
     setIsConfirming(true);
+    setPreimageError("");
     try {
       const res = await apiFetch(`/api/manual-payment/${currentPayment.id}/paid`, {
-        method: "POST"
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ preimage: cleanPreimage })
       });
       const data = await res.json();
       if (res.ok && data.success) {
+        setPreimage("");
+        setShowPreimageInput(false);
         onPaymentComplete();
         onClose();
       } else {
         console.error("Payment confirmation failed:", data.error);
-        alert(data.error || t('common.error'));
+        setPreimageError(data.hint || data.error || t('common.error'));
       }
     } catch (error) {
       console.error("Error confirming payment:", error);
-      alert(t('common.error'));
+      setPreimageError(t('common.error'));
     } finally {
       setIsConfirming(false);
     }
@@ -313,25 +335,62 @@ export function ManualPaymentQRModal({ isOpen, onClose, payment, onPaymentComple
             )}
           </div>
 
+          {!isExpired && showPreimageInput && (
+            <div className="w-full space-y-3 p-4 bg-amber-100/50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800" data-testid="preimage-input-section">
+              <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                <Key className="h-5 w-5" />
+                <span className="font-semibold">{t("walletMode.qrModal.enterPreimage") || "Enter Preimage to Verify"}</span>
+              </div>
+              <p className="text-xs text-amber-600/80 dark:text-amber-400/80">
+                {t("walletMode.qrModal.preimageHint") || "After paying, your wallet shows a 'preimage' or 'payment secret'. Copy it here to confirm."}
+              </p>
+              <Input
+                type="text"
+                placeholder="64-character hex string"
+                value={preimage}
+                onChange={(e) => {
+                  setPreimage(e.target.value);
+                  setPreimageError("");
+                }}
+                className="font-mono text-xs bg-white dark:bg-gray-800 border-amber-300 dark:border-amber-700"
+                data-testid="input-preimage"
+              />
+              {preimageError && (
+                <p className="text-xs text-red-500 dark:text-red-400 flex items-center gap-1" data-testid="preimage-error">
+                  <AlertTriangle className="h-3 w-3" />
+                  {preimageError}
+                </p>
+              )}
+            </div>
+          )}
+
           {!isExpired && (
             <div className="flex gap-3 w-full pt-2">
               <Button 
                 variant="outline" 
-                onClick={handleCancel} 
+                onClick={() => {
+                  if (showPreimageInput) {
+                    setShowPreimageInput(false);
+                    setPreimage("");
+                    setPreimageError("");
+                  } else {
+                    handleCancel();
+                  }
+                }} 
                 className="flex-1 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/30" 
                 data-testid="button-cancel-payment"
               >
                 <X className="h-4 w-4 mr-2" />
-                {t("walletMode.qrModal.cancelPayment")}
+                {showPreimageInput ? t("common.back") : t("walletMode.qrModal.cancelPayment")}
               </Button>
               <Button 
                 onClick={handlePaid} 
-                disabled={isConfirming} 
-                className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg" 
+                disabled={isConfirming || (showPreimageInput && !preimage.trim())} 
+                className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg disabled:opacity-50" 
                 data-testid="button-ive-paid"
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
-                {isConfirming ? t("walletMode.qrModal.confirming") : t("walletMode.qrModal.ivePaid")}
+                {isConfirming ? t("walletMode.qrModal.confirming") : (showPreimageInput ? t("walletMode.qrModal.verifyPayment") || "Verify Payment" : t("walletMode.qrModal.ivePaid"))}
               </Button>
             </div>
           )}
