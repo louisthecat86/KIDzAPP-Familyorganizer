@@ -1,0 +1,300 @@
+2026-01-12T11:01:34.465801819Z #20 sha256:1800b2c786117e4f94537040bce7367850f31fc9b26b9c1024f238c86e97d5f9 124.29MB / 124.29MB 0.7s done
+2026-01-12T11:01:34.465822179Z #20 extracting sha256:1800b2c786117e4f94537040bce7367850f31fc9b26b9c1024f238c86e97d5f9
+2026-01-12T11:01:49.215421832Z #20 extracting sha256:1800b2c786117e4f94537040bce7367850f31fc9b26b9c1024f238c86e97d5f9 14.9s done
+2026-01-12T11:01:49.357357589Z #20 sha256:b01a5b70b630e12577b8740be433a6ea3f813585a474a74055decf8e5b584c9f 18.06MB / 18.06MB 0.1s done
+2026-01-12T11:01:49.511104058Z #20 extracting sha256:b01a5b70b630e12577b8740be433a6ea3f813585a474a74055decf8e5b584c9f
+2026-01-12T11:01:49.534722572Z #20 extracting sha256:b01a5b70b630e12577b8740be433a6ea3f813585a474a74055decf8e5b584c9f 0.2s done
+2026-01-12T11:01:49.666324902Z #20 sha256:db9b8ceebf49e2d57f0005bde3b378c62776cc8c64821c1a4d0adecc5830bf11 1.60MB / 1.60MB 0.0s done
+2026-01-12T11:01:49.666342823Z #20 extracting sha256:db9b8ceebf49e2d57f0005bde3b378c62776cc8c64821c1a4d0adecc5830bf11 0.1s done
+2026-01-12T11:01:49.861800375Z #20 writing cache image manifest sha256:e725bcf1f60338361042f09f9a4d711813079cfb6f09bd5666819d4b7b3187e8 done
+2026-01-12T11:01:49.861822355Z #20 DONE 16.3s
+2026-01-12T11:01:50.757837757Z Pushing image to registry...
+2026-01-12T11:01:51.494593525Z Upload succeeded
+2026-01-12T11:01:55.948911759Z ==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+2026-01-12T11:01:56.091942894Z ==> Deploying...
+2026-01-12T11:03:05.196632954Z ==> No open ports detected, continuing to scan...
+2026-01-12T11:03:05.542232264Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2026-01-12T11:03:13.678027242Z ==> Your service is live 🎉
+2026-01-12T11:03:13.843048126Z ==> 
+2026-01-12T11:03:13.997914821Z ==> ///////////////////////////////////////////////////////////
+2026-01-12T11:03:14.152013887Z ==> 
+2026-01-12T11:03:14.307766842Z ==> Available at your primary URL https://kidzapp.onrender.com
+2026-01-12T11:03:14.469607137Z ==> 
+2026-01-12T11:03:14.626697312Z ==> ///////////////////////////////////////////////////////////
+2026-01-12T11:08:18.152261636Z ==> Detected service running on port 10000
+2026-01-12T11:08:18.496231189Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2026-01-12T11:18:32.734173409Z     at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2026-01-12T11:18:32.734177229Z     at async DatabaseStorage.getDailyBitcoinSnapshots (file:///app/dist/index.js:1317:20)
+2026-01-12T11:18:32.734181859Z     at async file:///app/dist/index.js:4839:25 {
+2026-01-12T11:18:32.734185869Z   length: 115,
+2026-01-12T11:18:32.734190529Z   severity: 'ERROR',
+2026-01-12T11:18:32.734195039Z   code: '42703',
+2026-01-12T11:18:32.734199299Z   detail: undefined,
+2026-01-12T11:18:32.734203389Z   hint: undefined,
+2026-01-12T11:18:32.734207389Z   position: '73',
+2026-01-12T11:18:32.734212469Z   internalPosition: undefined,
+2026-01-12T11:18:32.734216389Z   internalQuery: undefined,
+2026-01-12T11:18:32.73423151Z   where: undefined,
+2026-01-12T11:18:32.73423427Z   schema: undefined,
+2026-01-12T11:18:32.73423668Z   table: undefined,
+2026-01-12T11:18:32.73423903Z   column: undefined,
+2026-01-12T11:18:32.73424149Z   dataType: undefined,
+2026-01-12T11:18:32.73424381Z   constraint: undefined,
+2026-01-12T11:18:32.73424612Z   file: 'parse_relation.c',
+2026-01-12T11:18:32.73424831Z   line: '3716',
+2026-01-12T11:18:32.73425108Z   routine: 'errorMissingColumn'
+2026-01-12T11:18:32.73425343Z }
+2026-01-12T11:18:32.739091674Z 11:18:32 AM [express] GET /api/btc-price 304 in 95ms :: {"usd":90446.965,"eur":77412.415,"timestamp":…
+2026-01-12T11:18:32.831267792Z 11:18:32 AM [express] GET /api/bitcoin-snapshots/2 500 in 193ms :: {"error":"Failed to fetch snapshot…
+2026-01-12T11:18:33.301777477Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:18:33.399107075Z 11:18:33 AM [express] GET /api/peers/2/sats-breakdown 304 in 759ms :: {"totalSats":547,"taskSats":50,…
+2026-01-12T11:48:51.978145872Z 11:48:51 AM [express] GET /api/learning-progress/2 304 in 186ms :: {"id":1,"peerId":2,"xp":0,"level":…
+2026-01-12T11:48:51.979371956Z 11:48:51 AM [express] GET /api/peers/connection/BTC-0I3RUY 200 in 188ms :: [{"id":1,"name":"Marc","ro…
+2026-01-12T11:48:52.159989224Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:48:52.254860376Z 11:48:52 AM [express] GET /api/peers/2/sats-breakdown 200 in 769ms :: {"totalSats":547,"taskSats":50,…
+2026-01-12T11:48:53.54693948Z 11:48:53 AM [express] GET /api/auth/me 304 in 95ms :: {"peerId":2,"role":"child","connectionId":"BTC-…
+2026-01-12T11:48:53.761213582Z [BTC Price] Returning cached data
+2026-01-12T11:48:53.856930561Z 11:48:53 AM [express] GET /api/btc-price 304 in 96ms :: {"usd":90497.205,"eur":77515.475,"timestamp":…
+2026-01-12T11:48:54.003377505Z 11:48:54 AM [express] GET /api/bitcoin-snapshots/2 200 in 249ms :: [{"date":"2026-01-12T05:32:53.029Z…
+2026-01-12T11:48:54.501691353Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:48:54.602711185Z 11:48:54 AM [express] GET /api/peers/2/sats-breakdown 304 in 839ms :: {"totalSats":547,"taskSats":50,…
+2026-01-12T11:51:18.36663475Z 11:51:18 AM [express] GET /api/auth/me 304 in 95ms :: {"peerId":2,"role":"child","connectionId":"BTC-…
+2026-01-12T11:51:18.618245025Z [Shopping List] Fetching list for: BTC-0I3RUY
+2026-01-12T11:51:18.805689965Z 11:51:18 AM [express] GET /api/learning-progress/2 200 in 281ms :: {"id":1,"peerId":2,"xp":0,"level":…
+2026-01-12T11:51:18.903718489Z 11:51:18 AM [express] GET /api/shopping-list/BTC-0I3RUY 200 in 282ms :: []
+2026-01-12T11:51:18.908069593Z 11:51:18 AM [express] GET /api/events/BTC-0I3RUY 200 in 375ms :: []
+2026-01-12T11:51:19.577245018Z [BTC Price] Returning cached data
+2026-01-12T11:51:19.673681191Z 11:51:19 AM [express] GET /api/btc-price 200 in 96ms :: {"usd":90497.205,"eur":77515.475,"timestamp":…
+2026-01-12T11:51:19.768755437Z 11:51:19 AM [express] GET /api/daily-challenge/2/Mon%20Jan%2012%202026 500 in 190ms :: {"error":"Fail…
+2026-01-12T11:51:19.769384959Z 11:51:19 AM [express] GET /api/peers/connection/BTC-0I3RUY 200 in 189ms :: [{"id":1,"name":"Marc","ro…
+2026-01-12T11:51:19.770840667Z 11:51:19 AM [express] GET /api/peers/connection/BTC-0I3RUY 200 in 189ms :: [{"id":1,"name":"Marc","ro…
+2026-01-12T11:51:19.862044769Z 11:51:19 AM [express] GET /api/tasks/BTC-0I3RUY 200 in 281ms :: [{"id":1,"connectionId":"BTC-0I3RUY",…
+2026-01-12T11:51:19.862675771Z 11:51:19 AM [express] GET /api/tasks/unlock-status/2/BTC-0I3RUY 200 in 284ms :: {"familyTasksComplete…
+2026-01-12T11:51:20.244777371Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:51:20.340295425Z 11:51:20 AM [express] GET /api/peers/2/sats-breakdown 200 in 759ms :: {"totalSats":547,"taskSats":50,…
+2026-01-12T11:51:22.397393892Z 11:51:22 AM [express] GET /api/auth/me 304 in 95ms :: {"peerId":2,"role":"child","connectionId":"BTC-…
+2026-01-12T11:51:22.57909902Z [BTC Price] Returning cached data
+2026-01-12T11:51:22.673511634Z 11:51:22 AM [express] GET /api/btc-price 304 in 94ms :: {"usd":90497.205,"eur":77515.475,"timestamp":…
+2026-01-12T11:51:22.729247446Z 11:51:22 AM [express] GET /api/bitcoin-snapshots/2 200 in 189ms :: [{"date":"2026-01-12T05:32:53.029Z…
+2026-01-12T11:51:23.196407058Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:51:23.291758899Z 11:51:23 AM [express] GET /api/peers/2/sats-breakdown 304 in 751ms :: {"totalSats":547,"taskSats":50,…
+2026-01-12T11:52:50.1365239Z [Shopping List] Fetching list for: BTC-0I3RUY
+2026-01-12T11:52:50.323937159Z 11:52:50 AM [express] GET /api/shopping-list/BTC-0I3RUY 304 in 187ms :: []
+2026-01-12T11:52:51.2463695Z 11:52:51 AM [express] GET /api/auth/me 304 in 93ms :: {"peerId":2,"role":"child","connectionId":"BTC-…
+2026-01-12T11:52:51.399666687Z [Shopping List] Fetching list for: BTC-0I3RUY
+2026-01-12T11:52:51.586474844Z 11:52:51 AM [express] GET /api/tasks/BTC-0I3RUY 200 in 187ms :: [{"id":1,"connectionId":"BTC-0I3RUY",…
+2026-01-12T11:52:51.587564625Z 11:52:51 AM [express] GET /api/shopping-list/BTC-0I3RUY 304 in 188ms :: []
+2026-01-12T11:52:52.387426236Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:52:52.481731398Z 11:52:52 AM [express] GET /api/peers/2/sats-breakdown 200 in 1081ms :: {"totalSats":547,"taskSats":50…
+2026-01-12T11:52:52.488335026Z [BTC Price] Returning cached data
+2026-01-12T11:52:52.582840601Z 11:52:52 AM [express] GET /api/btc-price 304 in 94ms :: {"usd":90497.205,"eur":77515.475,"timestamp":…
+2026-01-12T11:52:52.667613397Z 11:52:52 AM [express] GET /api/events/BTC-0I3RUY 200 in 281ms :: []
+2026-01-12T11:52:52.668105426Z 11:52:52 AM [express] GET /api/tasks/unlock-status/2/BTC-0I3RUY 200 in 282ms :: {"familyTasksComplete…
+2026-01-12T11:52:52.673020252Z 11:52:52 AM [express] GET /api/learning-progress/2 304 in 187ms :: {"id":1,"peerId":2,"xp":0,"level":…
+2026-01-12T11:52:52.674401619Z 11:52:52 AM [express] GET /api/peers/connection/BTC-0I3RUY 304 in 188ms :: [{"id":1,"name":"Marc","ro…
+2026-01-12T11:52:52.675278726Z 11:52:52 AM [express] GET /api/daily-challenge/2/Mon%20Jan%2012%202026 500 in 189ms :: {"error":"Fail…
+2026-01-12T11:52:52.67600831Z 11:52:52 AM [express] GET /api/peers/connection/BTC-0I3RUY 200 in 188ms :: [{"id":1,"name":"Marc","ro…
+2026-01-12T11:52:55.723524333Z 11:52:55 AM [express] GET /api/auth/me 304 in 94ms :: {"peerId":2,"role":"child","connectionId":"BTC-…
+2026-01-12T11:52:55.865766735Z [BTC Price] Returning cached data
+2026-01-12T11:52:55.960969614Z 11:52:55 AM [express] GET /api/btc-price 304 in 95ms :: {"usd":90497.205,"eur":77515.475,"timestamp":…
+2026-01-12T11:52:56.061360023Z 11:52:56 AM [express] GET /api/bitcoin-snapshots/2 200 in 189ms :: [{"date":"2026-01-12T05:32:53.029Z…
+2026-01-12T11:52:56.510077046Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:52:56.604907827Z 11:52:56 AM [express] GET /api/peers/2/sats-breakdown 304 in 745ms :: {"totalSats":547,"taskSats":50,…
+2026-01-12T11:53:06.271263669Z 11:53:06 AM [express] POST /api/peers/login 200 in 1713ms :: {"id":1,"name":"Marc","role":"parent","p…
+2026-01-12T11:53:06.725261155Z 11:53:06 AM [express] GET /api/parent/1/children 200 in 280ms :: [{"id":2,"name":"Levi","role":"child…
+2026-01-12T11:53:07.198983613Z [Failed Payments] Error fetching pending: error: column "resolved_at" does not exist
+2026-01-12T11:53:07.199006683Z     at /app/node_modules/pg-pool/index.js:45:11
+2026-01-12T11:53:07.199010953Z     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-01-12T11:53:07.199015213Z     at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2026-01-12T11:53:07.199018873Z     at async DatabaseStorage.getPendingFailedPayments (file:///app/dist/index.js:1841:12)
+2026-01-12T11:53:07.199022484Z     at async file:///app/dist/index.js:6739:24 {
+2026-01-12T11:53:07.199026124Z   length: 112,
+2026-01-12T11:53:07.199030554Z   severity: 'ERROR',
+2026-01-12T11:53:07.199034354Z   code: '42703',
+2026-01-12T11:53:07.199037944Z   detail: undefined,
+2026-01-12T11:53:07.199041484Z   hint: undefined,
+2026-01-12T11:53:07.199045054Z   position: '190',
+2026-01-12T11:53:07.199049194Z   internalPosition: undefined,
+2026-01-12T11:53:07.199052754Z   internalQuery: undefined,
+2026-01-12T11:53:07.199056284Z   where: undefined,
+2026-01-12T11:53:07.199059824Z   schema: undefined,
+2026-01-12T11:53:07.199063545Z   table: undefined,
+2026-01-12T11:53:07.199067065Z   column: undefined,
+2026-01-12T11:53:07.199070574Z   dataType: undefined,
+2026-01-12T11:53:07.199074095Z   constraint: undefined,
+2026-01-12T11:53:07.199077645Z   file: 'parse_relation.c',
+2026-01-12T11:53:07.199081215Z   line: '3716',
+2026-01-12T11:53:07.199084895Z   routine: 'errorMissingColumn'
+2026-01-12T11:53:07.199102265Z }
+2026-01-12T11:53:07.394493379Z 11:53:07 AM [express] GET /api/allowances/BTC-0I3RUY 200 in 380ms :: []
+2026-01-12T11:53:07.396007978Z 11:53:07 AM [express] GET /api/failed-payments/BTC-0I3RUY/pending 500 in 384ms :: {"error":"Failed to…
+2026-01-12T11:53:07.487970424Z 11:53:07 AM [express] GET /api/parent/1/sats-spent/BTC-0I3RUY 200 in 380ms :: {"satsSpent":463}
+2026-01-12T11:53:07.582765595Z 11:53:07 AM [express] GET /api/manual-payment/pending 200 in 485ms :: []
+2026-01-12T11:53:07.611117325Z 11:53:07 AM [express] GET /api/parent/1/wallet-balance 200 in 504ms :: {"lnbitsBalance":4635962,"nwcB…
+2026-01-12T11:53:12.753425273Z [Failed Payments] Error fetching pending: error: column "resolved_at" does not exist
+2026-01-12T11:53:12.753453474Z     at /app/node_modules/pg-pool/index.js:45:11
+2026-01-12T11:53:12.753458914Z     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-01-12T11:53:12.753464674Z     at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2026-01-12T11:53:12.753469154Z     at async DatabaseStorage.getPendingFailedPayments (file:///app/dist/index.js:1841:12)
+2026-01-12T11:53:12.753473434Z     at async file:///app/dist/index.js:6739:24 {
+2026-01-12T11:53:12.753478294Z   length: 112,
+2026-01-12T11:53:12.753483444Z   severity: 'ERROR',
+2026-01-12T11:53:12.753488034Z   code: '42703',
+2026-01-12T11:53:12.753492244Z   detail: undefined,
+2026-01-12T11:53:12.753497044Z   hint: undefined,
+2026-01-12T11:53:12.753501715Z   position: '190',
+2026-01-12T11:53:12.753506915Z   internalPosition: undefined,
+2026-01-12T11:53:12.753511645Z   internalQuery: undefined,
+2026-01-12T11:53:12.753516645Z   where: undefined,
+2026-01-12T11:53:12.753521105Z   schema: undefined,
+2026-01-12T11:53:12.753525285Z   table: undefined,
+2026-01-12T11:53:12.753529325Z   column: undefined,
+2026-01-12T11:53:12.753533955Z   dataType: undefined,
+2026-01-12T11:53:12.753538455Z   constraint: undefined,
+2026-01-12T11:53:12.753543605Z   file: 'parse_relation.c',
+2026-01-12T11:53:12.753548265Z   line: '3716',
+2026-01-12T11:53:12.753552956Z   routine: 'errorMissingColumn'
+2026-01-12T11:53:12.753557585Z }
+2026-01-12T11:53:12.847817836Z 11:53:12 AM [express] GET /api/failed-payments/BTC-0I3RUY/pending 500 in 281ms :: {"error":"Failed to…
+2026-01-12T11:53:13.127449076Z 11:53:13 AM [express] GET /api/manual-payment/pending 304 in 382ms :: []
+2026-01-12T11:53:17.396513127Z [Task Creation] Manual mode - skipping balance validation for task: 1
+2026-01-12T11:53:17.681133374Z 11:53:17 AM [express] POST /api/tasks 200 in 500ms :: {"task":{"id":11,"connectionId":"BTC-0I3RUY","c…
+2026-01-12T11:53:18.145911408Z 11:53:18 AM [express] GET /api/tasks/BTC-0I3RUY 200 in 279ms :: [{"id":1,"connectionId":"BTC-0I3RUY",…
+2026-01-12T11:53:18.200387016Z [Failed Payments] Error fetching pending: error: column "resolved_at" does not exist
+2026-01-12T11:53:18.200411556Z     at /app/node_modules/pg-pool/index.js:45:11
+2026-01-12T11:53:18.200416046Z     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-01-12T11:53:18.200420856Z     at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2026-01-12T11:53:18.200425057Z     at async DatabaseStorage.getPendingFailedPayments (file:///app/dist/index.js:1841:12)
+2026-01-12T11:53:18.200429297Z     at async file:///app/dist/index.js:6739:24 {
+2026-01-12T11:53:18.200433487Z   length: 112,
+2026-01-12T11:53:18.200437907Z   severity: 'ERROR',
+2026-01-12T11:53:18.200441997Z   code: '42703',
+2026-01-12T11:53:18.200446207Z   detail: undefined,
+2026-01-12T11:53:18.200450137Z   hint: undefined,
+2026-01-12T11:53:18.200466857Z   position: '190',
+2026-01-12T11:53:18.200469607Z   internalPosition: undefined,
+2026-01-12T11:53:18.200472127Z   internalQuery: undefined,
+2026-01-12T11:53:18.200474607Z   where: undefined,
+2026-01-12T11:53:18.200477127Z   schema: undefined,
+2026-01-12T11:53:18.200479738Z   table: undefined,
+2026-01-12T11:53:18.200482247Z   column: undefined,
+2026-01-12T11:53:18.200484908Z   dataType: undefined,
+2026-01-12T11:53:18.200487478Z   constraint: undefined,
+2026-01-12T11:53:18.200489968Z   file: 'parse_relation.c',
+2026-01-12T11:53:18.200492758Z   line: '3716',
+2026-01-12T11:53:18.200495458Z   routine: 'errorMissingColumn'
+2026-01-12T11:53:18.200498038Z }
+2026-01-12T11:53:18.294952542Z 11:53:18 AM [express] GET /api/failed-payments/BTC-0I3RUY/pending 500 in 281ms :: {"error":"Failed to…
+2026-01-12T11:53:27.170919844Z 11:53:27 AM [express] POST /api/peers/login 200 in 1786ms :: {"id":2,"name":"Levi","role":"child","pi…
+2026-01-12T11:53:27.345571345Z [BTC Price] Returning cached data
+2026-01-12T11:53:27.440317685Z 11:53:27 AM [express] GET /api/btc-price 304 in 94ms :: {"usd":90497.205,"eur":77515.475,"timestamp":…
+2026-01-12T11:53:28.116492744Z 11:53:28 AM [express] GET /api/learning-progress/2 304 in 187ms :: {"id":1,"peerId":2,"xp":0,"level":…
+2026-01-12T11:53:28.117115326Z 11:53:28 AM [express] GET /api/daily-challenge/2/Mon%20Jan%2012%202026 500 in 187ms :: {"error":"Fail…
+2026-01-12T11:53:28.61637198Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:53:28.710750302Z 11:53:28 AM [express] GET /api/peers/2/sats-breakdown 304 in 744ms :: {"totalSats":547,"taskSats":50,…
+2026-01-12T11:53:29.196553645Z [BTC Price] Returning cached data
+2026-01-12T11:53:29.292252883Z 11:53:29 AM [express] GET /api/btc-price 304 in 95ms :: {"usd":90497.205,"eur":77515.475,"timestamp":…
+2026-01-12T11:53:29.386974142Z 11:53:29 AM [express] GET /api/learning-progress/2 304 in 189ms :: {"id":1,"peerId":2,"xp":0,"level":…
+2026-01-12T11:53:29.951559354Z 11:53:29 AM [express] GET /api/daily-challenge/2/Mon%20Jan%2012%202026 500 in 753ms :: {"error":"Fail…
+2026-01-12T11:53:30.554843758Z [Task Lock] BYPASSED: Task 11 has bypassRatio=true, allowing immediate assignment
+2026-01-12T11:53:30.746600682Z 11:53:30 AM [express] PATCH /api/tasks/11 200 in 297ms :: {"id":11,"connectionId":"BTC-0I3RUY","creat…
+2026-01-12T11:53:31.177957067Z 11:53:31 AM [express] GET /api/tasks/BTC-0I3RUY 200 in 281ms :: [{"id":1,"connectionId":"BTC-0I3RUY",…
+2026-01-12T11:53:33.687782009Z [BTC Price] Returning cached data
+2026-01-12T11:53:33.78312933Z 11:53:33 AM [express] GET /api/btc-price 304 in 95ms :: {"usd":90497.205,"eur":77515.475,"timestamp":…
+2026-01-12T11:53:33.882571861Z 11:53:33 AM [express] GET /api/daily-challenge/2/Mon%20Jan%2012%202026 500 in 191ms :: {"error":"Fail…
+2026-01-12T11:53:34.437808472Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:53:34.447035471Z 11:53:34 AM [express] GET /api/learning-progress/2 304 in 187ms :: {"id":1,"peerId":2,"xp":0,"level":…
+2026-01-12T11:53:34.532364278Z 11:53:34 AM [express] GET /api/peers/2/sats-breakdown 304 in 835ms :: {"totalSats":547,"taskSats":50,…
+2026-01-12T11:53:35.451093436Z [BTC Price] Returning cached data
+2026-01-12T11:53:35.545388657Z 11:53:35 AM [express] GET /api/btc-price 304 in 94ms :: {"usd":90497.205,"eur":77515.475,"timestamp":…
+2026-01-12T11:53:35.643856509Z 11:53:35 AM [express] GET /api/learning-progress/2 304 in 187ms :: {"id":1,"peerId":2,"xp":0,"level":…
+2026-01-12T11:53:35.652388105Z 11:53:35 AM [express] GET /api/daily-challenge/2/Mon%20Jan%2012%202026 500 in 186ms :: {"error":"Fail…
+2026-01-12T11:53:36.920877914Z [Push] Sending "Aufgabe eingereicht!" to 1 parent(s) in family BTC-0I3RUY
+2026-01-12T11:53:37.013637476Z [Push] Result for "Aufgabe eingereicht!": 0 sent, 0 failed
+2026-01-12T11:53:37.108082539Z 11:53:37 AM [express] PUT /api/tasks/11/submit 200 in 560ms :: {"success":true,"task":{"id":11,"conne…
+2026-01-12T11:53:37.539046647Z 11:53:37 AM [express] GET /api/tasks/BTC-0I3RUY 200 in 282ms :: [{"id":1,"connectionId":"BTC-0I3RUY",…
+2026-01-12T11:53:45.975582165Z 11:53:45 AM [express] POST /api/peers/login 200 in 1763ms :: {"id":1,"name":"Marc","role":"parent","p…
+2026-01-12T11:53:50.182882725Z [LNURL] Fetching from: https://walletofsatoshi.com/.well-known/lnurlp/searinglid059
+2026-01-12T11:53:50.485189495Z [LNURL] Requesting invoice from: https://livingroomofsatoshi.com/api/v1/lnurl/payreq/f902b488-0c7c-4a74-863e-b18c3ccc7d27?amount=50000&comment=1
+2026-01-12T11:53:51.155901477Z [LNURL] Invoice generated successfully for 50 sats
+2026-01-12T11:53:51.346945696Z 11:53:51 AM [express] POST /api/manual-payment/create 200 in 1355ms :: {"success":true,"payment":{"id…
+2026-01-12T11:53:51.718898338Z [Task Approval] Task 11 status set to approved atomically
+2026-01-12T11:53:51.718926919Z [Task Approval] Processing approval for task 11, assigning sats to child 2
+2026-01-12T11:53:51.905034343Z [Task Approval] Manual mode - balance will be updated when QR payment is confirmed
+2026-01-12T11:53:52.089042915Z [Level Bonus] Child Levi now has 10 tasks, Level 3
+2026-01-12T11:53:52.276421403Z [Task Payment] Manual mode - skipping automatic payment for Levi, waiting for QR payment
+2026-01-12T11:53:52.400599405Z 11:53:52 AM [express] POST /api/level-bonus/check-and-pay 200 in 280ms :: {"bonusPaid":false,"reason"…
+2026-01-12T11:53:52.557846048Z 11:53:52 AM [express] PATCH /api/tasks/11 200 in 1026ms :: {"id":11,"connectionId":"BTC-0I3RUY","crea…
+2026-01-12T11:53:52.910304811Z 11:53:52 AM [express] GET /api/tasks/BTC-0I3RUY 200 in 187ms :: [{"id":1,"connectionId":"BTC-0I3RUY",…
+2026-01-12T11:53:53.569687104Z [Failed Payments] Error fetching pending: error: column "resolved_at" does not exist
+2026-01-12T11:53:53.569719745Z     at /app/node_modules/pg-pool/index.js:45:11
+2026-01-12T11:53:53.569726794Z     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-01-12T11:53:53.569732915Z     at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2026-01-12T11:53:53.569738325Z     at async DatabaseStorage.getPendingFailedPayments (file:///app/dist/index.js:1841:12)
+2026-01-12T11:53:53.569745035Z     at async file:///app/dist/index.js:6739:24 {
+2026-01-12T11:53:53.569751315Z   length: 112,
+2026-01-12T11:53:53.569757835Z   severity: 'ERROR',
+2026-01-12T11:53:53.569763635Z   code: '42703',
+2026-01-12T11:53:53.569768985Z   detail: undefined,
+2026-01-12T11:53:53.569774475Z   hint: undefined,
+2026-01-12T11:53:53.569778966Z   position: '190',
+2026-01-12T11:53:53.569782986Z   internalPosition: undefined,
+2026-01-12T11:53:53.569786686Z   internalQuery: undefined,
+2026-01-12T11:53:53.569790326Z   where: undefined,
+2026-01-12T11:53:53.569794026Z   schema: undefined,
+2026-01-12T11:53:53.569797596Z   table: undefined,
+2026-01-12T11:53:53.569801156Z   column: undefined,
+2026-01-12T11:53:53.569804736Z   dataType: undefined,
+2026-01-12T11:53:53.569808386Z   constraint: undefined,
+2026-01-12T11:53:53.569812016Z   file: 'parse_relation.c',
+2026-01-12T11:53:53.569818376Z   line: '3716',
+2026-01-12T11:53:53.569822436Z   routine: 'errorMissingColumn'
+2026-01-12T11:53:53.569826356Z }
+2026-01-12T11:53:53.758060541Z 11:53:53 AM [express] GET /api/manual-payment/pending 200 in 375ms :: [{"id":15,"connectionId":"BTC-0…
+2026-01-12T11:53:54.22820901Z 11:53:54 AM [express] GET /api/failed-payments/BTC-0I3RUY/pending 500 in 845ms :: {"error":"Failed to…
+2026-01-12T11:53:54.50429663Z [Payment Confirmation] Parent Marc confirming payment 15 (trust-based)
+2026-01-12T11:53:54.598726694Z [Payment Confirmation] ✓ Payment 15 confirmed, amount: 50 sats
+2026-01-12T11:53:55.072185857Z 11:53:55 AM [express] POST /api/manual-payment/15/paid 200 in 753ms :: {"success":true,"payment":{"id…
+2026-01-12T11:53:55.408032777Z 11:53:55 AM [express] GET /api/tasks/BTC-0I3RUY 304 in 187ms :: [{"id":1,"connectionId":"BTC-0I3RUY",…
+2026-01-12T11:53:58.817322623Z 11:53:58 AM [express] GET /api/parent/1/wallet-balance 200 in 393ms :: {"lnbitsBalance":4635962,"nwcB…
+2026-01-12T11:53:59.273117122Z 11:53:59 AM [express] GET /api/manual-payment/pending 200 in 381ms :: []
+2026-01-12T11:54:04.600917317Z [Failed Payments] Error fetching pending: error: column "resolved_at" does not exist
+2026-01-12T11:54:04.600950828Z     at /app/node_modules/pg-pool/index.js:45:11
+2026-01-12T11:54:04.600955438Z     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-01-12T11:54:04.600960068Z     at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2026-01-12T11:54:04.600964568Z     at async DatabaseStorage.getPendingFailedPayments (file:///app/dist/index.js:1841:12)
+2026-01-12T11:54:04.600968988Z     at async file:///app/dist/index.js:6739:24 {
+2026-01-12T11:54:04.600973128Z   length: 112,
+2026-01-12T11:54:04.600977468Z   severity: 'ERROR',
+2026-01-12T11:54:04.600981409Z   code: '42703',
+2026-01-12T11:54:04.600985538Z   detail: undefined,
+2026-01-12T11:54:04.600989479Z   hint: undefined,
+2026-01-12T11:54:04.600993499Z   position: '190',
+2026-01-12T11:54:04.600998179Z   internalPosition: undefined,
+2026-01-12T11:54:04.601002189Z   internalQuery: undefined,
+2026-01-12T11:54:04.601006329Z   where: undefined,
+2026-01-12T11:54:04.601010229Z   schema: undefined,
+2026-01-12T11:54:04.601014149Z   table: undefined,
+2026-01-12T11:54:04.601018069Z   column: undefined,
+2026-01-12T11:54:04.601021749Z   dataType: undefined,
+2026-01-12T11:54:04.601025709Z   constraint: undefined,
+2026-01-12T11:54:04.601029719Z   file: 'parse_relation.c',
+2026-01-12T11:54:04.60103377Z   line: '3716',
+2026-01-12T11:54:04.601037859Z   routine: 'errorMissingColumn'
+2026-01-12T11:54:04.60104203Z }
+2026-01-12T11:54:04.791051099Z 11:54:04 AM [express] GET /api/manual-payment/pending 304 in 372ms :: []
+2026-01-12T11:54:05.251746424Z 11:54:05 AM [express] GET /api/failed-payments/BTC-0I3RUY/pending 500 in 838ms :: {"error":"Failed to…
+2026-01-12T11:54:11.693247481Z 11:54:11 AM [express] POST /api/peers/login 200 in 1740ms :: {"id":2,"name":"Levi","role":"child","pi…
+2026-01-12T11:54:11.850340102Z [BTC Price] Returning cached data
+2026-01-12T11:54:11.945648852Z 11:54:11 AM [express] GET /api/btc-price 304 in 95ms :: {"usd":90497.205,"eur":77515.475,"timestamp":…
+2026-01-12T11:54:12.040462603Z 11:54:12 AM [express] GET /api/learning-progress/2 304 in 188ms :: {"id":1,"peerId":2,"xp":0,"level":…
+2026-01-12T11:54:12.603837521Z 11:54:12 AM [express] GET /api/daily-challenge/2/Mon%20Jan%2012%202026 500 in 187ms :: {"error":"Fail…
+2026-01-12T11:54:12.612228154Z 11:54:12 AM [express] GET /api/peers/connection/BTC-0I3RUY 200 in 188ms :: [{"id":1,"name":"Marc","ro…
+2026-01-12T11:54:13.102515914Z [Sats Breakdown] Levi: totalReceived=597, tasks=50, bonus=84, instant=0, allowance=0, manual=463
+2026-01-12T11:54:13.197646201Z 11:54:13 AM [express] GET /api/peers/2/sats-breakdown 200 in 748ms :: {"totalSats":597,"taskSats":50,…
+2026-01-12T11:54:15.09088578Z 11:54:15 AM [express] GET /api/auth/me 200 in 95ms :: {"peerId":2,"role":"child","connectionId":"BTC-…
+2026-01-12T11:54:15.22947996Z [BTC Price] Returning cached data
+2026-01-12T11:54:15.324281941Z 11:54:15 AM [express] GET /api/btc-price 304 in 94ms :: {"usd":90497.205,"eur":77515.475,"timestamp":…
+2026-01-12T11:54:15.423561499Z 11:54:15 AM [express] GET /api/bitcoin-snapshots/2 200 in 188ms :: [{"date":"2026-01-12T05:32:53.029Z…
+2026-01-12T11:54:15.981017262Z [Sats Breakdown] Levi: totalReceived=597, tasks=50, bonus=84, instant=0, allowance=0, manual=463
+2026-01-12T11:54:16.07619048Z 11:54:16 AM [express] GET /api/peers/2/sats-breakdown 304 in 841ms :: {"totalSats":597,"taskSats":50,…
