@@ -10856,20 +10856,19 @@ function TrackerChart({ userId }: { userId: number }) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [liveBtcPrice, setLiveBtcPrice] = useState<number | null>(null);
-  const [earnings, setEarnings] = useState<EarningsData | null>(null);
+  const [satsBreakdown, setSatsBreakdown] = useState<any>(null);
   const [showBreakdown, setShowBreakdown] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [earningsRes, priceRes] = await Promise.all([
-          apiFetch(`/api/child-earnings/${userId}`),
+        const [breakdownRes, priceRes] = await Promise.all([
+          apiFetch(`/api/peers/${userId}/sats-breakdown`),
           apiFetch('/api/btc-price')
         ]);
         
-        if (earningsRes.ok) {
-          const data = await earningsRes.json();
-          setEarnings(data);
+        if (breakdownRes.ok) {
+          setSatsBreakdown(await breakdownRes.json());
         }
         
         if (priceRes.ok) {
@@ -10887,7 +10886,7 @@ function TrackerChart({ userId }: { userId: number }) {
 
   if (loading) return <div className="text-sm text-muted-foreground py-8 text-center">{t('education.loading')}</div>;
   
-  const totalSats = earnings?.totalReceived || 0;
+  const totalSats = satsBreakdown?.totalSats || 0;
   if (totalSats === 0) return <p className="text-sm text-muted-foreground py-8 text-center">{t('education.noApprovedTasks')}</p>;
   
   const currentEuroValue = liveBtcPrice ? (totalSats * liveBtcPrice) / 1e8 : 0;
@@ -10910,7 +10909,7 @@ function TrackerChart({ userId }: { userId: number }) {
         </div>
       </div>
 
-      {earnings && earnings.breakdown.length > 0 && (
+      {satsBreakdown && (
         <div className="bg-white/40 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-xl overflow-hidden">
           <button
             onClick={() => setShowBreakdown(!showBreakdown)}
@@ -10925,18 +10924,30 @@ function TrackerChart({ userId }: { userId: number }) {
           
           {showBreakdown && (
             <div className="px-4 pb-4 space-y-2">
-              {earnings.breakdown.map((item) => (
-                <div key={item.type} className="flex items-center justify-between bg-slate-100/50 dark:bg-slate-800/50 rounded-lg px-3 py-2">
-                  <div className="flex items-center gap-2">
-                    <span>{earningIcons[item.type] || '💰'}</span>
-                    <span className="text-xs text-foreground">{item.label}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-emerald-600">{item.totalSats.toLocaleString()}</span>
-                    <span className="text-xs text-muted-foreground">({item.count}x)</span>
-                  </div>
+              {satsBreakdown.taskSats > 0 && (
+                <div className="flex items-center justify-between bg-slate-100/50 dark:bg-slate-800/50 rounded-lg px-3 py-2">
+                  <span className="text-xs text-foreground flex items-center gap-2">✅ {t('dashboard.earned')}</span>
+                  <span className="text-sm font-semibold text-emerald-600">{satsBreakdown.taskSats.toLocaleString()} sats</span>
                 </div>
-              ))}
+              )}
+              {satsBreakdown.bonusSats > 0 && (
+                <div className="flex items-center justify-between bg-slate-100/50 dark:bg-slate-800/50 rounded-lg px-3 py-2">
+                  <span className="text-xs text-foreground flex items-center gap-2">🎁 Bonus</span>
+                  <span className="text-sm font-semibold text-purple-600">{satsBreakdown.bonusSats.toLocaleString()} sats</span>
+                </div>
+              )}
+              {satsBreakdown.allowanceSats > 0 && (
+                <div className="flex items-center justify-between bg-slate-100/50 dark:bg-slate-800/50 rounded-lg px-3 py-2">
+                  <span className="text-xs text-foreground flex items-center gap-2">💰 {t('family.allowance')}</span>
+                  <span className="text-sm font-semibold text-green-600">{satsBreakdown.allowanceSats.toLocaleString()} sats</span>
+                </div>
+              )}
+              {satsBreakdown.manualSats > 0 && (
+                <div className="flex items-center justify-between bg-slate-100/50 dark:bg-slate-800/50 rounded-lg px-3 py-2">
+                  <span className="text-xs text-foreground flex items-center gap-2">⚡ {t('family.instantPayout')}</span>
+                  <span className="text-sm font-semibold text-blue-600">{satsBreakdown.manualSats.toLocaleString()} sats</span>
+                </div>
+              )}
             </div>
           )}
         </div>
