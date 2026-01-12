@@ -4221,7 +4221,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const nwcParents = parents.filter(p => p.nwcConnectionString);
       const lnbitsParents = parents.filter(p => p.lnbitsUrl && p.lnbitsAdminKey);
       
+      // Manual mode: No NWC/LNBits configured - create invoice for parent to pay manually
       if (nwcParents.length === 0 && lnbitsParents.length === 0) {
+        // If child has Lightning Address, create a manual payment for parents to scan
+        if (child.lightningAddress && parents.length > 0) {
+          const parent = parents[0];
+          
+          try {
+            // Generate invoice from child's Lightning Address
+            const invoice = await fetchLightningAddressInvoice(child.lightningAddress, bonusSats, `🎓 Satoshi Guardian Graduation Bonus für ${child.name}!`);
+            
+            // Create manual payment entry
+            await storage.createManualPayment({
+              connectionId: parent.connectionId,
+              parentId: parent.id,
+              childId: child.id,
+              childName: child.name,
+              sats: bonusSats,
+              memo: `🎓 Graduation Bonus für ${child.name}`,
+              bolt11: invoice.bolt11,
+              paymentHash: invoice.paymentHash,
+              expiresAt: invoice.expiresAt,
+              status: "pending",
+              paymentType: "graduation_bonus"
+            });
+            
+            // Mark graduation bonus as claimed (will be fully credited when parent pays)
+            await storage.claimGraduationBonus(peerId, 0);
+            
+            return res.json({ 
+              success: true, 
+              paymentMethod: 'manual',
+              bolt11: invoice.bolt11,
+              message: 'Invoice für Eltern erstellt. Bitte in offenen Zahlungen scannen und bezahlen.'
+            });
+          } catch (invoiceError) {
+            console.error("[Graduation Bonus] Failed to create invoice:", invoiceError);
+            // Fallback to internal credit
+            const result = await storage.claimGraduationBonus(peerId, bonusSats);
+            return res.json({ 
+              success: true, 
+              newBalance: result.newBalance,
+              paymentMethod: 'internal',
+              message: 'Invoice konnte nicht erstellt werden. Bonus intern gutgeschrieben.'
+            });
+          }
+        }
+        
+        // No Lightning Address - just credit internally
         const result = await storage.claimGraduationBonus(peerId, bonusSats);
         return res.json({ 
           success: true, 
