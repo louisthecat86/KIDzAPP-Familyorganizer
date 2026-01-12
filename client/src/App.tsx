@@ -7779,7 +7779,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   const [expandedChallengeQuestion, setExpandedChallengeQuestion] = useState<number | null>(null);
   const [challengeAnswers, setChallengAnswers] = useState<Record<number, string>>({});
   const [completedChallenges, setCompletedChallenges] = useState<Record<number, number>>({});
-  const [educationTab, setEducationTab] = useState<"modules" | "converter" | "challenges" | "resources" | "glossar">("modules");
+  const [educationTab, setEducationTab] = useState<"modules" | "converter" | "resources" | "glossar">("modules");
   const [glossarSearch, setGlossarSearch] = useState("");
   const [satoshiInput, setSatoshiInput] = useState("100000");
   const [bitcoinInput, setBitcoinInput] = useState("0.001");
@@ -7789,8 +7789,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   const [rsvps, setRsvps] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState<Record<number, boolean>>({});
   const [serverProgress, setServerProgress] = useState<any>(null);
-  const [dailyChallenge, setDailyChallenge] = useState<any>(null);
-  const [graduationStatus, setGraduationStatus] = useState<{ graduated: boolean; bonusPaid: boolean; guardianLevel: number } | null>(null);
+    const [graduationStatus, setGraduationStatus] = useState<{ graduated: boolean; bonusPaid: boolean; guardianLevel: number } | null>(null);
   const [showGraduationCelebration, setShowGraduationCelebration] = useState(false);
   const { toast } = useToast();
   
@@ -7844,103 +7843,6 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   }, [user.role]);
   
   const { t } = useTranslation();
-  
-  // Fetch daily challenge - 60+ questions with deterministic selection based on date
-  useEffect(() => {
-    const challengePool = [
-      { type: "quiz", icon: "🧠", reward: 50, questionKey: "challenges.q1", optionKeys: ["challenges.q1a", "challenges.q1b", "challenges.q1c"], correct: 0 },
-      { type: "quiz", icon: "🧠", reward: 45, questionKey: "challenges.q2", optionKeys: ["challenges.q2a", "challenges.q2b", "challenges.q2c"], correct: 0 },
-      { type: "quiz", icon: "⚡", reward: 48, questionKey: "challenges.q3", optionKeys: ["challenges.q3a", "challenges.q3b", "challenges.q3c"], correct: 0 },
-      { type: "quiz", icon: "🧠", reward: 55, questionKey: "challenges.blink1", optionKeys: ["challenges.blink1a", "challenges.blink1b", "challenges.blink1c"], correct: 0, source: "Coinfinity Bitcoin Blinks" },
-      { type: "quiz", icon: "⚡", reward: 50, questionKey: "challenges.blink2", optionKeys: ["challenges.blink2a", "challenges.blink2b", "challenges.blink2c"], correct: 1, source: "Coinfinity Bitcoin Blinks" },
-      { type: "quiz", icon: "💰", reward: 52, questionKey: "challenges.blink3", optionKeys: ["challenges.blink3a", "challenges.blink3b", "challenges.blink3c"], correct: 2, source: "Coinfinity Bitcoin Blinks" },
-      { type: "quiz", icon: "✂️", reward: 50, questionKey: "challenges.blink4", optionKeys: ["challenges.blink4a", "challenges.blink4b", "challenges.blink4c"], correct: 0, source: "Coinfinity Bitcoin Blinks" },
-      { type: "quiz", icon: "🏦", reward: 50, questionKey: "challenges.blink5", optionKeys: ["challenges.blink5a", "challenges.blink5b", "challenges.blink5c"], correct: 1, source: "Coinfinity Bitcoin Blinks" },
-      { type: "quiz", icon: "👤", reward: 50, questionKey: "challenges.blink6", optionKeys: ["challenges.blink6a", "challenges.blink6b", "challenges.blink6c"], correct: 2, source: "Coinfinity Bitcoin Blinks" },
-      { type: "quiz", icon: "🔒", reward: 55, questionKey: "challenges.q4", optionKeys: ["challenges.q4a", "challenges.q4b", "challenges.q4c"], correct: 0 },
-      { type: "quiz", icon: "⛓️", reward: 50, questionKey: "challenges.q5", optionKeys: ["challenges.q5a", "challenges.q5b", "challenges.q5c"], correct: 0 },
-      { type: "quiz", icon: "🪙", reward: 42, questionKey: "challenges.q6", optionKeys: ["challenges.q6a", "challenges.q6b", "challenges.q6c"], correct: 0 },
-      { type: "quiz", icon: "🌐", reward: 47, questionKey: "challenges.q7", optionKeys: ["challenges.q7a", "challenges.q7b", "challenges.q7c"], correct: 0 },
-      { type: "quiz", icon: "🔐", reward: 53, questionKey: "challenges.q8", optionKeys: ["challenges.q8a", "challenges.q8b", "challenges.q8c"], correct: 0 },
-      { type: "quiz", icon: "📈", reward: 44, questionKey: "challenges.q9", optionKeys: ["challenges.q9a", "challenges.q9b", "challenges.q9c"], correct: 0 },
-      { type: "quiz", icon: "🏦", reward: 46, questionKey: "challenges.q10", optionKeys: ["challenges.q10a", "challenges.q10b", "challenges.q10c"], correct: 0 },
-      { type: "quiz", icon: "💡", reward: 51, questionKey: "challenges.q11", optionKeys: ["challenges.q11a", "challenges.q11b", "challenges.q11c"], correct: 0 },
-      { type: "quiz", icon: "🔋", reward: 49, questionKey: "challenges.q12", optionKeys: ["challenges.q12a", "challenges.q12b", "challenges.q12c"], correct: 0 },
-      { type: "quiz", icon: "🌍", reward: 43, questionKey: "challenges.q13", optionKeys: ["challenges.q13a", "challenges.q13b", "challenges.q13c"], correct: 0 },
-      { type: "quiz", icon: "📊", reward: 52, questionKey: "challenges.q14", optionKeys: ["challenges.q14a", "challenges.q14b", "challenges.q14c"], correct: 0 },
-      { type: "quiz", icon: "🔑", reward: 54, questionKey: "challenges.q15", optionKeys: ["challenges.q15a", "challenges.q15b", "challenges.q15c"], correct: 0 },
-      { type: "quiz", icon: "⏰", reward: 45, questionKey: "challenges.q16", optionKeys: ["challenges.q16a", "challenges.q16b", "challenges.q16c"], correct: 0 },
-      { type: "quiz", icon: "🎯", reward: 48, questionKey: "challenges.q17", optionKeys: ["challenges.q17a", "challenges.q17b", "challenges.q17c"], correct: 0 },
-      { type: "quiz", icon: "💰", reward: 50, questionKey: "challenges.q18", optionKeys: ["challenges.q18a", "challenges.q18b", "challenges.q18c"], correct: 0 },
-      { type: "quiz", icon: "🔄", reward: 46, questionKey: "challenges.q19", optionKeys: ["challenges.q19a", "challenges.q19b", "challenges.q19c"], correct: 0 },
-      { type: "quiz", icon: "📱", reward: 44, questionKey: "challenges.q20", optionKeys: ["challenges.q20a", "challenges.q20b", "challenges.q20c"], correct: 0 },
-      { type: "quiz", icon: "🏆", reward: 55, questionKey: "challenges.q21", optionKeys: ["challenges.q21a", "challenges.q21b", "challenges.q21c"], correct: 0 },
-      { type: "quiz", icon: "🎓", reward: 47, questionKey: "challenges.q22", optionKeys: ["challenges.q22a", "challenges.q22b", "challenges.q22c"], correct: 0 },
-      { type: "quiz", icon: "🌟", reward: 49, questionKey: "challenges.q23", optionKeys: ["challenges.q23a", "challenges.q23b", "challenges.q23c"], correct: 0 },
-      { type: "quiz", icon: "🛡️", reward: 53, questionKey: "challenges.q24", optionKeys: ["challenges.q24a", "challenges.q24b", "challenges.q24c"], correct: 0 },
-      { type: "quiz", icon: "🔍", reward: 45, questionKey: "challenges.q25", optionKeys: ["challenges.q25a", "challenges.q25b", "challenges.q25c"], correct: 0 },
-      { type: "quiz", icon: "💎", reward: 51, questionKey: "challenges.q26", optionKeys: ["challenges.q26a", "challenges.q26b", "challenges.q26c"], correct: 0 },
-      { type: "quiz", icon: "🎮", reward: 42, questionKey: "challenges.q27", optionKeys: ["challenges.q27a", "challenges.q27b", "challenges.q27c"], correct: 0 },
-      { type: "quiz", icon: "📖", reward: 48, questionKey: "challenges.q28", optionKeys: ["challenges.q28a", "challenges.q28b", "challenges.q28c"], correct: 0 },
-      { type: "quiz", icon: "🚀", reward: 54, questionKey: "challenges.q29", optionKeys: ["challenges.q29a", "challenges.q29b", "challenges.q29c"], correct: 0 },
-      { type: "quiz", icon: "🧩", reward: 46, questionKey: "challenges.q30", optionKeys: ["challenges.q30a", "challenges.q30b", "challenges.q30c"], correct: 0 },
-      { type: "quiz", icon: "⚙️", reward: 50, questionKey: "challenges.q31", optionKeys: ["challenges.q31a", "challenges.q31b", "challenges.q31c"], correct: 0 },
-      { type: "quiz", icon: "🎪", reward: 43, questionKey: "challenges.q32", optionKeys: ["challenges.q32a", "challenges.q32b", "challenges.q32c"], correct: 0 },
-      { type: "quiz", icon: "🏠", reward: 47, questionKey: "challenges.q33", optionKeys: ["challenges.q33a", "challenges.q33b", "challenges.q33c"], correct: 0 },
-      { type: "quiz", icon: "🎭", reward: 52, questionKey: "challenges.q34", optionKeys: ["challenges.q34a", "challenges.q34b", "challenges.q34c"], correct: 0 },
-      { type: "quiz", icon: "🔮", reward: 49, questionKey: "challenges.q35", optionKeys: ["challenges.q35a", "challenges.q35b", "challenges.q35c"], correct: 0 },
-      { type: "quiz", icon: "📡", reward: 51, questionKey: "challenges.q36", optionKeys: ["challenges.q36a", "challenges.q36b", "challenges.q36c"], correct: 0 },
-      { type: "quiz", icon: "🎨", reward: 44, questionKey: "challenges.q37", optionKeys: ["challenges.q37a", "challenges.q37b", "challenges.q37c"], correct: 0 },
-      { type: "quiz", icon: "🧬", reward: 53, questionKey: "challenges.q38", optionKeys: ["challenges.q38a", "challenges.q38b", "challenges.q38c"], correct: 0 },
-      { type: "quiz", icon: "🔊", reward: 45, questionKey: "challenges.q39", optionKeys: ["challenges.q39a", "challenges.q39b", "challenges.q39c"], correct: 0 },
-      { type: "quiz", icon: "🎵", reward: 48, questionKey: "challenges.q40", optionKeys: ["challenges.q40a", "challenges.q40b", "challenges.q40c"], correct: 0 },
-      { type: "quiz", icon: "🌈", reward: 50, questionKey: "challenges.q41", optionKeys: ["challenges.q41a", "challenges.q41b", "challenges.q41c"], correct: 0 },
-      { type: "quiz", icon: "⭐", reward: 46, questionKey: "challenges.q42", optionKeys: ["challenges.q42a", "challenges.q42b", "challenges.q42c"], correct: 0 },
-      { type: "quiz", icon: "🎁", reward: 52, questionKey: "challenges.q43", optionKeys: ["challenges.q43a", "challenges.q43b", "challenges.q43c"], correct: 0 },
-      { type: "quiz", icon: "🔗", reward: 47, questionKey: "challenges.q44", optionKeys: ["challenges.q44a", "challenges.q44b", "challenges.q44c"], correct: 0 },
-      { type: "quiz", icon: "📚", reward: 49, questionKey: "challenges.q45", optionKeys: ["challenges.q45a", "challenges.q45b", "challenges.q45c"], correct: 0 },
-      { type: "quiz", icon: "🏅", reward: 54, questionKey: "challenges.q46", optionKeys: ["challenges.q46a", "challenges.q46b", "challenges.q46c"], correct: 0 },
-      { type: "quiz", icon: "🎲", reward: 43, questionKey: "challenges.q47", optionKeys: ["challenges.q47a", "challenges.q47b", "challenges.q47c"], correct: 0 },
-      { type: "quiz", icon: "🌙", reward: 51, questionKey: "challenges.q48", optionKeys: ["challenges.q48a", "challenges.q48b", "challenges.q48c"], correct: 0 },
-      { type: "quiz", icon: "☀️", reward: 45, questionKey: "challenges.q49", optionKeys: ["challenges.q49a", "challenges.q49b", "challenges.q49c"], correct: 0 },
-      { type: "quiz", icon: "🔥", reward: 55, questionKey: "challenges.q50", optionKeys: ["challenges.q50a", "challenges.q50b", "challenges.q50c"], correct: 0 },
-      { type: "quiz", icon: "❄️", reward: 48, questionKey: "challenges.q51", optionKeys: ["challenges.q51a", "challenges.q51b", "challenges.q51c"], correct: 0 },
-      { type: "quiz", icon: "🌊", reward: 46, questionKey: "challenges.q52", optionKeys: ["challenges.q52a", "challenges.q52b", "challenges.q52c"], correct: 0 },
-      { type: "quiz", icon: "🌋", reward: 52, questionKey: "challenges.q53", optionKeys: ["challenges.q53a", "challenges.q53b", "challenges.q53c"], correct: 0 },
-      { type: "quiz", icon: "🏔️", reward: 44, questionKey: "challenges.q54", optionKeys: ["challenges.q54a", "challenges.q54b", "challenges.q54c"], correct: 0 },
-      { type: "quiz", icon: "🌳", reward: 50, questionKey: "challenges.q55", optionKeys: ["challenges.q55a", "challenges.q55b", "challenges.q55c"], correct: 0 },
-      { type: "quiz", icon: "🍀", reward: 47, questionKey: "challenges.q56", optionKeys: ["challenges.q56a", "challenges.q56b", "challenges.q56c"], correct: 0 },
-      { type: "quiz", icon: "🌸", reward: 53, questionKey: "challenges.q57", optionKeys: ["challenges.q57a", "challenges.q57b", "challenges.q57c"], correct: 0 },
-      { type: "quiz", icon: "🍎", reward: 49, questionKey: "challenges.q58", optionKeys: ["challenges.q58a", "challenges.q58b", "challenges.q58c"], correct: 0 },
-      { type: "quiz", icon: "🎈", reward: 51, questionKey: "challenges.q59", optionKeys: ["challenges.q59a", "challenges.q59b", "challenges.q59c"], correct: 0 },
-      { type: "quiz", icon: "🎄", reward: 45, questionKey: "challenges.q60", optionKeys: ["challenges.q60a", "challenges.q60b", "challenges.q60c"], correct: 0 },
-    ];
-    
-    const fetchDailyChallenge = async () => {
-      const today = new Date().toDateString();
-      try {
-        const response = await apiFetch(`/api/daily-challenge/${user.id}/${today}`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.completed) {
-            const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-            const challengeIndex = (dayOfYear + user.id) % challengePool.length;
-            setDailyChallenge({ ...challengePool[challengeIndex], completed: true, lockedUntil: data.completedAt });
-            return;
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch challenge:", error);
-      }
-      const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-      const challengeIndex = (dayOfYear + user.id) % challengePool.length;
-      setDailyChallenge({ ...challengePool[challengeIndex], completed: false });
-    };
-    
-    if (user.role === "child") {
-      fetchDailyChallenge();
-    }
-  }, [user.id, user.role]);
 
   const { data: connectedPeers = [] } = useQuery({
     queryKey: ["peers", user.connectionId],
@@ -9209,7 +9111,6 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
             <div className="flex gap-1 min-w-max md:min-w-0">
               <button onClick={() => setEducationTab("modules")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "modules" ? "border-violet-500 text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`} data-testid="tab-modules">📚 {t('education.tabModules')}</button>
               <button onClick={() => setEducationTab("converter")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "converter" ? "border-violet-500 text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`} data-testid="tab-converter">🔄 {t('education.tabConverter')}</button>
-              <button onClick={() => setEducationTab("challenges")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "challenges" ? "border-violet-500 text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`} data-testid="tab-challenges">🎯 {t('education.tabChallenge')}</button>
               <button onClick={() => setEducationTab("resources")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "resources" ? "border-violet-500 text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`} data-testid="tab-resources">🌐 {t('education.tabResources')}</button>
               <button onClick={() => setEducationTab("glossar")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "glossar" ? "border-violet-500 text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`} data-testid="tab-glossar">📖 {t('education.tabGlossary')}</button>
             </div>
@@ -9581,92 +9482,6 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
             </div>
           </div>
         )}
-
-        {educationTab === "challenges" && !selectedChallenge && (
-          <div className="space-y-6">
-            <h2 className="text-xl font-bold text-foreground">{i18n.language === 'de' ? '🎯 Tägliche Bitcoin-Challenge' : '🎯 Daily Bitcoin Challenge'}</h2>
-            <p className="text-sm text-muted-foreground">{i18n.language === 'de' ? 'Jeden Tag eine neue Frage! Beantworte sie richtig und verdiene XP.' : 'A new question every day! Answer correctly and earn XP.'}</p>
-            
-            {dailyChallenge ? (
-              dailyChallenge.completed ? (
-                <Card className="border-2 border-green-500/30 bg-green-500/10">
-                  <CardContent className="pt-8 pb-8 text-center space-y-3">
-                    <p className="text-4xl">✅</p>
-                    <p className="text-lg font-bold text-foreground">{i18n.language === 'de' ? 'Heute schon abgeschlossen!' : 'Already completed today!'}</p>
-                    <p className="text-sm text-muted-foreground">{i18n.language === 'de' ? 'Komm morgen zurück für die nächste Challenge! 🚀' : 'Come back tomorrow for the next challenge! 🚀'}</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card className="border-2 border-violet-500/50 bg-gradient-to-br from-violet-500/10 to-cyan-500/10">
-                  <CardContent className="pt-6 pb-6 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-4xl">{dailyChallenge.icon}</span>
-                      <span className="px-3 py-1 bg-amber-500 text-white text-xs font-bold rounded-full">+{dailyChallenge.reward} XP</span>
-                    </div>
-                    <h3 className="font-bold text-foreground text-lg">{t(dailyChallenge.questionKey)}</h3>
-                    {dailyChallenge.source && (
-                      <p className="text-xs text-muted-foreground mt-1 italic flex items-center gap-1">
-                        Quelle: {dailyChallenge.source === "Coinfinity Bitcoin Blinks" ? (
-                          <a href="https://coinfinity.co/bitcoin-blinks" target="_blank" rel="noopener noreferrer" className="text-violet-600 hover:underline inline-flex items-center gap-1">
-                            Coinfinity Bitcoin Blinks <ExternalLink className="h-3 w-3" />
-                          </a>
-                        ) : dailyChallenge.source}
-                      </p>
-                    )}
-                    <div className="space-y-2">
-                      {dailyChallenge.optionKeys.map((optKey: string, idx: number) => (
-                        <button
-                          key={idx}
-                          onClick={async () => {
-                            const isCorrect = idx === dailyChallenge.correct;
-                            if (isCorrect) {
-                              try {
-                                await apiFetch(`/api/daily-challenge/complete`, { 
-                                  method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ peerId: user.id, challengeType: 'daily' })
-                                });
-                                await apiFetch(`/api/learning-progress/${user.id}/add-xp`, {
-                                  method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ xp: dailyChallenge.reward })
-                                });
-                                setDailyChallenge({ ...dailyChallenge, completed: true });
-                                queryClient.invalidateQueries({ queryKey: ['learningProgress', user.id] });
-                                toast({ 
-                                  title: i18n.language === 'de' ? '🎉 Richtig!' : '🎉 Correct!', 
-                                  description: i18n.language === 'de' ? `+${dailyChallenge.reward} XP verdient!` : `+${dailyChallenge.reward} XP earned!` 
-                                });
-                              } catch (error) {
-                                console.error('Failed to complete challenge:', error);
-                              }
-                            } else {
-                              toast({ 
-                                title: i18n.language === 'de' ? '❌ Falsch!' : '❌ Wrong!', 
-                                description: i18n.language === 'de' ? 'Versuch es noch einmal!' : 'Try again!',
-                                variant: 'destructive'
-                              });
-                            }
-                          }}
-                          className="w-full p-4 rounded-lg text-sm font-medium transition-all text-left bg-muted text-foreground border-2 border-border hover:border-violet-500/50 hover:bg-muted/80"
-                        >
-                          {t(optKey)}
-                        </button>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            ) : (
-              <Card className="border-2 border-border">
-                <CardContent className="pt-8 pb-8 text-center">
-                  <p className="text-muted-foreground">{i18n.language === 'de' ? 'Lade Challenge...' : 'Loading challenge...'}</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        )}
-
 
         {educationTab === "glossar" && (
           <div className="space-y-4">
