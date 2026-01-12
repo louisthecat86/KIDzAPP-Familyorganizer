@@ -868,7 +868,9 @@
     "priceSwungBy": "In the last 90 days, the Bitcoin price swung by",
     "butYourSats": "But your satoshis? They're still there - waiting to become worth more!",
     "yourGrowth": "Your Growth",
-    "legendSats": "Your Sats (always rising!)",
+    "legendSats": "Sats",
+    "legendBtcValue": "Bitcoin €",
+    "legendFiat": "Fiat €",
     "legendEuro": "Euro Value (fluctuates)",
     "whySaveInSats": "Why Save in Satoshi?",
     "reason1Title": "Your Stack Always Grows:",
@@ -881,7 +883,9 @@
     "howYouEarned": "How You Earned",
     "sinceBeginnig": "since you started!",
     "worthMore": "Your savings are now",
-    "moreWorth": "more valuable!"
+    "moreWorth": "more valuable!",
+    "btcVsFiat": "Bitcoin vs Fiat Comparison",
+    "btcGain": "Bitcoin Advantage"
   },
   "common": {
     "total": "Total",
