@@ -1512,10 +1512,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPendingManualPayments(connectionId: string): Promise<ManualPayment[]> {
+    const now = new Date();
+    
+    await db.update(manualPayments)
+      .set({ status: "expired" })
+      .where(and(
+        eq(manualPayments.connectionId, connectionId),
+        eq(manualPayments.status, "pending"),
+        sql`${manualPayments.expiresAt} < ${now}`
+      ));
+    
     return await db.select().from(manualPayments)
       .where(and(
         eq(manualPayments.connectionId, connectionId),
-        eq(manualPayments.status, "pending")
+        eq(manualPayments.status, "pending"),
+        sql`${manualPayments.expiresAt} > ${now}`
       ))
       .orderBy(desc(manualPayments.createdAt));
   }
