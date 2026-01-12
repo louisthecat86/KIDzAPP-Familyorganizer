@@ -7784,6 +7784,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   const [educationTab, setEducationTab] = useState<"modules" | "converter" | "resources" | "glossar" | null>(null);
   const [glossarSearch, setGlossarSearch] = useState("");
   const [educationResources, setEducationResources] = useState<Array<{ id: number; title: string; url: string; category: string; description: string | null; language: string | null }>>([]);
+  const [selectedResourceCategory, setSelectedResourceCategory] = useState<string | null>(null);
   const [satoshiInput, setSatoshiInput] = useState("100000");
   const [bitcoinInput, setBitcoinInput] = useState("0.001");
   const [euroInput, setEuroInput] = useState("50");
@@ -9430,56 +9431,109 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
         {educationTab === "resources" && (
           <div className="space-y-6">
-            <p className="text-muted-foreground">{t('education.resourcesIntroNew')}</p>
-            
-            {educationResources.length === 0 ? (
-              <div className="text-center py-12 bg-slate-100/50 rounded-xl">
-                <span className="text-5xl mb-4 block">📚</span>
-                <h3 className="text-lg font-semibold text-foreground mb-2">{t('education.noResources')}</h3>
-                <p className="text-sm text-muted-foreground">{t('education.noResourcesDesc')}</p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {/* Group by category */}
-                {['video', 'website', 'book', 'app', 'podcast'].map(category => {
-                  const categoryResources = educationResources.filter(r => r.category === category);
-                  if (categoryResources.length === 0) return null;
+            {selectedResourceCategory === null ? (
+              <>
+                {/* Category Tiles */}
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    onClick={() => setSelectedResourceCategory("video")}
+                    className="p-6 rounded-2xl bg-gradient-to-br from-red-500/20 to-rose-600/20 border-2 border-red-500/30 hover:border-red-500/60 hover:shadow-lg transition-all text-left"
+                  >
+                    <div className="text-5xl mb-3">🎬</div>
+                    <h3 className="text-xl font-bold text-foreground mb-1">{t('education.category.video')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('education.categoryDesc.video')}</p>
+                    <div className="mt-3 text-sm font-semibold text-red-600">
+                      {educationResources.filter(r => r.category === 'video').length} {t('education.entries')}
+                    </div>
+                  </button>
                   
+                  <button
+                    onClick={() => setSelectedResourceCategory("book")}
+                    className="p-6 rounded-2xl bg-gradient-to-br from-green-500/20 to-emerald-600/20 border-2 border-green-500/30 hover:border-green-500/60 hover:shadow-lg transition-all text-left"
+                  >
+                    <div className="text-5xl mb-3">📖</div>
+                    <h3 className="text-xl font-bold text-foreground mb-1">{t('education.category.book')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('education.categoryDesc.book')}</p>
+                    <div className="mt-3 text-sm font-semibold text-green-600">
+                      {educationResources.filter(r => r.category === 'book').length} {t('education.entries')}
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => setSelectedResourceCategory("website")}
+                    className="p-6 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-600/20 border-2 border-blue-500/30 hover:border-blue-500/60 hover:shadow-lg transition-all text-left"
+                  >
+                    <div className="text-5xl mb-3">🌐</div>
+                    <h3 className="text-xl font-bold text-foreground mb-1">{t('education.category.website')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('education.categoryDesc.website')}</p>
+                    <div className="mt-3 text-sm font-semibold text-blue-600">
+                      {educationResources.filter(r => r.category === 'website').length} {t('education.entries')}
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => setSelectedResourceCategory("article")}
+                    className="p-6 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-600/20 border-2 border-amber-500/30 hover:border-amber-500/60 hover:shadow-lg transition-all text-left"
+                  >
+                    <div className="text-5xl mb-3">📰</div>
+                    <h3 className="text-xl font-bold text-foreground mb-1">{t('education.category.article')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('education.categoryDesc.article')}</p>
+                    <div className="mt-3 text-sm font-semibold text-amber-600">
+                      {educationResources.filter(r => r.category === 'article').length} {t('education.entries')}
+                    </div>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Back button and category resources */}
+                <Button onClick={() => setSelectedResourceCategory(null)} variant="outline" size="sm" className="gap-2">
+                  ← {t('education.backToCategories')}
+                </Button>
+                
+                {(() => {
                   const categoryConfig: Record<string, { icon: string; color: string; bgColor: string }> = {
                     video: { icon: '🎬', color: 'text-red-700', bgColor: 'border-red-500/30 bg-red-500/5' },
                     website: { icon: '🌐', color: 'text-blue-700', bgColor: 'border-blue-500/30 bg-blue-500/5' },
                     book: { icon: '📖', color: 'text-green-700', bgColor: 'border-green-500/30 bg-green-500/5' },
-                    app: { icon: '📱', color: 'text-purple-700', bgColor: 'border-purple-500/30 bg-purple-500/5' },
-                    podcast: { icon: '🎧', color: 'text-amber-700', bgColor: 'border-amber-500/30 bg-amber-500/5' }
+                    article: { icon: '📰', color: 'text-amber-700', bgColor: 'border-amber-500/30 bg-amber-500/5' }
                   };
-                  
-                  const config = categoryConfig[category] || { icon: '📌', color: 'text-slate-700', bgColor: 'border-slate-500/30 bg-slate-500/5' };
+                  const config = categoryConfig[selectedResourceCategory] || { icon: '📌', color: 'text-slate-700', bgColor: 'border-slate-500/30 bg-slate-500/5' };
+                  const categoryResources = educationResources.filter(r => r.category === selectedResourceCategory);
                   
                   return (
-                    <div key={category} className={`border-2 rounded-xl p-4 ${config.bgColor}`}>
-                      <h3 className={`text-lg font-bold mb-3 flex items-center gap-2 ${config.color}`}>
-                        {config.icon} {t(`education.category.${category}`)}
+                    <div className={`border-2 rounded-xl p-4 ${config.bgColor}`}>
+                      <h3 className={`text-lg font-bold mb-4 flex items-center gap-2 ${config.color}`}>
+                        {config.icon} {t(`education.category.${selectedResourceCategory}`)}
                       </h3>
-                      <div className="grid grid-cols-1 gap-2">
-                        {categoryResources.map(resource => (
-                          <a 
-                            key={resource.id}
-                            href={resource.url} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="block p-3 bg-white/50 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all"
-                          >
-                            <h4 className="font-semibold text-foreground text-sm">{resource.title}</h4>
-                            {resource.description && (
-                              <p className="text-xs text-muted-foreground mt-1">{resource.description}</p>
-                            )}
-                          </a>
-                        ))}
-                      </div>
+                      
+                      {categoryResources.length === 0 ? (
+                        <div className="text-center py-8">
+                          <span className="text-4xl mb-3 block">{config.icon}</span>
+                          <p className="text-sm text-muted-foreground">{t('education.noResourcesInCategory')}</p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 gap-3">
+                          {categoryResources.map(resource => (
+                            <a 
+                              key={resource.id}
+                              href={resource.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="block p-4 bg-white/50 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all border border-white/50"
+                            >
+                              <h4 className="font-semibold text-foreground">{resource.title}</h4>
+                              {resource.description && (
+                                <p className="text-sm text-muted-foreground mt-1">{resource.description}</p>
+                              )}
+                            </a>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
-                })}
-              </div>
+                })()}
+              </>
             )}
           </div>
         )}

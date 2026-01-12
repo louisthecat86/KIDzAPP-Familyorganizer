@@ -706,8 +706,18 @@
       "website": "Internetseiten",
       "book": "Bücher",
       "app": "Apps",
-      "podcast": "Podcasts"
+      "podcast": "Podcasts",
+      "article": "Artikel"
     },
+    "categoryDesc": {
+      "video": "Lehrreiche Videos über Bitcoin",
+      "website": "Nützliche Webseiten zum Lernen",
+      "book": "Empfohlene Bücher",
+      "article": "Interessante Artikel"
+    },
+    "entries": "Einträge",
+    "backToCategories": "Zurück",
+    "noResourcesInCategory": "Hier gibt es noch keine Einträge.",
     "quizAlreadyPassed": "Quiz bereits bestanden!",
     "quizAlreadyPassedDesc": "{{score}}/{{total}} richtig!",
     "quizTryAgain": "Probier nochmal!",
