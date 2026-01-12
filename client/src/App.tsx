@@ -10857,14 +10857,16 @@ function TrackerChart({ userId }: { userId: number }) {
   const [loading, setLoading] = useState(true);
   const [liveBtcPrice, setLiveBtcPrice] = useState<number | null>(null);
   const [satsBreakdown, setSatsBreakdown] = useState<any>(null);
+  const [snapshots, setSnapshots] = useState<any[]>([]);
   const [showBreakdown, setShowBreakdown] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [breakdownRes, priceRes] = await Promise.all([
+        const [breakdownRes, priceRes, snapshotsRes] = await Promise.all([
           apiFetch(`/api/peers/${userId}/sats-breakdown`),
-          apiFetch('/api/btc-price')
+          apiFetch('/api/btc-price'),
+          apiFetch(`/api/bitcoin-snapshots/${userId}`)
         ]);
         
         if (breakdownRes.ok) {
@@ -10874,6 +10876,10 @@ function TrackerChart({ userId }: { userId: number }) {
         if (priceRes.ok) {
           const priceData = await priceRes.json();
           setLiveBtcPrice(priceData.eur);
+        }
+        
+        if (snapshotsRes.ok) {
+          setSnapshots(await snapshotsRes.json());
         }
       } catch (error) {
         console.error("[Tracker] Failed to fetch:", error);
@@ -10890,6 +10896,14 @@ function TrackerChart({ userId }: { userId: number }) {
   if (totalSats === 0) return <p className="text-sm text-muted-foreground py-8 text-center">{t('education.noApprovedTasks')}</p>;
   
   const currentEuroValue = liveBtcPrice ? (totalSats * liveBtcPrice) / 1e8 : 0;
+  
+  // Calculate growth message
+  const hasHistory = snapshots.length >= 2;
+  const firstSnapshot = snapshots[0];
+  const firstSats = firstSnapshot?.satoshiAmount || totalSats;
+  const firstEurValue = firstSnapshot?.valueEur ? firstSnapshot.valueEur / 100 : currentEuroValue;
+  const satsGrowth = totalSats - firstSats;
+  const eurGrowth = currentEuroValue - firstEurValue;
   
   return (
     <div className="space-y-4">
@@ -10908,6 +10922,104 @@ function TrackerChart({ userId }: { userId: number }) {
           </p>
         </div>
       </div>
+
+      {hasHistory && snapshots.length > 1 && (
+        <div className="bg-white/40 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-xl p-4 space-y-3">
+          <p className="text-sm font-semibold text-foreground">{t('tracker.yourGrowth') || 'Dein Wachstum'}</p>
+          
+          <div className="grid grid-cols-2 gap-2 mb-2">
+            <div className="flex items-center gap-2 text-xs">
+              <div className="w-3 h-3 rounded bg-emerald-500"></div>
+              <span className="text-muted-foreground">{t('tracker.legendSats') || 'Deine Sats'}</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <div className="w-3 h-1 bg-violet-500 rounded"></div>
+              <span className="text-muted-foreground">{t('tracker.legendEuro') || 'Euro-Wert'}</span>
+            </div>
+          </div>
+          
+          <div className="h-36">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={snapshots} margin={{ top: 5, right: 30, left: -10, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="satsGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity={0.6} />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity={0.1} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(100,116,139,0.15)" vertical={false} />
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 9, fill: '#64748b' }} 
+                  axisLine={false}
+                  tickLine={false}
+                  interval="preserveStartEnd"
+                />
+                <YAxis 
+                  yAxisId="sats"
+                  orientation="left"
+                  tick={{ fontSize: 9, fill: '#10b981' }} 
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v.toString()}
+                />
+                <YAxis 
+                  yAxisId="euro"
+                  orientation="right"
+                  tick={{ fontSize: 9, fill: '#8b5cf6' }} 
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={v => `€${(v/100).toFixed(1)}`}
+                />
+                <Tooltip 
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length > 0) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-lg p-2 shadow-lg text-xs">
+                          <p className="text-muted-foreground mb-1">{data.date}</p>
+                          <p className="text-emerald-600 font-bold">⚡ {data.satoshiAmount?.toLocaleString()} sats</p>
+                          <p className="text-violet-600">€{(data.valueEur / 100).toFixed(2)}</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Area 
+                  yAxisId="sats"
+                  type="stepAfter" 
+                  dataKey="satoshiAmount" 
+                  stroke="#10b981" 
+                  strokeWidth={2}
+                  fill="url(#satsGrad)" 
+                />
+                <Line 
+                  yAxisId="euro"
+                  type="monotone" 
+                  dataKey="valueEur" 
+                  stroke="#8b5cf6" 
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+          
+          {satsGrowth > 0 && (
+            <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-3 text-center">
+              <p className="text-sm text-emerald-700 dark:text-emerald-400">
+                📈 <strong>+{satsGrowth.toLocaleString()} sats</strong> {t('tracker.sinceBeginnig') || 'seit du angefangen hast!'}
+              </p>
+              {eurGrowth > 0 && (
+                <p className="text-xs text-emerald-600/80 mt-1">
+                  {t('tracker.worthMore') || 'Deine Ersparnisse sind jetzt'} <strong>€{eurGrowth.toFixed(2)}</strong> {t('tracker.moreWorth') || 'mehr wert!'}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {satsBreakdown && (
         <div className="bg-white/40 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-xl overflow-hidden">
