@@ -4229,7 +4229,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           try {
             // Generate invoice from child's Lightning Address
-            const invoice = await fetchLightningAddressInvoice(child.lightningAddress, bonusSats, `🎓 Satoshi Guardian Graduation Bonus für ${child.name}!`);
+            const { fetchInvoiceFromLightningAddress } = await import("./lnurl");
+            const invoice = await fetchInvoiceFromLightningAddress(child.lightningAddress, bonusSats, `🎓 Satoshi Guardian Graduation Bonus für ${child.name}!`);
             
             // Create manual payment entry
             await storage.createManualPayment({
