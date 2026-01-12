@@ -25,7 +25,7 @@ import { useTranslation } from "react-i18next";
 import i18n from "./i18n";
 import deTranslations from "./i18n/locales/de.json";
 import enTranslations from "./i18n/locales/en.json";
-import { LineChart, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Line, Area, ResponsiveContainer } from "recharts";
+import { LineChart, AreaChart, ComposedChart, CartesianGrid, XAxis, YAxis, Tooltip, Line, Area, ResponsiveContainer } from "recharts";
 import { 
   CheckCircle, 
   Circle, 
@@ -11006,7 +11006,7 @@ function TrackerChart({ userId }: { userId: number }) {
           
           <div className="h-36">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 5, right: 30, left: -10, bottom: 5 }}>
+              <ComposedChart data={chartData} margin={{ top: 5, right: 30, left: -10, bottom: 5 }}>
                 <defs>
                   <linearGradient id="satsGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#10b981" stopOpacity={0.6} />
@@ -11088,7 +11088,7 @@ function TrackerChart({ userId }: { userId: number }) {
                   strokeOpacity={showBtcLine ? 1 : 0}
                   dot={showBtcLine ? { fill: '#a78bfa', r: 3 } : false}
                 />
-              </AreaChart>
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
         </div>
