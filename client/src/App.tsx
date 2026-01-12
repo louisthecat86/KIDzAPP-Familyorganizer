@@ -10879,7 +10879,16 @@ function TrackerChart({ userId }: { userId: number }) {
         }
         
         if (snapshotsRes.ok) {
-          setSnapshots(await snapshotsRes.json());
+          const rawSnapshots = await snapshotsRes.json();
+          const normalized = rawSnapshots
+            .slice()
+            .reverse()
+            .map((s: any) => ({
+              ...s,
+              date: new Date(s.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }),
+              valueEurNormalized: s.valueEur / 100
+            }));
+          setSnapshots(normalized);
         }
       } catch (error) {
         console.error("[Tracker] Failed to fetch:", error);
@@ -10897,11 +10906,11 @@ function TrackerChart({ userId }: { userId: number }) {
   
   const currentEuroValue = liveBtcPrice ? (totalSats * liveBtcPrice) / 1e8 : 0;
   
-  // Calculate growth message
+  // Calculate growth message (snapshots are now chronological)
   const hasHistory = snapshots.length >= 2;
   const firstSnapshot = snapshots[0];
   const firstSats = firstSnapshot?.satoshiAmount || totalSats;
-  const firstEurValue = firstSnapshot?.valueEur ? firstSnapshot.valueEur / 100 : currentEuroValue;
+  const firstEurValue = firstSnapshot?.valueEurNormalized || currentEuroValue;
   const satsGrowth = totalSats - firstSats;
   const eurGrowth = currentEuroValue - firstEurValue;
   
@@ -10969,7 +10978,7 @@ function TrackerChart({ userId }: { userId: number }) {
                   tick={{ fontSize: 9, fill: '#8b5cf6' }} 
                   axisLine={false}
                   tickLine={false}
-                  tickFormatter={v => `€${(v/100).toFixed(1)}`}
+                  tickFormatter={v => `€${v.toFixed(1)}`}
                 />
                 <Tooltip 
                   content={({ active, payload }) => {
@@ -10979,7 +10988,7 @@ function TrackerChart({ userId }: { userId: number }) {
                         <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-lg p-2 shadow-lg text-xs">
                           <p className="text-muted-foreground mb-1">{data.date}</p>
                           <p className="text-emerald-600 font-bold">⚡ {data.satoshiAmount?.toLocaleString()} sats</p>
-                          <p className="text-violet-600">€{(data.valueEur / 100).toFixed(2)}</p>
+                          <p className="text-violet-600">€{data.valueEurNormalized?.toFixed(2)}</p>
                         </div>
                       );
                     }
@@ -10997,7 +11006,7 @@ function TrackerChart({ userId }: { userId: number }) {
                 <Line 
                   yAxisId="euro"
                   type="monotone" 
-                  dataKey="valueEur" 
+                  dataKey="valueEurNormalized" 
                   stroke="#8b5cf6" 
                   strokeWidth={2}
                   dot={false}
