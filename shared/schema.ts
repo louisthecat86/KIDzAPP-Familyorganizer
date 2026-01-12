@@ -217,6 +217,25 @@ export const insertMonthlySavingsSnapshotSchema = createInsertSchema(monthlySavi
 export type InsertMonthlySavingsSnapshot = z.infer<typeof insertMonthlySavingsSnapshotSchema>;
 export type MonthlySavingsSnapshot = typeof monthlySavingsSnapshots.$inferSelect;
 
+// Balance Snapshots (for tracking historical balance over time)
+export const balanceSnapshots = pgTable("balance_snapshots", {
+  id: serial("id").primaryKey(),
+  peerId: integer("peer_id").notNull(),
+  connectionId: text("connection_id").notNull(),
+  balance: integer("balance").notNull(),
+  btcPriceEur: integer("btc_price_eur").notNull(),
+  valueEur: integer("value_eur").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertBalanceSnapshotSchema = createInsertSchema(balanceSnapshots).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertBalanceSnapshot = z.infer<typeof insertBalanceSnapshotSchema>;
+export type BalanceSnapshot = typeof balanceSnapshots.$inferSelect;
+
 // Level Bonus Settings (per family - set by parent)
 export const levelBonusSettings = pgTable("level_bonus_settings", {
   id: serial("id").primaryKey(),
