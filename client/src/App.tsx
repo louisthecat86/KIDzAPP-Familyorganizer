@@ -10865,6 +10865,15 @@ function TrackerChart({ userId }: { userId: number }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // First verify session is valid before making authenticated requests
+        const authCheck = await apiFetch('/api/auth/me');
+        if (!authCheck.ok) {
+          console.log("[Tracker] Session not ready, will retry...");
+          // Retry after a short delay
+          setTimeout(() => fetchData(), 500);
+          return;
+        }
+        
         const [breakdownRes, priceRes, snapshotsRes] = await Promise.all([
           apiFetch(`/api/peers/${userId}/sats-breakdown`),
           apiFetch('/api/btc-price'),
