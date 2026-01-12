@@ -10881,28 +10881,24 @@ function TrackerChart({ userId }: { userId: number }) {
         if (snapshotsRes.ok) {
           const rawSnapshots = await snapshotsRes.json();
           
-          // Deduplicate by date (keep last entry per day) and ensure monotonic sats growth
+          // Deduplicate by date (keep last entry per day)
           const byDate = new Map<string, any>();
           rawSnapshots.forEach((s: any) => {
             const dateKey = new Date(s.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
             byDate.set(dateKey, s);
           });
           
-          // Convert to array and ensure monotonic growth (highest seen sats)
-          let maxSats = 0;
-          let maxEur = 0;
+          // Convert to array - sats are already cumulative from API
           const normalized = Array.from(byDate.entries()).map(([dateKey, s]) => {
-            maxSats = Math.max(maxSats, s.satoshiAmount || 0);
-            maxEur = Math.max(maxEur, (s.valueEur || 0) / 100);
             return {
               ...s,
               date: dateKey,
-              satoshiAmount: maxSats,
-              valueEurNormalized: maxEur
+              satoshiAmount: s.satoshiAmount || 0,
+              valueEurNormalized: (s.valueEur || 0) / 100, // Current BTC value
+              fiatBaseline: (s.fiatBaseline || 0) / 100 // What you'd have if kept in fiat
             };
           });
           
-          // Store for later - we'll add current total after we have satsBreakdown
           setSnapshots(normalized);
         }
       } catch (error) {
@@ -10921,24 +10917,34 @@ function TrackerChart({ userId }: { userId: number }) {
   
   const currentEuroValue = liveBtcPrice ? (totalSats * liveBtcPrice) / 1e8 : 0;
   
-  // Add today's actual total to the chart data (ensures we end at the correct cumulative total)
+  // Add today's actual total to the chart data
   const todayKey = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
   const chartData = [...snapshots];
   
-  // Update or add today's entry with the actual cumulative total from transactions
+  // Get fiat baseline from first snapshot or calculate
+  const firstFiatBaseline = chartData[0]?.fiatBaseline || currentEuroValue;
+  const currentFiatBaseline = liveBtcPrice && chartData[0]?.btcPrice 
+    ? (totalSats * (chartData[0]?.btcPrice || 0)) / 1e8 / 100 // Use first BTC price
+    : firstFiatBaseline;
+  
+  // Update or add today's entry
   const todayIndex = chartData.findIndex(s => s.date === todayKey);
   if (todayIndex >= 0) {
-    chartData[todayIndex] = { ...chartData[todayIndex], satoshiAmount: totalSats, valueEurNormalized: currentEuroValue };
+    chartData[todayIndex] = { 
+      ...chartData[todayIndex], 
+      satoshiAmount: totalSats, 
+      valueEurNormalized: currentEuroValue,
+      fiatBaseline: currentFiatBaseline
+    };
   } else if (chartData.length > 0) {
-    chartData.push({ date: todayKey, satoshiAmount: totalSats, valueEurNormalized: currentEuroValue });
+    chartData.push({ 
+      date: todayKey, 
+      satoshiAmount: totalSats, 
+      valueEurNormalized: currentEuroValue,
+      fiatBaseline: currentFiatBaseline
+    });
   }
   
-  // Ensure monotonic growth - each point should be >= previous
-  for (let i = 1; i < chartData.length; i++) {
-    if (chartData[i].satoshiAmount < chartData[i-1].satoshiAmount) {
-      chartData[i].satoshiAmount = chartData[i-1].satoshiAmount;
-    }
-  }
   // Final entry should always be the actual total
   if (chartData.length > 0) {
     chartData[chartData.length - 1].satoshiAmount = totalSats;
@@ -10975,14 +10981,18 @@ function TrackerChart({ userId }: { userId: number }) {
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 space-y-3">
           <p className="text-sm font-semibold text-white">{t('tracker.yourGrowth') || 'Dein Wachstum'}</p>
           
-          <div className="grid grid-cols-2 gap-2 mb-2">
+          <div className="grid grid-cols-3 gap-2 mb-2">
             <div className="flex items-center gap-2 text-xs">
               <div className="w-3 h-3 rounded bg-emerald-400"></div>
-              <span className="text-slate-300">{t('tracker.legendSats') || 'Deine Sats'}</span>
+              <span className="text-slate-300">{t('tracker.legendSats') || 'Sats'}</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
               <div className="w-3 h-1 bg-violet-400 rounded"></div>
-              <span className="text-slate-300">{t('tracker.legendEuro') || 'Euro-Wert'}</span>
+              <span className="text-slate-300">{t('tracker.legendBtcValue') || 'Bitcoin €'}</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <div className="w-3 h-1 bg-amber-400/60 rounded" style={{ borderStyle: 'dashed' }}></div>
+              <span className="text-slate-300">{t('tracker.legendFiat') || 'Fiat €'}</span>
             </div>
           </div>
           
@@ -11023,11 +11033,20 @@ function TrackerChart({ userId }: { userId: number }) {
                   content={({ active, payload }) => {
                     if (active && payload && payload.length > 0) {
                       const data = payload[0].payload;
+                      const btcValue = data.valueEurNormalized || 0;
+                      const fiatValue = data.fiatBaseline || 0;
+                      const gain = btcValue - fiatValue;
                       return (
                         <div className="bg-slate-900 border border-slate-600 rounded-lg p-2 shadow-lg text-xs">
                           <p className="text-slate-300 mb-1">{data.date}</p>
                           <p className="text-emerald-400 font-bold">⚡ {data.satoshiAmount?.toLocaleString()} sats</p>
-                          <p className="text-violet-400">€{data.valueEurNormalized?.toFixed(2)}</p>
+                          <p className="text-violet-400">Bitcoin: €{btcValue.toFixed(2)}</p>
+                          <p className="text-amber-400/70">Fiat: €{fiatValue.toFixed(2)}</p>
+                          {gain !== 0 && (
+                            <p className={gain > 0 ? "text-green-400 font-semibold mt-1" : "text-red-400 mt-1"}>
+                              {gain > 0 ? '📈' : '📉'} {gain > 0 ? '+' : ''}€{gain.toFixed(2)}
+                            </p>
+                          )}
                         </div>
                       );
                     }
@@ -11041,6 +11060,16 @@ function TrackerChart({ userId }: { userId: number }) {
                   stroke="#10b981" 
                   strokeWidth={2}
                   fill="url(#satsGrad)" 
+                />
+                <Line 
+                  yAxisId="euro"
+                  type="monotone" 
+                  dataKey="fiatBaseline" 
+                  stroke="#fbbf24" 
+                  strokeWidth={2}
+                  strokeDasharray="4 4"
+                  strokeOpacity={0.6}
+                  dot={false}
                 />
                 <Line 
                   yAxisId="euro"

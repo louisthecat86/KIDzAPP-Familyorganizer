@@ -185,6 +185,7 @@ export const dailyBitcoinSnapshots = pgTable("daily_bitcoin_snapshots", {
   valueEur: integer("value_eur").notNull(), // Value in cents (to avoid decimals)
   satoshiAmount: integer("satoshi_amount").notNull(), // Current balance at time of snapshot
   cumulativeSats: integer("cumulative_sats").default(0).notNull(), // Total lifetime sats earned (never decreases)
+  cumulativeEuro: integer("cumulative_euro").default(0).notNull(), // Total Euro value at earning time (fiat baseline, in cents)
   btcPrice: integer("btc_price").notNull().default(0), // BTC price in cents at time of snapshot (EUR)
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

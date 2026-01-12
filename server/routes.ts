@@ -3173,13 +3173,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const peerId = parseInt(req.params.peerId);
       const snapshots = await storage.getDailyBitcoinSnapshots(peerId);
       
-      // Use cumulativeSats for the chart (monotonically increasing), fall back to satoshiAmount
-      res.json(snapshots.map(s => ({
-        date: s.createdAt,
-        satoshiAmount: s.cumulativeSats || s.satoshiAmount, // Use cumulative if available
-        valueEur: s.valueEur,
-        btcPrice: s.btcPrice
-      })));
+      // Calculate fiat baseline: what you'd have if BTC price stayed constant at first earning
+      const firstBtcPrice = snapshots.find(s => s.btcPrice > 0)?.btcPrice || 0;
+      
+      res.json(snapshots.map(s => {
+        const cumulativeSats = s.cumulativeSats || s.satoshiAmount;
+        // Current Euro value of cumulative sats
+        const currentEuroValue = s.btcPrice > 0 ? Math.round(cumulativeSats * s.btcPrice / 100000000) : s.valueEur;
+        // Fiat baseline: what you'd have if you kept earnings at first BTC price
+        const fiatBaseline = firstBtcPrice > 0 ? Math.round(cumulativeSats * firstBtcPrice / 100000000) : currentEuroValue;
+        
+        return {
+          date: s.createdAt,
+          satoshiAmount: cumulativeSats,
+          valueEur: currentEuroValue, // Current Euro value (fluctuates with BTC price)
+          fiatBaseline: fiatBaseline, // What you'd have if kept at first BTC price
+          btcPrice: s.btcPrice
+        };
+      }));
     } catch (error) {
       console.error("[Bitcoin Snapshots Error]:", error);
       res.status(500).json({ error: "Failed to fetch snapshots" });
