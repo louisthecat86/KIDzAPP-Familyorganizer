@@ -10933,17 +10933,17 @@ function TrackerChart({ userId }: { userId: number }) {
       </div>
 
       {hasHistory && snapshots.length > 1 && (
-        <div className="bg-white/40 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-xl p-4 space-y-3">
-          <p className="text-sm font-semibold text-foreground">{t('tracker.yourGrowth') || 'Dein Wachstum'}</p>
+        <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 space-y-3">
+          <p className="text-sm font-semibold text-white">{t('tracker.yourGrowth') || 'Dein Wachstum'}</p>
           
           <div className="grid grid-cols-2 gap-2 mb-2">
             <div className="flex items-center gap-2 text-xs">
-              <div className="w-3 h-3 rounded bg-emerald-500"></div>
-              <span className="text-muted-foreground">{t('tracker.legendSats') || 'Deine Sats'}</span>
+              <div className="w-3 h-3 rounded bg-emerald-400"></div>
+              <span className="text-slate-300">{t('tracker.legendSats') || 'Deine Sats'}</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
-              <div className="w-3 h-1 bg-violet-500 rounded"></div>
-              <span className="text-muted-foreground">{t('tracker.legendEuro') || 'Euro-Wert'}</span>
+              <div className="w-3 h-1 bg-violet-400 rounded"></div>
+              <span className="text-slate-300">{t('tracker.legendEuro') || 'Euro-Wert'}</span>
             </div>
           </div>
           
@@ -10956,10 +10956,10 @@ function TrackerChart({ userId }: { userId: number }) {
                     <stop offset="100%" stopColor="#10b981" stopOpacity={0.1} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(100,116,139,0.15)" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.25)" vertical={false} />
                 <XAxis 
                   dataKey="date" 
-                  tick={{ fontSize: 9, fill: '#64748b' }} 
+                  tick={{ fontSize: 9, fill: '#cbd5e1' }} 
                   axisLine={false}
                   tickLine={false}
                   interval="preserveStartEnd"
@@ -10967,7 +10967,7 @@ function TrackerChart({ userId }: { userId: number }) {
                 <YAxis 
                   yAxisId="sats"
                   orientation="left"
-                  tick={{ fontSize: 9, fill: '#10b981' }} 
+                  tick={{ fontSize: 9, fill: '#34d399' }} 
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v.toString()}
@@ -10975,7 +10975,7 @@ function TrackerChart({ userId }: { userId: number }) {
                 <YAxis 
                   yAxisId="euro"
                   orientation="right"
-                  tick={{ fontSize: 9, fill: '#8b5cf6' }} 
+                  tick={{ fontSize: 9, fill: '#a78bfa' }} 
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={v => `€${v.toFixed(1)}`}
@@ -10985,10 +10985,10 @@ function TrackerChart({ userId }: { userId: number }) {
                     if (active && payload && payload.length > 0) {
                       const data = payload[0].payload;
                       return (
-                        <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-lg p-2 shadow-lg text-xs">
-                          <p className="text-muted-foreground mb-1">{data.date}</p>
-                          <p className="text-emerald-600 font-bold">⚡ {data.satoshiAmount?.toLocaleString()} sats</p>
-                          <p className="text-violet-600">€{data.valueEurNormalized?.toFixed(2)}</p>
+                        <div className="bg-slate-900 border border-slate-600 rounded-lg p-2 shadow-lg text-xs">
+                          <p className="text-slate-300 mb-1">{data.date}</p>
+                          <p className="text-emerald-400 font-bold">⚡ {data.satoshiAmount?.toLocaleString()} sats</p>
+                          <p className="text-violet-400">€{data.valueEurNormalized?.toFixed(2)}</p>
                         </div>
                       );
                     }
@@ -11016,12 +11016,12 @@ function TrackerChart({ userId }: { userId: number }) {
           </div>
           
           {satsGrowth > 0 && (
-            <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-3 text-center">
-              <p className="text-sm text-emerald-700 dark:text-emerald-400">
+            <div className="bg-emerald-900/50 border border-emerald-700/50 rounded-lg p-3 text-center">
+              <p className="text-sm text-emerald-300">
                 📈 <strong>+{satsGrowth.toLocaleString()} sats</strong> {t('tracker.sinceBeginnig') || 'seit du angefangen hast!'}
               </p>
               {eurGrowth > 0 && (
-                <p className="text-xs text-emerald-600/80 mt-1">
+                <p className="text-xs text-emerald-400/90 mt-1">
                   {t('tracker.worthMore') || 'Deine Ersparnisse sind jetzt'} <strong>€{eurGrowth.toFixed(2)}</strong> {t('tracker.moreWorth') || 'mehr wert!'}
                 </p>
               )}
