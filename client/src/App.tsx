@@ -10856,13 +10856,11 @@ function TrackerChart({ userId }: { userId: number }) {
   const { t } = useTranslation();
   const [trackerData, setTrackerData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showEuro, setShowEuro] = useState(true);
-  const [showSats, setShowSats] = useState(true);
-  const [showBtcPrice, setShowBtcPrice] = useState(false);
   const [liveBtcPrice, setLiveBtcPrice] = useState<number | null>(null);
   const [showInfo, setShowInfo] = useState(false);
   const [earnings, setEarnings] = useState<EarningsData | null>(null);
   const [showBreakdown, setShowBreakdown] = useState(false);
+  const [btcHistory, setBtcHistory] = useState<{date: string; price: number}[]>([]);
 
   useEffect(() => {
     const fetchTrackerData = async () => {
@@ -10907,208 +10905,224 @@ function TrackerChart({ userId }: { userId: number }) {
     fetchBtcPrice();
   }, []);
 
+  useEffect(() => {
+    const fetchBtcHistory = async () => {
+      try {
+        const response = await apiFetch('/api/btc-history?days=90');
+        if (response.ok) {
+          const data = await response.json();
+          setBtcHistory(data || []);
+        }
+      } catch (error) {
+        console.error("[BTC History] Failed to fetch:", error);
+      }
+    };
+    fetchBtcHistory();
+  }, []);
+
   if (loading) return <div className="text-sm text-muted-foreground py-8 text-center">{t('education.loading')}</div>;
   if (trackerData.length === 0) return <p className="text-sm text-muted-foreground py-8 text-center">{t('education.noApprovedTasks')}</p>;
 
-  const latest = trackerData[trackerData.length - 1];
-  const first = trackerData[0];
-  const liveEuroValue = liveBtcPrice ? (latest.totalSats * liveBtcPrice) / 1e8 : latest.euroValue;
-  const euroChange = latest.euroValue - first.euroValue;
-  const satsChange = latest.totalSats - first.totalSats;
+  const totalSats = earnings?.totalReceived || trackerData[trackerData.length - 1]?.totalSats || 0;
+  const currentEuroValue = liveBtcPrice ? (totalSats * liveBtcPrice) / 1e8 : 0;
+  
+  const firstEntry = trackerData[0];
+  const firstEuroValue = firstEntry?.euroValue || 0;
+  const firstBtcPrice = firstEntry?.btcPrice || liveBtcPrice || 80000;
+  
+  const satsAtFirstPrice = firstBtcPrice ? (firstEuroValue * 1e8) / firstBtcPrice : 0;
+  const currentValueAtFirstPrice = liveBtcPrice && firstBtcPrice ? (satsAtFirstPrice * liveBtcPrice) / 1e8 : firstEuroValue;
+  const valueGrowthPercent = (firstEuroValue > 0 && currentValueAtFirstPrice > 0) 
+    ? ((currentEuroValue - currentValueAtFirstPrice) / currentValueAtFirstPrice * 100) 
+    : 0;
+  
+  const minPrice = btcHistory.length > 0 ? Math.min(...btcHistory.map(h => h.price)) : firstBtcPrice;
+  const maxPrice = btcHistory.length > 0 ? Math.max(...btcHistory.map(h => h.price)) : liveBtcPrice || firstBtcPrice;
+  const priceSwing = maxPrice && minPrice ? ((maxPrice - minPrice) / minPrice * 100) : 0;
+
+  const chartData = trackerData.map((d, i) => {
+    const currentLiveValue = liveBtcPrice ? (d.totalSats * liveBtcPrice) / 1e8 : d.euroValue;
+    return {
+      ...d,
+      liveEuroValue: currentLiveValue,
+      satsDisplay: d.totalSats,
+    };
+  });
   
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-bold text-foreground">{t('dashboard.yourEarnings')}</h3>
+        <h3 className="text-lg font-bold text-foreground">{t('tracker.title') || 'Dein Spar-Erfolg'}</h3>
         <button
           onClick={() => setShowInfo(!showInfo)}
           className="text-xs text-muted-foreground hover:text-foreground transition-colors"
           data-testid="toggle-info"
         >
-          {showInfo ? t('education.hide') : t('education.whatDoesMean')}
+          {showInfo ? t('education.hide') : '?'}
         </button>
+      </div>
+
+      <div className="bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border-2 border-emerald-500/50 rounded-xl p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">📈</span>
+          <div>
+            <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium uppercase tracking-wide">
+              {t('tracker.stackAlwaysGrows') || 'Dein Satoshi-Stapel wächst immer!'}
+            </p>
+            <p className="text-3xl font-bold text-emerald-600">
+              ⚡ {totalSats.toLocaleString()} <span className="text-lg font-normal">sats</span>
+            </p>
+          </div>
+        </div>
+        <div className="h-1 bg-emerald-200 dark:bg-emerald-900 rounded-full overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full animate-pulse" style={{width: '100%'}}></div>
+        </div>
+        <p className="text-xs text-emerald-600/80 dark:text-emerald-400/80">
+          {t('tracker.satsNeverShrink') || 'Deine Satoshis werden nie weniger - sie können nur mehr wert werden!'}
+        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-gradient-to-br from-cyan-500/20 to-cyan-600/5 border border-cyan-500/40 rounded-xl p-4">
-          <p className="text-xs text-cyan-700 uppercase tracking-wide mb-1">{t('common.satoshi')}</p>
-          <p className="text-2xl font-bold text-cyan-600">{(earnings?.totalReceived || latest.totalSats).toLocaleString()}</p>
-          {satsChange > 0 && (
-            <p className="text-xs text-cyan-600/70 mt-1">+{satsChange.toLocaleString()} {t('common.earned')}</p>
-          )}
-        </div>
         <div className="bg-gradient-to-br from-violet-500/20 to-violet-600/5 border border-violet-500/40 rounded-xl p-4">
-          <p className="text-xs text-violet-700 uppercase tracking-wide mb-1">{t('common.euroValue')}</p>
-          <p className="text-2xl font-bold text-violet-600">€{(liveBtcPrice ? ((earnings?.totalReceived || latest.totalSats) * liveBtcPrice) / 1e8 : liveEuroValue).toFixed(2)}</p>
-          <p className="text-xs text-violet-600/70 mt-1">{t('common.liveRate')}</p>
+          <p className="text-xs text-violet-700 uppercase tracking-wide mb-1">{t('tracker.currentValue') || 'Aktueller Wert'}</p>
+          <p className="text-2xl font-bold text-violet-600">€{currentEuroValue.toFixed(2)}</p>
+          <p className="text-xs text-violet-600/70 mt-1">{t('tracker.atCurrentPrice') || 'zum aktuellen Kurs'}</p>
+        </div>
+        <div className="bg-gradient-to-br from-amber-500/20 to-amber-600/5 border border-amber-500/40 rounded-xl p-4">
+          <p className="text-xs text-amber-700 uppercase tracking-wide mb-1">{t('tracker.btcPrice') || 'Bitcoin Kurs'}</p>
+          <p className="text-2xl font-bold text-amber-600">€{liveBtcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0}) || '---'}</p>
+          <p className="text-xs text-amber-600/70 mt-1">{t('tracker.changesDaily') || 'ändert sich täglich'}</p>
         </div>
       </div>
 
-      <div className="flex justify-center gap-2">
-        <button
-          onClick={() => setShowEuro(!showEuro)}
-          className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
-            showEuro 
-              ? 'bg-violet-500/20 border-violet-500/50 text-violet-600' 
-              : 'bg-white/30 dark:bg-black/30 border-slate-300/50 text-muted-foreground'
-          }`}
-          data-testid="toggle-euro"
-        >
-          {t('wallet.euro') || 'Euro'}
-        </button>
-        <button
-          onClick={() => setShowSats(!showSats)}
-          className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
-            showSats 
-              ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-600' 
-              : 'bg-white/30 dark:bg-black/30 border-slate-300/50 text-muted-foreground'
-          }`}
-          data-testid="toggle-sats"
-        >
-          {t('common.satoshi')}
-        </button>
-        <button
-          onClick={() => setShowBtcPrice(!showBtcPrice)}
-          className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
-            showBtcPrice 
-              ? 'bg-amber-500/20 border-amber-500/50 text-amber-600' 
-              : 'bg-white/30 dark:bg-black/30 border-slate-300/50 text-muted-foreground'
-          }`}
-          data-testid="toggle-btc-price"
-        >
-          {t('common.rate')}
-        </button>
-      </div>
-
-      <div className="h-48 bg-white/40 backdrop-blur-md rounded-xl p-3 border border-white/50 dark:border-white/20">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={trackerData.map(d => ({ 
-            ...d, 
-            btcPriceScaled: d.btcPrice ? d.btcPrice / 1000 : 0 
-          }))} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
-            <defs>
-              <linearGradient id="trackerGradViolet" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#7c3aed" stopOpacity={0.4} />
-                <stop offset="100%" stopColor="#7c3aed" stopOpacity={0.05} />
-              </linearGradient>
-              <linearGradient id="trackerGradCyan" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.4} />
-                <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.05} />
-              </linearGradient>
-              <linearGradient id="trackerGradAmber" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#d97706" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#d97706" stopOpacity={0.05} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(100,116,139,0.15)" vertical={false} />
-            <XAxis 
-              dataKey="date" 
-              tick={{ fontSize: 10, fill: '#475569' }} 
-              axisLine={{ stroke: 'rgba(100,116,139,0.2)' }}
-              tickLine={false}
-            />
-            <YAxis 
-              tick={{ fontSize: 10, fill: '#475569' }} 
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={v => `€${v.toFixed(0)}`} 
-            />
-            <YAxis 
-              yAxisId="right" 
-              orientation="right" 
-              tick={{ fontSize: 10, fill: '#475569' }} 
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={v => v.toLocaleString()} 
-            />
-            {showBtcPrice && (
-              <YAxis 
-                yAxisId="btcPrice" 
-                orientation="right" 
-                tick={{ fontSize: 9, fill: '#d97706' }} 
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={v => `${(v * 1000 / 1000).toFixed(0)}k`} 
-              />
-            )}
-            <Tooltip 
-              content={({ active, payload }) => {
-                if (active && payload && payload.length > 0) {
-                  const data = payload[0].payload;
-                  return (
-                    <div className="bg-white/90 backdrop-blur-md border border-slate-200 rounded-lg p-3 shadow-xl">
-                      <p className="text-xs text-muted-foreground mb-2">{data.date}</p>
-                      <div className="space-y-1">
-                        <p className="text-sm text-violet-600 font-medium">€{data.euroValue?.toFixed(2)}</p>
-                        <p className="text-sm text-cyan-600 font-medium">⚡ {data.totalSats?.toLocaleString()} sats</p>
-                        {showBtcPrice && (
-                          <p className="text-sm text-amber-600 font-medium">₿ €{data.btcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0})}</p>
-                        )}
-                      </div>
-                    </div>
-                  );
-                }
-                return null;
-              }}
-              cursor={{ stroke: 'rgba(100,116,139,0.2)', strokeWidth: 1 }}
-            />
-            {showEuro && (
-              <Area 
-                type="monotone" 
-                dataKey="euroValue" 
-                stroke="#7c3aed" 
-                strokeWidth={2}
-                fill="url(#trackerGradViolet)" 
-              />
-            )}
-            {showSats && (
-              <Area 
-                yAxisId="right" 
-                type="monotone" 
-                dataKey="totalSats" 
-                stroke="#06b6d4" 
-                strokeWidth={2}
-                fill="url(#trackerGradCyan)" 
-              />
-            )}
-            {showBtcPrice && (
-              <Area 
-                yAxisId="btcPrice" 
-                type="monotone" 
-                dataKey="btcPriceScaled" 
-                stroke="#d97706" 
-                strokeWidth={2}
-                strokeDasharray="5 5"
-                fill="url(#trackerGradAmber)" 
-              />
-            )}
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-
-      {showInfo && (
-        <div className="bg-white/40 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-xl p-4 space-y-3">
-          <p className="text-sm font-semibold text-foreground flex items-center gap-2">
-            {t('education.chartTitle')}
-          </p>
-          <div className="grid gap-2">
-            <div className="flex items-center gap-3 bg-violet-500/15 rounded-lg px-3 py-2">
-              <div className="w-4 h-1 bg-violet-500 rounded-full"></div>
-              <span className="text-xs text-foreground"><span className="text-violet-600 font-medium">Violett</span> = {t('common.chartViolet')}</span>
-            </div>
-            <div className="flex items-center gap-3 bg-cyan-500/15 rounded-lg px-3 py-2">
-              <div className="w-4 h-1 bg-cyan-500 rounded-full"></div>
-              <span className="text-xs text-foreground"><span className="text-cyan-600 font-medium">Cyan</span> = {t('common.chartCyan')}</span>
-            </div>
-            <div className="flex items-center gap-3 bg-amber-500/15 rounded-lg px-3 py-2">
-              <div className="w-4 h-1 rounded-full" style={{background: 'repeating-linear-gradient(90deg, #d97706 0px, #d97706 4px, transparent 4px, transparent 8px)'}}></div>
-              <span className="text-xs text-foreground"><span className="text-amber-600 font-medium">Orange (gestrichelt)</span> = {t('common.chartAmber')}</span>
+      {priceSwing > 5 && (
+        <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 border border-blue-300/50 dark:border-blue-700/50 rounded-xl p-4">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">🎢</span>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-foreground mb-1">
+                {t('tracker.priceRollercoaster') || 'Der Preis ist eine Achterbahn!'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {t('tracker.priceSwungBy') || 'In den letzten 90 Tagen schwankte der Bitcoin-Preis um'} <span className="font-bold text-foreground">{priceSwing.toFixed(0)}%</span>
+              </p>
+              <p className="text-xs text-emerald-600 font-medium mt-2">
+                {t('tracker.butYourSats') || 'Aber deine Satoshis? Die sind immer noch da - und warten darauf, mehr wert zu werden!'} 💪
+              </p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Earnings Breakdown */}
+      <div className="bg-white/40 backdrop-blur-md rounded-xl p-4 border border-white/50 dark:border-white/20 space-y-3">
+        <p className="text-sm font-semibold text-foreground">{t('tracker.yourGrowth') || 'Dein Wachstum'}</p>
+        <div className="h-40">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+              <defs>
+                <linearGradient id="satsGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.5} />
+                  <stop offset="100%" stopColor="#10b981" stopOpacity={0.05} />
+                </linearGradient>
+                <linearGradient id="euroGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.05} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(100,116,139,0.15)" vertical={false} />
+              <XAxis 
+                dataKey="date" 
+                tick={{ fontSize: 9, fill: '#64748b' }} 
+                axisLine={false}
+                tickLine={false}
+                interval="preserveStartEnd"
+              />
+              <YAxis 
+                yAxisId="sats"
+                orientation="left"
+                tick={{ fontSize: 9, fill: '#10b981' }} 
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v.toString()}
+                domain={['dataMin - 100', 'dataMax + 100']}
+              />
+              <YAxis 
+                yAxisId="euro"
+                orientation="right"
+                tick={{ fontSize: 9, fill: '#8b5cf6' }} 
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={v => `€${v.toFixed(1)}`}
+              />
+              <Tooltip 
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length > 0) {
+                    const data = payload[0].payload;
+                    return (
+                      <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-lg p-3 shadow-xl">
+                        <p className="text-xs text-muted-foreground mb-2">{data.date}</p>
+                        <div className="space-y-1">
+                          <p className="text-sm text-emerald-600 font-bold">⚡ {data.totalSats?.toLocaleString()} sats</p>
+                          <p className="text-sm text-violet-600 font-medium">€{data.liveEuroValue?.toFixed(2)} <span className="text-xs text-muted-foreground">(aktuell)</span></p>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Area 
+                yAxisId="sats"
+                type="stepAfter" 
+                dataKey="totalSats" 
+                stroke="#10b981" 
+                strokeWidth={3}
+                fill="url(#satsGradient)" 
+                name="Satoshis"
+              />
+              <Area 
+                yAxisId="euro"
+                type="monotone" 
+                dataKey="liveEuroValue" 
+                stroke="#8b5cf6" 
+                strokeWidth={2}
+                strokeDasharray="4 4"
+                fill="url(#euroGradient)" 
+                name="Euro-Wert"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="flex justify-center gap-4 text-xs">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+            <span className="text-muted-foreground">{t('tracker.legendSats') || 'Deine Sats (steigt immer!)'}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-0.5 bg-violet-500" style={{borderStyle: 'dashed'}}></div>
+            <span className="text-muted-foreground">{t('tracker.legendEuro') || 'Euro-Wert (schwankt)'}</span>
+          </div>
+        </div>
+      </div>
+
+      {showInfo && (
+        <div className="bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 border border-yellow-300/50 dark:border-yellow-700/50 rounded-xl p-4 space-y-3">
+          <p className="text-sm font-bold text-foreground flex items-center gap-2">
+            💡 {t('tracker.whySaveInSats') || 'Warum in Satoshi sparen?'}
+          </p>
+          <div className="space-y-2 text-xs text-foreground/80">
+            <p>✅ <strong>{t('tracker.reason1Title') || 'Dein Stapel wächst immer:'}</strong> {t('tracker.reason1') || 'Jede Aufgabe bringt mehr Sats - die verschwinden nie!'}</p>
+            <p>✅ <strong>{t('tracker.reason2Title') || 'Bitcoin wird seltener:'}</strong> {t('tracker.reason2') || 'Es gibt nur 21 Millionen Bitcoin - je mehr Menschen wollen, desto wertvoller!'}</p>
+            <p>✅ <strong>{t('tracker.reason3Title') || 'Zeit ist dein Freund:'}</strong> {t('tracker.reason3') || 'Kurzfristig schwankt der Preis. Langfristig? Bitcoin hat immer gewonnen!'}</p>
+          </div>
+          <div className="bg-white/50 dark:bg-black/20 rounded-lg p-3 mt-2">
+            <p className="text-xs text-center text-foreground/70 italic">
+              {t('tracker.hodlWisdom') || '"Nicht wie viel Euro es heute wert ist, zählt - sondern wie viele Sats du hast!"'}
+            </p>
+          </div>
+        </div>
+      )}
+
       {earnings && earnings.breakdown.length > 0 && (
         <div className="bg-white/40 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-xl overflow-hidden">
           <button
@@ -11117,10 +11131,10 @@ function TrackerChart({ userId }: { userId: number }) {
             data-testid="toggle-earnings-breakdown"
           >
             <span className="text-sm font-semibold text-foreground flex items-center gap-2">
-              💰 {t('dashboard.allReceivedSats') || 'Alle erhaltenen Sats'}
+              💰 {t('tracker.howYouEarned') || 'So hast du verdient'}
             </span>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-yellow-600">{earnings.totalReceived.toLocaleString()} sats</span>
+              <span className="text-sm font-bold text-emerald-600">{earnings.totalReceived.toLocaleString()} sats</span>
               <span className="text-xs text-muted-foreground">{showBreakdown ? '▼' : '▶'}</span>
             </div>
           </button>
@@ -11134,7 +11148,7 @@ function TrackerChart({ userId }: { userId: number }) {
                     <span className="text-xs text-foreground">{item.label}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-yellow-600">{item.totalSats.toLocaleString()}</span>
+                    <span className="text-sm font-semibold text-emerald-600">{item.totalSats.toLocaleString()}</span>
                     <span className="text-xs text-muted-foreground">({item.count}x)</span>
                   </div>
                 </div>
