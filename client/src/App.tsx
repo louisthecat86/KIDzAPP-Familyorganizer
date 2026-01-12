@@ -11359,11 +11359,22 @@ function DonateView({ user, onClose }: { user: User; onClose: () => void }) {
   const [donationAmount, setDonationAmount] = useState<string>("500");
   const [loading, setLoading] = useState(false);
   const [invoice, setInvoice] = useState<string | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const [showQR, setShowQR] = useState(false);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const { toast } = useToast();
   
   const isManualMode = user.walletType === "manual";
+  
+  useEffect(() => {
+    if (invoice) {
+      QRCode.toDataURL(invoice, {
+        width: 256,
+        margin: 2,
+        color: { dark: '#000000', light: '#ffffff' }
+      }).then(url => setQrDataUrl(url)).catch(console.error);
+    }
+  }, [invoice]);
 
   const handleDonate = async () => {
     if (!donationAmount || parseInt(donationAmount) <= 0) {
@@ -11436,7 +11447,7 @@ function DonateView({ user, onClose }: { user: User; onClose: () => void }) {
           <CardContent className="space-y-4">
             <div className="flex flex-col items-center gap-4">
               <div className="p-4 bg-white rounded-xl">
-                <QRCode value={invoice} size={200} />
+                {qrDataUrl && <img src={qrDataUrl} alt="Lightning Invoice QR Code" className="w-48 h-48" />}
               </div>
               
               <div className="text-center">
