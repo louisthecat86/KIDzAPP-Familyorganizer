@@ -7831,9 +7831,9 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   useEffect(() => {
     const fetchBtcPrice = async () => {
       try {
-        const response = await apiFetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur');
+        const response = await apiFetch('/api/btc-price');
         const data = await response.json();
-        setBtcPrice(data.bitcoin.eur);
+        setBtcPrice(data.eur);
       } catch (error) {
         console.error("[BTC Price] Failed to fetch:", error);
       }
@@ -10897,9 +10897,9 @@ function TrackerChart({ userId }: { userId: number }) {
   useEffect(() => {
     const fetchBtcPrice = async () => {
       try {
-        const response = await apiFetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur');
+        const response = await apiFetch('/api/btc-price');
         const data = await response.json();
-        setLiveBtcPrice(data.bitcoin.eur);
+        setLiveBtcPrice(data.eur);
       } catch (error) {
         console.error("[BTC Price] Failed to fetch:", error);
       }

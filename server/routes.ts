@@ -2890,13 +2890,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   async function getFreshBitcoinPrice(): Promise<{ eur: number }> {
     try {
       const response = await fetch(
-        "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur"
+        "https://api.coinbase.com/v2/prices/BTC-EUR/spot"
       );
       if (response.ok) {
         const data = await response.json();
-        if (data?.bitcoin?.eur) {
-          console.log(`[getFreshBitcoinPrice] Fresh price: €${data.bitcoin.eur}`);
-          return { eur: data.bitcoin.eur };
+        if (data?.data?.amount) {
+          const eurPrice = parseFloat(data.data.amount);
+          console.log(`[getFreshBitcoinPrice] Fresh price from Coinbase: €${eurPrice}`);
+          return { eur: eurPrice };
         }
       }
     } catch (e) {
@@ -3048,7 +3049,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     cache[key] = { data, expires: Date.now() + ttlMs };
   };
 
-  // Get current BTC price
+  // Get current BTC price using Coinbase API
   app.get("/api/btc-price", async (req, res) => {
     try {
       const cacheKey = "btc-price";
@@ -3058,21 +3059,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json(cached);
       }
 
-      const response = await fetch(
-        "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,eur"
-      );
+      // Fetch EUR and USD prices from Coinbase in parallel
+      const [eurResponse, usdResponse] = await Promise.all([
+        fetch("https://api.coinbase.com/v2/prices/BTC-EUR/spot"),
+        fetch("https://api.coinbase.com/v2/prices/BTC-USD/spot")
+      ]);
       
-      if (response.ok) {
-        const data = await response.json();
-        console.log("[BTC Price] Data:", JSON.stringify(data).substring(0, 100));
+      if (eurResponse.ok && usdResponse.ok) {
+        const eurData = await eurResponse.json();
+        const usdData = await usdResponse.json();
+        console.log("[BTC Price] Coinbase EUR:", eurData?.data?.amount, "USD:", usdData?.data?.amount);
         
-        if (data?.bitcoin?.usd && data?.bitcoin?.eur) {
+        if (eurData?.data?.amount && usdData?.data?.amount) {
+          const eurPrice = parseFloat(eurData.data.amount);
+          const usdPrice = parseFloat(usdData.data.amount);
           const responseData = {
-            usd: data.bitcoin.usd,
-            eur: data.bitcoin.eur,
+            usd: usdPrice,
+            eur: eurPrice,
             timestamp: new Date().toISOString()
           };
-          lastKnownPrice = { usd: data.bitcoin.usd, eur: data.bitcoin.eur };
+          lastKnownPrice = { usd: usdPrice, eur: eurPrice };
           setCached(cacheKey, responseData, 1800000); // 30 min cache
           return res.json(responseData);
         }
@@ -3113,10 +3119,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get historical BTC prices for comparison charts
+  // Get historical BTC prices for comparison charts using CryptoCompare (free, no API key required)
   app.get("/api/btc-history", async (req, res) => {
     try {
-      const days = req.query.days || "30";
+      const days = parseInt(req.query.days as string) || 30;
       const cacheKey = `btc-history-${days}`;
       const cached = getCached(cacheKey);
       if (cached && cached.length > 0) {
@@ -3124,31 +3130,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json(cached);
       }
 
-      console.log(`[BTC History] Fetching data for ${days} days (no valid cache)`);
+      console.log(`[BTC History] Fetching data for ${days} days from CryptoCompare`);
       const response = await fetch(
-        `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=eur&days=${days}`,
+        `https://min-api.cryptocompare.com/data/v2/histoday?fsym=BTC&tsym=EUR&limit=${days}`,
         { headers: { 'User-Agent': 'Mozilla/5.0' } }
       );
       
       if (!response.ok) {
         console.log(`[BTC History] API returned ${response.status}, serving old cache only`);
-        // Only return old cache if it has data
         const oldCache = cache[cacheKey];
         if (oldCache && Array.isArray(oldCache.data) && oldCache.data.length > 0) {
           return res.json(oldCache.data);
         }
-        // Don't cache empty arrays! Just return empty
         return res.status(500).json({ error: "Unable to fetch data" });
       }
       
       const data = await response.json();
-      console.log("[BTC History] Got data with keys:", Object.keys(data), "prices length:", data?.prices?.length);
+      console.log("[BTC History] Got response:", data?.Response, "data points:", data?.Data?.Data?.length);
       
-      if (data?.prices && Array.isArray(data.prices) && data.prices.length > 0) {
-        const chartData = data.prices.map((price: [number, number]) => ({
-          date: new Date(price[0]).toLocaleDateString("de-DE", { month: "short", day: "numeric" }),
-          timestamp: price[0],
-          price: Math.round(price[1] * 100) / 100
+      if (data?.Response === "Success" && data?.Data?.Data && Array.isArray(data.Data.Data) && data.Data.Data.length > 0) {
+        const chartData = data.Data.Data.map((item: { time: number; close: number }) => ({
+          date: new Date(item.time * 1000).toLocaleDateString("de-DE", { month: "short", day: "numeric" }),
+          timestamp: item.time * 1000,
+          price: Math.round(item.close * 100) / 100
         }));
         
         setCached(cacheKey, chartData, 1800000); // 30 min cache
