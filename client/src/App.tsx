@@ -11069,28 +11069,25 @@ function TrackerChart({ userId }: { userId: number }) {
                   strokeWidth={2}
                   fill="url(#satsGrad)" 
                 />
-                {showFiatLine && (
-                  <Line 
-                    yAxisId="euro"
-                    type="monotone" 
-                    dataKey="fiatBaseline" 
-                    stroke="#fbbf24" 
-                    strokeWidth={2}
-                    strokeDasharray="4 4"
-                    strokeOpacity={0.6}
-                    dot={false}
-                  />
-                )}
-                {showBtcLine && (
-                  <Line 
-                    yAxisId="euro"
-                    type="monotone" 
-                    dataKey="valueEurNormalized" 
-                    stroke="#a78bfa" 
-                    strokeWidth={3}
-                    dot={{ fill: '#a78bfa', r: 3 }}
-                  />
-                )}
+                <Line 
+                  yAxisId="euro"
+                  type="monotone" 
+                  dataKey="fiatBaseline" 
+                  stroke="#fbbf24" 
+                  strokeWidth={showFiatLine ? 2 : 0}
+                  strokeDasharray="4 4"
+                  strokeOpacity={showFiatLine ? 0.6 : 0}
+                  dot={false}
+                />
+                <Line 
+                  yAxisId="euro"
+                  type="monotone" 
+                  dataKey="valueEurNormalized" 
+                  stroke="#a78bfa" 
+                  strokeWidth={showBtcLine ? 3 : 0}
+                  strokeOpacity={showBtcLine ? 1 : 0}
+                  dot={showBtcLine ? { fill: '#a78bfa', r: 3 } : false}
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
