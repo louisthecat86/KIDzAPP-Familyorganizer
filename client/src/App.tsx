@@ -5263,6 +5263,18 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     refetchInterval: 5000,
   });
 
+  const { data: pendingManualPaymentsCount = 0 } = useQuery({
+    queryKey: ["/api/manual-payment/pending/count", user.id],
+    queryFn: async () => {
+      const res = await apiFetch(`/api/manual-payment/pending`);
+      if (!res.ok) return 0;
+      const data = await res.json();
+      return Array.isArray(data) ? data.length : 0;
+    },
+    refetchInterval: 5000,
+    enabled: user.role === "parent" && isManualMode
+  });
+
   const hideConnectionCode = () => {
     setShowConnectionCode(false);
     localStorage.setItem(`connectionCodeShown_${user.id}`, "true");
@@ -5563,18 +5575,22 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               );
             } else if (cardId === "wallet-balance") {
               if (user.role !== "parent") return null;
+              const totalAlerts = failedPaymentsCount + (isManualMode ? pendingManualPaymentsCount : 0);
               return createDraggableCard(
                 cardId,
                 <div 
-                  className={`relative bg-white/5 dark:bg-black/30 backdrop-blur-xl border ${failedPaymentsCount > 0 ? 'border-red-500/70' : isManualMode ? 'border-blue-500/50' : 'border-white/50 dark:border-white/20'} rounded-2xl ${displayBalance !== null || isManualMode ? "hover:bg-white/5 dark:bg-black/105 cursor-pointer" : "opacity-60"} transition-colors h-full shadow-lg p-6`}
-                  onClick={() => failedPaymentsCount > 0 && setShowFailedPaymentsModal(true)}
+                  className={`relative bg-white/5 dark:bg-black/30 backdrop-blur-xl border ${totalAlerts > 0 ? 'border-red-500/70' : isManualMode ? 'border-blue-500/50' : 'border-white/50 dark:border-white/20'} rounded-2xl ${displayBalance !== null || isManualMode ? "hover:bg-white/5 dark:bg-black/105 cursor-pointer" : "opacity-60"} transition-colors h-full shadow-lg p-6`}
+                  onClick={() => {
+                    if (failedPaymentsCount > 0) setShowFailedPaymentsModal(true);
+                    else if (isManualMode && pendingManualPaymentsCount > 0) setCurrentView("tasks-pending");
+                  }}
                 >
-                  {failedPaymentsCount > 0 && (
+                  {totalAlerts > 0 && (
                     <div 
                       className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-pulse shadow-lg"
-                      data-testid="badge-failed-payments"
+                      data-testid="badge-wallet-alerts"
                     >
-                      {failedPaymentsCount}
+                      {totalAlerts}
                     </div>
                   )}
                   <div className="space-y-4">
@@ -5583,7 +5599,11 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                         <>
                           <div className="text-3xl mb-2">📱</div>
                           <p className="text-sm font-semibold text-blue-400">{t('walletMode.manualLabel')}</p>
-                          <p className="text-xs text-muted-foreground mt-1">{t('walletMode.qrPaymentActive')}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {pendingManualPaymentsCount > 0 
+                              ? `${pendingManualPaymentsCount} ${t('walletMode.pendingPayments') || 'ausstehende Zahlungen'}`
+                              : t('walletMode.qrPaymentActive')}
+                          </p>
                         </>
                       ) : (
                         <>
@@ -5602,6 +5622,11 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                       {failedPaymentsCount > 0 && (
                         <p className="text-xs text-red-400 mt-1 animate-pulse">
                           ⚠️ {failedPaymentsCount} {t('failedPayments.pending')}
+                        </p>
+                      )}
+                      {isManualMode && pendingManualPaymentsCount > 0 && (
+                        <p className="text-xs text-orange-400 mt-1 animate-pulse">
+                          ⚡ {pendingManualPaymentsCount} {t('walletMode.manualPaymentsPending') || 'offene QR-Zahlungen'}
                         </p>
                       )}
                     </div>
