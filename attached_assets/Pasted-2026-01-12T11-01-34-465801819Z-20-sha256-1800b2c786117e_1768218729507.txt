@@ -1,0 +1,302 @@
+2026-01-12T11:01:34.465801819Z #20 sha256:1800b2c786117e4f94537040bce7367850f31fc9b26b9c1024f238c86e97d5f9 124.29MB / 124.29MB 0.7s done
+2026-01-12T11:01:34.465822179Z #20 extracting sha256:1800b2c786117e4f94537040bce7367850f31fc9b26b9c1024f238c86e97d5f9
+2026-01-12T11:01:49.215421832Z #20 extracting sha256:1800b2c786117e4f94537040bce7367850f31fc9b26b9c1024f238c86e97d5f9 14.9s done
+2026-01-12T11:01:49.357357589Z #20 sha256:b01a5b70b630e12577b8740be433a6ea3f813585a474a74055decf8e5b584c9f 18.06MB / 18.06MB 0.1s done
+2026-01-12T11:01:49.511104058Z #20 extracting sha256:b01a5b70b630e12577b8740be433a6ea3f813585a474a74055decf8e5b584c9f
+2026-01-12T11:01:49.534722572Z #20 extracting sha256:b01a5b70b630e12577b8740be433a6ea3f813585a474a74055decf8e5b584c9f 0.2s done
+2026-01-12T11:01:49.666324902Z #20 sha256:db9b8ceebf49e2d57f0005bde3b378c62776cc8c64821c1a4d0adecc5830bf11 1.60MB / 1.60MB 0.0s done
+2026-01-12T11:01:49.666342823Z #20 extracting sha256:db9b8ceebf49e2d57f0005bde3b378c62776cc8c64821c1a4d0adecc5830bf11 0.1s done
+2026-01-12T11:01:49.861800375Z #20 writing cache image manifest sha256:e725bcf1f60338361042f09f9a4d711813079cfb6f09bd5666819d4b7b3187e8 done
+2026-01-12T11:01:49.861822355Z #20 DONE 16.3s
+2026-01-12T11:01:50.757837757Z Pushing image to registry...
+2026-01-12T11:01:51.494593525Z Upload succeeded
+2026-01-12T11:01:55.948911759Z ==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+2026-01-12T11:01:56.091942894Z ==> Deploying...
+2026-01-12T11:03:05.196632954Z ==> No open ports detected, continuing to scan...
+2026-01-12T11:03:05.542232264Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2026-01-12T11:03:13.678027242Z ==> Your service is live 🎉
+2026-01-12T11:03:13.843048126Z ==> 
+2026-01-12T11:03:13.997914821Z ==> ///////////////////////////////////////////////////////////
+2026-01-12T11:03:14.152013887Z ==> 
+2026-01-12T11:03:14.307766842Z ==> Available at your primary URL https://kidzapp.onrender.com
+2026-01-12T11:03:14.469607137Z ==> 
+2026-01-12T11:03:14.626697312Z ==> ///////////////////////////////////////////////////////////
+2026-01-12T11:08:18.152261636Z ==> Detected service running on port 10000
+2026-01-12T11:08:18.496231189Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2026-01-12T11:18:32.734173409Z     at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2026-01-12T11:18:32.734177229Z     at async DatabaseStorage.getDailyBitcoinSnapshots (file:///app/dist/index.js:1317:20)
+2026-01-12T11:18:32.734181859Z     at async file:///app/dist/index.js:4839:25 {
+2026-01-12T11:18:32.734185869Z   length: 115,
+2026-01-12T11:18:32.734190529Z   severity: 'ERROR',
+2026-01-12T11:18:32.734195039Z   code: '42703',
+2026-01-12T11:18:32.734199299Z   detail: undefined,
+2026-01-12T11:18:32.734203389Z   hint: undefined,
+2026-01-12T11:18:32.734207389Z   position: '73',
+2026-01-12T11:18:32.734212469Z   internalPosition: undefined,
+2026-01-12T11:18:32.734216389Z   internalQuery: undefined,
+2026-01-12T11:18:32.73423151Z   where: undefined,
+2026-01-12T11:18:32.73423427Z   schema: undefined,
+2026-01-12T11:18:32.73423668Z   table: undefined,
+2026-01-12T11:18:32.73423903Z   column: undefined,
+2026-01-12T11:18:32.73424149Z   dataType: undefined,
+2026-01-12T11:18:32.73424381Z   constraint: undefined,
+2026-01-12T11:18:32.73424612Z   file: 'parse_relation.c',
+2026-01-12T11:18:32.73424831Z   line: '3716',
+2026-01-12T11:18:32.73425108Z   routine: 'errorMissingColumn'
+2026-01-12T11:18:32.73425343Z }
+2026-01-12T11:18:32.739091674Z 11:18:32 AM [express] GET /api/btc-price 304 in 95ms :: {"usd":90446.965,"eur":77412.415,"timestamp":…
+2026-01-12T11:18:32.831267792Z 11:18:32 AM [express] GET /api/bitcoin-snapshots/2 500 in 193ms :: {"error":"Failed to fetch snapshot…
+2026-01-12T11:18:33.301777477Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:18:33.399107075Z 11:18:33 AM [express] GET /api/peers/2/sats-breakdown 304 in 759ms :: {"totalSats":547,"taskSats":50,…
+2026-01-12T11:42:16.350763173Z   hint: undefined,
+2026-01-12T11:42:16.350765393Z   position: '73',
+2026-01-12T11:42:16.350768023Z   internalPosition: undefined,
+2026-01-12T11:42:16.350770293Z   internalQuery: undefined,
+2026-01-12T11:42:16.350772553Z   where: undefined,
+2026-01-12T11:42:16.350774833Z   schema: undefined,
+2026-01-12T11:42:16.350777003Z   table: undefined,
+2026-01-12T11:42:16.350779373Z   column: undefined,
+2026-01-12T11:42:16.350781623Z   dataType: undefined,
+2026-01-12T11:42:16.350783863Z   constraint: undefined,
+2026-01-12T11:42:16.350786073Z   file: 'parse_relation.c',
+2026-01-12T11:42:16.350788313Z   line: '3716',
+2026-01-12T11:42:16.350790583Z   routine: 'errorMissingColumn'
+2026-01-12T11:42:16.350793013Z }
+2026-01-12T11:42:16.443851061Z 11:42:16 AM [express] GET /api/bitcoin-snapshots/2 500 in 189ms :: {"error":"Failed to fetch snapshot…
+2026-01-12T11:42:16.978979758Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:42:17.074042355Z 11:42:17 AM [express] GET /api/peers/2/sats-breakdown 304 in 845ms :: {"totalSats":547,"taskSats":50,…
+2026-01-12T11:43:05.667393302Z 11:43:05 AM [express] GET /api/auth/me 304 in 94ms :: {"peerId":2,"role":"child","connectionId":"BTC-…
+2026-01-12T11:43:05.832695884Z [BTC Price] Returning cached data
+2026-01-12T11:43:05.928480265Z 11:43:05 AM [express] GET /api/btc-price 304 in 96ms :: {"usd":90446.965,"eur":77412.415,"timestamp":…
+2026-01-12T11:43:06.084295122Z 11:43:06 AM [express] GET /api/tasks/BTC-0I3RUY 304 in 188ms :: [{"id":1,"connectionId":"BTC-0I3RUY",…
+2026-01-12T11:43:06.111303947Z 11:43:06 AM [express] GET /api/tasks/unlock-status/2/BTC-0I3RUY 304 in 281ms :: {"familyTasksComplete…
+2026-01-12T11:43:06.881465499Z [Shopping List] Fetching list for: BTC-0I3RUY
+2026-01-12T11:43:07.06836404Z 11:43:07 AM [express] GET /api/daily-challenge/2/Mon%20Jan%2012%202026 500 in 189ms :: {"error":"Fail…
+2026-01-12T11:43:07.069322879Z 11:43:07 AM [express] GET /api/learning-progress/2 304 in 188ms :: {"id":1,"peerId":2,"xp":0,"level":…
+2026-01-12T11:43:07.069944201Z 11:43:07 AM [express] GET /api/peers/connection/BTC-0I3RUY 304 in 187ms :: [{"id":1,"name":"Marc","ro…
+2026-01-12T11:43:07.071627324Z 11:43:07 AM [express] GET /api/shopping-list/BTC-0I3RUY 304 in 191ms :: []
+2026-01-12T11:43:07.167770462Z 11:43:07 AM [express] GET /api/peers/connection/BTC-0I3RUY 200 in 189ms :: [{"id":1,"name":"Marc","ro…
+2026-01-12T11:43:07.258584806Z 11:43:07 AM [express] GET /api/events/BTC-0I3RUY 304 in 281ms :: []
+2026-01-12T11:43:07.632268866Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:43:07.729327631Z 11:43:07 AM [express] GET /api/peers/2/sats-breakdown 304 in 749ms :: {"totalSats":547,"taskSats":50,…
+2026-01-12T11:43:09.068420667Z 11:43:09 AM [express] GET /api/auth/me 304 in 94ms :: {"peerId":2,"role":"child","connectionId":"BTC-…
+2026-01-12T11:43:09.218209937Z [BTC Price] Returning cached data
+2026-01-12T11:43:09.303714228Z [Bitcoin Snapshots Error]: error: column "cumulative_sats" does not exist
+2026-01-12T11:43:09.303734479Z     at /app/node_modules/pg-pool/index.js:45:11
+2026-01-12T11:43:09.303739739Z     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-01-12T11:43:09.303755139Z     at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2026-01-12T11:43:09.303758699Z     at async DatabaseStorage.getDailyBitcoinSnapshots (file:///app/dist/index.js:1317:20)
+2026-01-12T11:43:09.303761739Z     at async file:///app/dist/index.js:4839:25 {
+2026-01-12T11:43:09.303764809Z   length: 115,
+2026-01-12T11:43:09.303768599Z   severity: 'ERROR',
+2026-01-12T11:43:09.303771879Z   code: '42703',
+2026-01-12T11:43:09.303774729Z   detail: undefined,
+2026-01-12T11:43:09.3037775Z   hint: undefined,
+2026-01-12T11:43:09.303780129Z   position: '73',
+2026-01-12T11:43:09.30378338Z   internalPosition: undefined,
+2026-01-12T11:43:09.30378602Z   internalQuery: undefined,
+2026-01-12T11:43:09.30378862Z   where: undefined,
+2026-01-12T11:43:09.30379112Z   schema: undefined,
+2026-01-12T11:43:09.30379379Z   table: undefined,
+2026-01-12T11:43:09.30379653Z   column: undefined,
+2026-01-12T11:43:09.30379946Z   dataType: undefined,
+2026-01-12T11:43:09.30380228Z   constraint: undefined,
+2026-01-12T11:43:09.30380475Z   file: 'parse_relation.c',
+2026-01-12T11:43:09.30380786Z   line: '3716',
+2026-01-12T11:43:09.30381065Z   routine: 'errorMissingColumn'
+2026-01-12T11:43:09.30381342Z }
+2026-01-12T11:43:09.312894457Z 11:43:09 AM [express] GET /api/btc-price 304 in 95ms :: {"usd":90446.965,"eur":77412.415,"timestamp":…
+2026-01-12T11:43:09.399486629Z 11:43:09 AM [express] GET /api/bitcoin-snapshots/2 500 in 189ms :: {"error":"Failed to fetch snapshot…
+2026-01-12T11:43:09.993454378Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:43:10.088703709Z 11:43:10 AM [express] GET /api/peers/2/sats-breakdown 304 in 876ms :: {"totalSats":547,"taskSats":50,…
+2026-01-12T11:43:17.679739165Z 11:43:17 AM [express] POST /api/peers/login 200 in 1809ms :: {"id":2,"name":"Levi","role":"child","pi…
+2026-01-12T11:43:17.878727531Z [BTC Price] Returning cached data
+2026-01-12T11:43:17.986329182Z 11:43:17 AM [express] GET /api/btc-price 304 in 95ms :: {"usd":90446.965,"eur":77412.415,"timestamp":…
+2026-01-12T11:43:18.087946296Z 11:43:18 AM [express] GET /api/learning-progress/2 304 in 201ms :: {"id":1,"peerId":2,"xp":0,"level":…
+2026-01-12T11:43:18.547155487Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:43:18.64356059Z 11:43:18 AM [express] GET /api/peers/2/sats-breakdown 304 in 759ms :: {"totalSats":547,"taskSats":50,…
+2026-01-12T11:43:18.656763196Z 11:43:18 AM [express] GET /api/daily-challenge/2/Mon%20Jan%2012%202026 500 in 190ms :: {"error":"Fail…
+2026-01-12T11:43:20.528158493Z 11:43:20 AM [express] GET /api/auth/me 304 in 95ms :: {"peerId":2,"role":"child","connectionId":"BTC-…
+2026-01-12T11:43:20.788509541Z [BTC Price] Returning cached data
+2026-01-12T11:43:20.883227211Z 11:43:20 AM [express] GET /api/btc-price 304 in 95ms :: {"usd":90446.965,"eur":77412.415,"timestamp":…
+2026-01-12T11:43:20.89552823Z [Bitcoin Snapshots Error]: error: column "cumulative_sats" does not exist
+2026-01-12T11:43:20.89554473Z     at /app/node_modules/pg-pool/index.js:45:11
+2026-01-12T11:43:20.895550201Z     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-01-12T11:43:20.895554351Z     at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2026-01-12T11:43:20.895558741Z     at async DatabaseStorage.getDailyBitcoinSnapshots (file:///app/dist/index.js:1317:20)
+2026-01-12T11:43:20.895562751Z     at async file:///app/dist/index.js:4839:25 {
+2026-01-12T11:43:20.895566781Z   length: 115,
+2026-01-12T11:43:20.895571421Z   severity: 'ERROR',
+2026-01-12T11:43:20.895584741Z   code: '42703',
+2026-01-12T11:43:20.895587551Z   detail: undefined,
+2026-01-12T11:43:20.895589811Z   hint: undefined,
+2026-01-12T11:43:20.895592362Z   position: '73',
+2026-01-12T11:43:20.895595251Z   internalPosition: undefined,
+2026-01-12T11:43:20.895597592Z   internalQuery: undefined,
+2026-01-12T11:43:20.895599752Z   where: undefined,
+2026-01-12T11:43:20.895601982Z   schema: undefined,
+2026-01-12T11:43:20.895604162Z   table: undefined,
+2026-01-12T11:43:20.895606202Z   column: undefined,
+2026-01-12T11:43:20.895608272Z   dataType: undefined,
+2026-01-12T11:43:20.895610562Z   constraint: undefined,
+2026-01-12T11:43:20.895612952Z   file: 'parse_relation.c',
+2026-01-12T11:43:20.895615272Z   line: '3716',
+2026-01-12T11:43:20.895617432Z   routine: 'errorMissingColumn'
+2026-01-12T11:43:20.895619582Z }
+2026-01-12T11:43:20.990700829Z 11:43:20 AM [express] GET /api/bitcoin-snapshots/2 500 in 188ms :: {"error":"Failed to fetch snapshot…
+2026-01-12T11:43:21.543284405Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:43:21.638941153Z 11:43:21 AM [express] GET /api/peers/2/sats-breakdown 304 in 843ms :: {"totalSats":547,"taskSats":50,…
+2026-01-12T11:44:17.135131228Z 11:44:17 AM [express] GET /api/auth/me 304 in 95ms :: {"peerId":2,"role":"child","connectionId":"BTC-…
+2026-01-12T11:44:17.695598996Z 11:44:17 AM [express] GET /api/learning-progress/2 304 in 390ms :: {"id":1,"peerId":2,"xp":0,"level":…
+2026-01-12T11:44:17.786191086Z 11:44:17 AM [express] GET /api/peers/connection/BTC-0I3RUY 200 in 392ms :: [{"id":1,"name":"Marc","ro…
+2026-01-12T11:44:18.277702514Z [BTC Price] Returning cached data
+2026-01-12T11:44:18.374738539Z 11:44:18 AM [express] GET /api/btc-price 304 in 97ms :: {"usd":90446.965,"eur":77412.415,"timestamp":…
+2026-01-12T11:44:18.377476472Z [Shopping List] Fetching list for: BTC-0I3RUY
+2026-01-12T11:44:18.379285147Z 11:44:18 AM [express] GET /api/daily-challenge/2/Mon%20Jan%2012%202026 500 in 1079ms :: {"error":"Fai…
+2026-01-12T11:44:18.56059996Z 11:44:18 AM [express] GET /api/events/BTC-0I3RUY 304 in 281ms :: []
+2026-01-12T11:44:18.56367802Z 11:44:18 AM [express] GET /api/peers/connection/BTC-0I3RUY 304 in 188ms :: [{"id":1,"name":"Marc","ro…
+2026-01-12T11:44:18.565815891Z 11:44:18 AM [express] GET /api/shopping-list/BTC-0I3RUY 304 in 188ms :: []
+2026-01-12T11:44:18.651949604Z 11:44:18 AM [express] GET /api/tasks/BTC-0I3RUY 304 in 279ms :: [{"id":1,"connectionId":"BTC-0I3RUY",…
+2026-01-12T11:44:18.660739125Z 11:44:18 AM [express] GET /api/tasks/unlock-status/2/BTC-0I3RUY 304 in 280ms :: {"familyTasksComplete…
+2026-01-12T11:44:19.030621821Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:44:19.125670648Z 11:44:19 AM [express] GET /api/peers/2/sats-breakdown 304 in 749ms :: {"totalSats":547,"taskSats":50,…
+2026-01-12T11:44:20.475334787Z 11:44:20 AM [express] GET /api/auth/me 304 in 94ms :: {"peerId":2,"role":"child","connectionId":"BTC-…
+2026-01-12T11:44:20.623019996Z [BTC Price] Returning cached data
+2026-01-12T11:44:20.712190358Z [Bitcoin Snapshots Error]: error: column "cumulative_sats" does not exist
+2026-01-12T11:44:20.712211708Z     at /app/node_modules/pg-pool/index.js:45:11
+2026-01-12T11:44:20.712219099Z     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-01-12T11:44:20.712225079Z     at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2026-01-12T11:44:20.712231169Z     at async DatabaseStorage.getDailyBitcoinSnapshots (file:///app/dist/index.js:1317:20)
+2026-01-12T11:44:20.712237179Z     at async file:///app/dist/index.js:4839:25 {
+2026-01-12T11:44:20.712254869Z   length: 115,
+2026-01-12T11:44:20.712257999Z   severity: 'ERROR',
+2026-01-12T11:44:20.712260219Z   code: '42703',
+2026-01-12T11:44:20.712262349Z   detail: undefined,
+2026-01-12T11:44:20.712264489Z   hint: undefined,
+2026-01-12T11:44:20.71226672Z   position: '73',
+2026-01-12T11:44:20.712269429Z   internalPosition: undefined,
+2026-01-12T11:44:20.71227154Z   internalQuery: undefined,
+2026-01-12T11:44:20.71227364Z   where: undefined,
+2026-01-12T11:44:20.712275769Z   schema: undefined,
+2026-01-12T11:44:20.71227803Z   table: undefined,
+2026-01-12T11:44:20.71228012Z   column: undefined,
+2026-01-12T11:44:20.71228224Z   dataType: undefined,
+2026-01-12T11:44:20.71228441Z   constraint: undefined,
+2026-01-12T11:44:20.71228653Z   file: 'parse_relation.c',
+2026-01-12T11:44:20.71228867Z   line: '3716',
+2026-01-12T11:44:20.71229082Z   routine: 'errorMissingColumn'
+2026-01-12T11:44:20.712293Z }
+2026-01-12T11:44:20.717047602Z 11:44:20 AM [express] GET /api/btc-price 304 in 94ms :: {"usd":90446.965,"eur":77412.415,"timestamp":…
+2026-01-12T11:44:20.807858817Z 11:44:20 AM [express] GET /api/bitcoin-snapshots/2 500 in 189ms :: {"error":"Failed to fetch snapshot…
+2026-01-12T11:44:21.28163579Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:44:21.376450742Z 11:44:21 AM [express] GET /api/peers/2/sats-breakdown 304 in 754ms :: {"totalSats":547,"taskSats":50,…
+2026-01-12T11:45:06.770968655Z 11:45:06 AM [express] POST /api/peers/login 200 in 1729ms :: {"id":2,"name":"Levi","role":"child","pi…
+2026-01-12T11:45:07.124699336Z 11:45:07 AM [express] GET /api/peers/connection/BTC-0I3RUY 200 in 190ms :: [{"id":1,"name":"Marc","ro…
+2026-01-12T11:45:07.141778948Z 11:45:07 AM [express] GET /api/peers/connection/BTC-0I3RUY 200 in 213ms :: [{"id":1,"name":"Marc","ro…
+2026-01-12T11:45:07.784531993Z 11:45:07 AM [express] GET /api/learning-progress/2 304 in 194ms :: {"id":1,"peerId":2,"xp":0,"level":…
+2026-01-12T11:45:08.084923909Z [BTC Price] Returning cached data
+2026-01-12T11:45:08.180991415Z [Shopping List] Fetching list for: BTC-0I3RUY
+2026-01-12T11:45:08.184879801Z 11:45:08 AM [express] GET /api/btc-price 304 in 100ms :: {"usd":90446.965,"eur":77412.415,"timestamp"…
+2026-01-12T11:45:08.378764657Z 11:45:08 AM [express] GET /api/tasks/BTC-0I3RUY 200 in 294ms :: [{"id":1,"connectionId":"BTC-0I3RUY",…
+2026-01-12T11:45:08.384116271Z 11:45:08 AM [express] GET /api/tasks/unlock-status/2/BTC-0I3RUY 200 in 298ms :: {"familyTasksComplete…
+2026-01-12T11:45:08.384788454Z 11:45:08 AM [express] GET /api/daily-challenge/2/Mon%20Jan%2012%202026 500 in 204ms :: {"error":"Fail…
+2026-01-12T11:45:08.385695051Z 11:45:08 AM [express] GET /api/shopping-list/BTC-0I3RUY 200 in 205ms :: []
+2026-01-12T11:45:08.474219571Z 11:45:08 AM [express] GET /api/events/BTC-0I3RUY 200 in 294ms :: []
+2026-01-12T11:45:08.75218191Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:45:08.84738612Z 11:45:08 AM [express] GET /api/peers/2/sats-breakdown 200 in 769ms :: {"totalSats":547,"taskSats":50,…
+2026-01-12T11:45:10.882438042Z 11:45:10 AM [express] GET /api/auth/me 200 in 94ms :: {"peerId":2,"role":"child","connectionId":"BTC-…
+2026-01-12T11:45:11.019979163Z [BTC Price] Returning cached data
+2026-01-12T11:45:11.112169214Z [Bitcoin Snapshots Error]: error: column "cumulative_sats" does not exist
+2026-01-12T11:45:11.112189165Z     at /app/node_modules/pg-pool/index.js:45:11
+2026-01-12T11:45:11.112194285Z     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-01-12T11:45:11.112198605Z     at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2026-01-12T11:45:11.112212985Z     at async DatabaseStorage.getDailyBitcoinSnapshots (file:///app/dist/index.js:1317:20)
+2026-01-12T11:45:11.112215885Z     at async file:///app/dist/index.js:4839:25 {
+2026-01-12T11:45:11.112218685Z   length: 115,
+2026-01-12T11:45:11.112221755Z   severity: 'ERROR',
+2026-01-12T11:45:11.112227425Z   code: '42703',
+2026-01-12T11:45:11.112230145Z   detail: undefined,
+2026-01-12T11:45:11.112232765Z   hint: undefined,
+2026-01-12T11:45:11.112235305Z   position: '73',
+2026-01-12T11:45:11.112238655Z   internalPosition: undefined,
+2026-01-12T11:45:11.112241346Z   internalQuery: undefined,
+2026-01-12T11:45:11.112243886Z   where: undefined,
+2026-01-12T11:45:11.112246586Z   schema: undefined,
+2026-01-12T11:45:11.112249235Z   table: undefined,
+2026-01-12T11:45:11.112252086Z   column: undefined,
+2026-01-12T11:45:11.112254616Z   dataType: undefined,
+2026-01-12T11:45:11.112257006Z   constraint: undefined,
+2026-01-12T11:45:11.112259716Z   file: 'parse_relation.c',
+2026-01-12T11:45:11.112262406Z   line: '3716',
+2026-01-12T11:45:11.112264966Z   routine: 'errorMissingColumn'
+2026-01-12T11:45:11.112267516Z }
+2026-01-12T11:45:11.114432768Z 11:45:11 AM [express] GET /api/btc-price 304 in 94ms :: {"usd":90446.965,"eur":77412.415,"timestamp":…
+2026-01-12T11:45:11.20670542Z 11:45:11 AM [express] GET /api/bitcoin-snapshots/2 500 in 188ms :: {"error":"Failed to fetch snapshot…
+2026-01-12T11:45:11.6746467Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:45:11.769543044Z 11:45:11 AM [express] GET /api/peers/2/sats-breakdown 304 in 747ms :: {"totalSats":547,"taskSats":50,…
+2026-01-12T11:47:51.607888105Z 11:47:51 AM [express] GET /api/auth/me 304 in 94ms :: {"peerId":2,"role":"child","connectionId":"BTC-…
+2026-01-12T11:47:51.829487239Z [BTC Price] Returning cached data
+2026-01-12T11:47:51.923527645Z 11:47:51 AM [express] GET /api/btc-price 200 in 94ms :: {"usd":90446.965,"eur":77412.415,"timestamp":…
+2026-01-12T11:47:52.113640237Z 11:47:52 AM [express] GET /api/tasks/unlock-status/2/BTC-0I3RUY 200 in 281ms :: {"familyTasksComplete…
+2026-01-12T11:47:52.784700011Z 11:47:52 AM [express] GET /api/peers/connection/BTC-0I3RUY 200 in 375ms :: [{"id":1,"name":"Marc","ro…
+2026-01-12T11:47:52.786822172Z 11:47:52 AM [express] GET /api/learning-progress/2 200 in 302ms :: {"id":1,"peerId":2,"xp":0,"level":…
+2026-01-12T11:47:52.98081443Z [Shopping List] Fetching list for: BTC-0I3RUY
+2026-01-12T11:47:52.988679953Z 11:47:52 AM [express] GET /api/events/BTC-0I3RUY 200 in 402ms :: []
+2026-01-12T11:47:52.989367956Z 11:47:52 AM [express] GET /api/tasks/BTC-0I3RUY 200 in 303ms :: [{"id":1,"connectionId":"BTC-0I3RUY",…
+2026-01-12T11:47:52.990551089Z 11:47:52 AM [express] GET /api/daily-challenge/2/Mon%20Jan%2012%202026 500 in 1162ms :: {"error":"Fai…
+2026-01-12T11:47:53.166073218Z 11:47:53 AM [express] GET /api/shopping-list/BTC-0I3RUY 200 in 187ms :: []
+2026-01-12T11:47:53.173157776Z 11:47:53 AM [express] GET /api/peers/connection/BTC-0I3RUY 200 in 187ms :: [{"id":1,"name":"Marc","ro…
+2026-01-12T11:47:53.641463222Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:47:53.736748893Z 11:47:53 AM [express] GET /api/peers/2/sats-breakdown 200 in 750ms :: {"totalSats":547,"taskSats":50,…
+2026-01-12T11:47:55.08351491Z 11:47:55 AM [express] GET /api/auth/me 304 in 94ms :: {"peerId":2,"role":"child","connectionId":"BTC-…
+2026-01-12T11:47:55.238138893Z [BTC Price] Returning cached data
+2026-01-12T11:47:55.325763715Z [Bitcoin Snapshots Error]: error: column "cumulative_euro" does not exist
+2026-01-12T11:47:55.325791685Z     at /app/node_modules/pg-pool/index.js:45:11
+2026-01-12T11:47:55.325795856Z     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-01-12T11:47:55.325798696Z     at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2026-01-12T11:47:55.325801316Z     at async DatabaseStorage.getDailyBitcoinSnapshots (file:///app/dist/index.js:1317:20)
+2026-01-12T11:47:55.325804056Z     at async file:///app/dist/index.js:4839:25 {
+2026-01-12T11:47:55.325806726Z   length: 115,
+2026-01-12T11:47:55.325810056Z   severity: 'ERROR',
+2026-01-12T11:47:55.325812906Z   code: '42703',
+2026-01-12T11:47:55.325815906Z   detail: undefined,
+2026-01-12T11:47:55.325818576Z   hint: undefined,
+2026-01-12T11:47:55.325821146Z   position: '92',
+2026-01-12T11:47:55.325824356Z   internalPosition: undefined,
+2026-01-12T11:47:55.325826826Z   internalQuery: undefined,
+2026-01-12T11:47:55.325829496Z   where: undefined,
+2026-01-12T11:47:55.325832206Z   schema: undefined,
+2026-01-12T11:47:55.325835226Z   table: undefined,
+2026-01-12T11:47:55.325837866Z   column: undefined,
+2026-01-12T11:47:55.325840466Z   dataType: undefined,
+2026-01-12T11:47:55.325843086Z   constraint: undefined,
+2026-01-12T11:47:55.325845877Z   file: 'parse_relation.c',
+2026-01-12T11:47:55.325848586Z   line: '3716',
+2026-01-12T11:47:55.325851097Z   routine: 'errorMissingColumn'
+2026-01-12T11:47:55.325853587Z }
+2026-01-12T11:47:55.331804802Z 11:47:55 AM [express] GET /api/btc-price 304 in 94ms :: {"usd":90446.965,"eur":77412.415,"timestamp":…
+2026-01-12T11:47:55.420470464Z 11:47:55 AM [express] GET /api/bitcoin-snapshots/2 500 in 188ms :: {"error":"Failed to fetch snapshot…
+2026-01-12T11:47:55.974370102Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:47:56.068908398Z 11:47:56 AM [express] GET /api/peers/2/sats-breakdown 304 in 835ms :: {"totalSats":547,"taskSats":50,…
+2026-01-12T11:48:50.688717049Z 11:48:50 AM [express] GET /api/auth/me 304 in 94ms :: {"peerId":2,"role":"child","connectionId":"BTC-…
+2026-01-12T11:48:50.853342487Z [Shopping List] Fetching list for: BTC-0I3RUY
+2026-01-12T11:48:51.034605077Z 11:48:51 AM [express] GET /api/tasks/BTC-0I3RUY 200 in 188ms :: [{"id":1,"connectionId":"BTC-0I3RUY",…
+2026-01-12T11:48:51.040579423Z 11:48:51 AM [express] GET /api/shopping-list/BTC-0I3RUY 200 in 187ms :: []
+2026-01-12T11:48:51.128582932Z 11:48:51 AM [express] GET /api/events/BTC-0I3RUY 200 in 282ms :: []
+2026-01-12T11:48:51.694104136Z 11:48:51 AM [express] GET /api/peers/connection/BTC-0I3RUY 200 in 207ms :: [{"id":1,"name":"Marc","ro…
+2026-01-12T11:48:51.787499209Z [BTC Price] Coinbase EUR: 77515.475 USD: 90497.205
+2026-01-12T11:48:51.789716752Z 11:48:51 AM [express] GET /api/tasks/unlock-status/2/BTC-0I3RUY 200 in 376ms :: {"familyTasksComplete…
+2026-01-12T11:48:51.882164418Z 11:48:51 AM [express] GET /api/btc-price 200 in 302ms :: {"usd":90497.205,"eur":77515.475,"timestamp"…
+2026-01-12T11:48:51.976784166Z 11:48:51 AM [express] GET /api/daily-challenge/2/Mon%20Jan%2012%202026 500 in 187ms :: {"error":"Fail…
+2026-01-12T11:48:51.978145872Z 11:48:51 AM [express] GET /api/learning-progress/2 304 in 186ms :: {"id":1,"peerId":2,"xp":0,"level":…
+2026-01-12T11:48:51.979371956Z 11:48:51 AM [express] GET /api/peers/connection/BTC-0I3RUY 200 in 188ms :: [{"id":1,"name":"Marc","ro…
+2026-01-12T11:48:52.159989224Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:48:52.254860376Z 11:48:52 AM [express] GET /api/peers/2/sats-breakdown 200 in 769ms :: {"totalSats":547,"taskSats":50,…
+2026-01-12T11:48:53.54693948Z 11:48:53 AM [express] GET /api/auth/me 304 in 95ms :: {"peerId":2,"role":"child","connectionId":"BTC-…
+2026-01-12T11:48:53.761213582Z [BTC Price] Returning cached data
+2026-01-12T11:48:53.856930561Z 11:48:53 AM [express] GET /api/btc-price 304 in 96ms :: {"usd":90497.205,"eur":77515.475,"timestamp":…
+2026-01-12T11:48:54.003377505Z 11:48:54 AM [express] GET /api/bitcoin-snapshots/2 200 in 249ms :: [{"date":"2026-01-12T05:32:53.029Z…
+2026-01-12T11:48:54.501691353Z [Sats Breakdown] Levi: totalReceived=547, tasks=50, bonus=84, instant=0, allowance=0, manual=413
+2026-01-12T11:48:54.602711185Z 11:48:54 AM [express] GET /api/peers/2/sats-breakdown 304 in 839ms :: {"totalSats":547,"taskSats":50,…
+
+das ist der log den aktuell render ausgibt
