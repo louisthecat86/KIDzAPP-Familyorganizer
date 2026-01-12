@@ -1245,6 +1245,8 @@ export default function App() {
                   handleCreateAllowance={handleCreateAllowance}
                   handleDeleteAllowance={handleDeleteAllowance}
                   shoppingListItems={shoppingListItems}
+                  manualPaymentModalData={manualPaymentModalData}
+                  setManualPaymentModalData={setManualPaymentModalData}
                 />
               ) : (
                 <ChildDashboard 
@@ -5231,7 +5233,7 @@ function ParentEventsList({ events, onDeleteEvent }: any) {
   );
 }
 
-function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, approvingTaskId, queryClient, layoutView, setLayoutView, showSpendingStats, setShowSpendingStats, spendingStats, setSpendingStats, messages, setMessages, newMessage, setNewMessage, isLoadingMessage, setIsLoadingMessage, allowances, parentChildren, allowanceChildId, setAllowanceChildId, allowanceSats, setAllowanceSats, allowanceFrequency, setAllowanceFrequency, isCreatingAllowance, handleCreateAllowance, handleDeleteAllowance, shoppingListItems }: any) {
+function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, newEvent, setNewEvent, currentView, setCurrentView, onCreate, onCreateEvent, onApprove, onDelete, onDeleteEvent, approvingTaskId, queryClient, layoutView, setLayoutView, showSpendingStats, setShowSpendingStats, spendingStats, setSpendingStats, messages, setMessages, newMessage, setNewMessage, isLoadingMessage, setIsLoadingMessage, allowances, parentChildren, allowanceChildId, setAllowanceChildId, allowanceSats, setAllowanceSats, allowanceFrequency, setAllowanceFrequency, isCreatingAllowance, handleCreateAllowance, handleDeleteAllowance, shoppingListItems, manualPaymentModalData, setManualPaymentModalData }: any) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [lnbitsUrl, setLnbitsUrl] = useState("");
@@ -5251,6 +5253,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   const [rsvps, setRsvps] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState<Record<number, boolean>>({});
   const [showFailedPaymentsModal, setShowFailedPaymentsModal] = useState(false);
+  const [showPendingManualPaymentsModal, setShowPendingManualPaymentsModal] = useState(false);
 
   const { data: failedPaymentsCount = 0 } = useQuery({
     queryKey: ["/api/failed-payments/count", user.connectionId, user.id],
@@ -5276,17 +5279,18 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   const activeWalletType = user.walletType || (user.hasNwcConfigured ? "nwc" : user.hasLnbitsConfigured ? "lnbits" : null);
   const isManualMode = activeWalletType === "manual";
 
-  const { data: pendingManualPaymentsCount = 0 } = useQuery({
-    queryKey: ["/api/manual-payment/pending/count", user.id],
+  const { data: pendingManualPayments = [] } = useQuery({
+    queryKey: ["/api/manual-payment/pending", user.id],
     queryFn: async () => {
       const res = await apiFetch(`/api/manual-payment/pending`);
-      if (!res.ok) return 0;
+      if (!res.ok) return [];
       const data = await res.json();
-      return Array.isArray(data) ? data.length : 0;
+      return Array.isArray(data) ? data : [];
     },
     refetchInterval: 5000,
     enabled: user.role === "parent" && isManualMode
   });
+  const pendingManualPaymentsCount = pendingManualPayments.length;
 
   const displayBalance = activeWalletType === "manual" ? null : (activeWalletType === "nwc" ? walletBalance?.nwcBalance : walletBalance?.lnbitsBalance);
   const walletLabel = activeWalletType === "manual" ? t('walletMode.manualLabel') : (activeWalletType === "nwc" ? "NWC Wallet" : "LNbits Wallet");
@@ -5582,7 +5586,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
                   className={`relative bg-white/5 dark:bg-black/30 backdrop-blur-xl border ${totalAlerts > 0 ? 'border-red-500/70' : isManualMode ? 'border-blue-500/50' : 'border-white/50 dark:border-white/20'} rounded-2xl ${displayBalance !== null || isManualMode ? "hover:bg-white/5 dark:bg-black/105 cursor-pointer" : "opacity-60"} transition-colors h-full shadow-lg p-6`}
                   onClick={() => {
                     if (failedPaymentsCount > 0) setShowFailedPaymentsModal(true);
-                    else if (isManualMode && pendingManualPaymentsCount > 0) setCurrentView("tasks-pending");
+                    else if (isManualMode && pendingManualPaymentsCount > 0) setShowPendingManualPaymentsModal(true);
                   }}
                 >
                   {totalAlerts > 0 && (
@@ -5851,6 +5855,65 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             <FailedPaymentsPanel connectionId={user.connectionId} peerId={user.id} />
           </DialogContent>
         </Dialog>
+
+        <Dialog open={showPendingManualPaymentsModal} onOpenChange={setShowPendingManualPaymentsModal}>
+          <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-gray-900 dark:via-amber-950/30 dark:to-gray-900 border-amber-200 dark:border-amber-800/50">
+            <DialogHeader>
+              <DialogTitle className="text-amber-700 dark:text-amber-400 flex items-center gap-2">
+                <Zap className="h-5 w-5" />
+                {t('walletMode.pendingPaymentsTitle')}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              {pendingManualPayments.length === 0 ? (
+                <p className="text-muted-foreground text-center py-6">{t('walletMode.noPaymentsPending')}</p>
+              ) : (
+                pendingManualPayments.map((payment: any) => (
+                  <div 
+                    key={payment.id} 
+                    className="p-4 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-white/50 dark:bg-gray-800/50 flex items-center justify-between gap-3 hover:bg-amber-100/50 dark:hover:bg-amber-900/30 transition-colors"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-amber-800 dark:text-amber-300 truncate">{payment.memo || `${payment.sats} sats`}</p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Bitcoin className="h-3 w-3" /> {payment.sats} sats
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shrink-0"
+                      onClick={() => {
+                        setManualPaymentModalData({
+                          id: payment.id,
+                          bolt11: payment.bolt11,
+                          sats: payment.sats,
+                          childName: payment.childName || 'Kind',
+                          expiresAt: payment.expiresAt,
+                          memo: payment.memo
+                        });
+                        setShowPendingManualPaymentsModal(false);
+                      }}
+                      data-testid={`button-pay-manual-${payment.id}`}
+                    >
+                      <QrCode className="h-4 w-4 mr-1" />
+                      {t('walletMode.payNow')}
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <ManualPaymentQRModal
+          isOpen={!!manualPaymentModalData}
+          onClose={() => setManualPaymentModalData(null)}
+          payment={manualPaymentModalData}
+          onPaymentComplete={() => {
+            queryClient.invalidateQueries({ queryKey: ["/api/manual-payment/pending"] });
+            setManualPaymentModalData(null);
+          }}
+        />
       </div>
     );
   }

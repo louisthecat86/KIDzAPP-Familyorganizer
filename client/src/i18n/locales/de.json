@@ -1667,6 +1667,11 @@
     "manualStep1": "Kind erledigt Aufgabe und reicht Beweis ein",
     "manualStep2": "Eltern genehmigen - QR-Code wird von der Lightning-Adresse des Kindes generiert",
     "manualStep3": "Eltern scannen den QR-Code mit ihrer Lightning Wallet",
+    "pendingPayments": "ausstehende Zahlungen",
+    "manualPaymentsPending": "offene QR-Zahlungen",
+    "pendingPaymentsTitle": "Ausstehende Zahlungen",
+    "noPaymentsPending": "Keine ausstehenden Zahlungen",
+    "payNow": "Jetzt bezahlen",
     "qrModal": {
       "title": "Lightning Zahlung",
       "scanQr": "Scanne diesen QR-Code mit deiner Lightning Wallet",
