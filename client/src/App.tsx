@@ -10988,7 +10988,7 @@ function TrackerChart({ userId }: { userId: number }) {
         </div>
       </div>
 
-      {hasHistory && chartData.length > 1 && (
+      {chartData.length > 0 && (
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 space-y-3">
           <p className="text-sm font-semibold text-white">{t('tracker.yourGrowth') || 'Dein Wachstum'}</p>
           
