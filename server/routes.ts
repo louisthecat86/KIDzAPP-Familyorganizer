@@ -3438,7 +3438,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`[Level Bonus] Found ${allParents.length} parents, using wallet: ${activeWallet}`);
 
-      if (!hasLnbits && !hasNwc) {
+      // MANUAL MODE: Create QR payment instead of updating balance
+      const isManualMode = parent[0]?.walletType === "manual";
+      
+      if (isManualMode) {
+        if (!child.lightningAddress) {
+          console.log(`[Level Bonus] Manual mode but child has no Lightning Address - using internal balance`);
+          const newBalance = (child.balance || 0) + settings.bonusSats;
+          await storage.updateBalance(childId, newBalance);
+          
+          await storage.createLevelBonusPayout({
+            childId,
+            connectionId,
+            level: currentLevel,
+            sats: settings.bonusSats
+          });
+          
+          return res.json({ 
+            bonusPaid: true, 
+            sats: settings.bonusSats,
+            level: currentLevel,
+            paymentMethod: "internal",
+            note: "Child has no Lightning Address"
+          });
+        }
+        
+        console.log(`[Level Bonus] Manual mode - creating QR payment for Level ${currentLevel} bonus`);
+        
+        // Record the payout first
+        await storage.createLevelBonusPayout({
+          childId,
+          connectionId,
+          level: currentLevel,
+          sats: settings.bonusSats
+        });
+        
+        // Generate invoice and create manual payment
+        try {
+          const { fetchInvoiceFromLightningAddress } = await import("./lnurl");
+          const invoice = await fetchInvoiceFromLightningAddress(
+            child.lightningAddress,
+            settings.bonusSats,
+            `Level ${currentLevel} Bonus für ${child.name}!`
+          );
+          
+          await storage.createManualPayment({
+            connectionId,
+            parentId: parent[0].id,
+            childId: child.id,
+            childName: child.name,
+            sats: settings.bonusSats,
+            memo: `Level ${currentLevel} Bonus!`,
+            bolt11: invoice.bolt11,
+            paymentHash: invoice.paymentHash,
+            expiresAt: invoice.expiresAt,
+            status: "pending",
+            paymentType: "level_bonus",
+            taskId: null,
+          });
+          
+          console.log(`[Level Bonus] ✓ Created manual QR payment for Level ${currentLevel} bonus`);
+          
+          return res.json({ 
+            bonusPaid: true, 
+            sats: settings.bonusSats,
+            level: currentLevel,
+            paymentMethod: "manual_qr"
+          });
+        } catch (invoiceError) {
+          console.error(`[Level Bonus] ✗ Failed to create invoice:`, invoiceError);
+          // Return success but indicate payment needs to be generated manually
+          return res.json({ 
+            bonusPaid: true, 
+            sats: settings.bonusSats,
+            level: currentLevel,
+            paymentMethod: "pending_manual",
+            invoiceError: (invoiceError as Error).message
+          });
+        }
+      }
+
+      if (!hasLnbits && !hasNwc && !isManualMode) {
         console.log(`[Level Bonus] No wallet configured, using internal balance`);
         // No wallet configured - just update balance internally
         const newBalance = (child.balance || 0) + settings.bonusSats;
@@ -3594,6 +3674,152 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("[Level Bonus Check Error]:", error);
+      res.status(500).json({ error: String(error) });
+    }
+  });
+
+  // Generate QR payment for unpaid level bonus (for manual wallet mode)
+  app.post("/api/level-bonus/generate-payment", async (req, res) => {
+    try {
+      const { childId, level } = req.body;
+      const peerId = req.session.peerId;
+      
+      if (!peerId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      const parent = await storage.getPeer(peerId);
+      if (!parent || parent.role !== "parent") {
+        return res.status(403).json({ error: "Only parents can generate payments" });
+      }
+      
+      const child = await storage.getPeer(childId);
+      if (!child || child.connectionId !== parent.connectionId) {
+        return res.status(404).json({ error: "Child not found" });
+      }
+      
+      if (!child.lightningAddress) {
+        return res.status(400).json({ error: "Child has no Lightning Address configured" });
+      }
+      
+      // Get bonus settings
+      const settings = await storage.getLevelBonusSettings(parent.connectionId);
+      if (!settings) {
+        return res.status(400).json({ error: "No level bonus settings configured" });
+      }
+      
+      // Check if there's already a pending payment for this level bonus
+      const existingPayments = await storage.getManualPayments(parent.connectionId);
+      const hasPending = existingPayments.some(p => 
+        p.paymentType === "level_bonus" && 
+        p.status === "pending" && 
+        p.childId === childId &&
+        p.memo?.includes(`Level ${level}`)
+      );
+      
+      if (hasPending) {
+        return res.status(400).json({ error: "Already have a pending payment for this level bonus" });
+      }
+      
+      // Generate invoice
+      const { fetchInvoiceFromLightningAddress } = await import("./lnurl");
+      const invoice = await fetchInvoiceFromLightningAddress(
+        child.lightningAddress,
+        settings.bonusSats,
+        `Level ${level} Bonus für ${child.name}!`
+      );
+      
+      // Create manual payment
+      const payment = await storage.createManualPayment({
+        connectionId: parent.connectionId,
+        parentId: parent.id,
+        childId: child.id,
+        childName: child.name,
+        sats: settings.bonusSats,
+        memo: `Level ${level} Bonus!`,
+        bolt11: invoice.bolt11,
+        paymentHash: invoice.paymentHash,
+        expiresAt: invoice.expiresAt,
+        status: "pending",
+        paymentType: "level_bonus",
+        taskId: null,
+      });
+      
+      console.log(`[Level Bonus] Created manual payment for Level ${level} bonus: ${settings.bonusSats} sats`);
+      
+      res.json({
+        success: true,
+        payment,
+        invoice: {
+          bolt11: invoice.bolt11,
+          expiresAt: invoice.expiresAt,
+          amountSats: settings.bonusSats,
+        }
+      });
+    } catch (error) {
+      console.error("[Level Bonus Generate Payment Error]:", error);
+      res.status(500).json({ error: String(error) });
+    }
+  });
+
+  // Get unpaid level bonuses (recorded but no QR payment created)
+  app.get("/api/level-bonus/unpaid/:connectionId", async (req, res) => {
+    try {
+      const peerId = req.session.peerId;
+      if (!peerId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      const peer = await storage.getPeer(peerId);
+      if (!peer || peer.connectionId !== req.params.connectionId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      // Get all level bonus payouts
+      const allChildren = await db.select().from(peers)
+        .where(and(
+          eq(peers.connectionId, req.params.connectionId),
+          eq(peers.role, "child")
+        ));
+      
+      const unpaidBonuses = [];
+      
+      for (const child of allChildren) {
+        const payouts = await storage.getLevelBonusPayouts(child.id);
+        const manualPayments = await storage.getManualPayments(req.params.connectionId);
+        
+        for (const payout of payouts) {
+          // Check if there's a corresponding paid manual payment
+          const hasPaidPayment = manualPayments.some(p =>
+            p.paymentType === "level_bonus" &&
+            p.status === "paid" &&
+            p.childId === child.id &&
+            p.memo?.includes(`Level ${payout.level}`)
+          );
+          
+          // Check if there's a pending payment
+          const hasPendingPayment = manualPayments.some(p =>
+            p.paymentType === "level_bonus" &&
+            p.status === "pending" &&
+            p.childId === child.id &&
+            p.memo?.includes(`Level ${payout.level}`)
+          );
+          
+          if (!hasPaidPayment && !hasPendingPayment) {
+            unpaidBonuses.push({
+              childId: child.id,
+              childName: child.name,
+              level: payout.level,
+              sats: payout.sats,
+              paidAt: payout.paidAt,
+            });
+          }
+        }
+      }
+      
+      res.json(unpaidBonuses);
+    } catch (error) {
+      console.error("[Level Bonus Unpaid Error]:", error);
       res.status(500).json({ error: String(error) });
     }
   });
