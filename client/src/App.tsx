@@ -11095,42 +11095,42 @@ function TrackerChart({ userId }: { userId: number }) {
       )}
 
       {satsBreakdown && (
-        <div className="bg-white/40 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-xl overflow-hidden">
+        <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
           <button
             onClick={() => setShowBreakdown(!showBreakdown)}
-            className="w-full flex items-center justify-between p-4 hover:bg-white/20 transition-colors"
+            className="w-full flex items-center justify-between p-4 hover:bg-slate-700/50 transition-colors"
             data-testid="toggle-earnings-breakdown"
           >
-            <span className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <span className="text-sm font-semibold text-white flex items-center gap-2">
               💰 {t('tracker.howYouEarned') || 'So hast du verdient'}
             </span>
-            <span className="text-xs text-muted-foreground">{showBreakdown ? '▲' : '▼'}</span>
+            <span className="text-xs text-slate-400">{showBreakdown ? '▲' : '▼'}</span>
           </button>
           
           {showBreakdown && (
             <div className="px-4 pb-4 space-y-2">
               {satsBreakdown.taskSats > 0 && (
-                <div className="flex items-center justify-between bg-slate-100/50 dark:bg-slate-800/50 rounded-lg px-3 py-2">
-                  <span className="text-xs text-foreground flex items-center gap-2">✅ {t('dashboard.earned')}</span>
-                  <span className="text-sm font-semibold text-emerald-600">{satsBreakdown.taskSats.toLocaleString()} sats</span>
+                <div className="flex items-center justify-between bg-slate-700/50 rounded-lg px-3 py-2">
+                  <span className="text-xs text-slate-300 flex items-center gap-2">✅ {t('dashboard.earned')}</span>
+                  <span className="text-sm font-semibold text-emerald-400">{satsBreakdown.taskSats.toLocaleString()} sats</span>
                 </div>
               )}
               {satsBreakdown.bonusSats > 0 && (
-                <div className="flex items-center justify-between bg-slate-100/50 dark:bg-slate-800/50 rounded-lg px-3 py-2">
-                  <span className="text-xs text-foreground flex items-center gap-2">🎁 Bonus</span>
-                  <span className="text-sm font-semibold text-purple-600">{satsBreakdown.bonusSats.toLocaleString()} sats</span>
+                <div className="flex items-center justify-between bg-slate-700/50 rounded-lg px-3 py-2">
+                  <span className="text-xs text-slate-300 flex items-center gap-2">🎁 Bonus</span>
+                  <span className="text-sm font-semibold text-purple-400">{satsBreakdown.bonusSats.toLocaleString()} sats</span>
                 </div>
               )}
               {satsBreakdown.allowanceSats > 0 && (
-                <div className="flex items-center justify-between bg-slate-100/50 dark:bg-slate-800/50 rounded-lg px-3 py-2">
-                  <span className="text-xs text-foreground flex items-center gap-2">💰 {t('family.allowance')}</span>
-                  <span className="text-sm font-semibold text-green-600">{satsBreakdown.allowanceSats.toLocaleString()} sats</span>
+                <div className="flex items-center justify-between bg-slate-700/50 rounded-lg px-3 py-2">
+                  <span className="text-xs text-slate-300 flex items-center gap-2">💰 {t('family.allowance')}</span>
+                  <span className="text-sm font-semibold text-green-400">{satsBreakdown.allowanceSats.toLocaleString()} sats</span>
                 </div>
               )}
               {satsBreakdown.manualSats > 0 && (
-                <div className="flex items-center justify-between bg-slate-100/50 dark:bg-slate-800/50 rounded-lg px-3 py-2">
-                  <span className="text-xs text-foreground flex items-center gap-2">⚡ {t('family.instantPayout')}</span>
-                  <span className="text-sm font-semibold text-blue-600">{satsBreakdown.manualSats.toLocaleString()} sats</span>
+                <div className="flex items-center justify-between bg-slate-700/50 rounded-lg px-3 py-2">
+                  <span className="text-xs text-slate-300 flex items-center gap-2">⚡ {t('family.instantPayout')}</span>
+                  <span className="text-sm font-semibold text-blue-400">{satsBreakdown.manualSats.toLocaleString()} sats</span>
                 </div>
               )}
             </div>
