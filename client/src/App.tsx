@@ -9081,23 +9081,6 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         <div className="space-y-4">
           <h1 className="text-4xl font-bold text-foreground">{t('education.educationCenter')}</h1>
           
-          {/* Quick Stats - only show on main menu */}
-          {educationTab === null && (
-            <div className="grid grid-cols-3 gap-3">
-              <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-center">
-                <p className="text-2xl font-bold text-green-600">{(serverProgress?.completedModules || []).length}</p>
-                <p className="text-xs text-muted-foreground">{t('education.modulesPassed')}</p>
-              </div>
-              <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-center">
-                <p className="text-2xl font-bold text-blue-600">{achievements.filter(a => a.condition).length}/{achievements.length}</p>
-                <p className="text-xs text-muted-foreground">{t('education.badges')}</p>
-              </div>
-              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-center">
-                <p className="text-2xl font-bold text-amber-600">{(modules?.length || 0) - (serverProgress?.completedModules || []).length}</p>
-                <p className="text-xs text-muted-foreground">{t('education.modulesRemaining')}</p>
-              </div>
-            </div>
-          )}
 
           {/* Back Button - show when in a submenu */}
           {educationTab !== null && (
@@ -9157,6 +9140,22 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
         {educationTab === "modules" && (
           <div className="space-y-8">
+            {/* Quick Stats */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-center">
+                <p className="text-2xl font-bold text-green-600">{(serverProgress?.completedModules || []).length}</p>
+                <p className="text-xs text-muted-foreground">{t('education.modulesPassed')}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-center">
+                <p className="text-2xl font-bold text-blue-600">{achievements.filter(a => a.condition).length}/{achievements.length}</p>
+                <p className="text-xs text-muted-foreground">{t('education.badges')}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-center">
+                <p className="text-2xl font-bold text-amber-600">{(modules?.length || 0) - (serverProgress?.completedModules || []).length}</p>
+                <p className="text-xs text-muted-foreground">{t('education.modulesRemaining')}</p>
+              </div>
+            </div>
+            
             {/* Learning Cooldown Banner */}
             {cooldownRemaining > 0 && (
               <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
