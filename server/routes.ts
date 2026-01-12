@@ -3275,6 +3275,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Daily snapshot scheduler (runs at 6:00 AM) - captures sats balance and BTC price for all children
+  cron.schedule("0 6 * * *", async () => {
+    console.log("[Snapshot Scheduler] Daily snapshot started at 6:00 AM");
+    try {
+      // Get current BTC price from Coinbase
+      let btcPriceEur = 80000; // fallback
+      try {
+        const priceRes = await fetch("https://api.coinbase.com/v2/prices/BTC-EUR/spot");
+        if (priceRes.ok) {
+          const priceData = await priceRes.json();
+          btcPriceEur = parseFloat(priceData.data.amount);
+        }
+      } catch (e) {
+        console.error("[Snapshot Scheduler] Failed to fetch BTC price, using fallback:", e);
+      }
+
+      // Get all children
+      const allPeers = await db.select().from(peers).where(eq(peers.role, "child"));
+      
+      for (const child of allPeers) {
+        // Check if snapshot already exists for today
+        const lastSnapshot = await storage.getLastDailySnapshot(child.id);
+        const today = new Date().toDateString();
+        const lastSnapshotDate = lastSnapshot ? new Date(lastSnapshot.createdAt).toDateString() : null;
+        
+        if (lastSnapshotDate === today) {
+          continue; // Already have snapshot for today
+        }
+
+        const satsBalance = child.balance || 0;
+        if (satsBalance === 0) continue; // Skip children with no balance
+        
+        const valueEur = (satsBalance / 1e8) * btcPriceEur;
+        
+        await storage.createDailyBitcoinSnapshot({
+          peerId: child.id,
+          connectionId: child.connectionId,
+          valueEur: Math.round(valueEur * 100), // cents
+          satoshiAmount: satsBalance,
+          btcPrice: Math.round(btcPriceEur * 100) // cents
+        });
+        
+        console.log(`[Snapshot Scheduler] Created snapshot for ${child.name}: ${satsBalance} sats = €${valueEur.toFixed(2)}`);
+      }
+      
+      console.log("[Snapshot Scheduler] Daily snapshot completed");
+    } catch (error) {
+      console.error("[Snapshot Scheduler] Error:", error);
+    }
+  });
+
   // Simulate 30 days of savings with varying daily rates
   app.post("/api/simulate-savings/:peerId", async (req, res) => {
     try {
