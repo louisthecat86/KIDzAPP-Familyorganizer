@@ -97,20 +97,6 @@ interface ManualPaymentQRModalProps {
   onPaymentComplete: () => void;
 }
 
-// WebLN interface for browser Lightning wallets
-interface WebLNProvider {
-  enable: () => Promise<void>;
-  sendPayment: (paymentRequest: string) => Promise<{ preimage: string }>;
-}
-
-// Get WebLN from window if available
-function getWebLN(): WebLNProvider | null {
-  if (typeof window !== 'undefined' && (window as any).webln) {
-    return (window as any).webln as WebLNProvider;
-  }
-  return null;
-}
-
 export function ManualPaymentQRModal({ isOpen, onClose, payment, onPaymentComplete }: ManualPaymentQRModalProps) {
   const { t } = useTranslation();
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
@@ -120,14 +106,6 @@ export function ManualPaymentQRModal({ isOpen, onClose, payment, onPaymentComple
   const [isConfirming, setIsConfirming] = useState(false);
   const [currentPayment, setCurrentPayment] = useState(payment);
   const [confirmChecked, setConfirmChecked] = useState(false);
-  const [hasWebLN, setHasWebLN] = useState(false);
-  const [isPayingWithWebLN, setIsPayingWithWebLN] = useState(false);
-  const [webLNError, setWebLNError] = useState<string>("");
-
-  // Check for WebLN availability
-  useEffect(() => {
-    setHasWebLN(!!getWebLN());
-  }, []);
 
   useEffect(() => {
     setCurrentPayment(payment);
@@ -165,44 +143,7 @@ export function ManualPaymentQRModal({ isOpen, onClose, payment, onPaymentComple
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Pay with WebLN (browser wallet like Alby) - automatic verification
-  const handlePayWithWebLN = async () => {
-    const webln = getWebLN();
-    if (!currentPayment || !webln) return;
-    
-    setIsPayingWithWebLN(true);
-    setWebLNError("");
-    try {
-      await webln.enable();
-      const result = await webln.sendPayment(currentPayment.bolt11);
-      
-      // Got preimage from wallet - verify it on server
-      const res = await apiFetch(`/api/manual-payment/${currentPayment.id}/paid`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ preimage: result.preimage })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        onPaymentComplete();
-        onClose();
-      } else {
-        console.error("Payment verification failed:", data.error);
-        setWebLNError(data.error || t('common.error'));
-      }
-    } catch (error: any) {
-      console.error("WebLN payment error:", error);
-      if (error?.message?.includes("User rejected")) {
-        setWebLNError(t("walletMode.qrModal.paymentCancelled") || "Zahlung abgebrochen");
-      } else {
-        setWebLNError(error?.message || t('common.error'));
-      }
-    } finally {
-      setIsPayingWithWebLN(false);
-    }
-  };
-
-  // Manual confirmation (fallback for users without WebLN)
+  // Manual confirmation - parent confirms they paid the invoice
   const handlePaid = async () => {
     if (!currentPayment || !confirmChecked) return;
     
@@ -377,31 +318,8 @@ export function ManualPaymentQRModal({ isOpen, onClose, payment, onPaymentComple
             )}
           </div>
 
-          {/* WebLN: Automatic payment with verification */}
-          {!isExpired && hasWebLN && (
-            <div className="w-full space-y-3">
-              <Button 
-                onClick={handlePayWithWebLN} 
-                disabled={isPayingWithWebLN}
-                className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white shadow-lg py-6 text-lg"
-                data-testid="button-pay-webln"
-              >
-                <Zap className="h-5 w-5 mr-2" />
-                {isPayingWithWebLN 
-                  ? (t("walletMode.qrModal.paying") || "Zahle...") 
-                  : (t("walletMode.qrModal.payWithWallet") || "Jetzt mit Wallet bezahlen")}
-              </Button>
-              {webLNError && (
-                <p className="text-sm text-red-500 text-center">{webLNError}</p>
-              )}
-              <p className="text-xs text-amber-600/60 dark:text-amber-400/60 text-center">
-                {t("walletMode.qrModal.webLNHint") || "Deine Browser-Wallet öffnet sich automatisch"}
-              </p>
-            </div>
-          )}
-
-          {/* Fallback: QR Code + manual confirmation */}
-          {!isExpired && !hasWebLN && (
+          {/* Manual confirmation - parent confirms they paid */}
+          {!isExpired && (
             <div className="w-full space-y-3 p-4 bg-amber-100/50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
@@ -429,17 +347,15 @@ export function ManualPaymentQRModal({ isOpen, onClose, payment, onPaymentComple
                 <X className="h-4 w-4 mr-2" />
                 {t("walletMode.qrModal.cancelPayment")}
               </Button>
-              {!hasWebLN && (
-                <Button 
-                  onClick={handlePaid} 
-                  disabled={isConfirming || !confirmChecked} 
-                  className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg disabled:opacity-50" 
-                  data-testid="button-ive-paid"
-                >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  {isConfirming ? t("walletMode.qrModal.confirming") : t("walletMode.qrModal.confirmPayment") || "Bestätigen"}
-                </Button>
-              )}
+              <Button 
+                onClick={handlePaid} 
+                disabled={isConfirming || !confirmChecked} 
+                className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg disabled:opacity-50" 
+                data-testid="button-ive-paid"
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                {isConfirming ? t("walletMode.qrModal.confirming") : t("walletMode.qrModal.confirmPayment") || "Bestätigen"}
+              </Button>
             </div>
           )}
         </div>
