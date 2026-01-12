@@ -698,6 +698,16 @@
     "tileGlossary": "Wörterbuch",
     "tileGlossaryDesc": "Alle wichtigen Bitcoin-Begriffe erklärt",
     "completed": "geschafft",
+    "resourcesIntroNew": "Hier findest du Lernmaterialien, die deine Eltern für dich gesammelt haben:",
+    "noResources": "Noch keine Ressourcen",
+    "noResourcesDesc": "Deine Eltern können hier Lernmaterialien für dich hinzufügen.",
+    "category": {
+      "video": "Videos",
+      "website": "Internetseiten",
+      "book": "Bücher",
+      "app": "Apps",
+      "podcast": "Podcasts"
+    },
     "quizAlreadyPassed": "Quiz bereits bestanden!",
     "quizAlreadyPassedDesc": "{{score}}/{{total}} richtig!",
     "quizTryAgain": "Probier nochmal!",

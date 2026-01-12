@@ -7783,6 +7783,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   const [completedChallenges, setCompletedChallenges] = useState<Record<number, number>>({});
   const [educationTab, setEducationTab] = useState<"modules" | "converter" | "resources" | "glossar" | null>(null);
   const [glossarSearch, setGlossarSearch] = useState("");
+  const [educationResources, setEducationResources] = useState<Array<{ id: number; title: string; url: string; category: string; description: string | null; language: string | null }>>([]);
   const [satoshiInput, setSatoshiInput] = useState("100000");
   const [bitcoinInput, setBitcoinInput] = useState("0.001");
   const [euroInput, setEuroInput] = useState("50");
@@ -7875,6 +7876,24 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
       fetchBtcPrice();
     }
   }, [user.role]);
+
+  // Fetch education resources
+  useEffect(() => {
+    const fetchResources = async () => {
+      try {
+        const response = await apiFetch(`/api/education/resources?connectionId=${user.connectionId || ''}`);
+        if (response.ok) {
+          const data = await response.json();
+          setEducationResources(data);
+        }
+      } catch (error) {
+        console.error("[Education Resources] Failed to fetch:", error);
+      }
+    };
+    if (user.role === "child") {
+      fetchResources();
+    }
+  }, [user.role, user.connectionId]);
   
   const { t } = useTranslation();
 
@@ -9411,115 +9430,57 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
 
         {educationTab === "resources" && (
           <div className="space-y-6">
-            <p className="text-muted-foreground">{t('education.resourcesIntro')}</p>
+            <p className="text-muted-foreground">{t('education.resourcesIntroNew')}</p>
             
-            <div className="space-y-6">
-              <div className="border-2 border-green-500/30 rounded-xl p-4 bg-green-500/5">
-                <h3 className="text-lg font-bold text-green-700 mb-3 flex items-center gap-2">🌱 {t('education.ageGroup69')}</h3>
-                <p className="text-xs text-muted-foreground mb-3">{t('education.ageGroup69Desc')}</p>
-                <div className="grid grid-cols-1 gap-2">
-                  <a href="https://coinfinity.co/bitcoin-blinks" target="_blank" rel="noopener noreferrer" className="block p-3 bg-violet-500/10 border border-violet-500/30 rounded-lg hover:bg-violet-500/20 transition-all">
-                    <h4 className="font-semibold text-violet-600 text-sm flex items-center gap-2">Coinfinity Bitcoin Blinks ⚡</h4>
-                    <p className="text-xs text-muted-foreground">{i18n.language === 'de' ? 'Bitcoin & Geld einfach erklärt in kurzen Häppchen - perfekt für Familien.' : 'Bitcoin & money explained simply in short blinks - perfect for families.'}</p>
-                  </a>
-                  <a href="https://thebitcoinadviser.com/for-kids" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-foreground text-sm">The Bitcoin Adviser – "For Your Kids"</h4>
-                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc15')}</p>
-                  </a>
-                  <a href="https://bitcoinsavvykids.com" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-foreground text-sm">Bitcoin Savvy Kids – Early Kids</h4>
-                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc16')}</p>
-                  </a>
-                  <a href="https://www.kindersache.de" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-foreground text-sm">Kindersache.de</h4>
-                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc17')}</p>
-                  </a>
-                </div>
+            {educationResources.length === 0 ? (
+              <div className="text-center py-12 bg-slate-100/50 rounded-xl">
+                <span className="text-5xl mb-4 block">📚</span>
+                <h3 className="text-lg font-semibold text-foreground mb-2">{t('education.noResources')}</h3>
+                <p className="text-sm text-muted-foreground">{t('education.noResourcesDesc')}</p>
               </div>
-
-              <div className="border-2 border-blue-500/30 rounded-xl p-4 bg-blue-500/5">
-                <h3 className="text-lg font-bold text-blue-700 mb-3 flex items-center gap-2">📚 {t('education.ageGroup1012')}</h3>
-                <p className="text-xs text-muted-foreground mb-3">{t('education.ageGroup1012Desc')}</p>
-                <div className="grid grid-cols-1 gap-2">
-                  <a href="https://bitcoinsavvykids.com/middle" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-foreground text-sm">Bitcoin Savvy Kids – Middle Kids</h4>
-                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc3')}</p>
-                  </a>
-                  <a href="https://thebitcoinadviser.com" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-foreground text-sm">The Bitcoin Adviser</h4>
-                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc4')}</p>
-                  </a>
-                </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Group by category */}
+                {['video', 'website', 'book', 'app', 'podcast'].map(category => {
+                  const categoryResources = educationResources.filter(r => r.category === category);
+                  if (categoryResources.length === 0) return null;
+                  
+                  const categoryConfig: Record<string, { icon: string; color: string; bgColor: string }> = {
+                    video: { icon: '🎬', color: 'text-red-700', bgColor: 'border-red-500/30 bg-red-500/5' },
+                    website: { icon: '🌐', color: 'text-blue-700', bgColor: 'border-blue-500/30 bg-blue-500/5' },
+                    book: { icon: '📖', color: 'text-green-700', bgColor: 'border-green-500/30 bg-green-500/5' },
+                    app: { icon: '📱', color: 'text-purple-700', bgColor: 'border-purple-500/30 bg-purple-500/5' },
+                    podcast: { icon: '🎧', color: 'text-amber-700', bgColor: 'border-amber-500/30 bg-amber-500/5' }
+                  };
+                  
+                  const config = categoryConfig[category] || { icon: '📌', color: 'text-slate-700', bgColor: 'border-slate-500/30 bg-slate-500/5' };
+                  
+                  return (
+                    <div key={category} className={`border-2 rounded-xl p-4 ${config.bgColor}`}>
+                      <h3 className={`text-lg font-bold mb-3 flex items-center gap-2 ${config.color}`}>
+                        {config.icon} {t(`education.category.${category}`)}
+                      </h3>
+                      <div className="grid grid-cols-1 gap-2">
+                        {categoryResources.map(resource => (
+                          <a 
+                            key={resource.id}
+                            href={resource.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="block p-3 bg-white/50 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all"
+                          >
+                            <h4 className="font-semibold text-foreground text-sm">{resource.title}</h4>
+                            {resource.description && (
+                              <p className="text-xs text-muted-foreground mt-1">{resource.description}</p>
+                            )}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-
-              <div className="border-2 border-amber-500/30 rounded-xl p-4 bg-amber-500/5">
-                <h3 className="text-lg font-bold text-amber-700 mb-3 flex items-center gap-2">🧠 {t('education.ageGroup1214')}</h3>
-                <p className="text-xs text-muted-foreground mb-3">{t('education.ageGroup1214Desc')}</p>
-                <div className="grid grid-cols-1 gap-2">
-                  <a href="https://www.unicef.org/blockchain" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-foreground text-sm">UNICEF Blockchain Learning Hub</h4>
-                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc5')}</p>
-                  </a>
-                  <a href="https://bitcoinsavvykids.com/teens" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-foreground text-sm">Bitcoin Savvy Kids – Teens</h4>
-                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc6')}</p>
-                  </a>
-                </div>
-              </div>
-
-              <div className="border-2 border-red-500/30 rounded-xl p-4 bg-red-500/5">
-                <h3 className="text-lg font-bold text-red-700 mb-3 flex items-center gap-2">🎓 {t('education.ageGroup1416')}</h3>
-                <p className="text-xs text-muted-foreground mb-3">{t('education.ageGroup1416Desc2')}</p>
-                <div className="grid grid-cols-1 gap-2">
-                  <a href="https://www.unicef.org/blockchain" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-foreground text-sm">UNICEF Blockchain Hub – Intermediate</h4>
-                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc7')}</p>
-                  </a>
-                  <a href="https://www.khanacademy.org/economics-finance-domain/core-finance/money-and-banking/bitcoin/v/bitcoin-what-is-it" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-foreground text-sm">Khan Academy – Bitcoin Kurse</h4>
-                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc8')}</p>
-                  </a>
-                </div>
-              </div>
-
-              <div className="border-2 border-purple-500/30 rounded-xl p-4 bg-purple-500/5">
-                <h3 className="text-lg font-bold text-purple-700 mb-3 flex items-center gap-2">🚀 {t('education.ageGroup1618')}</h3>
-                <p className="text-xs text-muted-foreground mb-3">{t('education.ageGroup1618Desc2')}</p>
-                <div className="grid grid-cols-1 gap-2">
-                  <a href="https://www.unicef.org/blockchain" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-foreground text-sm">UNICEF Blockchain – Full Curriculum</h4>
-                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc9')}</p>
-                  </a>
-                  <a href="https://ocw.mit.edu/courses/15-s12-blockchain-and-money-fall-2018/" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-foreground text-sm">MIT – Blockchain & Money</h4>
-                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc10')}</p>
-                  </a>
-                  <a href="https://www.khanacademy.org/computing/computer-science" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-foreground text-sm">Khan Academy – Computer Science</h4>
-                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc11')}</p>
-                  </a>
-                </div>
-              </div>
-
-              <div className="border-2 border-slate-500/30 rounded-xl p-4 bg-slate-500/5">
-                <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">👨‍👩‍👧‍👦 {t('education.forParents')}</h3>
-                <p className="text-xs text-muted-foreground mb-3">{t('education.forParentsDesc2')}</p>
-                <div className="grid grid-cols-1 gap-2">
-                  <a href="https://www.coin.space/teaching-kids-bitcoin" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-foreground text-sm">Teaching Your Kids About Bitcoin</h4>
-                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc12')}</p>
-                  </a>
-                  <a href="https://bitcoinsavvykids.com/parents" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-foreground text-sm">Bitcoin Savvy Kids – Elternbereich</h4>
-                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc13')}</p>
-                  </a>
-                  <a href="https://www.unicef.org/digital-safety" target="_blank" rel="noopener noreferrer" className="block p-3 bg-white/5 dark:bg-black/30 rounded-lg hover:bg-white/80 transition-all">
-                    <h4 className="font-semibold text-foreground text-sm">UNICEF – Digital Safety for Children</h4>
-                    <p className="text-xs text-muted-foreground">{t('education.resourceDesc14')}</p>
-                  </a>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         )}
 

@@ -700,6 +700,16 @@
     "tileGlossary": "Dictionary",
     "tileGlossaryDesc": "All important Bitcoin terms explained",
     "completed": "completed",
+    "resourcesIntroNew": "Here you can find learning materials that your parents have collected for you:",
+    "noResources": "No resources yet",
+    "noResourcesDesc": "Your parents can add learning materials for you here.",
+    "category": {
+      "video": "Videos",
+      "website": "Websites",
+      "book": "Books",
+      "app": "Apps",
+      "podcast": "Podcasts"
+    },
     "quizAlreadyPassed": "Quiz already passed!",
     "quizAlreadyPassedDesc": "{{score}}/{{total}} correct!",
     "quizTryAgain": "Try again!",

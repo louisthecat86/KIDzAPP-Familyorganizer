@@ -5691,6 +5691,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Education Resources API
+  app.get("/api/education/resources", async (req, res) => {
+    try {
+      const { connectionId } = req.query;
+      const resources = await storage.getEducationResources(connectionId as string || null);
+      res.json(resources);
+    } catch (error) {
+      console.error("[Education Resources] Error fetching:", error);
+      res.status(500).json({ error: "Failed to fetch resources" });
+    }
+  });
+
+  app.post("/api/education/resources", async (req, res) => {
+    try {
+      const { peerId, title, url, category, description, language, connectionId } = req.body;
+      
+      if (!peerId || !title || !url || !category) {
+        return res.status(400).json({ error: "peerId, title, url, and category are required" });
+      }
+      
+      const peer = await storage.getPeer(peerId);
+      if (!peer || peer.role !== "parent") {
+        return res.status(403).json({ error: "Only parents can add resources" });
+      }
+      
+      const resource = await storage.createEducationResource({
+        title,
+        url,
+        category,
+        description: description || null,
+        language: language || "de",
+        connectionId: connectionId || peer.connectionId, // Family-specific by default
+        createdBy: peerId
+      });
+      
+      res.json(resource);
+    } catch (error) {
+      console.error("[Education Resources] Error creating:", error);
+      res.status(500).json({ error: "Failed to create resource" });
+    }
+  });
+
+  app.put("/api/education/resources/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { peerId, ...updates } = req.body;
+      
+      if (!peerId) {
+        return res.status(400).json({ error: "peerId is required" });
+      }
+      
+      const peer = await storage.getPeer(peerId);
+      if (!peer || peer.role !== "parent") {
+        return res.status(403).json({ error: "Only parents can update resources" });
+      }
+      
+      const resource = await storage.updateEducationResource(id, updates);
+      res.json(resource);
+    } catch (error) {
+      console.error("[Education Resources] Error updating:", error);
+      res.status(500).json({ error: "Failed to update resource" });
+    }
+  });
+
+  app.delete("/api/education/resources/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { peerId } = req.body;
+      
+      if (!peerId) {
+        return res.status(400).json({ error: "peerId is required" });
+      }
+      
+      const peer = await storage.getPeer(peerId);
+      if (!peer || peer.role !== "parent") {
+        return res.status(403).json({ error: "Only parents can delete resources" });
+      }
+      
+      const success = await storage.deleteEducationResource(id);
+      res.json({ success });
+    } catch (error) {
+      console.error("[Education Resources] Error deleting:", error);
+      res.status(500).json({ error: "Failed to delete resource" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

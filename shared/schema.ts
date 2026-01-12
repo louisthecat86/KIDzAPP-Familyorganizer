@@ -352,6 +352,29 @@ export const insertDailyChallengeSchema = createInsertSchema(dailyChallenges).om
 export type InsertDailyChallenge = z.infer<typeof insertDailyChallengeSchema>;
 export type DailyChallenge = typeof dailyChallenges.$inferSelect;
 
+// Education Resources Table (for Bitcoin learning resources)
+export const educationResources = pgTable("education_resources", {
+  id: serial("id").primaryKey(),
+  connectionId: text("connection_id"), // NULL = global resource, otherwise family-specific
+  title: text("title").notNull(),
+  url: text("url").notNull(),
+  category: text("category").notNull(), // 'video', 'website', 'book', 'app', 'podcast'
+  description: text("description"),
+  language: text("language").default("de"), // ISO code: 'de', 'en', etc.
+  createdBy: integer("created_by").notNull(), // Parent who added this
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertEducationResourceSchema = createInsertSchema(educationResources).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertEducationResource = z.infer<typeof insertEducationResourceSchema>;
+export type EducationResource = typeof educationResources.$inferSelect;
+
 // Shopping List Table (Einkaufsliste - shared family list)
 export const shoppingList = pgTable("shopping_list", {
   id: serial("id").primaryKey(),

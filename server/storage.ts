@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks, type LearningProgress, type InsertLearningProgress, learningProgress, type DailyChallenge, dailyChallenges, type ShoppingList, type InsertShoppingList, shoppingList, type FamilyBoardPost, type InsertFamilyBoardPost, familyBoardPosts, type LocationPing, type InsertLocationPing, locationPings, type EmergencyContact, type InsertEmergencyContact, emergencyContacts, type PasswordSafeEntry, type InsertPasswordSafeEntry, passwordSafeEntries, type BirthdayReminder, type InsertBirthdayReminder, birthdayReminders, type FailedPayment, type InsertFailedPayment, failedPayments, type ManualPayment, type InsertManualPayment, manualPayments, type PushSubscription, pushSubscriptions } from "@shared/schema";
+import { type Peer, type InsertPeer, peers, type Task, type InsertTask, tasks, type Transaction, type InsertTransaction, transactions, type FamilyEvent, type InsertFamilyEvent, familyEvents, type EventRsvp, type InsertEventRsvp, eventRsvps, type ChatMessage, type InsertChatMessage, chatMessages, type Allowance, type InsertAllowance, allowances, type DailyBitcoinSnapshot, type InsertDailyBitcoinSnapshot, dailyBitcoinSnapshots, type MonthlySavingsSnapshot, type InsertMonthlySavingsSnapshot, monthlySavingsSnapshots, type LevelBonusSettings, type InsertLevelBonusSettings, levelBonusSettings, type LevelBonusPayout, type InsertLevelBonusPayout, levelBonusPayouts, type RecurringTask, type InsertRecurringTask, recurringTasks, type LearningProgress, type InsertLearningProgress, learningProgress, type DailyChallenge, dailyChallenges, type ShoppingList, type InsertShoppingList, shoppingList, type FamilyBoardPost, type InsertFamilyBoardPost, familyBoardPosts, type LocationPing, type InsertLocationPing, locationPings, type EmergencyContact, type InsertEmergencyContact, emergencyContacts, type PasswordSafeEntry, type InsertPasswordSafeEntry, passwordSafeEntries, type BirthdayReminder, type InsertBirthdayReminder, birthdayReminders, type FailedPayment, type InsertFailedPayment, failedPayments, type ManualPayment, type InsertManualPayment, manualPayments, type PushSubscription, pushSubscriptions, type EducationResource, type InsertEducationResource, educationResources } from "@shared/schema";
 import { eq, and, desc, lt, isNull, or, inArray, sql } from "drizzle-orm";
 
 export interface IStorage {
@@ -177,6 +177,12 @@ export interface IStorage {
   markManualPaymentExpired(id: number): Promise<ManualPayment | undefined>;
   cancelManualPayment(id: number): Promise<ManualPayment | undefined>;
   getManualPayment(id: number): Promise<ManualPayment | undefined>;
+
+  // Education Resources operations
+  getEducationResources(connectionId: string | null): Promise<EducationResource[]>;
+  createEducationResource(resource: InsertEducationResource): Promise<EducationResource>;
+  updateEducationResource(id: number, updates: Partial<EducationResource>): Promise<EducationResource | undefined>;
+  deleteEducationResource(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1574,6 +1580,43 @@ export class DatabaseStorage implements IStorage {
       .where(eq(manualPayments.id, id))
       .limit(1);
     return result[0];
+  }
+
+  // Education Resources operations
+  async getEducationResources(connectionId: string | null): Promise<EducationResource[]> {
+    // Get global resources (connectionId is null) plus family-specific resources
+    if (connectionId) {
+      return await db.select().from(educationResources)
+        .where(or(
+          isNull(educationResources.connectionId),
+          eq(educationResources.connectionId, connectionId)
+        ))
+        .orderBy(educationResources.category, educationResources.title);
+    }
+    // If no connectionId, only return global resources
+    return await db.select().from(educationResources)
+      .where(isNull(educationResources.connectionId))
+      .orderBy(educationResources.category, educationResources.title);
+  }
+
+  async createEducationResource(resource: InsertEducationResource): Promise<EducationResource> {
+    const result = await db.insert(educationResources).values(resource).returning();
+    return result[0];
+  }
+
+  async updateEducationResource(id: number, updates: Partial<EducationResource>): Promise<EducationResource | undefined> {
+    const result = await db.update(educationResources)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(educationResources.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteEducationResource(id: number): Promise<boolean> {
+    const result = await db.delete(educationResources)
+      .where(eq(educationResources.id, id))
+      .returning();
+    return result.length > 0;
   }
 
 }
