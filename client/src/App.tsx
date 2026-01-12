@@ -10902,6 +10902,7 @@ function TrackerChart({ userId }: { userId: number }) {
             };
           });
           
+          // Store for later - we'll add current total after we have satsBreakdown
           setSnapshots(normalized);
         }
       } catch (error) {
@@ -10920,9 +10921,33 @@ function TrackerChart({ userId }: { userId: number }) {
   
   const currentEuroValue = liveBtcPrice ? (totalSats * liveBtcPrice) / 1e8 : 0;
   
-  // Calculate growth message (snapshots are now chronological)
-  const hasHistory = snapshots.length >= 2;
-  const firstSnapshot = snapshots[0];
+  // Add today's actual total to the chart data (ensures we end at the correct cumulative total)
+  const todayKey = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+  const chartData = [...snapshots];
+  
+  // Update or add today's entry with the actual cumulative total from transactions
+  const todayIndex = chartData.findIndex(s => s.date === todayKey);
+  if (todayIndex >= 0) {
+    chartData[todayIndex] = { ...chartData[todayIndex], satoshiAmount: totalSats, valueEurNormalized: currentEuroValue };
+  } else if (chartData.length > 0) {
+    chartData.push({ date: todayKey, satoshiAmount: totalSats, valueEurNormalized: currentEuroValue });
+  }
+  
+  // Ensure monotonic growth - each point should be >= previous
+  for (let i = 1; i < chartData.length; i++) {
+    if (chartData[i].satoshiAmount < chartData[i-1].satoshiAmount) {
+      chartData[i].satoshiAmount = chartData[i-1].satoshiAmount;
+    }
+  }
+  // Final entry should always be the actual total
+  if (chartData.length > 0) {
+    chartData[chartData.length - 1].satoshiAmount = totalSats;
+    chartData[chartData.length - 1].valueEurNormalized = currentEuroValue;
+  }
+  
+  // Calculate growth message (chartData is chronological)
+  const hasHistory = chartData.length >= 2;
+  const firstSnapshot = chartData[0];
   const firstSats = firstSnapshot?.satoshiAmount || totalSats;
   const firstEurValue = firstSnapshot?.valueEurNormalized || currentEuroValue;
   const satsGrowth = totalSats - firstSats;
@@ -10946,7 +10971,7 @@ function TrackerChart({ userId }: { userId: number }) {
         </div>
       </div>
 
-      {hasHistory && snapshots.length > 1 && (
+      {hasHistory && chartData.length > 1 && (
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 space-y-3">
           <p className="text-sm font-semibold text-white">{t('tracker.yourGrowth') || 'Dein Wachstum'}</p>
           
@@ -10963,7 +10988,7 @@ function TrackerChart({ userId }: { userId: number }) {
           
           <div className="h-36">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={snapshots} margin={{ top: 5, right: 30, left: -10, bottom: 5 }}>
+              <AreaChart data={chartData} margin={{ top: 5, right: 30, left: -10, bottom: 5 }}>
                 <defs>
                   <linearGradient id="satsGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#10b981" stopOpacity={0.6} />

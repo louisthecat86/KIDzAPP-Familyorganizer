@@ -3172,10 +3172,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const peerId = parseInt(req.params.peerId);
       const snapshots = await storage.getDailyBitcoinSnapshots(peerId);
+      
+      // Use cumulativeSats for the chart (monotonically increasing), fall back to satoshiAmount
       res.json(snapshots.map(s => ({
         date: s.createdAt,
-        satoshiAmount: s.satoshiAmount,
-        valueEur: s.valueEur
+        satoshiAmount: s.cumulativeSats || s.satoshiAmount, // Use cumulative if available
+        valueEur: s.valueEur,
+        btcPrice: s.btcPrice
       })));
     } catch (error) {
       console.error("[Bitcoin Snapshots Error]:", error);

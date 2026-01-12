@@ -183,7 +183,8 @@ export const dailyBitcoinSnapshots = pgTable("daily_bitcoin_snapshots", {
   peerId: integer("peer_id").notNull(), // Child ID
   connectionId: text("connection_id").notNull(), // Family ID
   valueEur: integer("value_eur").notNull(), // Value in cents (to avoid decimals)
-  satoshiAmount: integer("satoshi_amount").notNull(), // Sats at time of snapshot
+  satoshiAmount: integer("satoshi_amount").notNull(), // Current balance at time of snapshot
+  cumulativeSats: integer("cumulative_sats").default(0).notNull(), // Total lifetime sats earned (never decreases)
   btcPrice: integer("btc_price").notNull().default(0), // BTC price in cents at time of snapshot (EUR)
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
