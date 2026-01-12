@@ -1696,7 +1696,9 @@
       "enterPreimage": "Enter Preimage to Verify",
       "preimageHint": "After paying, your wallet shows a 'preimage' or 'payment secret'. Copy it here to confirm the payment.",
       "verifyPayment": "Verify Payment",
-      "invalidPreimage": "Invalid preimage format. Enter the 64-character hex string from your wallet."
+      "invalidPreimage": "Invalid preimage format. Enter the 64-character hex string from your wallet.",
+      "confirmPaid": "I confirm that I have paid this invoice with my wallet.",
+      "confirmPayment": "Confirm"
     }
   }
 }

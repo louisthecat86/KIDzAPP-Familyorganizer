@@ -1690,7 +1690,9 @@
       "enterPreimage": "Preimage eingeben zur Verifizierung",
       "preimageHint": "Nach dem Bezahlen zeigt deine Wallet ein 'Preimage' oder 'Payment Secret'. Kopiere es hier, um die Zahlung zu bestätigen.",
       "verifyPayment": "Zahlung verifizieren",
-      "invalidPreimage": "Ungültiges Preimage-Format. Gib den 64-Zeichen Hex-String aus deiner Wallet ein."
+      "invalidPreimage": "Ungültiges Preimage-Format. Gib den 64-Zeichen Hex-String aus deiner Wallet ein.",
+      "confirmPaid": "Ich bestätige, dass ich diese Rechnung mit meiner Wallet bezahlt habe.",
+      "confirmPayment": "Bestätigen"
     }
   }
 }
