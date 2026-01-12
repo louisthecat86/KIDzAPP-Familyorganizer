@@ -358,18 +358,15 @@ export const educationResources = pgTable("education_resources", {
   connectionId: text("connection_id"), // NULL = global resource, otherwise family-specific
   title: text("title").notNull(),
   url: text("url").notNull(),
-  category: text("category").notNull(), // 'video', 'website', 'book', 'app', 'podcast'
+  category: text("category").notNull(), // 'video', 'website', 'book', 'article'
   description: text("description"),
   language: text("language").default("de"), // ISO code: 'de', 'en', etc.
-  createdBy: integer("created_by").notNull(), // Parent who added this
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const insertEducationResourceSchema = createInsertSchema(educationResources).omit({
   id: true,
   createdAt: true,
-  updatedAt: true,
 });
 
 export type InsertEducationResource = z.infer<typeof insertEducationResourceSchema>;
