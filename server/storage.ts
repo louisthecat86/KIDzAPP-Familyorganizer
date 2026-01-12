@@ -1009,18 +1009,12 @@ export class DatabaseStorage implements IStorage {
 
     const completedModules = progress.completedModules || [];
     const requiredModules = 20;
-    const requiredChallenges = 1;
     
-    const actualChallengeRows = await db.select().from(dailyChallenges)
-      .where(and(eq(dailyChallenges.peerId, peerId), eq(dailyChallenges.completed, true)));
-    const verifiedChallengeCount = actualChallengeRows.length;
-    
-    if (completedModules.length >= requiredModules && verifiedChallengeCount >= requiredChallenges) {
+    if (completedModules.length >= requiredModules) {
       const result = await db.update(learningProgress)
         .set({ 
           graduatedAt: new Date(),
           guardianLevel: 1,
-          dailyChallengesCompleted: verifiedChallengeCount,
           updatedAt: new Date()
         })
         .where(eq(learningProgress.peerId, peerId))
