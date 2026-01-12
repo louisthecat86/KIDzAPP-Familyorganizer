@@ -9482,6 +9482,18 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                       {educationResources.filter(r => r.category === 'article').length} {t('education.entries')}
                     </div>
                   </button>
+                  
+                  <button
+                    onClick={() => setSelectedResourceCategory("podcast")}
+                    className="p-6 rounded-2xl bg-gradient-to-br from-purple-500/20 to-violet-600/20 border-2 border-purple-500/30 hover:border-purple-500/60 hover:shadow-lg transition-all text-left col-span-2"
+                  >
+                    <div className="text-5xl mb-3">🎧</div>
+                    <h3 className="text-xl font-bold text-foreground mb-1">{t('education.category.podcast')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('education.categoryDesc.podcast')}</p>
+                    <div className="mt-3 text-sm font-semibold text-purple-600">
+                      {educationResources.filter(r => r.category === 'podcast').length} {t('education.entries')}
+                    </div>
+                  </button>
                 </div>
               </>
             ) : (
@@ -9496,7 +9508,8 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                     video: { icon: '🎬', color: 'text-red-700', bgColor: 'border-red-500/30 bg-red-500/5' },
                     website: { icon: '🌐', color: 'text-blue-700', bgColor: 'border-blue-500/30 bg-blue-500/5' },
                     book: { icon: '📖', color: 'text-green-700', bgColor: 'border-green-500/30 bg-green-500/5' },
-                    article: { icon: '📰', color: 'text-amber-700', bgColor: 'border-amber-500/30 bg-amber-500/5' }
+                    article: { icon: '📰', color: 'text-amber-700', bgColor: 'border-amber-500/30 bg-amber-500/5' },
+                    podcast: { icon: '🎧', color: 'text-purple-700', bgColor: 'border-purple-500/30 bg-purple-500/5' }
                   };
                   const config = categoryConfig[selectedResourceCategory] || { icon: '📌', color: 'text-slate-700', bgColor: 'border-slate-500/30 bg-slate-500/5' };
                   const categoryResources = educationResources.filter(r => r.category === selectedResourceCategory);
