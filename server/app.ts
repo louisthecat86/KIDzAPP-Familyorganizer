@@ -63,6 +63,7 @@ app.use(express.json({
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
 // Session middleware with PostgreSQL store
+const isProduction = process.env.NODE_ENV === 'production';
 app.use(session({
   store: new PgSession({
     pool: pool,
@@ -72,10 +73,11 @@ app.use(session({
   secret: getSessionSecret(),
   resave: false,
   saveUninitialized: false,
+  proxy: isProduction, // Trust the reverse proxy (Render, Heroku, etc.)
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: isProduction, // HTTPS only in production
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: 'lax', // Best for same-domain with HTTPS
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   },
   name: 'kidzapp.sid',
