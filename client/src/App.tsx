@@ -10854,274 +10854,61 @@ const earningIcons: Record<string, string> = {
 
 function TrackerChart({ userId }: { userId: number }) {
   const { t } = useTranslation();
-  const [trackerData, setTrackerData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [liveBtcPrice, setLiveBtcPrice] = useState<number | null>(null);
-  const [showInfo, setShowInfo] = useState(false);
   const [earnings, setEarnings] = useState<EarningsData | null>(null);
   const [showBreakdown, setShowBreakdown] = useState(false);
-  const [btcHistory, setBtcHistory] = useState<{date: string; price: number}[]>([]);
 
   useEffect(() => {
-    const fetchTrackerData = async () => {
+    const fetchData = async () => {
       try {
-        const response = await apiFetch(`/api/tracker/${userId}`);
-        const data = await response.json();
-        setTrackerData(data || []);
+        const [earningsRes, priceRes] = await Promise.all([
+          apiFetch(`/api/child-earnings/${userId}`),
+          apiFetch('/api/btc-price')
+        ]);
+        
+        if (earningsRes.ok) {
+          const data = await earningsRes.json();
+          setEarnings(data);
+        }
+        
+        if (priceRes.ok) {
+          const priceData = await priceRes.json();
+          setLiveBtcPrice(priceData.eur);
+        }
       } catch (error) {
         console.error("[Tracker] Failed to fetch:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchTrackerData();
+    fetchData();
   }, [userId]);
-
-  useEffect(() => {
-    const fetchEarnings = async () => {
-      try {
-        const response = await apiFetch(`/api/child-earnings/${userId}`);
-        if (response.ok) {
-          const data = await response.json();
-          setEarnings(data);
-        }
-      } catch (error) {
-        console.error("[Earnings] Failed to fetch:", error);
-      }
-    };
-    fetchEarnings();
-  }, [userId]);
-
-  useEffect(() => {
-    const fetchBtcPrice = async () => {
-      try {
-        const response = await apiFetch('/api/btc-price');
-        const data = await response.json();
-        setLiveBtcPrice(data.eur);
-      } catch (error) {
-        console.error("[BTC Price] Failed to fetch:", error);
-      }
-    };
-    fetchBtcPrice();
-  }, []);
-
-  useEffect(() => {
-    const fetchBtcHistory = async () => {
-      try {
-        const response = await apiFetch('/api/btc-history?days=90');
-        if (response.ok) {
-          const data = await response.json();
-          setBtcHistory(data || []);
-        }
-      } catch (error) {
-        console.error("[BTC History] Failed to fetch:", error);
-      }
-    };
-    fetchBtcHistory();
-  }, []);
 
   if (loading) return <div className="text-sm text-muted-foreground py-8 text-center">{t('education.loading')}</div>;
-  if (trackerData.length === 0) return <p className="text-sm text-muted-foreground py-8 text-center">{t('education.noApprovedTasks')}</p>;
-
-  const totalSats = earnings?.totalReceived || trackerData[trackerData.length - 1]?.totalSats || 0;
+  
+  const totalSats = earnings?.totalReceived || 0;
+  if (totalSats === 0) return <p className="text-sm text-muted-foreground py-8 text-center">{t('education.noApprovedTasks')}</p>;
+  
   const currentEuroValue = liveBtcPrice ? (totalSats * liveBtcPrice) / 1e8 : 0;
-  
-  const firstEntry = trackerData[0];
-  const firstEuroValue = firstEntry?.euroValue || 0;
-  const firstBtcPrice = firstEntry?.btcPrice || liveBtcPrice || 80000;
-  
-  const satsAtFirstPrice = firstBtcPrice ? (firstEuroValue * 1e8) / firstBtcPrice : 0;
-  const currentValueAtFirstPrice = liveBtcPrice && firstBtcPrice ? (satsAtFirstPrice * liveBtcPrice) / 1e8 : firstEuroValue;
-  const valueGrowthPercent = (firstEuroValue > 0 && currentValueAtFirstPrice > 0) 
-    ? ((currentEuroValue - currentValueAtFirstPrice) / currentValueAtFirstPrice * 100) 
-    : 0;
-  
-  const minPrice = btcHistory.length > 0 ? Math.min(...btcHistory.map(h => h.price)) : firstBtcPrice;
-  const maxPrice = btcHistory.length > 0 ? Math.max(...btcHistory.map(h => h.price)) : liveBtcPrice || firstBtcPrice;
-  const priceSwing = maxPrice && minPrice ? ((maxPrice - minPrice) / minPrice * 100) : 0;
-
-  const chartData = trackerData.map((d, i) => {
-    const currentLiveValue = liveBtcPrice ? (d.totalSats * liveBtcPrice) / 1e8 : d.euroValue;
-    return {
-      ...d,
-      liveEuroValue: currentLiveValue,
-      satsDisplay: d.totalSats,
-    };
-  });
   
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-bold text-foreground">{t('tracker.title') || 'Dein Spar-Erfolg'}</h3>
-        <button
-          onClick={() => setShowInfo(!showInfo)}
-          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-          data-testid="toggle-info"
-        >
-          {showInfo ? t('education.hide') : '?'}
-        </button>
-      </div>
+      <h3 className="text-lg font-bold text-foreground">{t('tracker.title') || 'Dein Spar-Erfolg'}</h3>
 
-      <div className="bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border-2 border-emerald-500/50 rounded-xl p-4 space-y-3">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">📈</span>
-          <div>
-            <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium uppercase tracking-wide">
-              {t('tracker.stackAlwaysGrows') || 'Dein Satoshi-Stapel wächst immer!'}
-            </p>
-            <p className="text-3xl font-bold text-emerald-600">
-              ⚡ {totalSats.toLocaleString()} <span className="text-lg font-normal">sats</span>
-            </p>
-          </div>
-        </div>
-        <div className="h-1 bg-emerald-200 dark:bg-emerald-900 rounded-full overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full animate-pulse" style={{width: '100%'}}></div>
-        </div>
-        <p className="text-xs text-emerald-600/80 dark:text-emerald-400/80">
-          {t('tracker.satsNeverShrink') || 'Deine Satoshis werden nie weniger - sie können nur mehr wert werden!'}
-        </p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-gradient-to-br from-violet-500/20 to-violet-600/5 border border-violet-500/40 rounded-xl p-4">
-          <p className="text-xs text-violet-700 uppercase tracking-wide mb-1">{t('tracker.currentValue') || 'Aktueller Wert'}</p>
-          <p className="text-2xl font-bold text-violet-600">€{currentEuroValue.toFixed(2)}</p>
-          <p className="text-xs text-violet-600/70 mt-1">{t('tracker.atCurrentPrice') || 'zum aktuellen Kurs'}</p>
-        </div>
-        <div className="bg-gradient-to-br from-amber-500/20 to-amber-600/5 border border-amber-500/40 rounded-xl p-4">
-          <p className="text-xs text-amber-700 uppercase tracking-wide mb-1">{t('tracker.btcPrice') || 'Bitcoin Kurs'}</p>
-          <p className="text-2xl font-bold text-amber-600">€{liveBtcPrice?.toLocaleString('de-DE', {maximumFractionDigits: 0}) || '---'}</p>
-          <p className="text-xs text-amber-600/70 mt-1">{t('tracker.changesDaily') || 'ändert sich täglich'}</p>
-        </div>
-      </div>
-
-      {priceSwing > 5 && (
-        <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 border border-blue-300/50 dark:border-blue-700/50 rounded-xl p-4">
-          <div className="flex items-start gap-3">
-            <span className="text-2xl">🎢</span>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-foreground mb-1">
-                {t('tracker.priceRollercoaster') || 'Der Preis ist eine Achterbahn!'}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {t('tracker.priceSwungBy') || 'In den letzten 90 Tagen schwankte der Bitcoin-Preis um'} <span className="font-bold text-foreground">{priceSwing.toFixed(0)}%</span>
-              </p>
-              <p className="text-xs text-emerald-600 font-medium mt-2">
-                {t('tracker.butYourSats') || 'Aber deine Satoshis? Die sind immer noch da - und warten darauf, mehr wert zu werden!'} 💪
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="bg-white/40 backdrop-blur-md rounded-xl p-4 border border-white/50 dark:border-white/20 space-y-3">
-        <p className="text-sm font-semibold text-foreground">{t('tracker.yourGrowth') || 'Dein Wachstum'}</p>
-        <div className="h-40">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
-              <defs>
-                <linearGradient id="satsGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.5} />
-                  <stop offset="100%" stopColor="#10b981" stopOpacity={0.05} />
-                </linearGradient>
-                <linearGradient id="euroGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.3} />
-                  <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.05} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(100,116,139,0.15)" vertical={false} />
-              <XAxis 
-                dataKey="date" 
-                tick={{ fontSize: 9, fill: '#64748b' }} 
-                axisLine={false}
-                tickLine={false}
-                interval="preserveStartEnd"
-              />
-              <YAxis 
-                yAxisId="sats"
-                orientation="left"
-                tick={{ fontSize: 9, fill: '#10b981' }} 
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v.toString()}
-                domain={['dataMin - 100', 'dataMax + 100']}
-              />
-              <YAxis 
-                yAxisId="euro"
-                orientation="right"
-                tick={{ fontSize: 9, fill: '#8b5cf6' }} 
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={v => `€${v.toFixed(1)}`}
-              />
-              <Tooltip 
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length > 0) {
-                    const data = payload[0].payload;
-                    return (
-                      <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-lg p-3 shadow-xl">
-                        <p className="text-xs text-muted-foreground mb-2">{data.date}</p>
-                        <div className="space-y-1">
-                          <p className="text-sm text-emerald-600 font-bold">⚡ {data.totalSats?.toLocaleString()} sats</p>
-                          <p className="text-sm text-violet-600 font-medium">€{data.liveEuroValue?.toFixed(2)} <span className="text-xs text-muted-foreground">(aktuell)</span></p>
-                        </div>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              <Area 
-                yAxisId="sats"
-                type="stepAfter" 
-                dataKey="totalSats" 
-                stroke="#10b981" 
-                strokeWidth={3}
-                fill="url(#satsGradient)" 
-                name="Satoshis"
-              />
-              <Area 
-                yAxisId="euro"
-                type="monotone" 
-                dataKey="liveEuroValue" 
-                stroke="#8b5cf6" 
-                strokeWidth={2}
-                strokeDasharray="4 4"
-                fill="url(#euroGradient)" 
-                name="Euro-Wert"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="flex justify-center gap-4 text-xs">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-            <span className="text-muted-foreground">{t('tracker.legendSats') || 'Deine Sats (steigt immer!)'}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-0.5 bg-violet-500" style={{borderStyle: 'dashed'}}></div>
-            <span className="text-muted-foreground">{t('tracker.legendEuro') || 'Euro-Wert (schwankt)'}</span>
-          </div>
-        </div>
-      </div>
-
-      {showInfo && (
-        <div className="bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 border border-yellow-300/50 dark:border-yellow-700/50 rounded-xl p-4 space-y-3">
-          <p className="text-sm font-bold text-foreground flex items-center gap-2">
-            💡 {t('tracker.whySaveInSats') || 'Warum in Satoshi sparen?'}
+      <div className="bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border-2 border-emerald-500/50 rounded-xl p-5">
+        <div className="text-center space-y-2">
+          <p className="text-4xl font-bold text-emerald-600">
+            ⚡ {totalSats.toLocaleString()} <span className="text-xl font-normal">sats</span>
           </p>
-          <div className="space-y-2 text-xs text-foreground/80">
-            <p>✅ <strong>{t('tracker.reason1Title') || 'Dein Stapel wächst immer:'}</strong> {t('tracker.reason1') || 'Jede Aufgabe bringt mehr Sats - die verschwinden nie!'}</p>
-            <p>✅ <strong>{t('tracker.reason2Title') || 'Bitcoin wird seltener:'}</strong> {t('tracker.reason2') || 'Es gibt nur 21 Millionen Bitcoin - je mehr Menschen wollen, desto wertvoller!'}</p>
-            <p>✅ <strong>{t('tracker.reason3Title') || 'Zeit ist dein Freund:'}</strong> {t('tracker.reason3') || 'Kurzfristig schwankt der Preis. Langfristig? Bitcoin hat immer gewonnen!'}</p>
-          </div>
-          <div className="bg-white/50 dark:bg-black/20 rounded-lg p-3 mt-2">
-            <p className="text-xs text-center text-foreground/70 italic">
-              {t('tracker.hodlWisdom') || '"Nicht wie viel Euro es heute wert ist, zählt - sondern wie viele Sats du hast!"'}
-            </p>
-          </div>
+          <p className="text-lg text-violet-600 font-medium">
+            = €{currentEuroValue.toFixed(2)}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {t('tracker.satsNeverShrink') || 'Deine Satoshis werden nie weniger!'}
+          </p>
         </div>
-      )}
+      </div>
 
       {earnings && earnings.breakdown.length > 0 && (
         <div className="bg-white/40 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-xl overflow-hidden">
@@ -11133,10 +10920,7 @@ function TrackerChart({ userId }: { userId: number }) {
             <span className="text-sm font-semibold text-foreground flex items-center gap-2">
               💰 {t('tracker.howYouEarned') || 'So hast du verdient'}
             </span>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-emerald-600">{earnings.totalReceived.toLocaleString()} sats</span>
-              <span className="text-xs text-muted-foreground">{showBreakdown ? '▼' : '▶'}</span>
-            </div>
+            <span className="text-xs text-muted-foreground">{showBreakdown ? '▲' : '▼'}</span>
           </button>
           
           {showBreakdown && (
