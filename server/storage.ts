@@ -711,7 +711,22 @@ export class DatabaseStorage implements IStorage {
     return result.reverse();
   }
 
+  async getCumulativeSatsForPeer(peerId: number): Promise<number> {
+    const [txResult, bonusResult] = await Promise.all([
+      db.select({ sum: sql<number>`COALESCE(SUM(${transactions.sats}), 0)` })
+        .from(transactions)
+        .where(and(eq(transactions.toPeerId, peerId), eq(transactions.status, "completed"))),
+      db.select({ sum: sql<number>`COALESCE(SUM(${levelBonusPayouts.sats}), 0)` })
+        .from(levelBonusPayouts)
+        .where(eq(levelBonusPayouts.childId, peerId))
+    ]);
+    return Number(txResult[0]?.sum || 0) + Number(bonusResult[0]?.sum || 0);
+  }
+
   async createDailyBitcoinSnapshot(snapshot: InsertDailyBitcoinSnapshot): Promise<DailyBitcoinSnapshot> {
+    if (snapshot.cumulativeSats === undefined || snapshot.cumulativeSats === null) {
+      snapshot.cumulativeSats = await this.getCumulativeSatsForPeer(snapshot.peerId);
+    }
     const result = await db.insert(dailyBitcoinSnapshots).values(snapshot).returning();
     return result[0];
   }
