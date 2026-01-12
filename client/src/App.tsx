@@ -7781,7 +7781,7 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
   const [expandedChallengeQuestion, setExpandedChallengeQuestion] = useState<number | null>(null);
   const [challengeAnswers, setChallengAnswers] = useState<Record<number, string>>({});
   const [completedChallenges, setCompletedChallenges] = useState<Record<number, number>>({});
-  const [educationTab, setEducationTab] = useState<"modules" | "converter" | "resources" | "glossar">("modules");
+  const [educationTab, setEducationTab] = useState<"modules" | "converter" | "resources" | "glossar" | null>(null);
   const [glossarSearch, setGlossarSearch] = useState("");
   const [satoshiInput, setSatoshiInput] = useState("100000");
   const [bitcoinInput, setBitcoinInput] = useState("0.001");
@@ -9081,32 +9081,79 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         <div className="space-y-4">
           <h1 className="text-4xl font-bold text-foreground">{t('education.educationCenter')}</h1>
           
-          {/* Quick Stats */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-center">
-              <p className="text-2xl font-bold text-green-600">{(serverProgress?.completedModules || []).length}</p>
-              <p className="text-xs text-muted-foreground">{t('education.modulesPassed')}</p>
+          {/* Quick Stats - only show on main menu */}
+          {educationTab === null && (
+            <div className="grid grid-cols-3 gap-3">
+              <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-center">
+                <p className="text-2xl font-bold text-green-600">{(serverProgress?.completedModules || []).length}</p>
+                <p className="text-xs text-muted-foreground">{t('education.modulesPassed')}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-center">
+                <p className="text-2xl font-bold text-blue-600">{achievements.filter(a => a.condition).length}/{achievements.length}</p>
+                <p className="text-xs text-muted-foreground">{t('education.badges')}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-center">
+                <p className="text-2xl font-bold text-amber-600">{(modules?.length || 0) - (serverProgress?.completedModules || []).length}</p>
+                <p className="text-xs text-muted-foreground">{t('education.modulesRemaining')}</p>
+              </div>
             </div>
-            <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-center">
-              <p className="text-2xl font-bold text-blue-600">{achievements.filter(a => a.condition).length}/{achievements.length}</p>
-              <p className="text-xs text-muted-foreground">{t('education.badges')}</p>
-            </div>
-            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-center">
-              <p className="text-2xl font-bold text-amber-600">{(modules?.length || 0) - (serverProgress?.completedModules || []).length}</p>
-              <p className="text-xs text-muted-foreground">{t('education.modulesRemaining')}</p>
-            </div>
-          </div>
+          )}
 
-          {/* Tab Navigation */}
-          <div className="overflow-x-auto -mx-4 px-4 border-b">
-            <div className="flex gap-1 min-w-max md:min-w-0">
-              <button onClick={() => setEducationTab("modules")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "modules" ? "border-violet-500 text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`} data-testid="tab-modules">📚 {t('education.tabModules')}</button>
-              <button onClick={() => setEducationTab("converter")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "converter" ? "border-violet-500 text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`} data-testid="tab-converter">🔄 {t('education.tabConverter')}</button>
-              <button onClick={() => setEducationTab("resources")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "resources" ? "border-violet-500 text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`} data-testid="tab-resources">🌐 {t('education.tabResources')}</button>
-              <button onClick={() => setEducationTab("glossar")} className={`pb-3 px-3 md:px-4 font-medium text-xs md:text-sm border-b-2 transition-all whitespace-nowrap ${educationTab === "glossar" ? "border-violet-500 text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`} data-testid="tab-glossar">📖 {t('education.tabGlossary')}</button>
-            </div>
-          </div>
+          {/* Back Button - show when in a submenu */}
+          {educationTab !== null && (
+            <Button onClick={() => setEducationTab(null)} variant="outline" size="sm" className="gap-2">
+              ← {t('education.backToMenu')}
+            </Button>
+          )}
         </div>
+
+        {/* Main Menu - Large Tiles */}
+        {educationTab === null && (
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              onClick={() => setEducationTab("modules")}
+              className="p-6 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-600/20 border-2 border-violet-500/30 hover:border-violet-500/60 hover:shadow-lg transition-all text-left group"
+              data-testid="tile-modules"
+            >
+              <div className="text-5xl mb-3">📚</div>
+              <h3 className="text-xl font-bold text-foreground mb-1">{t('education.tileQuiz')}</h3>
+              <p className="text-sm text-muted-foreground">{t('education.tileQuizDesc')}</p>
+              <div className="mt-3 text-sm font-semibold text-violet-600">
+                {(serverProgress?.completedModules || []).length}/{modules?.length || 20} {t('education.completed')}
+              </div>
+            </button>
+            
+            <button
+              onClick={() => setEducationTab("converter")}
+              className="p-6 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border-2 border-cyan-500/30 hover:border-cyan-500/60 hover:shadow-lg transition-all text-left group"
+              data-testid="tile-converter"
+            >
+              <div className="text-5xl mb-3">🔄</div>
+              <h3 className="text-xl font-bold text-foreground mb-1">{t('education.tileConverter')}</h3>
+              <p className="text-sm text-muted-foreground">{t('education.tileConverterDesc')}</p>
+            </button>
+            
+            <button
+              onClick={() => setEducationTab("resources")}
+              className="p-6 rounded-2xl bg-gradient-to-br from-green-500/20 to-emerald-600/20 border-2 border-green-500/30 hover:border-green-500/60 hover:shadow-lg transition-all text-left group"
+              data-testid="tile-resources"
+            >
+              <div className="text-5xl mb-3">🌐</div>
+              <h3 className="text-xl font-bold text-foreground mb-1">{t('education.tileResources')}</h3>
+              <p className="text-sm text-muted-foreground">{t('education.tileResourcesDesc')}</p>
+            </button>
+            
+            <button
+              onClick={() => setEducationTab("glossar")}
+              className="p-6 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-600/20 border-2 border-amber-500/30 hover:border-amber-500/60 hover:shadow-lg transition-all text-left group"
+              data-testid="tile-glossar"
+            >
+              <div className="text-5xl mb-3">📖</div>
+              <h3 className="text-xl font-bold text-foreground mb-1">{t('education.tileGlossary')}</h3>
+              <p className="text-sm text-muted-foreground">{t('education.tileGlossaryDesc')}</p>
+            </button>
+          </div>
+        )}
 
         {educationTab === "modules" && (
           <div className="space-y-8">
