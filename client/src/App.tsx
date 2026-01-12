@@ -11358,7 +11358,12 @@ function DonateView({ user, onClose }: { user: User; onClose: () => void }) {
   const { t } = useTranslation();
   const [donationAmount, setDonationAmount] = useState<string>("500");
   const [loading, setLoading] = useState(false);
+  const [invoice, setInvoice] = useState<string | null>(null);
+  const [showQR, setShowQR] = useState(false);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const { toast } = useToast();
+  
+  const isManualMode = user.walletType === "manual";
 
   const handleDonate = async () => {
     if (!donationAmount || parseInt(donationAmount) <= 0) {
@@ -11368,18 +11373,37 @@ function DonateView({ user, onClose }: { user: User; onClose: () => void }) {
 
     setLoading(true);
     try {
-      const res = await apiFetch(`/api/donate/${user.id}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sats: parseInt(donationAmount) })
-      });
-      
-      if (res.ok) {
-        toast({ title: t('donation.thankYou'), description: `${donationAmount} ${t('donation.satsDonated')}` });
-        setDonationAmount("500");
+      if (isManualMode) {
+        // Manual mode: Generate QR code invoice
+        const res = await apiFetch(`/api/donate/manual/create`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ peerId: user.id, sats: parseInt(donationAmount) })
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          setInvoice(data.invoice);
+          setShowQR(true);
+        } else {
+          const error = await res.json();
+          toast({ title: t('common.error'), description: error.error, variant: "destructive" });
+        }
       } else {
-        const error = await res.json();
-        toast({ title: t('common.error'), description: error.error, variant: "destructive" });
+        // Automatic mode: NWC or LNbits
+        const res = await apiFetch(`/api/donate/${user.id}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sats: parseInt(donationAmount) })
+        });
+        
+        if (res.ok) {
+          toast({ title: t('donation.thankYou'), description: `${donationAmount} ${t('donation.satsDonated')}` });
+          setDonationAmount("500");
+        } else {
+          const error = await res.json();
+          toast({ title: t('common.error'), description: error.error, variant: "destructive" });
+        }
       }
     } catch (error) {
       toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
@@ -11387,42 +11411,135 @@ function DonateView({ user, onClose }: { user: User; onClose: () => void }) {
       setLoading(false);
     }
   };
+  
+  const handleConfirmPayment = () => {
+    setPaymentConfirmed(true);
+    toast({ title: t('donation.thankYou'), description: `${donationAmount} ${t('donation.satsDonated')}` });
+    setShowQR(false);
+    setInvoice(null);
+    setDonationAmount("500");
+    setPaymentConfirmed(false);
+  };
 
   return (
     <div className="space-y-6 max-w-2xl">
       <h1 className="text-3xl font-bold mb-8">🧡 Spende an Entwickler</h1>
-      <Card className="border-2 border-purple-500/40 bg-purple-500/5">
-        <CardHeader>
-          <CardTitle>Unterstütze die App Entwicklung</CardTitle>
-          <CardDescription>Deine Unterstützung hilft, die App zu verbessern</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="amount">Satoshi-Betrag</Label>
-            <Input
-              id="amount"
-              type="number"
-              placeholder="500"
-              value={donationAmount}
-              onChange={(e) => setDonationAmount(e.target.value)}
-              className="font-mono text-sm"
-              data-testid="input-donation-amount"
-            />
-            <p className="text-xs text-muted-foreground">Mindestens 100 Sats</p>
-          </div>
-          <Button
-            onClick={handleDonate}
-            disabled={loading || !donationAmount || parseInt(donationAmount) < 100}
-            className="w-full bg-purple-600 hover:bg-purple-700"
-            data-testid="button-donate"
-          >
-            {loading ? "Wird gesendet..." : `❤️ ${donationAmount || "0"} Sats spenden`}
-          </Button>
-          <div className="p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg text-xs text-muted-foreground">
-            <p>🧡 Jede Spende hilft, diese App für Familien besser zu machen!</p>
-          </div>
-        </CardContent>
-      </Card>
+      
+      {showQR && invoice ? (
+        <Card className="border-2 border-purple-500/40 bg-purple-500/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span>⚡</span> Lightning Invoice
+            </CardTitle>
+            <CardDescription>Scanne diesen QR-Code mit deiner Lightning Wallet</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex flex-col items-center gap-4">
+              <div className="p-4 bg-white rounded-xl">
+                <QRCode value={invoice} size={200} />
+              </div>
+              
+              <div className="text-center">
+                <p className="text-2xl font-bold text-yellow-500">{donationAmount} Sats</p>
+                <p className="text-sm text-muted-foreground">Spende an KIDzAPP Entwickler</p>
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(invoice);
+                  toast({ title: "Kopiert!", description: "Invoice in Zwischenablage kopiert" });
+                }}
+                className="gap-2"
+              >
+                📋 Invoice kopieren
+              </Button>
+              
+              <a href={`lightning:${invoice}`} className="w-full">
+                <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-black gap-2">
+                  ⚡ In Wallet öffnen
+                </Button>
+              </a>
+            </div>
+            
+            <div className="border-t pt-4 mt-4">
+              <div className="flex items-center gap-3 mb-3">
+                <Checkbox 
+                  id="confirm-donation" 
+                  checked={paymentConfirmed}
+                  onCheckedChange={(checked) => setPaymentConfirmed(checked as boolean)}
+                />
+                <Label htmlFor="confirm-donation" className="text-sm">
+                  Ich habe die Zahlung mit meiner Wallet gesendet
+                </Label>
+              </div>
+              
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowQR(false);
+                    setInvoice(null);
+                    setPaymentConfirmed(false);
+                  }}
+                  className="flex-1"
+                >
+                  Abbrechen
+                </Button>
+                <Button
+                  onClick={handleConfirmPayment}
+                  disabled={!paymentConfirmed}
+                  className="flex-1 bg-green-600 hover:bg-green-700"
+                >
+                  ✓ Bestätigen
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border-2 border-purple-500/40 bg-purple-500/5">
+          <CardHeader>
+            <CardTitle>Unterstütze die App Entwicklung</CardTitle>
+            <CardDescription>Deine Unterstützung hilft, die App zu verbessern</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {isManualMode && (
+              <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg text-sm mb-2">
+                <p className="flex items-center gap-2">
+                  <span>📱</span>
+                  <span>Manueller Modus: Du erhältst einen QR-Code zum Scannen</span>
+                </p>
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="amount">Satoshi-Betrag</Label>
+              <Input
+                id="amount"
+                type="number"
+                placeholder="500"
+                value={donationAmount}
+                onChange={(e) => setDonationAmount(e.target.value)}
+                className="font-mono text-sm"
+                data-testid="input-donation-amount"
+              />
+              <p className="text-xs text-muted-foreground">Mindestens 100 Sats</p>
+            </div>
+            <Button
+              onClick={handleDonate}
+              disabled={loading || !donationAmount || parseInt(donationAmount) < 100}
+              className="w-full bg-purple-600 hover:bg-purple-700"
+              data-testid="button-donate"
+            >
+              {loading ? "Wird geladen..." : isManualMode ? `📱 QR-Code generieren (${donationAmount || "0"} Sats)` : `❤️ ${donationAmount || "0"} Sats spenden`}
+            </Button>
+            <div className="p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg text-xs text-muted-foreground">
+              <p>🧡 Jede Spende hilft, diese App für Familien besser zu machen!</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

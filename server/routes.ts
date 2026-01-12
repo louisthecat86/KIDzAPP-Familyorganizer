@@ -4455,6 +4455,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const hasLnbits = !!(peer.lnbitsUrl && decryptedLnbitsKey);
       const activeWallet = peer.walletType || (hasNwc ? "nwc" : hasLnbits ? "lnbits" : null);
       
+      // For manual mode, return error - use manual donation endpoint instead
+      if (activeWallet === "manual") {
+        return res.status(400).json({ error: "Bitte nutze den manuellen Spenden-Modus", useManual: true });
+      }
+      
       if (!hasLnbits && !hasNwc) {
         return res.status(400).json({ error: "Wallet nicht konfiguriert" });
       }
@@ -4507,6 +4512,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("[Donation] Error:", error);
       res.status(500).json({ error: "Spende fehlgeschlagen: " + (error as Error).message });
+    }
+  });
+  
+  // Manual Donation - Generate invoice from developer's Lightning Address
+  app.post("/api/donate/manual/create", async (req, res) => {
+    try {
+      const { peerId, sats } = req.body;
+      
+      if (!sats || sats < 100) {
+        return res.status(400).json({ error: "Mindestens 100 Sats erforderlich" });
+      }
+
+      const peer = await storage.getPeer(peerId);
+      if (!peer) {
+        return res.status(404).json({ error: "User nicht gefunden" });
+      }
+
+      const memo = `Spende von ${peer.name} - KIDzAPP`;
+      
+      console.log("[Manual Donation] Generating invoice for", DEVELOPER_DONATION_ADDRESS, "amount:", sats, "sats");
+      
+      // Generate invoice from developer's Lightning Address
+      const { fetchInvoiceFromLightningAddress } = await import("./lnurl");
+      const invoice = await fetchInvoiceFromLightningAddress(DEVELOPER_DONATION_ADDRESS, sats, memo);
+      
+      console.log("[Manual Donation] Invoice generated:", invoice.bolt11.substring(0, 50) + "...");
+      
+      res.json({
+        success: true,
+        invoice: invoice.bolt11,
+        paymentHash: invoice.paymentHash,
+        expiresAt: invoice.expiresAt,
+        sats
+      });
+    } catch (error) {
+      console.error("[Manual Donation] Error:", error);
+      res.status(500).json({ error: "Invoice-Generierung fehlgeschlagen: " + (error as Error).message });
     }
   });
 
