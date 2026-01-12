@@ -10880,14 +10880,11 @@ function TrackerChart({ userId }: { userId: number }) {
         
         if (snapshotsRes.ok) {
           const rawSnapshots = await snapshotsRes.json();
-          const normalized = rawSnapshots
-            .slice()
-            .reverse()
-            .map((s: any) => ({
-              ...s,
-              date: new Date(s.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }),
-              valueEurNormalized: s.valueEur / 100
-            }));
+          const normalized = rawSnapshots.map((s: any) => ({
+            ...s,
+            date: new Date(s.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }),
+            valueEurNormalized: s.valueEur / 100
+          }));
           setSnapshots(normalized);
         }
       } catch (error) {
@@ -11007,9 +11004,9 @@ function TrackerChart({ userId }: { userId: number }) {
                   yAxisId="euro"
                   type="monotone" 
                   dataKey="valueEurNormalized" 
-                  stroke="#8b5cf6" 
-                  strokeWidth={2}
-                  dot={false}
+                  stroke="#a78bfa" 
+                  strokeWidth={3}
+                  dot={{ fill: '#a78bfa', r: 3 }}
                 />
               </AreaChart>
             </ResponsiveContainer>
