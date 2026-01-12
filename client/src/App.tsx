@@ -8968,23 +8968,23 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         const completedModules = serverProgress?.completedModules || [];
         if (!completedModules.includes(moduleId)) {
           try {
-            const response = await apiFetch(`/api/learning-progress/${user.id}/add-xp`, {
+            const response = await apiFetch(`/api/learning-progress/${user.id}/complete-module`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ xp: xpPerModule, moduleId })
+              body: JSON.stringify({ moduleId })
             });
             if (response.ok) {
               const updatedProgress = await response.json();
               setServerProgress(updatedProgress);
               console.log("✅ Progress synced from server:", updatedProgress);
-              toast({ title: t('education.quizPassed'), description: t('education.quizPassedDesc', { xp: xpPerModule, level: updatedProgress.level, score, total: module.quiz.length }) });
+              toast({ title: t('education.quizPassed'), description: t('education.quizPassedDescSimple', { score, total: module.quiz.length }) });
               setExpandedQuizzes({ ...expandedQuizzes, [moduleId]: false });
               setShowQuiz(null);
             } else {
               toast({ title: t('education.saveError'), description: t('education.saveErrorDesc'), variant: "destructive" });
             }
           } catch (error) {
-            console.error("Failed to save XP to server:", error);
+            console.error("Failed to save progress to server:", error);
             toast({ title: t('education.saveError'), description: t('education.tryLater'), variant: "destructive" });
           }
         } else {
@@ -9041,55 +9041,6 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         <div className="space-y-4">
           <h1 className="text-4xl font-bold text-foreground">{t('education.educationCenter')}</h1>
           
-          {/* Progress Dashboard */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Level & XP Card */}
-            <div className="col-span-1 md:col-span-2 p-4 rounded-xl bg-gradient-to-r from-violet-500/10 via-purple-500/10 to-indigo-500/10 border border-violet-500/20">
-              <div className="flex items-center gap-4">
-                <div className={`w-16 h-16 rounded-full ${levelColors[userLevel - 1] || "bg-violet-500"} flex items-center justify-center text-white font-bold text-2xl shadow-lg ring-4 ring-white/50`}>
-                  {userLevel}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <div>
-                      <span className="text-lg font-bold text-foreground">{levelTitles[userLevel - 1] || t('education.levelBeginner')}</span>
-                      <span className="ml-2 text-sm text-muted-foreground">Level {userLevel}</span>
-                    </div>
-                    <span className="text-sm font-semibold text-violet-600">{userXp} XP</span>
-                  </div>
-                  <div className="relative h-4 bg-slate-200 rounded-full overflow-hidden">
-                    <div 
-                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-violet-500 to-purple-500 rounded-full transition-all duration-1000 ease-out"
-                      style={{ width: `${Math.min(xpProgress, 100)}%` }}
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-[10px] font-bold text-white drop-shadow">{userXp} / {nextLevelXp} XP</span>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">{t('education.xpToNextLevel', { xp: nextLevelXp - userXp, level: userLevel + 1 })}</p>
-                </div>
-              </div>
-            </div>
-            
-            {/* Streak Card */}
-            <div className="p-4 rounded-xl bg-gradient-to-br from-orange-500/10 to-amber-500/10 border border-orange-500/20">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-2xl shadow-lg">
-                  🔥
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{userStreak} {userStreak === 1 ? t('common.day') : t('common.days')}</p>
-                  <p className="text-xs text-muted-foreground">{t('education.learningStreak')} {serverProgress?.longestStreak ? `(${t('education.record')}: ${serverProgress.longestStreak})` : ""}</p>
-                </div>
-              </div>
-              <div className="mt-3 flex gap-1">
-                {[...Array(7)].map((_, i) => (
-                  <div key={i} className={`flex-1 h-2 rounded-full ${i < Math.min(userStreak, 7) ? "bg-orange-500" : "bg-slate-200"}`} />
-                ))}
-              </div>
-            </div>
-          </div>
-
           {/* Quick Stats */}
           <div className="grid grid-cols-3 gap-3">
             <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-center">
@@ -9176,24 +9127,6 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                       ✅ {t('education.graduation.bonusClaimed')}
                     </div>
                   )}
-                  
-                  <div className="mt-6 pt-4 border-t border-amber-300/50">
-                    <p className="text-sm font-medium text-foreground">{t('education.graduation.masteryMode')}</p>
-                    <p className="text-xs text-muted-foreground">{t('education.graduation.masteryModeDesc')}</p>
-                    <div className="mt-2 flex items-center justify-center gap-4">
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-violet-600">{serverProgress?.masteryStreakCount || 0}</p>
-                        <p className="text-[10px] text-muted-foreground">{t('education.graduation.masteryStreak')}</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground">
-                          {graduationStatus.guardianLevel < 2 ? t('education.graduation.nextLevel', { count: 10 - (serverProgress?.masteryStreakCount || 0) }) :
-                           graduationStatus.guardianLevel < 3 ? t('education.graduation.nextLevel', { count: 30 - (serverProgress?.masteryStreakCount || 0) }) :
-                           t('education.graduation.continueJourney')}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             )}
@@ -9276,7 +9209,6 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                                 <span className="text-2xl">{isUnlocked ? module.icon : "🔒"}</span>
                                 <div>
                                   <CardTitle className="text-base">{module.title}</CardTitle>
-                                  {isPassed && <p className="text-xs text-green-600 font-semibold">+{xpPerModule} XP</p>}
                                   {!isUnlocked && <p className="text-xs text-red-600 font-semibold">{t('education.previousModuleFirst')}</p>}
                                 </div>
                               </div>

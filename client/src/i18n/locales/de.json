@@ -682,6 +682,7 @@
     "forParentsDesc": "Hilft Erwachsenen, das Thema sicher zu vermitteln",
     "quizPassed": "🎉 Quiz bestanden!",
     "quizPassedDesc": "+{{xp}} XP! Level {{level}}! {{score}}/{{total}} richtig!",
+    "quizPassedDescSimple": "{{score}}/{{total}} richtig! Weiter so!",
     "quizAlreadyPassed": "Quiz bereits bestanden!",
     "quizAlreadyPassedDesc": "{{score}}/{{total}} richtig!",
     "quizTryAgain": "Probier nochmal!",

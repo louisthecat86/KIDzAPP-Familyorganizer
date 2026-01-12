@@ -4142,6 +4142,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Complete module without XP (simplified quiz system)
+  app.post("/api/learning-progress/:peerId/complete-module", async (req, res) => {
+    try {
+      const peerId = parseInt(req.params.peerId);
+      const { moduleId } = req.body;
+      
+      if (!moduleId) {
+        return res.status(400).json({ error: "moduleId required" });
+      }
+
+      await storage.completeModule(peerId, moduleId);
+      
+      const updatedProgress = await storage.getLearningProgress(peerId);
+      res.json(updatedProgress);
+    } catch (error) {
+      console.error("Error completing module:", error);
+      res.status(500).json({ error: "Failed to complete module" });
+    }
+  });
+
   app.post("/api/learning-progress/:peerId/unlock-achievement", async (req, res) => {
     try {
       const peerId = parseInt(req.params.peerId);
