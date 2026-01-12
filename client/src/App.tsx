@@ -5263,6 +5263,19 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     refetchInterval: 5000,
   });
 
+  const { data: walletBalance = null } = useQuery({
+    queryKey: ["wallet-balance", user.id],
+    queryFn: async () => {
+      const res = await apiFetch(`/api/parent/${user.id}/wallet-balance`);
+      if (!res.ok) throw new Error("Failed to fetch wallet balance");
+      return res.json();
+    },
+    refetchInterval: 10000
+  });
+
+  const activeWalletType = user.walletType || (user.hasNwcConfigured ? "nwc" : user.hasLnbitsConfigured ? "lnbits" : null);
+  const isManualMode = activeWalletType === "manual";
+
   const { data: pendingManualPaymentsCount = 0 } = useQuery({
     queryKey: ["/api/manual-payment/pending/count", user.id],
     queryFn: async () => {
@@ -5274,6 +5287,9 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
     refetchInterval: 5000,
     enabled: user.role === "parent" && isManualMode
   });
+
+  const displayBalance = activeWalletType === "manual" ? null : (activeWalletType === "nwc" ? walletBalance?.nwcBalance : walletBalance?.lnbitsBalance);
+  const walletLabel = activeWalletType === "manual" ? t('walletMode.manualLabel') : (activeWalletType === "nwc" ? "NWC Wallet" : "LNbits Wallet");
 
   const hideConnectionCode = () => {
     setShowConnectionCode(false);
@@ -5322,7 +5338,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       {content}
     </motion.div>
   );
-
 
   const setupLNbits = async () => {
     if (!lnbitsUrl || !lnbitsAdminKey) return;
@@ -5408,21 +5423,6 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
       toast({ title: t('common.error'), description: (error as Error).message, variant: "destructive" });
     }
   };
-
-  const { data: walletBalance = null } = useQuery({
-    queryKey: ["wallet-balance", user.id],
-    queryFn: async () => {
-      const res = await apiFetch(`/api/parent/${user.id}/wallet-balance`);
-      if (!res.ok) throw new Error("Failed to fetch wallet balance");
-      return res.json();
-    },
-    refetchInterval: 10000
-  });
-
-  const activeWalletType = user.walletType || (user.hasNwcConfigured ? "nwc" : user.hasLnbitsConfigured ? "lnbits" : null);
-  const displayBalance = activeWalletType === "manual" ? null : (activeWalletType === "nwc" ? walletBalance?.nwcBalance : walletBalance?.lnbitsBalance);
-  const walletLabel = activeWalletType === "manual" ? t('walletMode.manualLabel') : (activeWalletType === "nwc" ? "NWC Wallet" : "LNbits Wallet");
-  const isManualMode = activeWalletType === "manual";
 
   if (currentView === "dashboard") {
     const openTasks = tasks.filter((t: Task) => t.status === "open" || t.status === "assigned");
