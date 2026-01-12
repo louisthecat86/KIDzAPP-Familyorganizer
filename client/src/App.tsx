@@ -97,6 +97,20 @@ interface ManualPaymentQRModalProps {
   onPaymentComplete: () => void;
 }
 
+// WebLN interface for browser Lightning wallets
+interface WebLNProvider {
+  enable: () => Promise<void>;
+  sendPayment: (paymentRequest: string) => Promise<{ preimage: string }>;
+}
+
+// Get WebLN from window if available
+function getWebLN(): WebLNProvider | null {
+  if (typeof window !== 'undefined' && (window as any).webln) {
+    return (window as any).webln as WebLNProvider;
+  }
+  return null;
+}
+
 export function ManualPaymentQRModal({ isOpen, onClose, payment, onPaymentComplete }: ManualPaymentQRModalProps) {
   const { t } = useTranslation();
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
@@ -105,9 +119,15 @@ export function ManualPaymentQRModal({ isOpen, onClose, payment, onPaymentComple
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [currentPayment, setCurrentPayment] = useState(payment);
-  const [preimage, setPreimage] = useState<string>("");
-  const [showPreimageInput, setShowPreimageInput] = useState(false);
-  const [preimageError, setPreimageError] = useState<string>("");
+  const [confirmChecked, setConfirmChecked] = useState(false);
+  const [hasWebLN, setHasWebLN] = useState(false);
+  const [isPayingWithWebLN, setIsPayingWithWebLN] = useState(false);
+  const [webLNError, setWebLNError] = useState<string>("");
+
+  // Check for WebLN availability
+  useEffect(() => {
+    setHasWebLN(!!getWebLN());
+  }, []);
 
   useEffect(() => {
     setCurrentPayment(payment);
@@ -145,43 +165,65 @@ export function ManualPaymentQRModal({ isOpen, onClose, payment, onPaymentComple
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const handlePaid = async () => {
-    if (!currentPayment) return;
+  // Pay with WebLN (browser wallet like Alby) - automatic verification
+  const handlePayWithWebLN = async () => {
+    const webln = getWebLN();
+    if (!currentPayment || !webln) return;
     
-    // First click shows preimage input, second click confirms with preimage
-    if (!showPreimageInput) {
-      setShowPreimageInput(true);
-      return;
-    }
-    
-    // Validate preimage format (64 hex characters = 32 bytes)
-    const cleanPreimage = preimage.trim().toLowerCase();
-    if (!/^[0-9a-f]{64}$/.test(cleanPreimage)) {
-      setPreimageError(t("walletMode.qrModal.invalidPreimage") || "Invalid preimage format. Enter the 64-character hex string from your wallet.");
-      return;
-    }
-    
-    setIsConfirming(true);
-    setPreimageError("");
+    setIsPayingWithWebLN(true);
+    setWebLNError("");
     try {
+      await webln.enable();
+      const result = await webln.sendPayment(currentPayment.bolt11);
+      
+      // Got preimage from wallet - verify it on server
       const res = await apiFetch(`/api/manual-payment/${currentPayment.id}/paid`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ preimage: cleanPreimage })
+        body: JSON.stringify({ preimage: result.preimage })
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setPreimage("");
-        setShowPreimageInput(false);
+        onPaymentComplete();
+        onClose();
+      } else {
+        console.error("Payment verification failed:", data.error);
+        setWebLNError(data.error || t('common.error'));
+      }
+    } catch (error: any) {
+      console.error("WebLN payment error:", error);
+      if (error?.message?.includes("User rejected")) {
+        setWebLNError(t("walletMode.qrModal.paymentCancelled") || "Zahlung abgebrochen");
+      } else {
+        setWebLNError(error?.message || t('common.error'));
+      }
+    } finally {
+      setIsPayingWithWebLN(false);
+    }
+  };
+
+  // Manual confirmation (fallback for users without WebLN)
+  const handlePaid = async () => {
+    if (!currentPayment || !confirmChecked) return;
+    
+    setIsConfirming(true);
+    try {
+      const res = await apiFetch(`/api/manual-payment/${currentPayment.id}/paid`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setConfirmChecked(false);
         onPaymentComplete();
         onClose();
       } else {
         console.error("Payment confirmation failed:", data.error);
-        setPreimageError(data.hint || data.error || t('common.error'));
+        alert(data.error || t('common.error'));
       }
     } catch (error) {
       console.error("Error confirming payment:", error);
-      setPreimageError(t('common.error'));
+      alert(t('common.error'));
     } finally {
       setIsConfirming(false);
     }
@@ -335,32 +377,44 @@ export function ManualPaymentQRModal({ isOpen, onClose, payment, onPaymentComple
             )}
           </div>
 
-          {!isExpired && showPreimageInput && (
-            <div className="w-full space-y-3 p-4 bg-amber-100/50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800" data-testid="preimage-input-section">
-              <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
-                <Key className="h-5 w-5" />
-                <span className="font-semibold">{t("walletMode.qrModal.enterPreimage") || "Enter Preimage to Verify"}</span>
-              </div>
-              <p className="text-xs text-amber-600/80 dark:text-amber-400/80">
-                {t("walletMode.qrModal.preimageHint") || "After paying, your wallet shows a 'preimage' or 'payment secret'. Copy it here to confirm."}
-              </p>
-              <Input
-                type="text"
-                placeholder="64-character hex string"
-                value={preimage}
-                onChange={(e) => {
-                  setPreimage(e.target.value);
-                  setPreimageError("");
-                }}
-                className="font-mono text-xs bg-white dark:bg-gray-800 border-amber-300 dark:border-amber-700"
-                data-testid="input-preimage"
-              />
-              {preimageError && (
-                <p className="text-xs text-red-500 dark:text-red-400 flex items-center gap-1" data-testid="preimage-error">
-                  <AlertTriangle className="h-3 w-3" />
-                  {preimageError}
-                </p>
+          {/* WebLN: Automatic payment with verification */}
+          {!isExpired && hasWebLN && (
+            <div className="w-full space-y-3">
+              <Button 
+                onClick={handlePayWithWebLN} 
+                disabled={isPayingWithWebLN}
+                className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white shadow-lg py-6 text-lg"
+                data-testid="button-pay-webln"
+              >
+                <Zap className="h-5 w-5 mr-2" />
+                {isPayingWithWebLN 
+                  ? (t("walletMode.qrModal.paying") || "Zahle...") 
+                  : (t("walletMode.qrModal.payWithWallet") || "Jetzt mit Wallet bezahlen")}
+              </Button>
+              {webLNError && (
+                <p className="text-sm text-red-500 text-center">{webLNError}</p>
               )}
+              <p className="text-xs text-amber-600/60 dark:text-amber-400/60 text-center">
+                {t("walletMode.qrModal.webLNHint") || "Deine Browser-Wallet öffnet sich automatisch"}
+              </p>
+            </div>
+          )}
+
+          {/* Fallback: QR Code + manual confirmation */}
+          {!isExpired && !hasWebLN && (
+            <div className="w-full space-y-3 p-4 bg-amber-100/50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={confirmChecked}
+                  onChange={(e) => setConfirmChecked(e.target.checked)}
+                  className="mt-1 h-5 w-5 rounded border-amber-300 text-amber-600 focus:ring-amber-500"
+                  data-testid="checkbox-confirm-paid"
+                />
+                <span className="text-sm text-amber-700 dark:text-amber-300">
+                  {t("walletMode.qrModal.confirmPaid") || "Ich bestätige, dass ich diese Rechnung mit meiner Wallet bezahlt habe."}
+                </span>
+              </label>
             </div>
           )}
 
@@ -368,30 +422,24 @@ export function ManualPaymentQRModal({ isOpen, onClose, payment, onPaymentComple
             <div className="flex gap-3 w-full pt-2">
               <Button 
                 variant="outline" 
-                onClick={() => {
-                  if (showPreimageInput) {
-                    setShowPreimageInput(false);
-                    setPreimage("");
-                    setPreimageError("");
-                  } else {
-                    handleCancel();
-                  }
-                }} 
+                onClick={handleCancel} 
                 className="flex-1 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/30" 
                 data-testid="button-cancel-payment"
               >
                 <X className="h-4 w-4 mr-2" />
-                {showPreimageInput ? t("common.back") : t("walletMode.qrModal.cancelPayment")}
+                {t("walletMode.qrModal.cancelPayment")}
               </Button>
-              <Button 
-                onClick={handlePaid} 
-                disabled={isConfirming || (showPreimageInput && !preimage.trim())} 
-                className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg disabled:opacity-50" 
-                data-testid="button-ive-paid"
-              >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                {isConfirming ? t("walletMode.qrModal.confirming") : (showPreimageInput ? t("walletMode.qrModal.verifyPayment") || "Verify Payment" : t("walletMode.qrModal.ivePaid"))}
-              </Button>
+              {!hasWebLN && (
+                <Button 
+                  onClick={handlePaid} 
+                  disabled={isConfirming || !confirmChecked} 
+                  className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg disabled:opacity-50" 
+                  data-testid="button-ive-paid"
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  {isConfirming ? t("walletMode.qrModal.confirming") : t("walletMode.qrModal.confirmPayment") || "Bestätigen"}
+                </Button>
+              )}
             </div>
           )}
         </div>
