@@ -2845,6 +2845,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
   const [seedConfirmed, setSeedConfirmed] = useState(false);
   const [pendingUser, setPendingUser] = useState<User | null>(null);
   const [showRecovery, setShowRecovery] = useState(false);
+  const [showJoinQRScanner, setShowJoinQRScanner] = useState(false);
   const [recoveryName, setRecoveryName] = useState("");
   const [recoveryFamilyId, setRecoveryFamilyId] = useState("");
   const [recoverySeed, setRecoverySeed] = useState("");
@@ -3286,16 +3287,28 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
             {!isLogin && role === "parent" && parentMode === "join" && (
               <div className="space-y-2">
                 <Label htmlFor="joinParentId" className="text-foreground">{t('auth.familyCode')}</Label>
-                <Input 
-                  id="joinParentId"
-                  value={joinParentId}
-                  onChange={(e) => setJoinParentId(e.target.value.toUpperCase())}
-                  className="bg-white/5 dark:bg-black/30 border-white/60 focus:border-violet-500 focus:bg-white/70 text-foreground placeholder:text-gray-500 font-mono text-center"
-                  disabled={isLoading}
-                  autoComplete="off"
-                  placeholder={t('auth.familyCodePlaceholder')}
-                  data-testid="input-join-parent-id"
-                />
+                <div className="flex gap-2">
+                  <Input 
+                    id="joinParentId"
+                    value={joinParentId}
+                    onChange={(e) => setJoinParentId(e.target.value.toUpperCase())}
+                    className="bg-white/5 dark:bg-black/30 border-white/60 focus:border-violet-500 focus:bg-white/70 text-foreground placeholder:text-gray-500 font-mono text-center flex-1"
+                    disabled={isLoading}
+                    autoComplete="off"
+                    placeholder={t('auth.familyCodePlaceholder')}
+                    data-testid="input-join-parent-id"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setShowJoinQRScanner(true)}
+                    className="bg-white/10 border-white/60 hover:bg-white/20 shrink-0"
+                    data-testid="button-scan-family-qr"
+                  >
+                    <QrCode className="h-5 w-5" />
+                  </Button>
+                </div>
                 <p className="text-xs text-muted-foreground">{t('auth.askParentForCode')}</p>
               </div>
             )}
@@ -3407,6 +3420,19 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
         </div>
       </div>
 
+      <QRScannerModal
+        isOpen={showJoinQRScanner}
+        onClose={() => setShowJoinQRScanner(false)}
+        onScan={(scannedId) => {
+          const cleanId = scannedId.toUpperCase().trim();
+          setJoinParentId(cleanId);
+          setShowJoinQRScanner(false);
+          toast({
+            title: t('common.success'),
+            description: t('auth.familyCodeScanned')
+          });
+        }}
+      />
     </div>
   );
 }

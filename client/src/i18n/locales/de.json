@@ -69,6 +69,7 @@
     "familyCode": "Familien-ID",
     "familyCodePlaceholder": "z.B. BTC-ABC123",
     "familyCodeHint": "Frage deine Eltern nach dem Code",
+    "familyCodeScanned": "Familien-Code wurde gescannt",
     "askParentForCode": "Frag das andere Elternteil nach der Familie-ID",
     "selectFamily": "Familie auswählen",
     "selectFamilyDesc": "Möchtest du eine neue Familie gründen oder einer bestehenden beitreten?",
