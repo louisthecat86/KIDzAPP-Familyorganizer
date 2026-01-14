@@ -10344,10 +10344,32 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
         <QRScannerModal
           isOpen={showQRScanner}
           onClose={() => setShowQRScanner(false)}
-          onScan={(scannedId) => {
-            setParentConnectionId(scannedId);
+          onScan={async (scannedId) => {
+            const cleanId = scannedId.toUpperCase().trim();
+            setParentConnectionId(cleanId);
             setShowQRScanner(false);
             setShowLink(true);
+            if (cleanId && cleanId.length > 5) {
+              setIsLinking(true);
+              try {
+                const updated = await linkChildToParent(user.id, cleanId);
+                setUser(updated);
+                localStorage.setItem("sats-user", JSON.stringify(updated));
+                toast({
+                  title: t('connection.connected'),
+                  description: t('connection.connectedToParents')
+                });
+                setShowLink(false);
+              } catch (error) {
+                toast({
+                  title: t('common.error'),
+                  description: (error as Error).message,
+                  variant: "destructive"
+                });
+              } finally {
+                setIsLinking(false);
+              }
+            }
           }}
         />
 
