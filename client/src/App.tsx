@@ -82,6 +82,7 @@ import { PasswordSafe } from "@/components/PasswordSafe";
 import { Birthdays } from "@/components/Birthdays";
 import kidzappLogo from "@/assets/kidzapp-logo.png";
 import QRCode from "qrcode";
+import { Scanner } from "@yudiel/react-qr-scanner";
 
 interface ManualPaymentQRModalProps {
   isOpen: boolean;
@@ -358,6 +359,115 @@ export function ManualPaymentQRModal({ isOpen, onClose, payment, onPaymentComple
               </Button>
             </div>
           )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function FamilyQRCode({ connectionId }: { connectionId: string }) {
+  const { t } = useTranslation();
+  const [qrDataUrl, setQrDataUrl] = useState<string>("");
+  const [showQR, setShowQR] = useState(false);
+
+  useEffect(() => {
+    if (connectionId && showQR) {
+      QRCode.toDataURL(connectionId, {
+        width: 200,
+        margin: 2,
+        color: { dark: "#000000", light: "#ffffff" }
+      }).then(setQrDataUrl).catch(console.error);
+    }
+  }, [connectionId, showQR]);
+
+  return (
+    <div className="mt-3">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setShowQR(!showQR)}
+        className="w-full text-xs gap-2"
+        data-testid="button-toggle-family-qr"
+      >
+        <QrCode className="h-4 w-4" />
+        {showQR ? t('auth.hideQrCode') : t('auth.showQrCode')}
+      </Button>
+      {showQR && qrDataUrl && (
+        <div className="mt-3 flex flex-col items-center">
+          <div className="bg-white p-3 rounded-lg shadow-md">
+            <img src={qrDataUrl} alt="Family QR Code" className="w-40 h-40" data-testid="img-family-qr" />
+          </div>
+          <p className="text-xs text-muted-foreground mt-2 text-center">{t('auth.scanToConnect')}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function QRScannerModal({ isOpen, onClose, onScan }: { isOpen: boolean; onClose: () => void; onScan: (connectionId: string) => void }) {
+  const { t } = useTranslation();
+  const [error, setError] = useState<string>("");
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setError("");
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then((stream) => {
+          stream.getTracks().forEach(track => track.stop());
+          setHasPermission(true);
+        })
+        .catch(() => setHasPermission(false));
+    } else {
+      setHasPermission(null);
+    }
+  }, [isOpen]);
+
+  const handleScan = (result: any) => {
+    if (result && result[0]?.rawValue) {
+      const scannedValue = result[0].rawValue.trim();
+      if (scannedValue.length > 5) {
+        onScan(scannedValue);
+        onClose();
+      }
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <QrCode className="h-5 w-5" />
+            {t('auth.scanFamilyQr')}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col items-center space-y-4">
+          {hasPermission === false && (
+            <div className="text-center p-4 bg-destructive/10 rounded-lg border border-destructive/30">
+              <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-destructive" />
+              <p className="text-sm text-destructive">{t('auth.cameraPermissionDenied')}</p>
+            </div>
+          )}
+          {hasPermission === true && (
+            <div className="w-full max-w-xs aspect-square rounded-lg overflow-hidden border-2 border-primary/30">
+              <Scanner
+                onScan={handleScan}
+                onError={(err: any) => setError(err?.message || t('common.error'))}
+                styles={{
+                  container: { width: '100%', height: '100%' },
+                  video: { width: '100%', height: '100%', objectFit: 'cover' }
+                }}
+              />
+            </div>
+          )}
+          {hasPermission === null && (
+            <div className="text-center p-8">
+              <p className="text-sm text-muted-foreground">{t('auth.requestingCamera')}</p>
+            </div>
+          )}
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          <p className="text-xs text-muted-foreground text-center">{t('auth.pointAtQr')}</p>
         </div>
       </DialogContent>
     </Dialog>
@@ -2925,6 +3035,7 @@ function AuthPage({ role, onComplete, onBack }: { role: UserRole; onComplete: (u
               <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3">
                 <p className="text-xs text-orange-600 dark:text-orange-400 font-medium mb-1">{t('auth.familyId')}</p>
                 <p className="font-mono text-lg text-center font-bold">{pendingUser.connectionId}</p>
+                <FamilyQRCode connectionId={pendingUser.connectionId} />
               </div>
               
               <div className="bg-muted/50 rounded-lg p-4 font-mono text-center">
@@ -3621,6 +3732,7 @@ function PeersContent({ user, setUser, queryClient }: any) {
               <Copy className="h-4 w-4" />
             </Button>
           </div>
+          <FamilyQRCode connectionId={user.connectionId} />
           <p className="text-xs text-muted-foreground mt-2">{t('settings.shareIdWithChildren')}</p>
         </div>
 
@@ -7765,6 +7877,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
 function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, currentView, setCurrentView, onAccept, onSubmit, onCreateEvent, onDeleteEvent, queryClient, layoutView, setLayoutView, messages, setMessages, newMessage, setNewMessage, isLoadingMessage, setIsLoadingMessage }: any) {
   const [showLink, setShowLink] = useState(false);
   const [parentConnectionId, setParentConnectionId] = useState("");
+  const [showQRScanner, setShowQRScanner] = useState(false);
   const [isLinking, setIsLinking] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showTrackerChart, setShowTrackerChart] = useState(false);
@@ -10181,6 +10294,19 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
           <div className="bg-white/5 dark:bg-black/30 backdrop-blur-xl border border-white/50 dark:border-white/20 rounded-2xl p-6 shadow-lg">
             <h3 className="font-bold mb-4 text-foreground">{t('dashboard.connectWithParentsTitle')}</h3>
             <div className="space-y-3">
+              <Button
+                onClick={() => setShowQRScanner(true)}
+                className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white gap-2"
+                data-testid="button-scan-family-qr"
+              >
+                <QrCode className="h-4 w-4" />
+                {t('auth.scanQrToJoin')}
+              </Button>
+              <div className="flex items-center gap-3">
+                <Separator className="flex-1" />
+                <span className="text-xs text-muted-foreground">{t('common.or')}</span>
+                <Separator className="flex-1" />
+              </div>
               <div>
                 <Label htmlFor="parent-code" className="text-foreground">{t('dashboard.parentConnectionCode')}</Label>
                 <Input 
@@ -10209,12 +10335,21 @@ function ChildDashboard({ user, setUser, tasks, events, newEvent, setNewEvent, c
                   className="bg-white/30 dark:bg-black/30 border-white/40 dark:border-white/20 text-foreground"
                   data-testid="button-cancel-link"
                 >
-                  Abbrechen
+                  {t('common.cancel')}
                 </Button>
               </div>
             </div>
           </div>
         )}
+        <QRScannerModal
+          isOpen={showQRScanner}
+          onClose={() => setShowQRScanner(false)}
+          onScan={(scannedId) => {
+            setParentConnectionId(scannedId);
+            setShowQRScanner(false);
+            setShowLink(true);
+          }}
+        />
 
       </div>
     );
