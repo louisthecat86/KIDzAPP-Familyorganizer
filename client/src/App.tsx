@@ -5626,7 +5626,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
               className="p-6 bg-gradient-to-br from-orange-500/30 to-amber-500/30 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-2xl cursor-pointer hover:bg-white/10 dark:hover:bg-black/40 transition-all shadow-xl overflow-hidden relative"
             >
               <div className="text-center relative z-10">
-                <div className="text-2xl font-bold text-foreground">📱 {t('auth.familyId')}</div>
+                <div className="text-2xl font-bold text-foreground">{t('auth.familyId')}</div>
                 <div className="text-sm text-foreground mt-1">{t('dashboard.shareQrCode')}</div>
               </div>
             </div>
@@ -6076,7 +6076,7 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
           <DialogContent className="max-w-sm">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                📱 {t('auth.familyId')}
+                {t('auth.familyId')}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 text-center">
