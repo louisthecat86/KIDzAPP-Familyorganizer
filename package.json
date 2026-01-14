@@ -13,7 +13,6 @@
   },
   "notes": "removed framer motion dependency",
   "dependencies": {
-    "drizzle-kit": "^0.31.4",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
     "@neondatabase/serverless": "^0.10.4",
@@ -51,6 +50,7 @@
     "@types/pg": "^8.16.0",
     "@types/qrcode": "^1.5.6",
     "@types/web-push": "^3.6.4",
+    "@yudiel/react-qr-scanner": "^2.5.0",
     "bcrypt": "^6.0.0",
     "bip39": "^3.1.0",
     "class-variance-authority": "^0.7.1",
@@ -59,6 +59,7 @@
     "connect-pg-simple": "^10.0.0",
     "date-fns": "^3.6.0",
     "date-fns-tz": "^3.2.0",
+    "drizzle-kit": "^0.31.4",
     "drizzle-orm": "^0.39.1",
     "drizzle-zod": "^0.7.0",
     "embla-carousel-react": "^8.6.0",
