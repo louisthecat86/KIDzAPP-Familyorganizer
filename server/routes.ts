@@ -1308,6 +1308,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all peers by connection ID
   app.get("/api/peers/connection/:connectionId", async (req, res) => {
     try {
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
       const { connectionId } = req.params;
       const peers = await storage.getPeersByConnectionId(connectionId);
       res.json(sanitizePeersForClient(peers));
@@ -2575,6 +2576,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all children for a parent
   app.get("/api/parent/:id/children", async (req, res) => {
     try {
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
       const parentId = parseInt(req.params.id);
       const children = await storage.getChildrenForParent(parentId);
       res.json(sanitizePeersForClient(children));
