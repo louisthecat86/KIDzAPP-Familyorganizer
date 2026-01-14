@@ -5389,6 +5389,16 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
   const [loading, setLoading] = useState<Record<number, boolean>>({});
   const [showFailedPaymentsModal, setShowFailedPaymentsModal] = useState(false);
   const [showPendingManualPaymentsModal, setShowPendingManualPaymentsModal] = useState(false);
+  const [showFamilyQrModal, setShowFamilyQrModal] = useState(false);
+  const [familyQrDataUrl, setFamilyQrDataUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (showFamilyQrModal && user.connectionId) {
+      import('qrcode').then(QRCode => {
+        QRCode.toDataURL(user.connectionId, { width: 200, margin: 2 }).then(setFamilyQrDataUrl);
+      });
+    }
+  }, [showFamilyQrModal, user.connectionId]);
 
   const { data: failedPaymentsCount = 0 } = useQuery({
     queryKey: ["/api/failed-payments/count", user.connectionId, user.id],
@@ -5599,14 +5609,26 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         <h1 className="text-3xl font-bold text-foreground">{t('nav.dashboard')}</h1>
         
         {user.role === "parent" && (
-          <div 
-            onClick={() => setCurrentView("allowance-payout")}
-            data-testid="card-active-allowances"
-            className="p-6 bg-gradient-to-br from-violet-500/30 to-cyan-500/30 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-2xl cursor-pointer hover:bg-white/5 dark:bg-black/105 transition-all shadow-xl overflow-hidden relative"
-          >
-            <div className="text-center relative z-10">
-              <div className="text-2xl font-bold text-foreground">{t('family.allowances')}</div>
-              <div className="text-sm text-foreground mt-1">{t('dashboard.paymentsAndScheduled')}</div>
+          <div className="grid grid-cols-2 gap-4">
+            <div 
+              onClick={() => setCurrentView("allowance-payout")}
+              data-testid="card-active-allowances"
+              className="p-6 bg-gradient-to-br from-violet-500/30 to-cyan-500/30 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-2xl cursor-pointer hover:bg-white/10 dark:hover:bg-black/40 transition-all shadow-xl overflow-hidden relative"
+            >
+              <div className="text-center relative z-10">
+                <div className="text-2xl font-bold text-foreground">{t('family.allowances')}</div>
+                <div className="text-sm text-foreground mt-1">{t('dashboard.paymentsAndScheduled')}</div>
+              </div>
+            </div>
+            <div 
+              onClick={() => setShowFamilyQrModal(true)}
+              data-testid="card-family-qr"
+              className="p-6 bg-gradient-to-br from-orange-500/30 to-amber-500/30 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-2xl cursor-pointer hover:bg-white/10 dark:hover:bg-black/40 transition-all shadow-xl overflow-hidden relative"
+            >
+              <div className="text-center relative z-10">
+                <div className="text-2xl font-bold text-foreground">📱 {t('auth.familyId')}</div>
+                <div className="text-sm text-foreground mt-1">{t('dashboard.shareQrCode')}</div>
+              </div>
             </div>
           </div>
         )}
@@ -6049,6 +6071,43 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
             setManualPaymentModalData(null);
           }}
         />
+
+        <Dialog open={showFamilyQrModal} onOpenChange={setShowFamilyQrModal}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                📱 {t('auth.familyId')}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 text-center">
+              <p className="text-sm text-muted-foreground">{t('dashboard.scanToJoinFamily')}</p>
+              {familyQrDataUrl && (
+                <div className="flex justify-center">
+                  <img 
+                    src={familyQrDataUrl} 
+                    alt="Family QR Code" 
+                    className="rounded-xl border-4 border-white shadow-lg"
+                    data-testid="img-family-qr-code"
+                  />
+                </div>
+              )}
+              <div className="bg-slate-100 dark:bg-slate-800 rounded-xl p-4">
+                <p className="text-xs text-muted-foreground mb-2 uppercase tracking-widest">{t('dashboard.orEnterManually')}</p>
+                <p 
+                  className="text-xl font-mono font-bold text-violet-700 break-all select-all cursor-pointer"
+                  onClick={() => {
+                    navigator.clipboard.writeText(user.connectionId);
+                    toast({ title: t('common.copied'), description: t('dashboard.familyIdCopied') });
+                  }}
+                  data-testid="text-family-connection-id"
+                >
+                  {user.connectionId}
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">{t('dashboard.tapToCopy')}</p>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
