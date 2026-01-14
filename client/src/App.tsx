@@ -5635,25 +5635,25 @@ function ParentDashboard({ user, setUser, tasks, events, newTask, setNewTask, ne
         <h1 className="text-3xl font-bold text-foreground">{t('nav.dashboard')}</h1>
         
         {user.role === "parent" && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <div 
               onClick={() => setCurrentView("allowance-payout")}
               data-testid="card-active-allowances"
-              className="p-6 bg-gradient-to-br from-violet-500/30 to-cyan-500/30 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-2xl cursor-pointer hover:bg-white/10 dark:hover:bg-black/40 transition-all shadow-xl overflow-hidden relative"
+              className="p-4 md:p-6 bg-gradient-to-br from-violet-500/30 to-cyan-500/30 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-2xl cursor-pointer hover:bg-white/10 dark:hover:bg-black/40 transition-all shadow-xl overflow-hidden relative flex items-center justify-center"
             >
-              <div className="text-center relative z-10">
-                <div className="text-2xl font-bold text-foreground">{t('family.allowances')}</div>
-                <div className="text-sm text-foreground mt-1">{t('dashboard.paymentsAndScheduled')}</div>
+              <div className="text-center relative z-10 w-full">
+                <div className="text-base md:text-2xl font-bold text-foreground">{t('family.allowances')}</div>
+                <div className="text-xs md:text-sm text-foreground mt-1">{t('dashboard.paymentsAndScheduled')}</div>
               </div>
             </div>
             <div 
               onClick={() => setShowFamilyQrModal(true)}
               data-testid="card-family-qr"
-              className="p-6 bg-gradient-to-br from-orange-500/30 to-amber-500/30 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-2xl cursor-pointer hover:bg-white/10 dark:hover:bg-black/40 transition-all shadow-xl overflow-hidden relative"
+              className="p-4 md:p-6 bg-gradient-to-br from-orange-500/30 to-amber-500/30 backdrop-blur-md border border-white/50 dark:border-white/20 rounded-2xl cursor-pointer hover:bg-white/10 dark:hover:bg-black/40 transition-all shadow-xl overflow-hidden relative flex items-center justify-center"
             >
-              <div className="text-center relative z-10">
-                <div className="text-2xl font-bold text-foreground">{t('auth.familyId')}</div>
-                <div className="text-sm text-foreground mt-1">{t('dashboard.shareQrCode')}</div>
+              <div className="text-center relative z-10 w-full">
+                <div className="text-base md:text-2xl font-bold text-foreground">{t('auth.familyId')}</div>
+                <div className="text-xs md:text-sm text-foreground mt-1">{t('dashboard.shareQrCode')}</div>
               </div>
             </div>
           </div>
