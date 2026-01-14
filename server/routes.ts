@@ -2948,14 +2948,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const hasLnbits = parent?.lnbitsUrl && decryptedLnbitsCron;
       const hasNwc = !!decryptedNwcCron;
       const activeWallet = parent?.walletType || (hasLnbits ? "lnbits" : hasNwc ? "nwc" : null);
-
-      if (!hasLnbits && !hasNwc) {
-        console.error(`Parent ${allowance.parentId} not configured with LNBits or NWC`);
-        return;
-      }
+      const isManualMode = activeWallet === "manual";
 
       if (!child || !child.lightningAddress) {
         console.error(`Child ${allowance.childId} has no Lightning address`);
+        return;
+      }
+
+      // Handle manual mode - create invoice for parent to pay
+      if (isManualMode) {
+        console.log(`[Allowance Scheduler] Manual mode - creating invoice for ${child.name}`);
+        try {
+          const { fetchInvoiceFromLightningAddress } = await import("./lnurl");
+          const invoice = await fetchInvoiceFromLightningAddress(
+            child.lightningAddress,
+            allowance.sats,
+            `Taschengeld für ${child.name}`
+          );
+          
+          await storage.createManualPayment({
+            connectionId: parent!.connectionId,
+            parentId: allowance.parentId,
+            childId: allowance.childId,
+            childName: child.name,
+            sats: allowance.sats,
+            memo: `Taschengeld für ${child.name}`,
+            bolt11: invoice.bolt11,
+            paymentHash: invoice.paymentHash,
+            expiresAt: invoice.expiresAt,
+            status: "pending",
+            paymentType: "allowance",
+            taskId: null,
+          });
+          
+          // Update allowance lastPaidDate so it doesn't trigger again
+          await storage.updateAllowance(allowance.id, { lastPaidDate: new Date() });
+          console.log(`[Allowance Scheduler] Manual payment invoice created for ${child.name}: ${allowance.sats} sats`);
+          
+          // Send push notification to parent about pending manual payment
+          try {
+            await notifyFamilyExceptSender(parent!.connectionId, allowance.parentId, {
+              title: "Taschengeld fällig",
+              body: `${allowance.sats} Sats für ${child.name} - bitte manuell bezahlen`,
+              data: { type: "allowance_manual", childName: child.name, sats: allowance.sats }
+            });
+          } catch (pushError) {
+            console.warn("[Push] Failed to notify about manual allowance:", pushError);
+          }
+        } catch (invoiceError) {
+          console.error(`[Allowance Scheduler] Failed to create manual invoice:`, invoiceError);
+        }
+        return;
+      }
+
+      if (!hasLnbits && !hasNwc) {
+        console.error(`Parent ${allowance.parentId} not configured with LNBits or NWC`);
         return;
       }
 
